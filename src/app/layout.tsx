@@ -1,15 +1,18 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import SessionProviderWrapper from "../components/providers/SessionProviderWrapper";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Evangelo Sommer - Development",
-  description: "3D Portfolio Gallery in Development",
+  title: "COMMAND CENTER | MSCRMS (Multi-service Client Relationship Management Service)",
+  description: "Multi-service Client Relationship Management Service - Command Center",
 };
 
 export default function RootLayout({
@@ -19,7 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} antialiased`}>{children}</body>
+      <body className={`${spaceGrotesk.variable} font-space-grotesk antialiased`}>
+        <SessionProviderWrapper>{children}</SessionProviderWrapper>
+      </body>
     </html>
   );
 }

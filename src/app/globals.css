@@ -1,50 +1,430 @@
+/* Sharp Modern ServicePro CRM - Gold/Dark Grey/White Theme */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
+  /* Primary Colors - Gold Theme */
+  --gold: #D4AF37;
+  --gold-light: #F4E8C1;
+  --gold-dark: #B8941F;
+  
+  /* Grey Scale */
+  --dark-grey: #2C2C2C;
+  --medium-grey: #4A4A4A;
+  --light-grey: #E8E8E8;
+  --off-white: #FAFAFA;
+  
+  /* Background Colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAFA;
+  --bg-dark: #2C2C2C;
+  
+  /* Text Colors */
+  --text-primary: #2C2C2C;
+  --text-secondary: #4A4A4A;
+  --text-light: #FFFFFF;
+  
+  /* Updated CSS Variables for Tailwind */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 17%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 17%;
+  --primary: 45 69% 52%;
+  --primary-foreground: 0 0% 17%;
+  --secondary: 0 0% 98%;
+  --secondary-foreground: 0 0% 17%;
+  --muted: 0 0% 98%;
+  --muted-foreground: 0 0% 29%;
+  --accent: 45 69% 52%;
+  --accent-foreground: 0 0% 17%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 91%;
+  --input: 0 0% 91%;
+  --ring: 45 69% 52%;
+  --radius: 0rem; /* SQUARE CORNERS ONLY */
+  
+  /* Typography */
+  --font-space-grotesk: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
 }
 
-@theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
+/* Force light mode - no dark mode support for sharp modern aesthetic */
+* {
+  border-color: hsl(var(--border));
+  box-sizing: border-box;
 }
 
 body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-space-grotesk);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom slider styles */
-.slider::-webkit-slider-thumb {
-    appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #3b82f6;
-    cursor: pointer;
-    border: 2px solid #1e40af;
+/* SHARP MODERN COMPONENT STYLES */
+
+/* Cards - Sharp, No Shadows, Square Corners */
+.card {
+  background: var(--bg-primary);
+  border: 1px solid var(--light-grey);
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
-.slider::-webkit-slider-thumb:hover {
-    background: #2563eb;
+.card-header {
+  border-bottom: 1px solid var(--light-grey);
+  background: var(--off-white);
+  padding: 1.5rem;
 }
 
-.slider::-moz-range-thumb {
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #3b82f6;
-    cursor: pointer;
-    border: 2px solid #1e40af;
+/* Buttons - Sharp Modern Style */
+.btn-primary {
+  background: var(--gold);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 0 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-space-grotesk);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--gold-dark);
+  color: var(--text-primary);
+}
+
+.btn-secondary {
+  background: var(--dark-grey);
+  color: var(--text-light);
+  border: none;
+  border-radius: 0 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-space-grotesk);
+}
+
+.btn-secondary:hover {
+  background: var(--medium-grey);
+  color: var(--text-light);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--gold);
+  border-radius: 0 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-space-grotesk);
+}
+
+.btn-outline:hover {
+  background: var(--gold);
+  color: var(--text-primary);
+}
+
+/* Inputs - Square Modern Style */
+.input {
+  border: 2px solid var(--light-grey);
+  border-radius: 0 !important;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-space-grotesk);
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  border-color: var(--gold);
+  outline: none;
+  box-shadow: none;
+}
+
+/* Force square corners on all elements */
+* {
+  border-radius: 0 !important;
+}
+
+/* Override Tailwind rounded classes */
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-full {
+  border-radius: 0 !important;
+}
+
+/* Typography Styles */
+.text-heading {
+  font-family: var(--font-space-grotesk);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.text-subheading {
+  font-family: var(--font-space-grotesk);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+/* Navigation Styles */
+.nav-item {
+  font-family: var(--font-space-grotesk);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+  background: var(--light-grey);
+}
+
+.nav-item.active {
+  background: var(--gold);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Form Elements */
+input,
+select,
+textarea {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 2px solid var(--light-grey);
+  border-radius: 0 !important;
+  font-family: var(--font-space-grotesk);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--gold);
+  outline: none;
+  box-shadow: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+  font-family: var(--font-space-grotesk);
+}
+
+label {
+  color: var(--text-primary);
+  font-family: var(--font-space-grotesk);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+/* Priority Colors for Tasks */
+.priority-low {
+  background: var(--light-grey);
+  color: var(--text-primary);
+}
+
+.priority-medium {
+  background: var(--gold);
+  color: var(--text-primary);
+}
+
+.priority-high {
+  background: var(--dark-grey);
+  color: var(--text-light);
+}
+
+.priority-urgent {
+  background: #DC2626;
+  color: var(--text-light);
+}
+
+/* Status Colors */
+.status-pending {
+  border-left-color: var(--light-grey);
+}
+
+.status-in-progress {
+  border-left-color: var(--gold);
+}
+
+.status-completed {
+  border-left-color: #16A34A;
+}
+
+.status-cancelled {
+  border-left-color: #DC2626;
+}
+
+/* Service Line Colors */
+.service-landscaping {
+  background: #16A34A;
+}
+
+.service-snow-removal {
+  background: #3B82F6;
+}
+
+.service-hair-cutting {
+  background: #EC4899;
+}
+
+.service-creative-development {
+  background: #8B5CF6;
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  background: var(--light-grey);
+  height: 0.5rem;
+  border-radius: 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.3s ease;
+  border-radius: 0;
+}
+
+/* Utility Classes */
+.bg-gold { background-color: var(--gold); }
+.bg-gold-light { background-color: var(--gold-light); }
+.bg-gold-dark { background-color: var(--gold-dark); }
+.bg-dark-grey { background-color: var(--dark-grey); }
+.bg-medium-grey { background-color: var(--medium-grey); }
+.bg-light-grey { background-color: var(--light-grey); }
+.bg-off-white { background-color: var(--off-white); }
+
+.text-gold { color: var(--gold); }
+.text-gold-dark { color: var(--gold-dark); }
+.text-dark-grey { color: var(--dark-grey); }
+.text-medium-grey { color: var(--medium-grey); }
+.text-light-grey { color: var(--light-grey); }
+
+.border-gold { border-color: var(--gold); }
+.border-dark-grey { border-color: var(--dark-grey); }
+.border-light-grey { border-color: var(--light-grey); }
+
+/* Remove all shadows */
+.shadow,
+.shadow-sm,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl {
+  box-shadow: none !important;
+}
+
+/* Ensure consistent font family */
+.font-space-grotesk {
+  font-family: var(--font-space-grotesk);
+}
+
+/* Modern spacing and layout */
+.container-modern {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Sharp dividers */
+.divider {
+  height: 1px;
+  background: var(--light-grey);
+  border: none;
+}
+
+.divider-vertical {
+  width: 1px;
+  background: var(--light-grey);
+  border: none;
+}
+
+/* Animation utilities */
+.transition-modern {
+  transition: all 0.2s ease;
+}
+
+/* Ensure no rounded corners anywhere */
+button,
+input,
+select,
+textarea,
+.card,
+.modal,
+.dropdown,
+.tooltip {
+  border-radius: 0 !important;
+}
+
+/* Cursor Pointer Fixes */
+.clickable,
+button:not(:disabled),
+.btn,
+[role="button"],
+a,
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled,
+.disabled {
+  cursor: not-allowed !important;
+}
+
+/* Hover states */
+.hover-gold:hover {
+  color: var(--gold) !important;
+  cursor: pointer !important;
+}
+
+.hover-border-gold:hover {
+  border-color: var(--gold) !important;
+  cursor: pointer !important;
+}
+
+.hover-bg-gold:hover {
+  background-color: var(--gold) !important;
+  cursor: pointer !important;
+}
+
+.hover-bg-light-grey:hover {
+  background-color: var(--light-grey) !important;
+  cursor: pointer !important;
+}
+
+/* Interactive elements */
+.interactive {
+  cursor: pointer !important;
+  transition: all 0.2s ease;
+}
+
+.interactive:hover {
+  opacity: 0.8;
 }
