@@ -96,7 +96,7 @@ export default function DebugPanel({
 
         {/* Camera Info */}
         <div className="border-b border-gray-700 pb-2">
-          <p className="text-blue-400 font-semibold">Camera Position:</p>
+          <p className="text-tactical-gold-400 font-semibold">Camera Position:</p>
           <p>X: {camera.position.x.toFixed(2)}</p>
           <p>Y: {camera.position.y.toFixed(2)}</p>
           <p>Z: {camera.position.z.toFixed(2)}</p>

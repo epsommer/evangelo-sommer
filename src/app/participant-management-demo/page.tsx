@@ -302,13 +302,13 @@ export default function ParticipantManagementDemo() {
   const serviceProviders = state.participants.filter(p => p.role === ParticipantRole.SERVICE_PROVIDER);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-tactical-grey-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-tactical-grey-800">
             Participant Management & Appointment Booking Demo
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-tactical-grey-500">
             Comprehensive CRM system with voice-command appointment booking and multi-participant scheduling
           </p>
         </div>
@@ -333,21 +333,21 @@ export default function ParticipantManagementDemo() {
             <button
               onClick={createSampleData}
               disabled={state.loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-tactical-gold text-white rounded-md hover:bg-tactical-gold-dark disabled:opacity-50"
             >
               Create Sample Data
             </button>
             <button
               onClick={loadParticipants}
               disabled={state.loading}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-tactical-grey-700 disabled:opacity-50"
             >
               Refresh Participants
             </button>
             <button
               onClick={loadAppointments}
               disabled={state.loading}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-tactical-grey-700 disabled:opacity-50"
             >
               Refresh Appointments
             </button>
@@ -360,14 +360,14 @@ export default function ParticipantManagementDemo() {
             <h2 className="text-xl font-semibold mb-4">Voice Command Booking</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                   Voice Command
                 </label>
                 <textarea
                   value={voiceCommand}
                   onChange={(e) => setVoiceCommand(e.target.value)}
                   placeholder="Try: 'Book appointment with John Smith for lawn care tomorrow at 2 PM'"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                   rows={3}
                 />
               </div>
@@ -378,7 +378,7 @@ export default function ParticipantManagementDemo() {
               >
                 Process Voice Command
               </button>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-tactical-grey-500">
                 <p className="font-medium">Example commands:</p>
                 <ul className="mt-1 space-y-1">
                   <li>• "Book appointment with John Smith for lawn care"</li>
@@ -394,48 +394,48 @@ export default function ParticipantManagementDemo() {
             <h2 className="text-xl font-semibold mb-4">Create Participant</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Name *
                 </label>
                 <input
                   type="text"
                   value={newParticipant.name}
                   onChange={(e) => setNewParticipant(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Email
                   </label>
                   <input
                     type="email"
                     value={newParticipant.email}
                     onChange={(e) => setNewParticipant(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Phone
                   </label>
                   <input
                     type="tel"
                     value={newParticipant.phone}
                     onChange={(e) => setNewParticipant(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Role
                 </label>
                 <select
                   value={newParticipant.role}
                   onChange={(e) => setNewParticipant(prev => ({ ...prev, role: e.target.value as ParticipantRole }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                 >
                   <option value={ParticipantRole.CLIENT}>Client</option>
                   <option value={ParticipantRole.SERVICE_PROVIDER}>Service Provider</option>
@@ -445,7 +445,7 @@ export default function ParticipantManagementDemo() {
               <button
                 onClick={createParticipant}
                 disabled={state.loading || !newParticipant.name}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="w-full px-4 py-2 bg-tactical-gold text-white rounded-md hover:bg-tactical-gold-dark disabled:opacity-50"
               >
                 Create Participant
               </button>
@@ -457,48 +457,48 @@ export default function ParticipantManagementDemo() {
             <h2 className="text-xl font-semibold mb-4">Create Appointment</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Title *
                 </label>
                 <input
                   type="text"
                   value={newAppointment.title}
                   onChange={(e) => setNewAppointment(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Start Time *
                   </label>
                   <input
                     type="datetime-local"
                     value={newAppointment.startTime}
                     onChange={(e) => setNewAppointment(prev => ({ ...prev, startTime: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     End Time *
                   </label>
                   <input
                     type="datetime-local"
                     value={newAppointment.endTime}
                     onChange={(e) => setNewAppointment(prev => ({ ...prev, endTime: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Service *
                 </label>
                 <select
                   value={newAppointment.service}
                   onChange={(e) => setNewAppointment(prev => ({ ...prev, service: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                 >
                   <option value={ServiceType.LAWN_CARE}>Lawn Care</option>
                   <option value={ServiceType.LANDSCAPING}>Landscaping</option>
@@ -508,13 +508,13 @@ export default function ParticipantManagementDemo() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Organizer *
                 </label>
                 <select
                   value={newAppointment.organizerId}
                   onChange={(e) => setNewAppointment(prev => ({ ...prev, organizerId: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-md focus:outline-none focus:ring-2 focus:ring-tactical-gold-500"
                 >
                   <option value="">Select organizer...</option>
                   {serviceProviders.map(provider => (
@@ -539,16 +539,16 @@ export default function ParticipantManagementDemo() {
             <h2 className="text-xl font-semibold mb-4">Participants ({state.participants.length})</h2>
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {state.participants.map(participant => (
-                <div key={participant.id} className="border border-gray-200 rounded-md p-3">
+                <div key={participant.id} className="border border-tactical-grey-300 rounded-md p-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-medium text-gray-900">{participant.name}</h3>
-                      <p className="text-sm text-gray-600">{participant.role}</p>
+                      <h3 className="font-medium text-tactical-grey-800">{participant.name}</h3>
+                      <p className="text-sm text-tactical-grey-500">{participant.role}</p>
                       {participant.email && (
-                        <p className="text-sm text-gray-500">{participant.email}</p>
+                        <p className="text-sm text-tactical-grey-500">{participant.email}</p>
                       )}
                       {participant.phone && (
-                        <p className="text-sm text-gray-500">{participant.phone}</p>
+                        <p className="text-sm text-tactical-grey-500">{participant.phone}</p>
                       )}
                     </div>
                     <div className="text-xs text-gray-400">
@@ -560,7 +560,7 @@ export default function ParticipantManagementDemo() {
                 </div>
               ))}
               {state.participants.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No participants found</p>
+                <p className="text-tactical-grey-500 text-center py-4">No participants found</p>
               )}
             </div>
           </div>
@@ -571,21 +571,21 @@ export default function ParticipantManagementDemo() {
           <h2 className="text-xl font-semibold mb-4">Appointments ({state.appointments.length})</h2>
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {state.appointments.map(appointment => (
-              <div key={appointment.id} className="border border-gray-200 rounded-md p-4">
+              <div key={appointment.id} className="border border-tactical-grey-300 rounded-md p-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium text-gray-900">{appointment.title}</h3>
-                    <p className="text-sm text-gray-600">{appointment.service}</p>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-medium text-tactical-grey-800">{appointment.title}</h3>
+                    <p className="text-sm text-tactical-grey-500">{appointment.service}</p>
+                    <p className="text-sm text-tactical-grey-500">
                       {new Date(appointment.startTime).toLocaleString()} - {new Date(appointment.endTime).toLocaleString()}
                     </p>
                     {appointment.location && (
-                      <p className="text-sm text-gray-500">Location: {appointment.location}</p>
+                      <p className="text-sm text-tactical-grey-500">Location: {appointment.location}</p>
                     )}
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-tactical-grey-500">
                       Organizer: {appointment.organizer.name}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-tactical-grey-500">
                       Participants: {appointment.participants.map(p => p.participant.name).join(', ')}
                     </p>
                   </div>
@@ -593,9 +593,9 @@ export default function ParticipantManagementDemo() {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       appointment.status === AppointmentStatus.SCHEDULED ? 'bg-yellow-100 text-yellow-800' :
                       appointment.status === AppointmentStatus.CONFIRMED ? 'bg-green-100 text-green-800' :
-                      appointment.status === AppointmentStatus.COMPLETED ? 'bg-blue-100 text-blue-800' :
+                      appointment.status === AppointmentStatus.COMPLETED ? 'bg-tactical-gold-muted text-tactical-brown-dark' :
                       appointment.status === AppointmentStatus.CANCELLED ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
+                      'bg-tactical-grey-200 text-tactical-grey-700'
                     }`}>
                       {appointment.status}
                     </span>
@@ -604,7 +604,7 @@ export default function ParticipantManagementDemo() {
               </div>
             ))}
             {state.appointments.length === 0 && (
-              <p className="text-gray-500 text-center py-4">No appointments found</p>
+              <p className="text-tactical-grey-500 text-center py-4">No appointments found</p>
             )}
           </div>
         </div>
@@ -614,7 +614,7 @@ export default function ParticipantManagementDemo() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6">
               <div className="flex items-center space-x-3">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tactical-gold-600"></div>
                 <span>Processing...</span>
               </div>
             </div>

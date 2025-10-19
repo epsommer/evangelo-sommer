@@ -81,13 +81,7 @@ export async function POST(request: NextRequest) {
         'Notion-Version': '2022-06-28'
       },
       body: JSON.stringify({
-        page_size: 100,
-        sorts: [
-          {
-            property: 'created_time',
-            direction: 'descending'
-          }
-        ]
+        page_size: 100
       })
     })
 

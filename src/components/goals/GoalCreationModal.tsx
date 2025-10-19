@@ -95,7 +95,7 @@ const defaultFormData: FormData = {
     pattern: 'monthly',
     interval: 1
   },
-  color: '#3B82F6'
+  color: '#D4AF37'
 }
 
 const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
@@ -144,7 +144,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
           endAfter: editingGoal.recurring?.endAfter,
           endDate: editingGoal.recurring?.endDate
         },
-        color: editingGoal.color || '#3B82F6'
+        color: editingGoal.color || '#D4AF37'
       })
     } else {
       const newFormData = { ...defaultFormData }
@@ -366,7 +366,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                   "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                   activeTab === tab.id
                     ? "bg-white text-gold shadow-sm"
-                    : "text-medium-grey hover:text-dark-grey"
+                    : "text-medium-grey hover:text-hud-text-primary"
                 )}
               >
                 <tab.icon className="w-4 h-4" />
@@ -384,7 +384,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
               <CardContent className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-grey mb-1">
+                  <label className="block text-sm font-medium text-hud-text-primary mb-1">
                     Goal Title *
                   </label>
                   <input
@@ -392,7 +392,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     className={cn(
-                      "w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent",
+                      "w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent",
                       errors.title && "border-red-500"
                     )}
                     placeholder="Enter goal title"
@@ -404,13 +404,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-grey mb-1">
+                  <label className="block text-sm font-medium text-hud-text-primary mb-1">
                     Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                    className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     rows={3}
                     placeholder="Describe your goal"
                   />
@@ -419,13 +419,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Category */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Category
                     </label>
                     <select
                       value={formData.category}
                       onChange={(e) => handleInputChange('category', e.target.value as GoalCategory)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     >
                       {GOAL_CATEGORIES.map(category => (
                         <option key={category.value} value={category.value}>
@@ -437,13 +437,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                   {/* Priority */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Priority
                     </label>
                     <select
                       value={formData.priority}
                       onChange={(e) => handleInputChange('priority', e.target.value as Priority)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -456,13 +456,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Timeframe */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Timeframe
                     </label>
                     <select
                       value={formData.timeframe}
                       onChange={(e) => handleInputChange('timeframe', e.target.value as GoalTimeframe)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     >
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -475,13 +475,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                   {/* Status */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Status
                     </label>
                     <select
                       value={formData.status}
                       onChange={(e) => handleInputChange('status', e.target.value as GoalStatus)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     >
                       <option value="not-started">Not Started</option>
                       <option value="in-progress">In Progress</option>
@@ -500,40 +500,40 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           Timeframe Name *
                         </label>
                         <input
                           type="text"
                           value={formData.customTimeframe?.name || ''}
                           onChange={(e) => handleNestedInputChange('customTimeframe', 'name', e.target.value)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                           placeholder="e.g., Sprint 1, Project Phase A"
                         />
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-dark-grey mb-1">
+                          <label className="block text-sm font-medium text-hud-text-primary mb-1">
                             Custom Start Date *
                           </label>
                           <input
                             type="date"
                             value={formData.customTimeframe?.startDate || formData.startDate}
                             onChange={(e) => handleNestedInputChange('customTimeframe', 'startDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                            className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-dark-grey mb-1">
+                          <label className="block text-sm font-medium text-hud-text-primary mb-1">
                             Custom End Date *
                           </label>
                           <input
                             type="date"
                             value={formData.customTimeframe?.endDate || formData.endDate}
                             onChange={(e) => handleNestedInputChange('customTimeframe', 'endDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                            className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                           />
                         </div>
                       </div>
@@ -544,20 +544,20 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   {/* Start Date */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Start Date
                     </label>
                     <input
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => handleInputChange('startDate', e.target.value)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     />
                   </div>
 
                   {/* End Date */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       End Date
                     </label>
                     <input
@@ -565,7 +565,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                       value={formData.endDate}
                       onChange={(e) => handleInputChange('endDate', e.target.value)}
                       className={cn(
-                        "w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent",
+                        "w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent",
                         errors.endDate && "border-red-500"
                       )}
                       disabled={formData.timeframe !== 'custom'}
@@ -588,21 +588,21 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Progress Unit */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Progress Unit
                     </label>
                     <input
                       type="text"
                       value={formData.progressUnit}
                       onChange={(e) => handleInputChange('progressUnit', e.target.value)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                       placeholder="e.g., percentage, tasks, hours"
                     />
                   </div>
 
                   {/* Target Value */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Target Value *
                     </label>
                     <input
@@ -610,7 +610,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                       value={formData.targetValue}
                       onChange={(e) => handleInputChange('targetValue', parseInt(e.target.value) || 0)}
                       className={cn(
-                        "w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent",
+                        "w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent",
                         errors.targetValue && "border-red-500"
                       )}
                       min="1"
@@ -624,14 +624,14 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Current Value */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Current Value
                     </label>
                     <input
                       type="number"
                       value={formData.currentValue}
                       onChange={(e) => handleInputChange('currentValue', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                       min="0"
                       max={formData.targetValue}
                     />
@@ -639,14 +639,14 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                   {/* Estimated Hours */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-grey mb-1">
+                    <label className="block text-sm font-medium text-hud-text-primary mb-1">
                       Estimated Hours
                     </label>
                     <input
                       type="number"
                       value={formData.estimatedHours}
                       onChange={(e) => handleInputChange('estimatedHours', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                       min="0"
                       step="0.5"
                     />
@@ -655,7 +655,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                 {/* Color */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-grey mb-1">
+                  <label className="block text-sm font-medium text-hud-text-primary mb-1">
                     Color
                   </label>
                   <div className="flex items-center gap-2">
@@ -663,21 +663,21 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                       type="color"
                       value={formData.color}
                       onChange={(e) => handleInputChange('color', e.target.value)}
-                      className="w-12 h-10 border border-light-grey rounded-md"
+                      className="w-12 h-10 border border-hud-border rounded-md"
                     />
                     <input
                       type="text"
                       value={formData.color}
                       onChange={(e) => handleInputChange('color', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
-                      placeholder="#3B82F6"
+                      className="flex-1 px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      placeholder="#D4AF37"
                     />
                   </div>
                 </div>
 
                 {/* Tags */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-grey mb-1">
+                  <label className="block text-sm font-medium text-hud-text-primary mb-1">
                     Tags
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -700,7 +700,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                      className="flex-1 px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                       placeholder="Add tag..."
                     />
                     <Button type="button" onClick={addTag} variant="outline">
@@ -711,13 +711,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-grey mb-1">
+                  <label className="block text-sm font-medium text-hud-text-primary mb-1">
                     Notes
                   </label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => handleInputChange('notes', e.target.value)}
-                    className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                    className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                     rows={4}
                     placeholder="Additional notes or context..."
                   />
@@ -737,9 +737,9 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                     type="checkbox"
                     checked={formData.reminderSettings.enabled}
                     onChange={(e) => handleNestedInputChange('reminderSettings', 'enabled', e.target.checked)}
-                    className="rounded border-light-grey text-gold focus:ring-gold"
+                    className="rounded border-hud-border text-gold focus:ring-gold"
                   />
-                  <label className="text-sm font-medium text-dark-grey">
+                  <label className="text-sm font-medium text-hud-text-primary">
                     Enable reminders for this goal
                   </label>
                 </div>
@@ -748,13 +748,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           Reminder Frequency
                         </label>
                         <select
                           value={formData.reminderSettings.frequency}
                           onChange={(e) => handleNestedInputChange('reminderSettings', 'frequency', e.target.value)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                         >
                           <option value="daily">Daily</option>
                           <option value="weekly">Weekly</option>
@@ -763,27 +763,27 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           Reminder Time
                         </label>
                         <input
                           type="time"
                           value={formData.reminderSettings.time}
                           onChange={(e) => handleNestedInputChange('reminderSettings', 'time', e.target.value)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-dark-grey mb-1">
+                      <label className="block text-sm font-medium text-hud-text-primary mb-1">
                         Deadline Warning (days in advance)
                       </label>
                       <input
                         type="number"
                         value={formData.reminderSettings.advanceNotice}
                         onChange={(e) => handleNestedInputChange('reminderSettings', 'advanceNotice', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                        className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                         min="0"
                         max="30"
                       />
@@ -805,9 +805,9 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                     type="checkbox"
                     checked={formData.recurring.enabled}
                     onChange={(e) => handleNestedInputChange('recurring', 'enabled', e.target.checked)}
-                    className="rounded border-light-grey text-gold focus:ring-gold"
+                    className="rounded border-hud-border text-gold focus:ring-gold"
                   />
-                  <label className="text-sm font-medium text-dark-grey">
+                  <label className="text-sm font-medium text-hud-text-primary">
                     Make this a recurring goal
                   </label>
                 </div>
@@ -816,13 +816,13 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           Recurrence Pattern
                         </label>
                         <select
                           value={formData.recurring.pattern}
                           onChange={(e) => handleNestedInputChange('recurring', 'pattern', e.target.value)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                         >
                           <option value="daily">Daily</option>
                           <option value="weekly">Weekly</option>
@@ -833,14 +833,14 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           Interval (every X periods)
                         </label>
                         <input
                           type="number"
                           value={formData.recurring.interval}
                           onChange={(e) => handleNestedInputChange('recurring', 'interval', parseInt(e.target.value) || 1)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                           min="1"
                         />
                       </div>
@@ -848,28 +848,28 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           End After (occurrences)
                         </label>
                         <input
                           type="number"
                           value={formData.recurring.endAfter || ''}
                           onChange={(e) => handleNestedInputChange('recurring', 'endAfter', e.target.value ? parseInt(e.target.value) : undefined)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                           min="1"
                           placeholder="Leave empty for no limit"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-dark-grey mb-1">
+                        <label className="block text-sm font-medium text-hud-text-primary mb-1">
                           End Date
                         </label>
                         <input
                           type="date"
                           value={formData.recurring.endDate || ''}
                           onChange={(e) => handleNestedInputChange('recurring', 'endDate', e.target.value || undefined)}
-                          className="w-full px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                          className="w-full px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -880,7 +880,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t border-light-grey">
+          <div className="flex justify-end gap-2 pt-4 border-t border-hud-border">
             <Button
               type="button"
               variant="outline"
@@ -890,7 +890,7 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
             </Button>
             <Button
               type="submit"
-              className="bg-gold hover:bg-gold/90 text-white"
+              className="bg-tactical-gold hover:bg-tactical-gold/90 text-white"
             >
               {editingGoal ? 'Update Goal' : 'Create Goal'}
             </Button>

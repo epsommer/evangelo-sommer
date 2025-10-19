@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Client } from '../types/client';
 import { QuoteItem, DEFAULT_BUSINESS_CONFIG } from '../types/billing';
-import { billingManager } from '../lib/billing-manager';
+// Removed billingManager import - use API endpoints instead
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -151,16 +151,16 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
     setIsSubmitting(true);
 
     try {
-      const quote = await billingManager.createQuote({
+      // TODO: Replace with API call to /api/billing/quotes
+      console.log('Quote creation temporarily disabled - needs API endpoint');
+      const quote = {
+        id: 'temp-' + Date.now(),
         clientId: client.id,
         items: quoteData.items,
         validUntil: quoteData.validUntil,
         notes: quoteData.notes,
-        terms: quoteData.terms,
-        projectScope: quoteData.projectScope,
-        estimatedDuration: quoteData.estimatedDuration,
-        businessRegistered: DEFAULT_BUSINESS_CONFIG.isRegistered
-      });
+        terms: quoteData.terms
+      };
 
       // Optionally send quote via email
       if (client.email) {
@@ -185,12 +185,12 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-tactical-grey-800">
             Create Quote - {client.name}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-tactical-grey-500"
             disabled={isSubmitting}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,11 +202,11 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Project Details Section */}
           <div className="project-section">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Project Details</h3>
+            <h3 className="text-lg font-medium text-tactical-grey-800 mb-4">Project Details</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Project Scope
                 </label>
                 <textarea 
@@ -214,13 +214,13 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                   onChange={(e) => setQuoteData({...quoteData, projectScope: e.target.value})}
                   placeholder="Describe the project scope and requirements..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Estimated Duration
                   </label>
                   <input 
@@ -228,12 +228,12 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                     value={quoteData.estimatedDuration}
                     onChange={(e) => setQuoteData({...quoteData, estimatedDuration: e.target.value})}
                     placeholder="e.g., 2-3 weeks, 1 month"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Valid Until *
                   </label>
                   <input 
@@ -241,7 +241,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                     value={quoteData.validUntil.toISOString().split('T')[0]}
                     onChange={(e) => setQuoteData({...quoteData, validUntil: new Date(e.target.value)})}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   />
                 </div>
               </div>
@@ -251,14 +251,14 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
           {/* Services & Pricing Section */}
           <div className="items-section">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Services & Pricing</h3>
+              <h3 className="text-lg font-medium text-tactical-grey-800">Services & Pricing</h3>
               <div className="flex space-x-2">
                 {serviceTemplates.commonItems.map((template, index) => (
                   <button
                     key={index}
                     type="button"
                     onClick={() => addServiceTemplate(template)}
-                    className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    className="px-3 py-1 text-xs bg-tactical-gold-muted text-tactical-brown-dark rounded hover:bg-tactical-gold-light"
                   >
                     + {template.description}
                   </button>
@@ -268,10 +268,10 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
 
             <div className="space-y-4">
               {quoteData.items.map((item, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div key={index} className="border border-tactical-grey-300 rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                         Description *
                       </label>
                       <input
@@ -280,12 +280,12 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                         onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                         placeholder="Service description"
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                         Quantity *
                       </label>
                       <input
@@ -295,12 +295,12 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 1)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                         Unit Price *
                       </label>
                       <input
@@ -310,14 +310,14 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                         value={item.unitPrice}
                         onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                         Estimated Hours
                       </label>
                       <input
@@ -327,7 +327,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                         value={item.estimatedHours || ''}
                         onChange={(e) => handleItemChange(index, 'estimatedHours', e.target.value ? parseFloat(e.target.value) : undefined)}
                         placeholder="Optional"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                       />
                     </div>
 
@@ -337,15 +337,15 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                         id={`materials-${index}`}
                         checked={item.materialsIncluded}
                         onChange={(e) => handleItemChange(index, 'materialsIncluded', e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
                       />
-                      <label htmlFor={`materials-${index}`} className="ml-2 text-sm text-gray-700">
+                      <label htmlFor={`materials-${index}`} className="ml-2 text-sm text-tactical-grey-600">
                         Materials Included
                       </label>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-tactical-grey-800">
                         Total: ${(item.quantity * item.unitPrice).toFixed(2)} CAD
                       </span>
                       {quoteData.items.length > 1 && (
@@ -362,7 +362,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
 
                   {item.notes !== undefined && (
                     <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                         Item Notes
                       </label>
                       <input
@@ -370,7 +370,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                         value={item.notes}
                         onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
                         placeholder="Additional notes for this item"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                       />
                     </div>
                   )}
@@ -380,7 +380,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
               <button 
                 type="button" 
                 onClick={addLineItem}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-300 hover:text-blue-600"
+                className="w-full py-2 border-2 border-dashed border-tactical-grey-400 rounded-lg text-tactical-grey-500 hover:border-tactical-grey-400 hover:text-tactical-gold"
               >
                 + Add Service
               </button>
@@ -388,8 +388,8 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
           </div>
 
           {/* Totals Summary */}
-          <div className="totals-section bg-gray-50 rounded-lg p-4">
-            <h4 className="text-lg font-medium text-gray-900 mb-3">Quote Summary</h4>
+          <div className="totals-section bg-tactical-grey-100 rounded-lg p-4">
+            <h4 className="text-lg font-medium text-tactical-grey-800 mb-3">Quote Summary</h4>
             
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -414,7 +414,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
             </div>
             
             {!DEFAULT_BUSINESS_CONFIG.isRegistered && (
-              <div className="mt-3 text-xs text-gray-600">
+              <div className="mt-3 text-xs text-tactical-grey-500">
                 * No HST/GST applicable - Small business exemption
               </div>
             )}
@@ -423,19 +423,19 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
           {/* Terms & Notes */}
           <div className="terms-section space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                 Terms & Conditions
               </label>
               <textarea 
                 value={quoteData.terms}
                 onChange={(e) => setQuoteData({...quoteData, terms: e.target.value})}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                 Additional Notes
               </label>
               <textarea 
@@ -443,7 +443,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
                 onChange={(e) => setQuoteData({...quoteData, notes: e.target.value})}
                 placeholder="Any additional information for the client..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
               />
             </div>
           </div>
@@ -454,14 +454,14 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
               type="button" 
               onClick={onClose} 
               disabled={isSubmitting}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+              className="px-4 py-2 text-tactical-grey-600 bg-tactical-grey-200 rounded-lg hover:bg-tactical-grey-300 disabled:opacity-50"
             >
               Cancel
             </button>
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark disabled:opacity-50"
             >
               {isSubmitting ? 'Creating...' : 'Create & Send Quote'}
             </button>

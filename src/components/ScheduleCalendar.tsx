@@ -2,9 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
-import { Calendar, Clock, MapPin, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, MoreVertical, Edit, CheckCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useUnifiedEvents } from '@/hooks/useUnifiedEvents';
+import DropdownMenu from '@/components/ui/DropdownMenu';
+
+// Safe date formatting utility
+const safeFormatDate = (dateValue: string | Date, formatStr: string, fallback: string = '--:--'): string => {
+  try {
+    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+    return isNaN(date.getTime()) ? fallback : format(date, formatStr);
+  } catch {
+    return fallback;
+  }
+};
+
+// Safe string property accessor
+const safeString = (value: any, fallback: string = 'Unknown'): string => {
+  return (typeof value === 'string' && value.trim()) ? value : fallback;
+};
 
 interface ScheduledService {
   id: string;
@@ -23,21 +40,31 @@ interface ScheduleCalendarProps {
   onDateSelect?: (date: Date) => void;
   onDayClick?: (date: Date) => void;
   onEventEdit?: (event: any) => void;
+  onEventView?: (event: any) => void;
+  onEventDelete?: (eventId: string) => void;
+  onEventStatusChange?: (eventId: string, status: string) => void;
   enableEditing?: boolean;
+  refreshTrigger?: number;
 }
 
 const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ 
-  selectedDate = new Date(), 
+  selectedDate = (() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()) })(), 
   onDateSelect,
   onDayClick,
   onEventEdit,
-  enableEditing = false 
+  onEventView,
+  onEventDelete,
+  onEventStatusChange,
+  enableEditing = false,
+  refreshTrigger 
 }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([]);
   const [googleCalendarEvents, setGoogleCalendarEvents] = useState<any[]>([]);
   const [editingSchedule, setEditingSchedule] = useState<ScheduledService | null>(null);
   const [viewingSchedule, setViewingSchedule] = useState<ScheduledService | null>(null);
+
+  // Use unified events hook
+  const { events: unifiedEvents } = useUnifiedEvents({ syncWithLegacy: true });
 
   // Load scheduled services from localStorage
   useEffect(() => {
@@ -48,34 +75,28 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     } catch (error) {
       console.error('Error loading scheduled services for calendar:', error);
     }
-  }, []);
+  }, [refreshTrigger]);
 
   // Get days in current month
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Get services for a specific date
-  const getServicesForDate = (date: Date) => {
-    return scheduledServices.filter(service => {
+  // Get events for a specific date (including unified events)
+  const getEventsForDate = (date: Date) => {
+    const servicesForDate = scheduledServices.filter(service => {
       const serviceDate = new Date(service.scheduledDate);
       return isSameDay(serviceDate, date);
     });
+
+    const unifiedEventsForDate = unifiedEvents.filter(event => {
+      const eventDate = new Date(event.startDateTime);
+      return isSameDay(eventDate, date);
+    });
+
+    return [...servicesForDate, ...unifiedEventsForDate];
   };
 
-  // Navigate months
-  const previousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
-  };
-
-  const goToToday = () => {
-    setCurrentMonth(new Date());
-    onDateSelect?.(new Date());
-  };
 
   // Handle editing a scheduled service
   const handleEditSchedule = (schedule: ScheduledService) => {
@@ -153,9 +174,17 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
     // Combine and sort by date
     const allEvents = [...upcomingServices, ...upcomingGoogleEvents];
-    return allEvents.sort((a, b) => 
-      new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
-    ).slice(0, 10); // Show only next 10 events
+    return allEvents.sort((a, b) => {
+      try {
+        const dateA = new Date(a.scheduledDate);
+        const dateB = new Date(b.scheduledDate);
+        const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
+        const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
+        return timeA - timeB;
+      } catch {
+        return 0;
+      }
+    }).slice(0, 10); // Show only next 10 events
   };
 
   // Sync with Google Calendar
@@ -227,48 +256,13 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Calendar Header */}
       <Card>
-        <CardHeader className="bg-off-white border-b-2 border-gold">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Calendar className="h-6 w-6 text-gold" />
-              <h3 className="text-xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
-                Schedule Calendar
-              </h3>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={previousMonth}
-                className="px-3 py-1 bg-light-grey hover:bg-medium-grey text-dark-grey font-medium text-sm rounded"
-              >
-                ←
-              </button>
-              <span className="px-4 py-1 text-lg font-bold text-dark-grey font-space-grotesk">
-                {format(currentMonth, 'MMMM yyyy')}
-              </span>
-              <button
-                onClick={nextMonth}
-                className="px-3 py-1 bg-light-grey hover:bg-medium-grey text-dark-grey font-medium text-sm rounded"
-              >
-                →
-              </button>
-              <button
-                onClick={goToToday}
-                className="px-3 py-1 bg-gold hover:bg-gold-dark text-dark-grey font-medium text-sm rounded"
-              >
-                Today
-              </button>
-            </div>
-          </div>
-        </CardHeader>
-
         <CardContent className="p-0">
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-0 border-b">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-3 bg-light-grey border-r border-b text-center">
-                <span className="text-sm font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+              <div key={day} className="p-3 bg-hud-background-secondary border-r border-b border-hud-border text-center">
+                <span className="text-sm font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                   {day}
                 </span>
               </div>
@@ -277,8 +271,8 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
           <div className="grid grid-cols-7 gap-0">
             {monthDays.map(day => {
-              const dayServices = getServicesForDate(day);
-              const isCurrentMonth = isSameMonth(day, currentMonth);
+              const dayServices = getEventsForDate(day);
+              const isCurrentMonth = isSameMonth(day, selectedDate);
               const isTodayDate = isToday(day);
               const isSelected = isSameDay(day, selectedDate);
 
@@ -287,12 +281,12 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   key={day.toISOString()}
                   className={`min-h-[140px] p-2 border-r border-b cursor-pointer transition-colors relative group ${
                     !isCurrentMonth 
-                      ? 'bg-gray-50 text-gray-400' 
+                      ? 'bg-hud-background text-medium-grey' 
                       : isSelected
-                      ? 'bg-gold-light'
+                      ? 'bg-tactical-gold-light'
                       : isTodayDate
-                      ? 'bg-blue-50'
-                      : 'bg-white hover:bg-gray-50'
+                      ? 'bg-tactical-gold-light/50 border-2 border-tactical-gold'
+                      : 'bg-hud-background-secondary hover:bg-tactical-gold-light/30'
                   }`}
                   onClick={() => {
                     onDateSelect?.(day)
@@ -303,7 +297,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className={`text-sm font-medium ${
-                      isTodayDate ? 'bg-gold text-dark-grey px-2 py-1 rounded font-bold' : ''
+                      isTodayDate ? 'bg-tactical-gold text-hud-text-primary px-2 py-1 rounded font-bold' : ''
                     }`}>
                       {format(day, 'd')}
                     </span>
@@ -311,7 +305,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                       {/* Add Event Button - appears on hover */}
                       {isCurrentMonth && onDayClick && (
                         <button
-                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-gold hover:bg-gold-light text-dark-grey rounded p-1 text-xs font-bold"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-tactical-gold hover:bg-tactical-gold-light text-hud-text-primary rounded p-1 text-xs font-bold"
                           onClick={(e) => {
                             e.stopPropagation()
                             onDayClick(day)
@@ -325,7 +319,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                         <Badge className={`h-5 w-5 p-0 text-xs flex items-center justify-center ${
                           dayServices.length > 5 ? 'bg-red-600 text-white' :
                           dayServices.length > 3 ? 'bg-orange-500 text-white' :
-                          dayServices.length > 1 ? 'bg-blue-600 text-white' :
+                          dayServices.length > 1 ? 'bg-tactical-gold text-white' :
                           'bg-green-600 text-white'
                         }`}>
                           {dayServices.length > 9 ? '9+' : dayServices.length}
@@ -337,8 +331,9 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   {/* Show services for this day - Enhanced density handling */}
                   <div className="space-y-1">
                     {dayServices.slice(0, 3).map((service, index) => {
-                      const priorityColor = service.priority === 'high' ? 'bg-red-100 border-red-200 text-red-800' :
-                                           service.priority === 'medium' ? 'bg-yellow-100 border-yellow-200 text-yellow-800' :
+                      const servicePriority = safeString(service.priority, 'medium');
+                      const priorityColor = servicePriority === 'high' ? 'bg-red-100 border-red-200 text-red-800' :
+                                           servicePriority === 'medium' ? 'bg-yellow-100 border-yellow-200 text-yellow-800' :
                                            'bg-green-100 border-green-200 text-green-800';
                       
                       return (
@@ -348,6 +343,25 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                           onClick={(e) => {
                             e.stopPropagation();
                             setViewingSchedule(service);
+                            
+                            // Also trigger the parent's onEventView if provided
+                            if (onEventView) {
+                              const eventData = {
+                                id: service.id,
+                                type: 'event' as const,
+                                title: safeString(service.title || service.service, 'Event'),
+                                description: service.notes,
+                                startDateTime: service.scheduledDate,
+                                endDateTime: service.scheduledDate,
+                                duration: service.duration || 60,
+                                priority: service.priority || 'medium',
+                                clientId: service.clientId,
+                                location: service.location,
+                                notes: service.notes,
+                                status: service.status
+                              };
+                              onEventView(eventData);
+                            }
                           }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
@@ -356,12 +370,12 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                               const eventData = {
                                 id: service.id,
                                 type: 'event' as const,
-                                title: service.title || service.service,
+                                title: safeString(service.title || service.service, 'Event'),
                                 description: service.notes,
                                 startDateTime: service.scheduledDate,
                                 duration: service.duration || 60,
                                 priority: service.priority as any,
-                                clientName: service.clientName,
+                                clientName: safeString(service.clientName, 'Client'),
                                 notes: service.notes,
                                 createdAt: new Date().toISOString(),
                                 updatedAt: new Date().toISOString()
@@ -369,52 +383,79 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                               onEventEdit(eventData);
                             }
                           }}
-                          title={`${service.service} - ${service.clientName} at ${format(new Date(service.scheduledDate), 'HH:mm')}`}
+                          title={`${safeString(service.service, 'Service')} - ${safeString(service.clientName, 'Client')} at ${safeFormatDate(service.scheduledDate, 'HH:mm')}`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="font-medium truncate flex-1">
-                              {service.service.length > 15 ? service.service.substring(0, 15) + '...' : service.service}
+                              {(() => {
+                                const serviceName = safeString(service.service, 'Service');
+                                return serviceName.length > 15 ? serviceName.substring(0, 15) + '...' : serviceName;
+                              })()}
                             </div>
                             <div className="flex items-center space-x-1">
-                              {/* Quick edit button */}
-                              {onEventEdit && (
-                                <button
-                                  className="opacity-0 group-hover/event:opacity-100 transition-opacity text-blue-600 hover:text-blue-800 text-xs"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const eventData = {
-                                      id: service.id,
-                                      type: 'event' as const,
-                                      title: service.title || service.service,
-                                      description: service.notes,
-                                      startDateTime: service.scheduledDate,
-                                      duration: service.duration || 60,
-                                      priority: service.priority as any,
-                                      clientName: service.clientName,
-                                      notes: service.notes,
-                                      createdAt: new Date().toISOString(),
-                                      updatedAt: new Date().toISOString()
-                                    };
-                                    onEventEdit(eventData);
-                                  }}
-                                  title="Edit event (or double-click)"
-                                >
-                                  ✏️
-                                </button>
+                              {/* Options dropdown menu */}
+                              {(onEventEdit || onEventDelete || onEventStatusChange) && (
+                                <DropdownMenu
+                                  trigger={
+                                    <button
+                                      className="p-0.5 text-tactical-grey-500 hover:text-tactical-grey-700 opacity-0 group-hover/event:opacity-100 transition-opacity"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreVertical className="h-3 w-3" />
+                                    </button>
+                                  }
+                                  items={[
+                                    ...(onEventEdit ? [{
+                                      label: 'Edit',
+                                      onClick: () => {
+                                        const eventData = {
+                                          id: service.id,
+                                          type: 'event' as const,
+                                          title: safeString(service.title || service.service, 'Event'),
+                                          description: service.notes,
+                                          startDateTime: service.scheduledDate,
+                                          duration: service.duration || 60,
+                                          priority: service.priority as any,
+                                          clientName: safeString(service.clientName, 'Client'),
+                                          notes: service.notes,
+                                          createdAt: new Date().toISOString(),
+                                          updatedAt: new Date().toISOString()
+                                        };
+                                        onEventEdit(eventData);
+                                      },
+                                      icon: <Edit className="h-3 w-3" />
+                                    }] : []),
+                                    ...(onEventStatusChange ? [{
+                                      label: service.status === 'completed' ? 'Mark Pending' : 'Mark Done',
+                                      onClick: () => onEventStatusChange(service.id, service.status === 'completed' ? 'pending' : 'completed'),
+                                      icon: <CheckCircle className="h-3 w-3" />
+                                    }] : []),
+                                    ...(onEventDelete ? [{
+                                      label: 'Delete',
+                                      onClick: () => onEventDelete(service.id),
+                                      icon: <Trash2 className="h-3 w-3" />,
+                                      variant: 'destructive' as const
+                                    }] : [])
+                                  ]}
+                                  align="right"
+                                />
                               )}
                               <div className={`w-2 h-2 rounded-full ${
-                                service.status === 'completed' ? 'bg-green-600' :
-                                service.status === 'in_progress' ? 'bg-gold' :
-                                service.status === 'cancelled' ? 'bg-red-600' :
+                                safeString(service.status, 'scheduled') === 'completed' ? 'bg-green-600' :
+                                safeString(service.status, 'scheduled') === 'in_progress' ? 'bg-tactical-gold' :
+                                safeString(service.status, 'scheduled') === 'cancelled' ? 'bg-red-600' :
                                 'bg-medium-grey'
-                              }`} title={service.status} />
+                              }`} title={safeString(service.status, 'scheduled')} />
                             </div>
                           </div>
                           <div className="text-xs opacity-75 truncate mt-0.5">
-                            {service.clientName.length > 12 ? service.clientName.substring(0, 12) + '...' : service.clientName}
+                            {(() => {
+                              const clientName = safeString(service.clientName, 'Client');
+                              return clientName.length > 12 ? clientName.substring(0, 12) + '...' : clientName;
+                            })()}
                           </div>
                           <div className="text-xs opacity-60 flex items-center justify-between mt-0.5">
-                            <span>{format(new Date(service.scheduledDate), 'HH:mm')}</span>
+                            <span>{safeFormatDate(service.scheduledDate, 'HH:mm')}</span>
                             {service.duration && (
                               <span className="text-xs">{service.duration}min</span>
                             )}
@@ -425,11 +466,13 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     
                     {dayServices.length > 3 && (
                       <div 
-                        className="text-xs text-center py-1 bg-gray-100 rounded cursor-pointer hover:bg-gray-200 transition-colors"
+                        className="text-xs text-center py-1 bg-tactical-grey-200 rounded cursor-pointer hover:bg-tactical-grey-300 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Show all events for this day in a modal or expanded view
-                          console.log('Show all events for', format(day, 'yyyy-MM-dd'));
+                          // Navigate to daily view for this date
+                          if (onDayClick) {
+                            onDayClick(day);
+                          }
                         }}
                         title={`View all ${dayServices.length} events`}
                       >
@@ -453,15 +496,15 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
       {/* Upcoming Events */}
       <Card>
-        <CardHeader className="bg-off-white border-b border-light-grey">
+        <CardHeader className="bg-hud-background-secondary border-b border-hud-border">
           <div className="flex items-center justify-between">
-            <h4 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+            <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
               Upcoming Events
             </h4>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => syncWithGoogleCalendar()}
-                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded font-medium"
+                className="px-3 py-1 bg-tactical-gold hover:bg-tactical-gold-dark text-white text-sm rounded font-medium"
                 title="Sync with Google Calendar"
               >
                 🔄 Sync
@@ -482,19 +525,19 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               {getUpcomingEvents().map(event => (
                 <div 
                   key={event.id} 
-                  className="p-4 border border-light-grey rounded bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="p-4 border border-hud-border rounded bg-white cursor-pointer hover:bg-tactical-grey-100 transition-colors"
                   onClick={() => setViewingSchedule(event)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h5 className="font-bold text-dark-grey">{event.title || event.service}</h5>
-                      <p className="text-sm text-gray-600">
-                        {format(new Date(event.scheduledDate), 'EEEE, MMM d')} at {format(new Date(event.scheduledDate), 'h:mm a')}
+                      <h5 className="font-bold text-hud-text-primary">{event.title || event.service}</h5>
+                      <p className="text-sm text-tactical-grey-500">
+                        {safeFormatDate(event.scheduledDate, 'EEEE, MMM d')} at {safeFormatDate(event.scheduledDate, 'h:mm a')}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       {event.source === 'google' && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        <span className="text-xs bg-tactical-gold-muted text-tactical-brown-dark px-2 py-1 rounded">
                           Google
                         </span>
                       )}
@@ -512,7 +555,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                               e.stopPropagation();
                               handleEditSchedule(event);
                             }}
-                            className="p-1 text-blue-600 hover:text-blue-800"
+                            className="p-1 text-tactical-gold hover:text-tactical-brown-dark"
                             title="Edit schedule"
                           >
                             ✏️
@@ -555,7 +598,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               </p>
               <button
                 onClick={() => syncWithGoogleCalendar()}
-                className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded"
+                className="mt-3 px-4 py-2 bg-tactical-gold hover:bg-tactical-gold-dark text-white text-sm rounded"
               >
                 Sync with Google Calendar
               </button>
@@ -568,7 +611,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       {editingSchedule && enableEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <h3 className="text-lg font-medium text-tactical-grey-800 mb-4">
               Edit Scheduled Service
             </h3>
             
@@ -590,40 +633,40 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Service Type
                 </label>
                 <input
                   type="text"
                   name="service"
                   defaultValue={editingSchedule.service}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   required
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Date
                   </label>
                   <input
                     type="date"
                     name="date"
                     defaultValue={editingSchedule.scheduledDate.split('T')[0]}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Time
                   </label>
                   <input
                     type="time"
                     name="time"
                     defaultValue={editingSchedule.scheduledDate.split('T')[1]?.substring(0, 5) || '09:00'}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                     required
                   />
                 </div>
@@ -631,13 +674,13 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Priority
                   </label>
                   <select
                     name="priority"
                     defaultValue={editingSchedule.priority || 'medium'}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -645,7 +688,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Duration (minutes)
                   </label>
                   <input
@@ -655,19 +698,19 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     min="15"
                     max="480"
                     step="15"
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Recurrence
                 </label>
                 <select
                   name="recurrence"
                   defaultValue={editingSchedule.recurrence || 'NONE'}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                 >
                   <option value="NONE">No Recurrence</option>
                   <option value="DAILY">Daily</option>
@@ -680,14 +723,14 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Notes
                 </label>
                 <textarea
                   name="notes"
                   defaultValue={editingSchedule.notes || ''}
                   rows={3}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                 />
               </div>
               
@@ -695,13 +738,13 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 <button
                   type="button"
                   onClick={() => setEditingSchedule(null)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+                  className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded hover:bg-tactical-grey-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="px-4 py-2 bg-tactical-gold text-white rounded hover:bg-tactical-gold-dark"
                 >
                   Save Changes
                 </button>
@@ -716,32 +759,32 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-lg font-medium text-tactical-grey-800">
                 Schedule Details
               </h3>
               <button
                 onClick={() => setViewingSchedule(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-tactical-grey-500"
               >
                 ✕
               </button>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-bold text-gray-900 mb-2">{viewingSchedule.service}</h4>
-                <div className="text-sm text-gray-600 space-y-2">
+              <div className="bg-tactical-grey-100 p-4 rounded-lg">
+                <h4 className="font-bold text-tactical-grey-800 mb-2">{viewingSchedule.service}</h4>
+                <div className="text-sm text-tactical-grey-500 space-y-2">
                   <div className="flex items-center space-x-2">
                     <User className="h-4 w-4" />
                     <span>Client: {viewingSchedule.clientName}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span>{format(new Date(viewingSchedule.scheduledDate), 'EEEE, MMMM do, yyyy')}</span>
+                    <span>{safeFormatDate(viewingSchedule.scheduledDate, 'EEEE, MMMM do, yyyy')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span>{format(new Date(viewingSchedule.scheduledDate), 'h:mm a')}</span>
+                    <span>{safeFormatDate(viewingSchedule.scheduledDate, 'h:mm a')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="w-4 h-4 text-center">⏱</span>
@@ -762,9 +805,9 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     </Badge>
                   </div>
                   {viewingSchedule.notes && (
-                    <div className="mt-3 p-3 bg-blue-50 rounded">
-                      <div className="font-medium text-blue-900 mb-1">Notes:</div>
-                      <div className="text-blue-800">{viewingSchedule.notes}</div>
+                    <div className="mt-3 p-3 bg-hud-background-secondary border border-hud-border rounded">
+                      <div className="font-medium text-hud-text-primary mb-1">Notes:</div>
+                      <div className="text-medium-grey">{viewingSchedule.notes}</div>
                     </div>
                   )}
                 </div>
@@ -773,7 +816,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   onClick={() => setViewingSchedule(null)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+                  className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded hover:bg-tactical-grey-100"
                 >
                   Close
                 </button>
@@ -784,7 +827,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                         setEditingSchedule(viewingSchedule);
                         setViewingSchedule(null);
                       }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      className="px-4 py-2 bg-tactical-gold text-white rounded hover:bg-tactical-gold-dark"
                     >
                       Edit Schedule
                     </button>

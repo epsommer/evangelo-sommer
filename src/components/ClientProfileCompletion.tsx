@@ -83,7 +83,7 @@ export default function ClientProfileCompletion({
                 disabled={isUpdating}
                 className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md transition-colors ${
                   isUpdating
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    ? "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
                     : "bg-yellow-600 text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                 }`}
               >

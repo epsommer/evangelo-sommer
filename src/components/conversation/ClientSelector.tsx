@@ -28,14 +28,14 @@ export default function ClientSelector({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+        <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
           Search Clients
         </label>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white font-space-grotesk"
+          className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
           placeholder="Search by name, email, or company"
         />
       </div>
@@ -47,25 +47,25 @@ export default function ClientSelector({
             onClick={() => onClientSelect(client.id)}
             className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
               selectedClientId === client.id
-                ? 'border-gold bg-gold bg-opacity-10'
-                : 'border-light-grey bg-white hover:border-medium-grey'
+                ? 'border-hud-border-accent bg-tactical-gold bg-opacity-10'
+                : 'border-hud-border bg-white hover:border-medium-grey'
             }`}
           >
-            <h4 className="font-bold text-dark-grey font-space-grotesk">
+            <h4 className="font-bold text-hud-text-primary font-primary">
               {client.name}
             </h4>
             {client.email && (
-              <p className="text-sm text-medium-grey font-space-grotesk">
+              <p className="text-sm text-medium-grey font-primary">
                 {client.email}
               </p>
             )}
             {client.phone && (
-              <p className="text-sm text-medium-grey font-space-grotesk">
+              <p className="text-sm text-medium-grey font-primary">
                 {client.phone}
               </p>
             )}
             {client.company && (
-              <p className="text-sm text-medium-grey font-space-grotesk">
+              <p className="text-sm text-medium-grey font-primary">
                 {client.company}
               </p>
             )}
@@ -77,7 +77,7 @@ export default function ClientSelector({
         <div className="text-center">
           <button
             onClick={onNewClient}
-            className="px-4 py-2 border-2 border-medium-grey text-medium-grey hover:border-dark-grey hover:text-dark-grey font-space-grotesk font-bold uppercase tracking-wide transition-colors"
+            className="px-4 py-2 border-2 border-medium-grey text-medium-grey hover:border-dark-grey hover:text-hud-text-primary font-primary font-bold uppercase tracking-wide transition-colors"
           >
             + Create New Client
           </button>
@@ -85,7 +85,7 @@ export default function ClientSelector({
       )}
 
       {filteredClients.length === 0 && searchTerm && (
-        <div className="text-center text-medium-grey font-space-grotesk">
+        <div className="text-center text-medium-grey font-primary">
           No clients found matching "{searchTerm}"
         </div>
       )}

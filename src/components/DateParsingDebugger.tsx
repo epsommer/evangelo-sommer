@@ -34,7 +34,7 @@ export default function DateParsingDebugger({
       <div className="mb-4">
         <button
           onClick={() => setShowDebug(true)}
-          className="text-xs text-blue-600 hover:text-blue-800 underline"
+          className="text-xs text-tactical-gold hover:text-tactical-brown-dark underline"
         >
           🔍 Debug Date Parsing Issues
         </button>
@@ -46,26 +46,26 @@ export default function DateParsingDebugger({
   const timestampColumn = mapping?.timestamp || "Date";
 
   return (
-    <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+    <div className="mt-4 p-4 bg-tactical-grey-100 border border-tactical-grey-300 rounded-lg">
       <div className="flex justify-between items-center mb-3">
-        <h4 className="font-medium text-gray-800">
+        <h4 className="font-medium text-tactical-grey-700">
           Date Parsing Debug Console
         </h4>
         <button
           onClick={() => setShowDebug(false)}
-          className="text-gray-500 hover:text-gray-700"
+          className="text-tactical-grey-500 hover:text-tactical-grey-600"
         >
           ✕
         </button>
       </div>
 
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
-        <div className="font-medium text-blue-800 mb-1">Debug Information</div>
-        <div className="text-blue-700">
+      <div className="mb-4 p-3 bg-tactical-gold-muted border border-tactical-grey-300 rounded text-sm">
+        <div className="font-medium text-tactical-brown-dark mb-1">Debug Information</div>
+        <div className="text-tactical-brown-dark">
           <div>Total rows: {originalData.length}</div>
           <div>
             Timestamp column:{" "}
-            <code className="bg-blue-100 px-1 rounded">{timestampColumn}</code>
+            <code className="bg-tactical-gold-muted px-1 rounded">{timestampColumn}</code>
           </div>
           <div>Sample showing first {sampleData.length} rows</div>
         </div>
@@ -81,15 +81,15 @@ export default function DateParsingDebugger({
           return (
             <div
               key={index}
-              className="border border-gray-300 rounded bg-white"
+              className="border border-tactical-grey-400 rounded bg-white"
             >
               <div
-                className="p-3 cursor-pointer hover:bg-gray-50"
+                className="p-3 cursor-pointer hover:bg-tactical-grey-100"
                 onClick={() => setExpandedRow(isExpanded ? null : index)}
               >
                 <div className="flex items-center justify-between">
                   <div className="font-mono text-xs">
-                    <span className="text-gray-500">Row {index + 1}:</span>
+                    <span className="text-tactical-grey-500">Row {index + 1}:</span>
                     <span
                       className={`ml-2 px-2 py-1 rounded ${
                         parsedDate
@@ -100,7 +100,7 @@ export default function DateParsingDebugger({
                       {parsedDate ? "✅ SUCCESS" : "❌ FAILED"}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-tactical-grey-500">
                     {isExpanded ? "▼" : "▶"} Click to{" "}
                     {isExpanded ? "collapse" : "expand"}
                   </div>
@@ -108,8 +108,8 @@ export default function DateParsingDebugger({
 
                 <div className="mt-2 text-xs">
                   <div className="truncate">
-                    <span className="text-gray-600">Raw:</span>
-                    <code className="ml-1 bg-gray-100 px-1 rounded">
+                    <span className="text-tactical-grey-500">Raw:</span>
+                    <code className="ml-1 bg-tactical-grey-200 px-1 rounded">
                       {JSON.stringify(rawDate).length > 80
                         ? JSON.stringify(rawDate).substring(0, 80) + "..."
                         : JSON.stringify(rawDate)}
@@ -117,7 +117,7 @@ export default function DateParsingDebugger({
                   </div>
                   {parsedDate && (
                     <div className="text-green-600 mt-1">
-                      <span className="text-gray-600">Parsed:</span>
+                      <span className="text-tactical-grey-500">Parsed:</span>
                       <span className="ml-1">
                         {DateParser.formatForDisplay(parsedDate)}
                       </span>
@@ -127,28 +127,28 @@ export default function DateParsingDebugger({
               </div>
 
               {isExpanded && (
-                <div className="border-t border-gray-200 p-3 bg-gray-50">
+                <div className="border-t border-tactical-grey-300 p-3 bg-tactical-grey-100">
                   <div className="text-xs space-y-2">
                     <div>
-                      <div className="font-medium text-gray-700 mb-1">
+                      <div className="font-medium text-tactical-grey-600 mb-1">
                         Detailed Analysis:
                       </div>
                       <div className="ml-2 space-y-1">
                         <div>
-                          <span className="text-gray-600">Raw Value:</span>
-                          <code className="ml-1 bg-gray-200 px-1 rounded break-all">
+                          <span className="text-tactical-grey-500">Raw Value:</span>
+                          <code className="ml-1 bg-tactical-grey-300 px-1 rounded break-all">
                             {JSON.stringify(rawDate)}
                           </code>
                         </div>
                         <div>
-                          <span className="text-gray-600">Type:</span>
-                          <code className="ml-1 bg-gray-200 px-1 rounded">
+                          <span className="text-tactical-grey-500">Type:</span>
+                          <code className="ml-1 bg-tactical-grey-300 px-1 rounded">
                             {typeof rawDate}
                           </code>
                         </div>
                         <div>
-                          <span className="text-gray-600">Length:</span>
-                          <code className="ml-1 bg-gray-200 px-1 rounded">
+                          <span className="text-tactical-grey-500">Length:</span>
+                          <code className="ml-1 bg-tactical-grey-300 px-1 rounded">
                             {rawDate?.toString()?.length || 0} chars
                           </code>
                         </div>
@@ -206,14 +206,14 @@ export default function DateParsingDebugger({
                         )}
 
                         {/* Additional row context */}
-                        <div className="pt-2 border-t border-gray-300">
-                          <div className="text-gray-600 font-medium mb-1">
+                        <div className="pt-2 border-t border-tactical-grey-400">
+                          <div className="text-tactical-grey-500 font-medium mb-1">
                             Row Context:
                           </div>
                           <div className="ml-2 space-y-1">
                             {mapping?.messageContent && (
                               <div>
-                                <span className="text-gray-500">Message:</span>
+                                <span className="text-tactical-grey-500">Message:</span>
                                 <span className="ml-1 text-xs">
                                   {(() => {
                                     const content = getRowValue(
@@ -229,7 +229,7 @@ export default function DateParsingDebugger({
                             )}
                             {mapping?.messageType && (
                               <div>
-                                <span className="text-gray-500">Type:</span>
+                                <span className="text-tactical-grey-500">Type:</span>
                                 <span className="ml-1">
                                   {getRowValue(row, mapping.messageType)}
                                 </span>
@@ -237,7 +237,7 @@ export default function DateParsingDebugger({
                             )}
                             {mapping?.sender && (
                               <div>
-                                <span className="text-gray-500">Sender:</span>
+                                <span className="text-tactical-grey-500">Sender:</span>
                                 <span className="ml-1">
                                   {getRowValue(row, mapping.sender)}
                                 </span>
@@ -289,7 +289,7 @@ export default function DateParsingDebugger({
         </div>
       </div>
 
-      <div className="mt-3 text-xs text-gray-500">
+      <div className="mt-3 text-xs text-tactical-grey-500">
         💡 <strong>Tip:</strong> If you see many failed parses, your date format
         might not be recognized. The most common SMS export formats are
         supported, but custom formats may need manual correction.

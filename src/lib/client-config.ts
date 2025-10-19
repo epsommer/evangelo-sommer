@@ -14,50 +14,118 @@ export class ClientManager {
   private documentsKey = "crm-documents";
 
   // ===== CLIENT METHODS =====
-  getClients(): Client[] {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
-  }
-
-  getClient(id: string): Client | null {
-    const clients = this.getClients();
-    return clients.find((client) => client.id === id) || null;
-  }
-
-  saveClient(client: Client): void {
-    const clients = this.getClients();
-    const existingIndex = clients.findIndex((c) => c.id === client.id);
-
-    if (existingIndex >= 0) {
-      clients[existingIndex] = {
-        ...client,
-        updatedAt: new Date().toISOString(),
-      };
-    } else {
-      clients.push({
-        ...client,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+  async getClients(): Promise<Client[]> {
+    try {
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+      const response = await fetch(`${baseUrl}/api/clients`);
+      if (!response.ok) {
+        console.error('Failed to fetch clients:', response.status);
+        return [];
+      }
+      const result = await response.json();
+      return result.success ? result.data : [];
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      return [];
     }
-
-    localStorage.setItem(this.storageKey, JSON.stringify(clients));
   }
 
-  deleteClient(id: string): void {
-    const clients = this.getClients().filter((client) => client.id !== id);
-    localStorage.setItem(this.storageKey, JSON.stringify(clients));
-
-    // Note: Related conversations and documents should be deleted via database cascade
-    this.deleteClientDocuments(id);
+  async getClient(id: string): Promise<Client | null> {
+    try {
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+      const response = await fetch(`${baseUrl}/api/clients/${id}`);
+      if (!response.ok) {
+        console.error(`Failed to fetch client ${id}:`, response.status);
+        return null;
+      }
+      const result = await response.json();
+      return result.success ? result.data : null;
+    } catch (error) {
+      console.error(`Error fetching client ${id}:`, error);
+      return null;
+    }
   }
 
-  getClientsByService(serviceId: string): Client[] {
-    return this.getClients().filter((client) => 
-      client.serviceId === serviceId || 
-      client.serviceTypes.includes(serviceId)
-    );
+  async saveClient(client: Client): Promise<Client | null> {
+    try {
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+
+      // Try to create new client first (most common case)
+      const createResponse = await fetch(`${baseUrl}/api/clients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(client)
+      });
+
+      if (createResponse.ok) {
+        const result = await createResponse.json();
+        return result.success ? result.data : null;
+      }
+
+      // If creation failed with 409 (conflict), try updating instead
+      if (createResponse.status === 409) {
+        const updateResponse = await fetch(`${baseUrl}/api/clients/${client.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(client)
+        });
+
+        if (!updateResponse.ok) {
+          console.error(`Failed to update client ${client.id}:`, updateResponse.status);
+          return null;
+        }
+
+        const result = await updateResponse.json();
+        return result.success ? result.data : null;
+      }
+
+      // Other error occurred
+      console.error('Failed to create client:', createResponse.status);
+      const errorText = await createResponse.text();
+      console.error('Error response:', errorText);
+      return null;
+
+    } catch (error) {
+      console.error('Error saving client:', error);
+      return null;
+    }
+  }
+
+  async deleteClient(id: string): Promise<boolean> {
+    try {
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+      const response = await fetch(`${baseUrl}/api/clients/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        console.error(`Failed to delete client ${id}:`, response.status);
+        return false;
+      }
+      const result = await response.json();
+      
+      // Also delete client documents
+      if (result.success) {
+        await this.deleteClientDocuments(id);
+      }
+      
+      return result.success;
+    } catch (error) {
+      console.error(`Error deleting client ${id}:`, error);
+      return false;
+    }
+  }
+
+  async getClientsByService(serviceId: string): Promise<Client[]> {
+    try {
+      const clients = await this.getClients();
+      return clients.filter((client) => 
+        client.serviceId === serviceId || 
+        client.serviceTypes?.includes(serviceId)
+      );
+    } catch (error) {
+      console.error('Error fetching clients by service:', error);
+      return [];
+    }
   }
 
   searchClients(query: string, serviceId?: string): Client[] {

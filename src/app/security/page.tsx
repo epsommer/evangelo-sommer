@@ -30,7 +30,7 @@ const SecurityPage = () => {
       <CRMLayout>
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-gold border-t-transparent animate-spin mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-4 border-hud-border-accent border-t-transparent animate-spin mx-auto mb-4"></div>
             <p className="text-medium-grey font-space-grotesk uppercase tracking-wide">LOADING SECURITY...</p>
           </div>
         </div>
@@ -50,7 +50,7 @@ const SecurityPage = () => {
       <CRMLayout>
         <div className="text-center py-12">
           <Shield className="h-16 w-16 mx-auto mb-4 text-gold opacity-50" />
-          <h3 className="text-xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase">
+          <h3 className="text-xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase">
             ACCESS DENIED
           </h3>
           <p className="text-medium-grey font-space-grotesk">
@@ -71,8 +71,8 @@ const SecurityPage = () => {
     <CRMLayout>
       <div className="p-6 space-y-6">
         {/* Security Header */}
-        <div className="bg-off-white p-6 border-b-2 border-gold">
-          <h1 className="text-3xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+        <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
+          <h1 className="text-3xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
             SECURITY CENTER
           </h1>
           <p className="text-medium-grey font-space-grotesk uppercase tracking-wider text-sm">
@@ -81,8 +81,8 @@ const SecurityPage = () => {
         </div>
 
         {/* Security Navigation Tabs */}
-        <div className="bg-white border-2 border-light-grey">
-          <div className="flex border-b border-light-grey">
+        <div className="bg-white border-2 border-hud-border">
+          <div className="flex border-b border-hud-border">
             {tabs.map(tab => {
               const IconComponent = tab.icon
               return (
@@ -90,8 +90,8 @@ const SecurityPage = () => {
                   key={tab.id}
                   className={`flex items-center space-x-3 px-6 py-4 text-left font-medium uppercase tracking-wide text-sm font-space-grotesk transition-all duration-200 ${
                     activeTab === tab.id 
-                      ? 'bg-gold text-dark-grey font-semibold border-b-2 border-dark-grey' 
-                      : 'text-medium-grey hover:bg-light-grey hover:text-dark-grey'
+                      ? 'bg-tactical-gold text-hud-text-primary font-semibold border-b-2 border-dark-grey' 
+                      : 'text-medium-grey hover:bg-light-grey hover:text-hud-text-primary'
                   }`}
                   onClick={() => setActiveTab(tab.id)}
                 >
@@ -140,7 +140,7 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
     return (
       <div className="text-center py-12">
         <Settings className="h-16 w-16 mx-auto mb-4 text-gold opacity-50" />
-        <h3 className="text-xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase">
+        <h3 className="text-xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase">
           CONFIGURATION ACCESS RESTRICTED
         </h3>
         <p className="text-medium-grey font-space-grotesk">
@@ -154,9 +154,9 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Authentication Settings */}
-        <Card className="bg-white border-2 border-light-grey">
-          <CardHeader className="bg-off-white border-b border-light-grey p-6">
-            <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+        <Card className="bg-white border-2 border-hud-border">
+          <CardHeader className="bg-hud-background-secondary border-b border-hud-border p-6">
+            <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk">
               AUTHENTICATION SETTINGS
             </h3>
           </CardHeader>
@@ -169,7 +169,7 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 type="number"
                 value={settings.maxFailedAttempts}
                 onChange={(e) => setSettings({...settings, maxFailedAttempts: parseInt(e.target.value)})}
-                className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk"
+                className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-space-grotesk"
                 min="1"
                 max="10"
               />
@@ -183,7 +183,7 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 type="number"
                 value={settings.lockoutDuration}
                 onChange={(e) => setSettings({...settings, lockoutDuration: parseInt(e.target.value)})}
-                className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk"
+                className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-space-grotesk"
                 min="5"
                 max="1440"
               />
@@ -197,15 +197,15 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 type="number"
                 value={settings.sessionTimeout}
                 onChange={(e) => setSettings({...settings, sessionTimeout: parseInt(e.target.value)})}
-                className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk"
+                className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-space-grotesk"
                 min="5"
                 max="480"
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-off-white">
+            <div className="flex items-center justify-between p-4 bg-hud-background-secondary">
               <div>
-                <span className="font-bold text-dark-grey font-space-grotesk">Require Two-Factor Authentication</span>
+                <span className="font-bold text-hud-text-primary font-space-grotesk">Require Two-Factor Authentication</span>
                 <div className="text-sm text-medium-grey font-space-grotesk">
                   Force all users to enable 2FA
                 </div>
@@ -215,7 +215,7 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
                   settings.requireTwoFactor
                     ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-400 text-white hover:bg-gray-500'
+                    : 'bg-gray-400 text-white hover:bg-tactical-grey-1000'
                 }`}
               >
                 {settings.requireTwoFactor ? 'ENABLED' : 'DISABLED'}
@@ -225,9 +225,9 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
         </Card>
 
         {/* Security Policies */}
-        <Card className="bg-white border-2 border-light-grey">
-          <CardHeader className="bg-off-white border-b border-light-grey p-6">
-            <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+        <Card className="bg-white border-2 border-hud-border">
+          <CardHeader className="bg-hud-background-secondary border-b border-hud-border p-6">
+            <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk">
               SECURITY POLICIES
             </h3>
           </CardHeader>
@@ -240,15 +240,15 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 type="number"
                 value={settings.passwordMinLength}
                 onChange={(e) => setSettings({...settings, passwordMinLength: parseInt(e.target.value)})}
-                className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk"
+                className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-space-grotesk"
                 min="8"
                 max="32"
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-off-white">
+            <div className="flex items-center justify-between p-4 bg-hud-background-secondary">
               <div>
-                <span className="font-bold text-dark-grey font-space-grotesk">Password Complexity</span>
+                <span className="font-bold text-hud-text-primary font-space-grotesk">Password Complexity</span>
                 <div className="text-sm text-medium-grey font-space-grotesk">
                   Require uppercase, lowercase, numbers, and symbols
                 </div>
@@ -258,16 +258,16 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
                   settings.passwordComplexity
                     ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-400 text-white hover:bg-gray-500'
+                    : 'bg-gray-400 text-white hover:bg-tactical-grey-1000'
                 }`}
               >
                 {settings.passwordComplexity ? 'ENABLED' : 'DISABLED'}
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-off-white">
+            <div className="flex items-center justify-between p-4 bg-hud-background-secondary">
               <div>
-                <span className="font-bold text-dark-grey font-space-grotesk">Strict IP Validation</span>
+                <span className="font-bold text-hud-text-primary font-space-grotesk">Strict IP Validation</span>
                 <div className="text-sm text-medium-grey font-space-grotesk">
                   Invalidate sessions when IP address changes
                 </div>
@@ -277,16 +277,16 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
                   settings.strictIPValidation
                     ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-400 text-white hover:bg-gray-500'
+                    : 'bg-gray-400 text-white hover:bg-tactical-grey-1000'
                 }`}
               >
                 {settings.strictIPValidation ? 'ENABLED' : 'DISABLED'}
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-off-white">
+            <div className="flex items-center justify-between p-4 bg-hud-background-secondary">
               <div>
-                <span className="font-bold text-dark-grey font-space-grotesk">Audit Logging</span>
+                <span className="font-bold text-hud-text-primary font-space-grotesk">Audit Logging</span>
                 <div className="text-sm text-medium-grey font-space-grotesk">
                   Log all security events and user actions
                 </div>
@@ -296,7 +296,7 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
                   settings.enableAuditLogging
                     ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-400 text-white hover:bg-gray-500'
+                    : 'bg-gray-400 text-white hover:bg-tactical-grey-1000'
                 }`}
               >
                 {settings.enableAuditLogging ? 'ENABLED' : 'DISABLED'}
@@ -308,7 +308,7 @@ const SecuritySettingsPanel: React.FC<{ userRole: UserRole }> = ({ userRole }) =
 
       {/* Save Settings Button */}
       <div className="flex justify-end">
-        <button className="bg-gold text-dark-grey px-8 py-3 font-bold uppercase tracking-wide hover:bg-gold-dark font-space-grotesk transition-colors">
+        <button className="bg-tactical-gold text-hud-text-primary px-8 py-3 font-bold uppercase tracking-wide hover:bg-tactical-gold-dark font-space-grotesk transition-colors">
           SAVE CONFIGURATION
         </button>
       </div>

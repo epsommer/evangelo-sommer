@@ -30,6 +30,13 @@ export default function CalendarIntegrationManager({
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
   const [activeTab, setActiveTab] = useState<'integrations' | 'recurring'>('integrations');
 
+  // Load existing integrations on mount
+  useEffect(() => {
+    const existingIntegrations = calendarService.getAllIntegrations();
+    setIntegrations(existingIntegrations);
+    onIntegrationChange?.(existingIntegrations);
+  }, [onIntegrationChange]);
+
   // Handle OAuth callback from URL params
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -111,10 +118,17 @@ export default function CalendarIntegrationManager({
           ...e,
           metadata: { ...e.metadata, integrationId }
         }));
-        const merged = [...filtered, ...newEvents];
-        onEventsSync?.(merged);
-        return merged;
+        return [...filtered, ...newEvents];
       });
+
+      // Call onEventsSync after state update
+      const filtered = allEvents.filter(e => !e.metadata?.integrationId || e.metadata.integrationId !== integrationId);
+      const newEvents = events.map(e => ({
+        ...e,
+        metadata: { ...e.metadata, integrationId }
+      }));
+      const merged = [...filtered, ...newEvents];
+      onEventsSync?.(merged);
 
       setSyncStatus((prev) => ({ ...prev, [integrationId]: "success" }));
 
@@ -177,8 +191,8 @@ export default function CalendarIntegrationManager({
               onClick={() => setActiveTab('integrations')}
               className={`text-lg font-semibold pb-2 border-b-2 transition-colors ${
                 activeTab === 'integrations'
-                  ? 'text-gold border-gold'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  ? 'text-gold border-hud-border-accent'
+                  : 'text-tactical-grey-500 border-transparent hover:text-tactical-grey-600'
               }`}
             >
               Calendar Integration
@@ -187,23 +201,35 @@ export default function CalendarIntegrationManager({
               onClick={() => setActiveTab('recurring')}
               className={`text-lg font-semibold pb-2 border-b-2 transition-colors ${
                 activeTab === 'recurring'
-                  ? 'text-gold border-gold'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  ? 'text-gold border-hud-border-accent'
+                  : 'text-tactical-grey-500 border-transparent hover:text-tactical-grey-600'
               }`}
             >
               Recurring Events
             </button>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-tactical-grey-500">
             {activeTab === 'integrations' 
               ? 'Connect your calendar services to sync events and appointments'
               : 'Manage recurring appointments and automatic event generation'}
           </p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-tactical-grey-500">
             {activeTab === 'integrations' && (
-              `${integrations.filter((i) => i.isActive).length} of ${providers.length} connected`
+              <>
+                <div>{`${integrations.filter((i) => i.isActive).length} of ${providers.length} connected`}</div>
+                <button
+                  onClick={() => {
+                    calendarService.clearAllIntegrations();
+                    setIntegrations([]);
+                    onIntegrationChange?.([]);
+                  }}
+                  className="text-xs text-red-500 hover:text-red-700 mt-1"
+                >
+                  Clear All (Debug)
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -220,14 +246,14 @@ export default function CalendarIntegrationManager({
 
       {/* Integration Status */}
       {integrations.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm font-medium text-blue-900">
+            <span className="text-sm font-medium text-tactical-brown-dark">
               Calendar integrations are active
             </span>
           </div>
-          <div className="text-sm text-blue-800">
+          <div className="text-sm text-tactical-brown-dark">
             Last sync:{" "}
             {integrations.find((i) => i.lastSyncAt)?.lastSyncAt
               ? new Date(
@@ -253,7 +279,7 @@ export default function CalendarIntegrationManager({
               className={`border-2 rounded-lg p-6 transition-all ${
                 isConnected
                   ? "border-green-200 bg-green-50"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-tactical-grey-300 hover:border-tactical-grey-400"
               }`}
             >
               <div className="flex items-start justify-between mb-4">
@@ -264,10 +290,10 @@ export default function CalendarIntegrationManager({
                     {provider.icon}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">
+                    <h3 className="font-medium text-tactical-grey-800">
                       {provider.name}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-tactical-grey-500">
                       {provider.description}
                     </p>
                   </div>
@@ -288,14 +314,14 @@ export default function CalendarIntegrationManager({
                   {/* Integration Details */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-500">Account</div>
-                      <div className="font-medium text-gray-900 truncate">
+                      <div className="text-tactical-grey-500">Account</div>
+                      <div className="font-medium text-tactical-grey-800 truncate">
                         {integration.accountId}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Sync Direction</div>
-                      <div className="font-medium text-gray-900 capitalize">
+                      <div className="text-tactical-grey-500">Sync Direction</div>
+                      <div className="font-medium text-tactical-grey-800 capitalize">
                         {integration.syncSettings.syncDirection.replace(
                           "-",
                           " ",
@@ -313,12 +339,12 @@ export default function CalendarIntegrationManager({
                       size="sm"
                       className={`flex-1 ${
                         currentSyncStatus === "syncing"
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ? "bg-tactical-grey-200 text-gray-400 cursor-not-allowed"
                           : currentSyncStatus === "success"
                             ? "bg-green-100 text-green-700 hover:bg-green-200 border-green-300"
                             : currentSyncStatus === "error"
                               ? "bg-red-100 text-red-700 hover:bg-red-200 border-red-300"
-                              : "border-blue-300 text-blue-700 hover:bg-blue-50"
+                              : "border-tactical-grey-400 text-tactical-brown-dark hover:bg-tactical-gold-muted"
                       }`}
                     >
                       {currentSyncStatus === "syncing" && "🔄 Syncing..."}
@@ -344,10 +370,10 @@ export default function CalendarIntegrationManager({
                   disabled={isConnecting === provider.id || !['google', 'notion'].includes(provider.id)}
                   className={`w-full ${
                     !['google', 'notion'].includes(provider.id)
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
                       : isConnecting === provider.id
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-gold text-dark-grey hover:bg-gold/90"
+                        ? "bg-tactical-grey-200 text-gray-400 cursor-not-allowed"
+                        : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold/90"
                   }`}
                 >
                   {isConnecting === provider.id
@@ -365,7 +391,7 @@ export default function CalendarIntegrationManager({
       {/* Events Summary */}
       {allEvents.length > 0 && (
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="font-medium text-gray-900 mb-4">
+          <h3 className="font-medium text-tactical-grey-800 mb-4">
             Synchronized Events ({allEvents.length})
           </h3>
           <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -379,7 +405,7 @@ export default function CalendarIntegrationManager({
               .map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-tactical-grey-100 rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="text-lg">
@@ -392,16 +418,16 @@ export default function CalendarIntegrationManager({
                             : "🔔"}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900 text-sm">
+                      <div className="font-medium text-tactical-grey-800 text-sm">
                         {event.title}
                       </div>
-                      <div className="text-gray-600 text-xs">
+                      <div className="text-tactical-grey-500 text-xs">
                         {new Date(event.startTime).toLocaleDateString()} •{" "}
                         {event.type}
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 capitalize">
+                  <div className="text-xs text-tactical-grey-500 capitalize">
                     {integrations.find(i => i.id === event.metadata?.integrationId)?.provider || 'local'}
                   </div>
                 </div>
@@ -411,7 +437,7 @@ export default function CalendarIntegrationManager({
       )}
 
       {/* Help Text */}
-      <div className="text-center text-sm text-gray-500">
+      <div className="text-center text-sm text-tactical-grey-500">
         <p>
           Currently supporting Google Calendar and Notion. More integrations coming soon!
         </p>

@@ -53,8 +53,8 @@ const OverviewContent = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-off-white p-6 border-b-2 border-gold">
-        <h1 className="text-3xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+      <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
+        <h1 className="text-3xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
           DASHBOARD OVERVIEW
         </h1>
         <p className="text-medium-grey font-space-grotesk uppercase tracking-wider text-sm">
@@ -103,9 +103,9 @@ const OverviewContent = () => {
 
         {/* Recent Activity */}
         <div className="lg:col-span-2">
-          <Card className="bg-white border-2 border-light-grey">
-            <CardHeader className="bg-off-white border-b border-light-grey p-6">
-              <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+          <Card className="bg-white border-2 border-hud-border">
+            <CardHeader className="bg-hud-background-secondary border-b border-hud-border p-6">
+              <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk">
                 RECENT ACTIVITY
               </h3>
             </CardHeader>
@@ -142,9 +142,9 @@ const OverviewContent = () => {
       </div>
 
       {/* Service Performance */}
-      <Card className="bg-white border-2 border-light-grey">
-        <CardHeader className="bg-off-white border-b border-light-grey p-6">
-          <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+      <Card className="bg-white border-2 border-hud-border">
+        <CardHeader className="bg-hud-background-secondary border-b border-hud-border p-6">
+          <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk">
             SERVICE LINE PERFORMANCE
           </h3>
         </CardHeader>
@@ -184,8 +184,8 @@ const OverviewContent = () => {
 const ClientsContent = () => {
   return (
     <div className="space-y-6">
-      <div className="bg-off-white p-6 border-b-2 border-gold">
-        <h1 className="text-3xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+      <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
+        <h1 className="text-3xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
           CLIENT MANAGEMENT
         </h1>
         <p className="text-medium-grey font-space-grotesk uppercase tracking-wider text-sm">
@@ -193,10 +193,10 @@ const ClientsContent = () => {
         </p>
       </div>
       
-      <Card className="bg-white border-2 border-light-grey">
+      <Card className="bg-white border-2 border-hud-border">
         <CardContent className="p-12 text-center">
           <Users className="h-16 w-16 mx-auto mb-4 text-gold opacity-50" />
-          <h3 className="text-xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase">
+          <h3 className="text-xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase">
             CLIENT MANAGEMENT
           </h3>
           <p className="text-medium-grey font-space-grotesk">
@@ -211,8 +211,8 @@ const ClientsContent = () => {
 const ConversationsContent = () => {
   return (
     <div className="space-y-6">
-      <div className="bg-off-white p-6 border-b-2 border-gold">
-        <h1 className="text-3xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+      <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
+        <h1 className="text-3xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
           CONVERSATIONS
         </h1>
         <p className="text-medium-grey font-space-grotesk uppercase tracking-wider text-sm">
@@ -220,10 +220,10 @@ const ConversationsContent = () => {
         </p>
       </div>
       
-      <Card className="bg-white border-2 border-light-grey">
+      <Card className="bg-white border-2 border-hud-border">
         <CardContent className="p-12 text-center">
           <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gold opacity-50" />
-          <h3 className="text-xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase">
+          <h3 className="text-xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase">
             CONVERSATIONS
           </h3>
           <p className="text-medium-grey font-space-grotesk">
@@ -253,22 +253,22 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, change, icon: Icon,
   }
 
   return (
-    <Card className="bg-white border-2 border-light-grey">
+    <Card className="bg-white border-2 border-hud-border">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-wider text-medium-grey font-space-grotesk mb-2">
               {title}
             </p>
-            <p className="text-2xl font-bold text-dark-grey font-space-grotesk">
+            <p className="text-2xl font-bold text-hud-text-primary font-space-grotesk">
               {value}
             </p>
             <p className={`text-sm font-medium font-space-grotesk ${getTrendColor()}`}>
               {change}
             </p>
           </div>
-          <div className="bg-gold p-3">
-            <Icon className="h-6 w-6 text-dark-grey" />
+          <div className="bg-tactical-gold p-3">
+            <Icon className="h-6 w-6 text-hud-text-primary" />
           </div>
         </div>
       </CardContent>
@@ -286,19 +286,19 @@ interface ActivityItemProps {
 const ActivityItem: React.FC<ActivityItemProps> = ({ title, description, time, type }) => {
   const getTypeColor = () => {
     switch (type) {
-      case 'appointment': return 'bg-gold'
+      case 'appointment': return 'bg-tactical-gold'
       case 'billing': return 'bg-green-600'
       case 'task': return 'bg-dark-grey'
-      case 'conversation': return 'bg-blue-600'
+      case 'conversation': return 'bg-tactical-gold'
       default: return 'bg-medium-grey'
     }
   }
 
   return (
-    <div className="flex items-start space-x-4 p-3 hover:bg-off-white transition-colors">
+    <div className="flex items-start space-x-4 p-3 hover:bg-hud-background-secondary transition-colors">
       <div className={`w-2 h-2 mt-2 ${getTypeColor()}`}></div>
       <div className="flex-1">
-        <h4 className="font-medium text-dark-grey font-space-grotesk">{title}</h4>
+        <h4 className="font-medium text-hud-text-primary font-space-grotesk">{title}</h4>
         <p className="text-sm text-medium-grey font-space-grotesk">{description}</p>
         <p className="text-xs text-medium-grey font-space-grotesk mt-1">{time}</p>
       </div>
@@ -322,7 +322,7 @@ const ServicePerformanceCard: React.FC<ServicePerformanceCardProps> = ({
   return (
     <div className="text-center">
       <div className={`w-4 h-4 ${color} mx-auto mb-3`}></div>
-      <h4 className="font-bold text-dark-grey font-space-grotesk uppercase text-sm mb-2">
+      <h4 className="font-bold text-hud-text-primary font-space-grotesk uppercase text-sm mb-2">
         {service}
       </h4>
       <div className="space-y-1">

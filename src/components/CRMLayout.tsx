@@ -13,17 +13,20 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
   const router = useRouter()
   const pathname = usePathname()
   const [conversationCount, setConversationCount] = useState(0)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const getCurrentPage = () => {
+    if (pathname === '/dashboard') return 'dashboard'
     if (pathname?.includes('/clients')) return 'clients'
+    if (pathname?.includes('/conversations')) return 'conversations'
+    if (pathname?.includes('/services-billing')) return 'services-billing'
     if (pathname?.includes('/time-manager')) return 'time-manager'
     if (pathname?.includes('/goals')) return 'goals'
-    if (pathname?.includes('/conversations')) return 'conversations'
     if (pathname?.includes('/services/woodgreen') || pathname?.includes('/services/landscaping')) return 'woodgreen'
     if (pathname?.includes('/services/whiteknight') || pathname?.includes('/services/snow-removal')) return 'whiteknight'
     if (pathname?.includes('/services/pupawalk') || pathname?.includes('/services/pet-services')) return 'pupawalk'
     if (pathname?.includes('/services/creative')) return 'creative'
-    return 'clients'
+    return 'dashboard'
   }
 
   const currentPage = getCurrentPage()
@@ -57,10 +60,12 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
 
   const handleTabChange = (tab: string) => {
     const routes = {
+      'dashboard': '/dashboard',
       'clients': '/clients',
+      'conversations': '/conversations',
+      'services-billing': '/services-billing',
       'time-manager': '/time-manager',
       'goals': '/goals',
-      'conversations': '/conversations',
       'woodgreen': '/services/woodgreen',
       'whiteknight': '/services/whiteknight',
       'pupawalk': '/services/pupawalk',
@@ -76,19 +81,18 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-hud-background-primary relative">
       <Header />
-      <div className="flex">
-        <Sidebar 
-          activeTab={currentPage}
-          setActiveTab={handleTabChange}
-          conversationCount={conversationCount}
-          onTitleClick={handleTitleClick}
-        />
-        <main className="flex-1 bg-white">
-          {children}
-        </main>
-      </div>
+      <Sidebar 
+        activeTab={currentPage}
+        setActiveTab={handleTabChange}
+        conversationCount={conversationCount}
+        onTitleClick={handleTitleClick}
+        onCollapseChange={setSidebarCollapsed}
+      />
+      <main className={`pt-20 bg-hud-background-primary min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} relative z-10`}>
+        {children}
+      </main>
     </div>
   )
 }

@@ -105,7 +105,7 @@ export class EmailIntegration {
 <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5;">
     <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <!-- Header -->
-        <div style="background-color: #2563eb; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: #D4AF37; color: white; padding: 20px; text-align: center;">
             <h1 style="margin: 0; font-size: 24px;">Payment Receipt</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9;">Thank you for your payment!</p>
         </div>
@@ -152,7 +152,7 @@ export class EmailIntegration {
 <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5;">
     <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <!-- Header -->
-        <div style="background-color: ${isOverdue ? '#dc2626' : '#2563eb'}; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: ${isOverdue ? '#dc2626' : '#D4AF37'}; color: white; padding: 20px; text-align: center;">
             <h1 style="margin: 0; font-size: 24px;">${isOverdue ? 'Overdue Invoice' : 'Invoice'}</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9;">
                 ${isOverdue ? 'Payment is past due' : 'Payment requested'}
@@ -182,8 +182,8 @@ export class EmailIntegration {
         
         <!-- Payment Instructions -->
         <div style="background-color: #e0f2fe; padding: 20px; border-top: 1px solid #b3e5fc;">
-            <h3 style="margin: 0 0 15px 0; color: #0277bd;">Payment Instructions</h3>
-            <div style="color: #01579b; font-size: 14px; line-height: 1.6;">
+            <h3 style="margin: 0 0 15px 0; color: #D4AF37;">Payment Instructions</h3>
+            <div style="color: #8B4513; font-size: 14px; line-height: 1.6;">
                 <p style="margin: 0 0 10px 0;"><strong>Payment Methods Accepted:</strong></p>
                 <ul style="margin: 0 0 15px 20px; padding: 0;">
                     <li>E-Transfer to: ${this.config.fromEmail}</li>

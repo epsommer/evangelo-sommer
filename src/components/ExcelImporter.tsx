@@ -567,10 +567,10 @@ export default function ExcelImporter({
     return (
       <div className="space-y-4">
         <div className="text-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-tactical-grey-800 mb-2">
             Import Message History
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-tactical-grey-500">
             Upload your text message export from Excel or CSV format
           </p>
         </div>
@@ -604,8 +604,8 @@ export default function ExcelImporter({
           onDragLeave={handleDragLeave}
           className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragActive
-              ? "border-blue-400 bg-blue-50"
-              : "border-gray-300 hover:border-gray-400"
+              ? "border-tactical-gold bg-tactical-gold-muted"
+              : "border-tactical-grey-400 hover:border-tactical-grey-400"
           } ${loading ? "pointer-events-none opacity-50" : ""}`}
         >
           <input
@@ -635,17 +635,17 @@ export default function ExcelImporter({
 
             {loading ? (
               <div>
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                <p className="text-sm text-gray-600">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tactical-gold mx-auto mb-2"></div>
+                <p className="text-sm text-tactical-grey-500">
                   Processing Excel file...
                 </p>
               </div>
             ) : (
               <div>
-                <p className="text-lg font-medium text-gray-900">
+                <p className="text-lg font-medium text-tactical-grey-800">
                   Drop file here or click to browse
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-tactical-grey-500">
                   Supports .xlsx, .xls, and .csv files
                 </p>
               </div>
@@ -653,13 +653,13 @@ export default function ExcelImporter({
           </div>
 
           {importState.file && (
-            <div className="mt-4 p-3 bg-gray-50 rounded border text-left">
+            <div className="mt-4 p-3 bg-tactical-grey-100 rounded border text-left">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-tactical-grey-800">
                     {importState.file.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-tactical-grey-500">
                     {formatFileSize(importState.file.size)}
                   </p>
                 </div>
@@ -690,11 +690,11 @@ export default function ExcelImporter({
         </div>
 
         {/* Format Requirements */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">
+        <div className="bg-tactical-gold-muted border border-tactical-gold rounded-lg p-4">
+          <h4 className="font-medium text-tactical-brown-dark mb-2">
             Expected File Format
           </h4>
-          <div className="text-sm text-blue-800">
+          <div className="text-sm text-tactical-brown">
             <p className="mb-2">Your file should have columns for:</p>
             <ul className="list-disc list-inside space-y-1 ml-4">
               <li>
@@ -737,9 +737,9 @@ export default function ExcelImporter({
   if (importState.step === "date-validation" && importState.processedMessages) {
     return (
       <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-800 mb-2">Date Validation</h3>
-          <p className="text-blue-700 text-sm">
+        <div className="bg-tactical-gold-muted border border-tactical-gold rounded-lg p-4">
+          <h3 className="font-medium text-tactical-brown-dark mb-2">Date Validation</h3>
+          <p className="text-tactical-brown text-sm">
             Some timestamps in your Excel file could not be parsed correctly.
             Please review and correct them below before proceeding.
           </p>

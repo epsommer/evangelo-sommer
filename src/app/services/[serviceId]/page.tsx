@@ -41,7 +41,7 @@ export default function ServiceDashboard() {
       <CRMLayout>
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-gold border-t-transparent animate-spin mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-4 border-hud-border-accent border-t-transparent animate-spin mx-auto mb-4"></div>
             <p className="text-medium-grey font-space-grotesk uppercase tracking-wide">LOADING SERVICE...</p>
           </div>
         </div>
@@ -55,14 +55,14 @@ export default function ServiceDashboard() {
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="text-6xl mb-4">🔍</div>
-            <h1 className="text-2xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <h1 className="text-2xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
               SERVICE NOT FOUND
             </h1>
             <p className="text-medium-grey mb-4 font-space-grotesk">
               THE SERVICE YOU'RE LOOKING FOR DOESN'T EXIST.
             </p>
             <Button
-              className="bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-space-grotesk font-bold uppercase tracking-wide"
               onClick={() => router.push("/dashboard")}
             >
               ← BACK TO DASHBOARD
@@ -87,7 +87,7 @@ export default function ServiceDashboard() {
     <CRMLayout>
       <div className="p-6">
         {/* Page Header */}
-        <div className="bg-off-white p-6 border-b-2 border-gold mb-6">
+        <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
@@ -98,7 +98,7 @@ export default function ServiceDashboard() {
                   {service.name.charAt(0)}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk mb-2">
+                  <h1 className="text-3xl font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk mb-2">
                     {service.name.toUpperCase()}
                   </h1>
                   <p className="text-medium-grey font-space-grotesk uppercase tracking-wide text-sm">
@@ -109,7 +109,7 @@ export default function ServiceDashboard() {
             </div>
             <div className="flex items-center space-x-3">
               <Button
-                className="bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide text-sm"
+                className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-space-grotesk font-bold uppercase tracking-wide text-sm"
                 onClick={() => router.push(`/clients/new?serviceId=${serviceId}`)}
               >
                 ADD {service.businessType?.toUpperCase()} CLIENT
@@ -126,8 +126,8 @@ export default function ServiceDashboard() {
 
         {/* Service Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4 bg-white border-2 border-light-grey">
-            <div className="text-2xl font-bold text-dark-grey font-space-grotesk">
+          <Card className="p-4 bg-white border-2 border-hud-border">
+            <div className="text-2xl font-bold text-hud-text-primary font-space-grotesk">
               {clients.length}
             </div>
             <div className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
@@ -135,7 +135,7 @@ export default function ServiceDashboard() {
             </div>
           </Card>
 
-          <Card className="p-4 bg-white border-2 border-light-grey">
+          <Card className="p-4 bg-white border-2 border-hud-border">
             <div className="text-2xl font-bold text-gold font-space-grotesk">
               {activeClients}
             </div>
@@ -144,8 +144,8 @@ export default function ServiceDashboard() {
             </div>
           </Card>
 
-          <Card className="p-4 bg-white border-2 border-light-grey">
-            <div className="text-2xl font-bold text-dark-grey font-space-grotesk">
+          <Card className="p-4 bg-white border-2 border-hud-border">
+            <div className="text-2xl font-bold text-hud-text-primary font-space-grotesk">
               {prospects}
             </div>
             <div className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
@@ -153,7 +153,7 @@ export default function ServiceDashboard() {
             </div>
           </Card>
 
-          <Card className="p-4 bg-white border-2 border-light-grey">
+          <Card className="p-4 bg-white border-2 border-hud-border">
             <div className="text-2xl font-bold text-gold font-space-grotesk">
               ${totalRevenue.toLocaleString()}
             </div>
@@ -165,7 +165,7 @@ export default function ServiceDashboard() {
 
         {/* Service-Specific Quick Actions */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-dark-grey mb-4 font-space-grotesk uppercase tracking-wide">
+          <h2 className="text-xl font-bold text-hud-text-primary mb-4 font-space-grotesk uppercase tracking-wide">
             {service.businessType?.toUpperCase()} SERVICES
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -176,10 +176,10 @@ export default function ServiceDashboard() {
               return (
                 <Card
                   key={index}
-                  className="p-4 bg-white border-2 border-light-grey hover:bg-off-white transition-colors cursor-pointer border-l-4"
+                  className="p-4 bg-white border-2 border-hud-border hover:bg-hud-background-secondary transition-colors cursor-pointer border-l-4"
                   style={{ borderLeftColor: service.brand.primaryColor }}
                 >
-                  <div className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide text-sm">
+                  <div className="font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide text-sm">
                     {serviceType.toUpperCase()}
                   </div>
                   <div className="text-sm text-medium-grey mt-1 font-space-grotesk">
@@ -199,7 +199,7 @@ export default function ServiceDashboard() {
         {/* Recent Clients for This Service */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+            <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
               {service.businessType?.toUpperCase()} CLIENTS
             </h2>
             <Button
@@ -212,16 +212,16 @@ export default function ServiceDashboard() {
           </div>
 
           {clients.length === 0 ? (
-            <Card className="p-8 text-center bg-white border-2 border-light-grey">
+            <Card className="p-8 text-center bg-white border-2 border-hud-border">
               <div className="text-4xl mb-4">🎨</div>
-              <h3 className="text-lg font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+              <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
                 NO {service.businessType?.toUpperCase()} CLIENTS YET
               </h3>
               <p className="text-medium-grey mb-4 font-space-grotesk">
                 START BUILDING YOUR {service.businessType?.toUpperCase()} CLIENT BASE TO TRACK PROJECTS AND RELATIONSHIPS.
               </p>
               <Button
-                className="bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+                className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-space-grotesk font-bold uppercase tracking-wide"
                 onClick={() => router.push(`/clients/new?serviceId=${serviceId}`)}
               >
                 ADD YOUR FIRST {service.businessType?.toUpperCase()} CLIENT
@@ -243,12 +243,12 @@ export default function ServiceDashboard() {
                     className="block"
                   >
                     <Card
-                      className="bg-white border-2 border-light-grey hover:bg-off-white transition-colors p-4 border-l-4"
+                      className="bg-white border-2 border-hud-border hover:bg-hud-background-secondary transition-colors p-4 border-l-4"
                       style={{ borderLeftColor: service.brand.primaryColor }}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="font-bold text-dark-grey font-space-grotesk">
+                          <h3 className="font-bold text-hud-text-primary font-space-grotesk">
                             {client.name?.toUpperCase()}
                           </h3>
                           {client.company && (
@@ -260,7 +260,7 @@ export default function ServiceDashboard() {
                         <span
                           className={`px-2 py-1 text-xs font-bold uppercase font-space-grotesk ${
                             client.status === "active"
-                              ? "bg-gold text-dark-grey"
+                              ? "bg-tactical-gold text-hud-text-primary"
                               : client.status === "prospect"
                                 ? "bg-light-grey text-medium-grey"
                                 : client.status === "completed"

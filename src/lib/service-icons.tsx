@@ -17,13 +17,13 @@ import {
 
 export const getServiceIcon = (service: string) => {
   const icons = {
-    landscaping: <Leaf className="h-4 w-4 text-green-600" />,
-    snow_removal: <Snowflake className="h-4 w-4 text-blue-500" />,
-    hair_cutting: <Scissors className="h-4 w-4 text-pink-500" />,
-    creative_development: <Palette className="h-4 w-4 text-purple-600" />,
-    "snow-removal": <Snowflake className="h-4 w-4 text-blue-500" />,
-    "hair-cutting": <Scissors className="h-4 w-4 text-pink-500" />,
-    "creative-development": <Palette className="h-4 w-4 text-purple-600" />
+    landscaping: <Leaf className="h-4 w-4 text-tactical-success" />,
+    snow_removal: <Snowflake className="h-4 w-4 text-tactical-grey-600" />,
+    hair_cutting: <Scissors className="h-4 w-4 text-tactical-brown-light" />,
+    creative_development: <Palette className="h-4 w-4 text-tactical-gold" />,
+    "snow-removal": <Snowflake className="h-4 w-4 text-tactical-grey-600" />,
+    "hair-cutting": <Scissors className="h-4 w-4 text-tactical-brown-light" />,
+    "creative-development": <Palette className="h-4 w-4 text-tactical-gold" />
   }
   return icons[service as keyof typeof icons] || <Circle className="h-4 w-4" />
 }

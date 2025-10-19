@@ -144,15 +144,15 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
 
   const getStatusColor = (status: string) => {
     const colors = {
-      SCHEDULED: 'bg-blue-100 text-blue-800',
+      SCHEDULED: 'bg-tactical-gold-muted text-tactical-brown-dark',
       IN_PROGRESS: 'bg-yellow-100 text-yellow-800',
       COMPLETED: 'bg-green-100 text-green-800',
       CANCELLED: 'bg-red-100 text-red-800',
       PENDING: 'bg-orange-100 text-orange-800',
       PAID: 'bg-green-100 text-green-800',
-      BILLED: 'bg-blue-100 text-blue-800'
+      BILLED: 'bg-tactical-gold-muted text-tactical-brown-dark'
     }
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[status as keyof typeof colors] || 'bg-tactical-grey-200 text-tactical-grey-700'
   }
 
   const isViewMode = mode === 'view'
@@ -392,16 +392,16 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                   </div>
 
                   {suggestedServiceLine && (
-                    <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                      <p className="text-sm font-medium text-blue-900">Suggested Service Line</p>
+                    <div className="p-3 bg-tactical-gold-muted rounded-lg border-l-4 border-tactical-gold-500">
+                      <p className="text-sm font-medium text-tactical-brown-dark">Suggested Service Line</p>
                       <div className="flex items-center mt-1">
                         <div
                           className="w-3 h-3 rounded-full mr-2"
                           style={{ backgroundColor: suggestedServiceLine.color }}
                         />
-                        <span className="text-sm text-blue-700">{suggestedServiceLine.name}</span>
+                        <span className="text-sm text-tactical-brown-dark">{suggestedServiceLine.name}</span>
                       </div>
-                      <p className="text-xs text-blue-600 mt-1">{suggestedServiceLine.description}</p>
+                      <p className="text-xs text-tactical-gold mt-1">{suggestedServiceLine.description}</p>
                     </div>
                   )}
                 </CardContent>
@@ -415,19 +415,19 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Completion</span>
+                      <span className="text-sm text-tactical-grey-500">Completion</span>
                       <Badge className={getStatusColor(formData.completionStatus || 'SCHEDULED')}>
                         {formData.completionStatus}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Billing</span>
+                      <span className="text-sm text-tactical-grey-500">Billing</span>
                       <Badge className={getStatusColor(formData.billingStatus || 'PENDING')}>
                         {formData.billingStatus}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t">
-                      <span className="text-sm text-gray-600">Amount</span>
+                      <span className="text-sm text-tactical-grey-500">Amount</span>
                       <span className="font-medium">{formatCurrency(formData.amount || 0)}</span>
                     </div>
                   </CardContent>
@@ -454,7 +454,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                             />
                             <span className="font-medium">{serviceLine.name}</span>
                           </div>
-                          <p className="text-sm text-gray-600">{serviceLine.description}</p>
+                          <p className="text-sm text-tactical-grey-500">{serviceLine.description}</p>
                           {serviceLine.seasonality && (
                             <Badge variant="outline" className="text-xs">
                               {serviceLine.seasonality} service

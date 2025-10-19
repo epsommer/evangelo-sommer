@@ -29,6 +29,7 @@ import {
   NotificationStatus
 } from '../types/participant-management';
 import type { ServiceType } from '../types/participant-management';
+import { gmailNotificationService } from './gmail-notification-service';
 
 // Initialize Prisma client
 let prisma: PrismaClient;
@@ -671,39 +672,103 @@ export class ParticipantManagementService {
   // ===== NOTIFICATION SYSTEM =====
 
   /**
-   * Send appointment notifications
+   * Send appointment notifications using Gmail API
    */
   async sendAppointmentNotifications(
     appointmentId: string,
     type: NotificationType
   ): Promise<void> {
     const appointment = await this.getAppointment(appointmentId);
-    if (!appointment) return;
+    if (!appointment) {
+      console.error('❌ Appointment not found:', appointmentId);
+      return;
+    }
 
-    // Send notifications to all participants
+    console.log('📧 Sending notifications for appointment:', appointmentId, 'Type:', type);
+
+    // Send notifications to all participants (excluding organizer)
     for (const participant of appointment.participants) {
+      // Skip organizer notifications for now
+      if (participant.role === 'ORGANIZER') continue;
+      
       const contactPrefs = participant.participant.contactPreferences;
       
-      // Send SMS if enabled
-      if (contactPrefs?.sms && participant.participant.phone) {
-        await this.createNotification({
-          appointmentId,
-          type,
-          channel: NotificationChannel.SMS,
-          recipient: participant.participant.phone,
-          content: this.generateNotificationContent(type, appointment, participant.participant),
-        });
-      }
+      // Only send email notifications if participant has email and email is enabled
+      if (participant.participant.email && (contactPrefs?.email !== false)) {
+        try {
+          let result: { success: boolean; messageId?: string; error?: string } = { success: false };
 
-      // Send Email if enabled
-      if (contactPrefs?.email && participant.participant.email) {
-        await this.createNotification({
-          appointmentId,
-          type,
-          channel: NotificationChannel.EMAIL,
-          recipient: participant.participant.email,
-          content: this.generateNotificationContent(type, appointment, participant.participant),
-        });
+          switch (type) {
+            case NotificationType.CONFIRMATION:
+              result = await gmailNotificationService.sendAppointmentConfirmation(
+                appointment, 
+                participant.participant
+              );
+              break;
+              
+            case NotificationType.REMINDER_24H:
+              result = await gmailNotificationService.sendAppointmentReminder(
+                appointment, 
+                participant.participant, 
+                '24h'
+              );
+              break;
+              
+            case NotificationType.REMINDER_1H:
+              result = await gmailNotificationService.sendAppointmentReminder(
+                appointment, 
+                participant.participant, 
+                '1h'
+              );
+              break;
+              
+            case NotificationType.CANCELLATION:
+              result = await gmailNotificationService.sendAppointmentCancellation(
+                appointment, 
+                participant.participant
+              );
+              break;
+              
+            default:
+              console.warn('⚠️ Unsupported notification type:', type);
+              continue;
+          }
+
+          // Log notification in database
+          if (result.success) {
+            await this.createNotification({
+              appointmentId,
+              type,
+              channel: NotificationChannel.EMAIL,
+              recipient: participant.participant.email,
+              content: `Gmail notification sent successfully (${result.messageId})`,
+            });
+            console.log('✅ Email notification sent to:', participant.participant.email);
+          } else {
+            await this.createNotification({
+              appointmentId,
+              type,
+              channel: NotificationChannel.EMAIL,
+              recipient: participant.participant.email,
+              content: `Failed to send Gmail notification: ${result.error}`,
+            });
+            console.error('❌ Failed to send email to:', participant.participant.email, result.error);
+          }
+
+        } catch (error) {
+          console.error('❌ Notification error for', participant.participant.email, ':', error);
+          
+          // Still log the failed attempt
+          await this.createNotification({
+            appointmentId,
+            type,
+            channel: NotificationChannel.EMAIL,
+            recipient: participant.participant.email,
+            content: `Notification error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          });
+        }
+      } else {
+        console.log('⏭️ Skipping notification for participant (no email or email disabled):', participant.participant.name);
       }
     }
   }

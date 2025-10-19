@@ -194,8 +194,8 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gold border-t-transparent mx-auto mb-4"></div>
-          <p className="text-medium-grey font-space-grotesk uppercase tracking-wide">Loading Goals...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-hud-border-accent border-t-transparent mx-auto mb-4"></div>
+          <p className="text-medium-grey font-primary uppercase tracking-wide">Loading Goals...</p>
         </div>
       </div>
     )
@@ -203,50 +203,54 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
 
   return (
     <div className={cn("space-y-6", className)}>
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Target className="w-8 h-8 text-gold" />
+      {/* Page Header */}
+      <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-grey">Goal Management</h1>
-            <p className="text-medium-grey">Track and manage your goals and milestones</p>
+            <h1 className="text-3xl font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
+              GOAL MANAGEMENT
+            </h1>
+            <p className="text-medium-grey font-primary uppercase tracking-wider text-sm">
+              Track and manage your goals and milestones
+            </p>
           </div>
-        </div>
         
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
-          
-          <label>
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
+          <div className="flex items-center space-x-3">
             <Button
               variant="outline"
-              className="flex items-center gap-2"
-              as="span"
+              size="sm"
+              onClick={handleExport}
             >
-              <Upload className="w-4 h-4" />
-              Import
+              <Download className="w-4 h-4 mr-2" />
+              Export
             </Button>
-          </label>
-          
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-gold hover:bg-gold/90 text-white flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            New Goal
-          </Button>
+            
+            <label>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                as="span"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+            </label>
+            
+            <Button
+              size="sm"
+              onClick={() => setIsCreating(true)}
+              className="bg-tactical-gold hover:bg-tactical-gold-dark text-hud-text-primary"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Goal
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -254,14 +258,14 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-dark-grey">{quickStats.total}</div>
+            <div className="text-2xl font-bold text-hud-text-primary">{quickStats.total}</div>
             <div className="text-sm text-medium-grey">Total Goals</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{quickStats.inProgress}</div>
+            <div className="text-2xl font-bold text-tactical-gold">{quickStats.inProgress}</div>
             <div className="text-sm text-medium-grey">In Progress</div>
           </CardContent>
         </Card>
@@ -304,7 +308,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
               viewMode === 'overview'
                 ? "bg-white text-gold shadow-sm"
-                : "text-medium-grey hover:text-dark-grey"
+                : "text-medium-grey hover:text-hud-text-primary"
             )}
           >
             <BarChart3 className="w-4 h-4" />
@@ -316,7 +320,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
               viewMode === 'timeline'
                 ? "bg-white text-gold shadow-sm"
-                : "text-medium-grey hover:text-dark-grey"
+                : "text-medium-grey hover:text-hud-text-primary"
             )}
           >
             <Calendar className="w-4 h-4" />
@@ -328,7 +332,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
               viewMode === 'analytics'
                 ? "bg-white text-gold shadow-sm"
-                : "text-medium-grey hover:text-dark-grey"
+                : "text-medium-grey hover:text-hud-text-primary"
             )}
           >
             <TrendingUp className="w-4 h-4" />
@@ -345,7 +349,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               placeholder="Search goals..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-sm"
+              className="pl-9 pr-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-sm"
             />
           </div>
           
@@ -355,7 +359,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               setFilterBy(e.target.value as FilterBy)
               setFilterValue('all')
             }}
-            className="px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-sm"
+            className="px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-sm"
           >
             <option value="all">All Goals</option>
             <option value="timeframe">By Timeframe</option>
@@ -368,7 +372,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
             <select
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="px-3 py-2 border border-light-grey rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-sm"
+              className="px-3 py-2 border border-hud-border rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-sm"
             >
               <option value="all">All</option>
               {filterBy === 'timeframe' && (
@@ -434,7 +438,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                     <p className="text-medium-grey">No goals found</p>
                     <Button
                       onClick={() => setShowCreateModal(true)}
-                      className="mt-4 bg-gold hover:bg-gold/90 text-white"
+                      className="mt-4 bg-tactical-gold hover:bg-tactical-gold/90 text-white"
                     >
                       Create Your First Goal
                     </Button>
@@ -444,7 +448,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                     {filteredGoals.map(goal => (
                       <div
                         key={goal.id}
-                        className="p-4 border border-light-grey rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                        className="p-4 border border-hud-border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                         onClick={() => {
                           setEditingGoal(goal)
                           setShowCreateModal(true)
@@ -452,7 +456,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-dark-grey mb-1">{goal.title}</h3>
+                            <h3 className="font-semibold text-hud-text-primary mb-1">{goal.title}</h3>
                             {goal.description && (
                               <p className="text-sm text-medium-grey mb-2">{goal.description}</p>
                             )}
@@ -476,7 +480,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-medium-grey">Progress</span>
-                            <span className="font-medium text-dark-grey">{goal.progress}%</span>
+                            <span className="font-medium text-hud-text-primary">{goal.progress}%</span>
                           </div>
                           <Progress value={goal.progress} className="h-2" />
                         </div>
@@ -526,9 +530,9 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               </CardHeader>
               <CardContent>
                 {getUpcomingDeadlines(7).slice(0, 5).map(item => (
-                  <div key={item.id} className="flex items-center justify-between py-2 border-b border-light-grey last:border-0">
+                  <div key={item.id} className="flex items-center justify-between py-2 border-b border-hud-border last:border-0">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-dark-grey">{item.title}</p>
+                      <p className="text-sm font-medium text-hud-text-primary">{item.title}</p>
                       <p className="text-xs text-medium-grey">
                         Due {format(new Date('endDate' in item ? item.endDate : item.dueDate), 'MMM d')}
                       </p>
@@ -558,8 +562,8 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                 </CardHeader>
                 <CardContent>
                   {getOverdueGoals().slice(0, 5).map(goal => (
-                    <div key={goal.id} className="py-2 border-b border-light-grey last:border-0">
-                      <p className="text-sm font-medium text-dark-grey">{goal.title}</p>
+                    <div key={goal.id} className="py-2 border-b border-hud-border last:border-0">
+                      <p className="text-sm font-medium text-hud-text-primary">{goal.title}</p>
                       <p className="text-xs text-red-500">
                         Due {format(new Date(goal.endDate), 'MMM d, yyyy')}
                       </p>
@@ -583,9 +587,9 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                   .sort((a, b) => new Date(b.lastProgressUpdate!).getTime() - new Date(a.lastProgressUpdate!).getTime())
                   .slice(0, 5)
                   .map(goal => (
-                    <div key={goal.id} className="py-2 border-b border-light-grey last:border-0">
+                    <div key={goal.id} className="py-2 border-b border-hud-border last:border-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-dark-grey">{goal.title}</p>
+                        <p className="text-sm font-medium text-hud-text-primary">{goal.title}</p>
                         <span className="text-sm font-bold text-green-600">{goal.progress}%</span>
                       </div>
                       <p className="text-xs text-medium-grey">
@@ -632,7 +636,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                         {status.replace('-', ' ')}
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-dark-grey">{count}</span>
+                    <span className="text-sm font-medium text-hud-text-primary">{count}</span>
                   </div>
                 ))}
               </div>
@@ -650,7 +654,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                     <span className="text-sm capitalize text-medium-grey">
                       {timeframe}
                     </span>
-                    <span className="text-sm font-medium text-dark-grey">{count}</span>
+                    <span className="text-sm font-medium text-hud-text-primary">{count}</span>
                   </div>
                 ))}
               </div>

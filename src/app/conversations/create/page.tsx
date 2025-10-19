@@ -65,10 +65,10 @@ export default function CreateConversationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-off-white">
+      <div className="min-h-screen bg-hud-background-secondary">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hud-border-accent"></div>
           </div>
         </div>
       </div>
@@ -76,17 +76,17 @@ export default function CreateConversationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
+    <div className="min-h-screen bg-hud-background-secondary">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+            <h1 className="text-3xl font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk">
               Create New Conversation
             </h1>
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-medium-grey hover:text-dark-grey font-space-grotesk font-bold uppercase tracking-wide transition-colors"
+              className="px-4 py-2 text-medium-grey hover:text-hud-text-primary font-space-grotesk font-bold uppercase tracking-wide transition-colors"
             >
               Cancel
             </button>

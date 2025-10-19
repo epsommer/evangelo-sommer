@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette } from "lucide-react"
+import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Home, Receipt, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -10,13 +10,16 @@ interface SidebarProps {
   setActiveTab?: (tab: string) => void
   conversationCount?: number
   onTitleClick?: () => void
+  onCollapseChange?: (collapsed: boolean) => void
 }
 
 const navigationItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
   { id: "clients", label: "Clients", icon: Users },
+  { id: "conversations", label: "Conversations", icon: MessageSquare },
+  { id: "services-billing", label: "Services & Billing", icon: Receipt },
   { id: "time-manager", label: "Time Manager", icon: Clock },
   { id: "goals", label: "Goals", icon: Target },
-  { id: "conversations", label: "Conversations", icon: MessageSquare },
 ]
 
 const serviceLines = [
@@ -26,39 +29,24 @@ const serviceLines = [
   { id: "creative", name: "Creative Development", color: "service-creative-development", icon: Palette, path: "/services/creative" },
 ]
 
-const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, onTitleClick }: SidebarProps) => {
+const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, onTitleClick, onCollapseChange }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   
   return (
-    <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-off-white border-r-2 border-light-grey h-[calc(100vh-4rem)] transition-all duration-300 relative`}>
-      {/* Toggle Button - Better positioned to avoid overlap */}
-      <div className="relative">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`absolute z-20 w-8 h-8 bg-gold hover:bg-gold-dark flex items-center justify-center text-dark-grey transition-all duration-200 shadow-sm ${
-            isCollapsed 
-              ? 'right-2 top-2' /* When collapsed: inside the sidebar */
-              : '-right-4 top-4' /* When expanded: outside the sidebar */
-          }`}
-          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
-      </div>
+    <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-hud-background-secondary border-r-2 border-hud-border fixed left-0 top-20 bottom-0 transition-all duration-300 sidebar z-40 overflow-y-auto`}>
       
       
-      {/* Add top padding when collapsed to avoid overlap */}
-      <nav className={`${isCollapsed ? 'pt-12 px-2 pb-2' : 'p-6'}`}>
-        <div className={`space-y-1 ${isCollapsed ? 'mt-2' : ''}`}>
+      <nav className={`${isCollapsed ? 'px-2 py-6' : 'p-6'}`}>
+        <div className="space-y-1">
           {navigationItems.map(item => {
             const IconComponent = item.icon
             return (
               <button
                 key={item.id}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium uppercase tracking-wide text-sm font-space-grotesk transition-all duration-200 ${
+                className={`nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium uppercase tracking-wide text-sm font-primary transition-all duration-200 ${
                   activeTab === item.id 
-                    ? 'bg-gold text-dark-grey font-semibold' 
-                    : 'text-medium-grey hover:bg-light-grey hover:text-dark-grey'
+                    ? 'text-tactical-gold font-semibold border-l-4 border-tactical-gold' 
+                    : 'text-tactical-grey-600 hover:bg-tactical-grey-100 hover:text-tactical-grey-800'
                 }`}
                 onClick={() => setActiveTab?.(item.id)}
                 title={isCollapsed ? item.label : undefined}
@@ -82,12 +70,12 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
         {/* Service Lines Section */}
         <div className={isCollapsed ? 'mt-4' : 'mt-8'}>
           {!isCollapsed && (
-            <h3 className="text-xs uppercase tracking-wider font-bold text-medium-grey mb-4 font-space-grotesk">
+            <h3 className="text-xs uppercase tracking-wider font-bold text-tactical-grey-600 mb-4 font-primary">
               SERVICE LINES
             </h3>
           )}
           {isCollapsed && (
-            <div className="w-full h-px bg-light-grey mb-4"></div>
+            <div className="w-full h-px bg-tactical-grey-300 mb-4"></div>
           )}
           <div className="space-y-1">
             {serviceLines.map(service => {
@@ -95,7 +83,7 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
               return (
                 <button
                   key={service.id}
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium uppercase tracking-wide text-sm font-space-grotesk transition-all duration-200 text-medium-grey hover:bg-light-grey hover:text-dark-grey`}
+                  className={`nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium uppercase tracking-wide text-sm font-primary transition-all duration-200 text-tactical-grey-600 hover:bg-tactical-grey-100 hover:text-tactical-grey-800`}
                   onClick={() => setActiveTab?.(service.id)}
                   title={isCollapsed ? service.name : undefined}
                 >
@@ -110,6 +98,21 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
               )
             })}
           </div>
+        </div>
+        
+        {/* Toggle Button - At bottom of sidebar */}
+        <div className="mt-6 pt-4 border-t border-tactical-grey-300 flex justify-center">
+          <button
+            onClick={() => {
+              const newState = !isCollapsed
+              setIsCollapsed(newState)
+              onCollapseChange?.(newState)
+            }}
+            className="w-6 h-6 flex items-center justify-center text-tactical-grey-600 hover:text-tactical-gold transition-all duration-200 font-hud-ui"
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
         </div>
       </nav>
     </aside>

@@ -25,7 +25,7 @@ const TextEditor = ({
     value={value}
     onChange={(e) => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full h-32 p-3 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+    className="w-full h-32 p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
   />
 );
 
@@ -148,7 +148,7 @@ const EnhancedMessageInput = ({
   };
 
   return (
-    <div className={`bg-white border-2 border-light-grey ${className}`}>
+    <div className={`bg-white border-2 border-hud-border ${className}`}>
       <Tab.Group
         selectedIndex={["individual", "batch", "smart"].indexOf(selectedMode)}
         onChange={(index) =>
@@ -157,14 +157,14 @@ const EnhancedMessageInput = ({
           )
         }
       >
-        <Tab.List className="flex space-x-1 bg-off-white p-1">
+        <Tab.List className="flex space-x-1 bg-hud-background-secondary p-1">
           <Tab
             className={({ selected }: { selected: boolean }) => `
-            w-full py-2.5 text-sm font-bold uppercase tracking-wide leading-5 font-space-grotesk
+            w-full py-2.5 text-sm font-bold uppercase tracking-wide leading-5 font-primary
             ${
               selected
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:bg-light-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:bg-light-grey hover:text-hud-text-primary"
             }
           `}
           >
@@ -172,11 +172,11 @@ const EnhancedMessageInput = ({
           </Tab>
           <Tab
             className={({ selected }: { selected: boolean }) => `
-            w-full py-2.5 text-sm font-bold uppercase tracking-wide leading-5 font-space-grotesk
+            w-full py-2.5 text-sm font-bold uppercase tracking-wide leading-5 font-primary
             ${
               selected
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:bg-light-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:bg-light-grey hover:text-hud-text-primary"
             }
           `}
           >
@@ -184,11 +184,11 @@ const EnhancedMessageInput = ({
           </Tab>
           <Tab
             className={({ selected }: { selected: boolean }) => `
-            w-full py-2.5 text-sm font-bold uppercase tracking-wide leading-5 font-space-grotesk
+            w-full py-2.5 text-sm font-bold uppercase tracking-wide leading-5 font-primary
             ${
               selected
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:bg-light-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:bg-light-grey hover:text-hud-text-primary"
             }
           `}
           >
@@ -206,7 +206,7 @@ const EnhancedMessageInput = ({
                   onChange={(e) =>
                     setSelectedSender(e.target.value as "client" | "you")
                   }
-                  className="border-2 border-light-grey px-3 py-2 bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide focus:border-gold"
+                  className="border-2 border-hud-border px-3 py-2 bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide focus:border-hud-border-accent"
                 >
                   <option value="you">YOU</option>
                   <option value="client">CLIENT</option>
@@ -216,7 +216,7 @@ const EnhancedMessageInput = ({
                   onChange={(e) =>
                     setMessageType(e.target.value as MessageType)
                   }
-                  className="border-2 border-light-grey px-3 py-2 bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide focus:border-gold"
+                  className="border-2 border-hud-border px-3 py-2 bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide focus:border-hud-border-accent"
                 >
                   <option value="text">TEXT</option>
                   <option value="email">EMAIL</option>
@@ -234,11 +234,11 @@ const EnhancedMessageInput = ({
               <button
                 onClick={handleIndividualSubmit}
                 disabled={isProcessing || !content.trim()}
-                className={`w-full py-2 px-4 font-space-grotesk font-bold uppercase tracking-wide
+                className={`w-full py-2 px-4 font-primary font-bold uppercase tracking-wide
                   ${
                     isProcessing || !content.trim()
                       ? "bg-medium-grey text-white cursor-not-allowed"
-                      : "bg-gold text-dark-grey hover:bg-gold-light"
+                      : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
                   }
                 `}
               >
@@ -251,7 +251,7 @@ const EnhancedMessageInput = ({
           <Tab.Panel>
             <div className="space-y-4">
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-light-grey border-dashed cursor-pointer bg-off-white hover:bg-light-grey">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-hud-border border-dashed cursor-pointer bg-hud-background-secondary hover:bg-light-grey">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <svg
                       className="w-8 h-8 mb-4 text-medium-grey"
@@ -267,10 +267,10 @@ const EnhancedMessageInput = ({
                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                       />
                     </svg>
-                    <p className="mb-2 text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+                    <p className="mb-2 text-sm text-medium-grey font-primary uppercase tracking-wide">
                       <span className="font-bold">CLICK TO UPLOAD</span> OR DRAG AND DROP
                     </p>
-                    <p className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+                    <p className="text-xs text-medium-grey font-primary uppercase tracking-wide">
                       TXT, DOC, OR COPY/PASTE TEXT DIRECTLY
                     </p>
                   </div>
@@ -288,16 +288,16 @@ const EnhancedMessageInput = ({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="PASTE CONVERSATION HISTORY HERE..."
-                className="w-full h-64 p-4 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                className="w-full h-64 p-4 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
               />
               <button
                 onClick={handleBatchProcess}
                 disabled={isProcessing || !content.trim()}
-                className={`w-full py-2 px-4 font-space-grotesk font-bold uppercase tracking-wide
+                className={`w-full py-2 px-4 font-primary font-bold uppercase tracking-wide
                   ${
                     isProcessing || !content.trim()
                       ? "bg-medium-grey text-white cursor-not-allowed"
-                      : "bg-gold text-dark-grey hover:bg-gold-light"
+                      : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
                   }
                 `}
               >
@@ -309,11 +309,11 @@ const EnhancedMessageInput = ({
           {/* Smart Scan Panel */}
           <Tab.Panel>
             <div className="space-y-4">
-              <div className="bg-gold-light border-2 border-gold p-4">
-                <h3 className="text-sm font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+              <div className="bg-tactical-gold-light border-2 border-hud-border-accent p-4">
+                <h3 className="text-sm font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                   AI-POWERED ANALYSIS
                 </h3>
-                <p className="mt-1 text-sm text-medium-grey font-space-grotesk">
+                <p className="mt-1 text-sm text-medium-grey font-primary">
                   THIS MODE USES AI TO AUTOMATICALLY DETECT MESSAGE BOUNDARIES, SENDERS, AND CONTEXT. REVIEW AND CONFIRM THE RESULTS BEFORE SAVING.
                 </p>
               </div>
@@ -321,16 +321,16 @@ const EnhancedMessageInput = ({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="PASTE ANY CONVERSATION CONTENT FOR AI ANALYSIS..."
-                className="w-full h-64 p-4 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                className="w-full h-64 p-4 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
               />
               <button
                 onClick={handleBatchProcess}
                 disabled={isProcessing || !content.trim()}
-                className={`w-full py-2 px-4 font-space-grotesk font-bold uppercase tracking-wide
+                className={`w-full py-2 px-4 font-primary font-bold uppercase tracking-wide
                   ${
                     isProcessing || !content.trim()
                       ? "bg-medium-grey text-white cursor-not-allowed"
-                      : "bg-gold text-dark-grey hover:bg-gold-light"
+                      : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
                   }
                 `}
               >
@@ -344,7 +344,7 @@ const EnhancedMessageInput = ({
       {/* Error Display */}
       {error && (
         <div className="mt-4 p-4 bg-red-50 border-2 border-red-600">
-          <p className="text-sm text-red-700 font-space-grotesk font-bold uppercase tracking-wide">{error}</p>
+          <p className="text-sm text-red-700 font-primary font-bold uppercase tracking-wide">{error}</p>
         </div>
       )}
     </div>

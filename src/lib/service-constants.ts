@@ -27,10 +27,10 @@ export const SERVICE_BUSINESSES = {
   [SERVICE_TYPES.WHITEKNIGHT]: {
     name: 'White Knight Snow Removal',
     shortName: 'Snow Removal',
-    color: 'blue-600',
-    bgColor: 'bg-blue-600', 
-    textColor: 'text-blue-600',
-    borderColor: 'border-blue-600',
+    color: 'tactical-gold-600',
+    bgColor: 'bg-tactical-gold', 
+    textColor: 'text-tactical-gold',
+    borderColor: 'border-tactical-gold-600',
     description: 'Reliable snow removal and winter maintenance services',
     services: [
       'Residential Snow Removal',
@@ -60,9 +60,9 @@ export const SERVICE_BUSINESSES = {
     name: 'Creative Development',
     shortName: 'Creative',
     color: 'gold',
-    bgColor: 'bg-gold',
+    bgColor: 'bg-tactical-gold',
     textColor: 'text-gold', 
-    borderColor: 'border-gold',
+    borderColor: 'border-hud-border-accent',
     description: 'Creative design and development services',
     services: [
       'Web Development',
@@ -76,7 +76,7 @@ export const SERVICE_BUSINESSES = {
 
 export const SERVICE_COLORS = {
   [SERVICE_TYPES.WOODGREEN]: 'green-600',
-  [SERVICE_TYPES.WHITEKNIGHT]: 'blue-600',
+  [SERVICE_TYPES.WHITEKNIGHT]: 'tactical-gold-600',
   [SERVICE_TYPES.PUPAWALK]: 'purple-600', 
   [SERVICE_TYPES.CREATIVE]: 'gold'
 } as const;

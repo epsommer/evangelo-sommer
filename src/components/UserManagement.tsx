@@ -64,10 +64,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
     return (
       <div className="text-center py-12">
         <Users className="h-16 w-16 mx-auto mb-4 text-gold opacity-50" />
-        <h3 className="text-xl font-bold text-dark-grey mb-2 font-space-grotesk uppercase">
+        <h3 className="text-xl font-bold text-hud-text-primary mb-2 font-primary uppercase">
           ACCESS RESTRICTED
         </h3>
-        <p className="text-medium-grey font-space-grotesk">
+        <p className="text-medium-grey font-primary">
           User management requires administrator privileges.
         </p>
       </div>
@@ -77,7 +77,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
   const getRoleColor = (role: UserRole) => {
     switch (role) {
       case 'SUPER_ADMIN': return 'bg-red-600 text-white'
-      case 'ADMIN': return 'bg-blue-600 text-white'
+      case 'ADMIN': return 'bg-tactical-gold text-white'
       case 'MANAGER': return 'bg-purple-600 text-white'
       case 'USER': return 'bg-green-600 text-white'
       case 'VIEWER': return 'bg-gray-600 text-white'
@@ -88,10 +88,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
   const getStatusColor = (status: UserStatus) => {
     switch (status) {
       case 'ACTIVE': return 'bg-green-100 text-green-800'
-      case 'INACTIVE': return 'bg-gray-100 text-gray-800'
+      case 'INACTIVE': return 'bg-tactical-grey-200 text-tactical-grey-700'
       case 'SUSPENDED': return 'bg-red-100 text-red-800'
       case 'LOCKED': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
+      default: return 'bg-tactical-grey-200 text-tactical-grey-700'
     }
   }
 
@@ -132,15 +132,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+          <h2 className="text-2xl font-bold text-hud-text-primary font-primary uppercase tracking-wide">
             USER MANAGEMENT
           </h2>
-          <p className="text-medium-grey font-space-grotesk">
+          <p className="text-medium-grey font-primary">
             Manage system users, roles, and security settings
           </p>
         </div>
         <Button 
-          className="bg-gold text-dark-grey font-bold font-space-grotesk uppercase tracking-wide hover:bg-gold-dark"
+          className="bg-tactical-gold text-hud-text-primary font-bold font-primary uppercase tracking-wide hover:bg-tactical-gold-dark"
           onClick={() => setShowCreateModal(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -150,57 +150,57 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
 
       {/* User Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-white border-2 border-light-grey">
+        <Card className="bg-white border-2 border-hud-border">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                 TOTAL USERS
               </span>
               <Users className="h-5 w-5 text-gold" />
             </div>
-            <div className="text-2xl font-bold text-dark-grey font-space-grotesk">
+            <div className="text-2xl font-bold text-hud-text-primary font-primary">
               {users.length}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-2 border-light-grey">
+        <Card className="bg-white border-2 border-hud-border">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                 ACTIVE USERS
               </span>
               <UserCheck className="h-5 w-5 text-green-600" />
             </div>
-            <div className="text-2xl font-bold text-green-600 font-space-grotesk">
+            <div className="text-2xl font-bold text-green-600 font-primary">
               {users.filter(u => u.status === 'ACTIVE').length}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-2 border-light-grey">
+        <Card className="bg-white border-2 border-hud-border">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                 2FA ENABLED
               </span>
-              <Shield className="h-5 w-5 text-blue-600" />
+              <Shield className="h-5 w-5 text-tactical-gold" />
             </div>
-            <div className="text-2xl font-bold text-blue-600 font-space-grotesk">
+            <div className="text-2xl font-bold text-tactical-gold font-primary">
               {users.filter(u => u.twoFactorEnabled).length}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-2 border-light-grey">
+        <Card className="bg-white border-2 border-hud-border">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+              <span className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                 ISSUES
               </span>
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
-            <div className="text-2xl font-bold text-red-600 font-space-grotesk">
+            <div className="text-2xl font-bold text-red-600 font-primary">
               {users.filter(u => u.status === 'SUSPENDED' || u.status === 'LOCKED' || u.failedLoginAttempts > 0).length}
             </div>
           </CardContent>
@@ -208,9 +208,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
       </div>
 
       {/* Users Table */}
-      <Card className="bg-white border-2 border-light-grey">
-        <CardHeader className="bg-off-white border-b border-light-grey p-6">
-          <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+      <Card className="bg-white border-2 border-hud-border">
+        <CardHeader className="bg-hud-background-secondary border-b border-hud-border p-6">
+          <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             SYSTEM USERS
           </h3>
         </CardHeader>
@@ -219,35 +219,35 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
             <table className="w-full">
               <thead className="bg-light-grey">
                 <tr>
-                  <th className="text-left p-4 font-bold text-dark-grey font-space-grotesk uppercase text-sm tracking-wide">
+                  <th className="text-left p-4 font-bold text-hud-text-primary font-primary uppercase text-sm tracking-wide">
                     USER
                   </th>
-                  <th className="text-left p-4 font-bold text-dark-grey font-space-grotesk uppercase text-sm tracking-wide">
+                  <th className="text-left p-4 font-bold text-hud-text-primary font-primary uppercase text-sm tracking-wide">
                     ROLE
                   </th>
-                  <th className="text-left p-4 font-bold text-dark-grey font-space-grotesk uppercase text-sm tracking-wide">
+                  <th className="text-left p-4 font-bold text-hud-text-primary font-primary uppercase text-sm tracking-wide">
                     STATUS
                   </th>
-                  <th className="text-left p-4 font-bold text-dark-grey font-space-grotesk uppercase text-sm tracking-wide">
+                  <th className="text-left p-4 font-bold text-hud-text-primary font-primary uppercase text-sm tracking-wide">
                     SECURITY
                   </th>
-                  <th className="text-left p-4 font-bold text-dark-grey font-space-grotesk uppercase text-sm tracking-wide">
+                  <th className="text-left p-4 font-bold text-hud-text-primary font-primary uppercase text-sm tracking-wide">
                     LAST LOGIN
                   </th>
-                  <th className="text-left p-4 font-bold text-dark-grey font-space-grotesk uppercase text-sm tracking-wide">
+                  <th className="text-left p-4 font-bold text-hud-text-primary font-primary uppercase text-sm tracking-wide">
                     ACTIONS
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-light-grey hover:bg-off-white transition-colors">
+                  <tr key={user.id} className="border-b border-hud-border hover:bg-hud-background-secondary transition-colors">
                     <td className="p-4">
                       <div>
-                        <div className="font-bold text-dark-grey font-space-grotesk">
+                        <div className="font-bold text-hud-text-primary font-primary">
                           {user.name}
                         </div>
-                        <div className="text-sm text-medium-grey font-space-grotesk">
+                        <div className="text-sm text-medium-grey font-primary">
                           {user.email}
                         </div>
                       </div>
@@ -270,7 +270,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                           <Shield className="h-4 w-4 text-gray-400" title="2FA Disabled" />
                         )}
                         {user.emailVerified ? (
-                          <UserCheck className="h-4 w-4 text-blue-600" title="Email Verified" />
+                          <UserCheck className="h-4 w-4 text-tactical-gold" title="Email Verified" />
                         ) : (
                           <UserX className="h-4 w-4 text-red-600" title="Email Not Verified" />
                         )}
@@ -283,7 +283,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="text-sm text-dark-grey font-space-grotesk">
+                      <div className="text-sm text-hud-text-primary font-primary">
                         {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
                       </div>
                     </td>
@@ -348,14 +348,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
       {showUserDetails && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
-            <div className="p-6 border-b border-light-grey">
+            <div className="p-6 border-b border-hud-border">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-dark-grey font-space-grotesk uppercase">
+                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase">
                   USER DETAILS
                 </h3>
                 <button
                   onClick={() => setShowUserDetails(false)}
-                  className="text-medium-grey hover:text-dark-grey"
+                  className="text-medium-grey hover:text-hud-text-primary"
                 >
                   ✕
                 </button>
@@ -364,25 +364,25 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                     NAME
                   </label>
-                  <div className="text-dark-grey font-space-grotesk">{selectedUser.name}</div>
+                  <div className="text-hud-text-primary font-primary">{selectedUser.name}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                     EMAIL
                   </label>
-                  <div className="text-dark-grey font-space-grotesk">{selectedUser.email}</div>
+                  <div className="text-hud-text-primary font-primary">{selectedUser.email}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                     ROLE
                   </label>
                   <select
                     value={selectedUser.role}
                     onChange={(e) => handleRoleChange(selectedUser.id, e.target.value as UserRole)}
-                    className="w-full mt-1 p-2 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk"
+                    className="w-full mt-1 p-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
                   >
                     <option value="SUPER_ADMIN">Super Admin</option>
                     <option value="ADMIN">Admin</option>
@@ -392,13 +392,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-space-grotesk">
+                  <label className="text-sm font-bold uppercase text-medium-grey tracking-wider font-primary">
                     STATUS
                   </label>
                   <select
                     value={selectedUser.status}
                     onChange={(e) => handleStatusChange(selectedUser.id, e.target.value as UserStatus)}
-                    className="w-full mt-1 p-2 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk"
+                    className="w-full mt-1 p-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
@@ -408,10 +408,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-off-white">
+              <div className="flex items-center justify-between p-4 bg-hud-background-secondary">
                 <div>
-                  <span className="font-bold text-dark-grey font-space-grotesk">Two-Factor Authentication</span>
-                  <div className="text-sm text-medium-grey font-space-grotesk">
+                  <span className="font-bold text-hud-text-primary font-primary">Two-Factor Authentication</span>
+                  <div className="text-sm text-medium-grey font-primary">
                     {selectedUser.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                   </div>
                 </div>

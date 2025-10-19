@@ -274,7 +274,7 @@ export class PDFGenerator {
             padding: 15px;
             background-color: #e3f2fd;
             border-radius: 5px;
-            border-left: 4px solid #2196f3;
+            border-left: 4px solid #D4AF37;
         }
         .footer {
             margin-top: 40px;
@@ -485,7 +485,7 @@ export class PDFGenerator {
         <p style="font-size: 18px; border-top: 2px solid #333; padding-top: 10px;"><strong>Amount Due: ${formatCurrency(invoice.totalAmount)}</strong></p>
     </div>
 
-    <div style="background-color: #e3f2fd; padding: 15px; border-radius: 5px; border-left: 4px solid #2196f3;">
+    <div style="background-color: #e3f2fd; padding: 15px; border-radius: 5px; border-left: 4px solid #D4AF37;">
         <h4 style="margin-top: 0;">Payment Information:</h4>
         <p><strong>Payment Terms:</strong> ${invoice.paymentTerms.replace('_', ' ').toUpperCase()}</p>
         <p><strong>Due Date:</strong> ${formatDate(invoice.dueDate)}</p>

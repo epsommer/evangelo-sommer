@@ -148,7 +148,7 @@ export default function FrequencyScheduler({
     <div className="space-y-6">
       {/* Main Frequency Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-tactical-grey-600 mb-3">
           Frequency
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -160,12 +160,12 @@ export default function FrequencyScheduler({
               onClick={() => handleFrequencyChange(option.value)}
               className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                 rule.frequency === option.value
-                  ? "border-blue-500 bg-blue-50 text-blue-700"
-                  : "border-gray-200 hover:border-gray-300 text-gray-700"
+                  ? "border-tactical-gold-500 bg-tactical-gold-muted text-tactical-brown-dark"
+                  : "border-tactical-grey-300 hover:border-tactical-grey-400 text-tactical-grey-600"
               } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
             >
               <div className="font-semibold">{option.label}</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-tactical-grey-500 mt-1">
                 {option.description}
               </div>
             </button>
@@ -176,7 +176,7 @@ export default function FrequencyScheduler({
       {/* Interval Configuration */}
       {rule.frequency && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
             Repeat every
           </label>
           <div className="flex items-center space-x-2">
@@ -192,9 +192,9 @@ export default function FrequencyScheduler({
               onChange={(e) =>
                 handleIntervalChange(parseInt(e.target.value) || 1)
               }
-              className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:opacity-50"
+              className="w-20 px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white disabled:opacity-50"
             />
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-tactical-grey-600">
               {rule.frequency === "daily"
                 ? rule.interval === 1
                   ? "day"
@@ -222,7 +222,7 @@ export default function FrequencyScheduler({
       {/* Weekly and Bi-weekly Configuration */}
       {(rule.frequency === "weekly" || rule.frequency === "bi-weekly") && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-tactical-grey-600 mb-3">
             Repeat on
           </label>
           <div className="flex flex-wrap gap-2">
@@ -240,8 +240,8 @@ export default function FrequencyScheduler({
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
                     rule.daysOfWeek?.includes(index)
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-tactical-gold-muted0 text-white"
+                      : "bg-tactical-grey-200 text-tactical-grey-600 hover:bg-tactical-grey-300"
                   } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {day}
@@ -260,7 +260,7 @@ export default function FrequencyScheduler({
       {/* Monthly Configuration */}
       {rule.frequency === "monthly" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-tactical-grey-600 mb-3">
             Repeat on
           </label>
           <div className="space-y-3">
@@ -273,7 +273,7 @@ export default function FrequencyScheduler({
                 onChange={() => handleDayOfMonthChange(new Date().getDate())}
                 className="mr-3"
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-tactical-grey-600">
                 Day {new Date().getDate()} of the month
               </span>
             </label>
@@ -286,7 +286,7 @@ export default function FrequencyScheduler({
                 onChange={() => handleDayOfMonthChange(-1)}
                 className="mr-3"
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-tactical-grey-600">
                 Last day of the month
               </span>
             </label>
@@ -305,7 +305,7 @@ export default function FrequencyScheduler({
                 onChange={() => {}}
                 className="mr-3"
               />
-              <span className="text-sm text-gray-700 mr-2">Day</span>
+              <span className="text-sm text-tactical-grey-600 mr-2">Day</span>
               <input
                 type="number"
                 min="1"
@@ -324,9 +324,9 @@ export default function FrequencyScheduler({
                     parseInt((e.target as HTMLInputElement).value) || 1,
                   )
                 }
-                className="w-16 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:opacity-50"
+                className="w-16 px-2 py-1 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white disabled:opacity-50"
               />
-              <span className="text-sm text-gray-700 ml-2">of the month</span>
+              <span className="text-sm text-tactical-grey-600 ml-2">of the month</span>
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function FrequencyScheduler({
 
       {/* End Rule Configuration */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-tactical-grey-600 mb-3">
           End repeat
         </label>
         <div className="space-y-3">
@@ -347,7 +347,7 @@ export default function FrequencyScheduler({
               onChange={() => handleEndRuleChange({ type: "never" })}
               className="mr-3"
             />
-            <span className="text-sm text-gray-700">Never</span>
+            <span className="text-sm text-tactical-grey-600">Never</span>
           </label>
 
           <div className="flex items-center">
@@ -361,7 +361,7 @@ export default function FrequencyScheduler({
               }
               className="mr-3"
             />
-            <span className="text-sm text-gray-700 mr-2">After</span>
+            <span className="text-sm text-tactical-grey-600 mr-2">After</span>
             <input
               type="number"
               min="1"
@@ -381,9 +381,9 @@ export default function FrequencyScheduler({
               onClick={() =>
                 handleEndRuleChange({ type: "occurrences", value: 10 })
               }
-              className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:opacity-50"
+              className="w-20 px-2 py-1 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white disabled:opacity-50"
             />
-            <span className="text-sm text-gray-700 ml-2">occurrences</span>
+            <span className="text-sm text-tactical-grey-600 ml-2">occurrences</span>
           </div>
 
           <div className="flex items-center">
@@ -402,7 +402,7 @@ export default function FrequencyScheduler({
               }}
               className="mr-3"
             />
-            <span className="text-sm text-gray-700 mr-2">On</span>
+            <span className="text-sm text-tactical-grey-600 mr-2">On</span>
             <input
               type="date"
               disabled={disabled}
@@ -426,7 +426,7 @@ export default function FrequencyScheduler({
                   });
                 }
               }}
-              className="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:opacity-50"
+              className="px-3 py-1 border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white disabled:opacity-50"
             />
           </div>
         </div>
@@ -438,7 +438,7 @@ export default function FrequencyScheduler({
           type="button"
           disabled={disabled}
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50"
+          className="text-sm text-tactical-gold hover:text-tactical-brown-dark font-medium disabled:opacity-50"
         >
           {showAdvanced ? "Hide" : "Show"} advanced options
         </button>
@@ -446,9 +446,9 @@ export default function FrequencyScheduler({
 
       {/* Advanced Options */}
       {showAdvanced && (
-        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+        <div className="space-y-4 p-4 bg-tactical-grey-100 rounded-lg">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
               Timezone
             </label>
             <select
@@ -458,7 +458,7 @@ export default function FrequencyScheduler({
                 Intl.DateTimeFormat().resolvedOptions().timeZone
               }
               onChange={(e) => setRule({ ...rule, timezone: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:opacity-50"
+              className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white disabled:opacity-50"
             >
               <option value="America/New_York">Eastern Time</option>
               <option value="America/Chicago">Central Time</option>
@@ -518,16 +518,16 @@ export default function FrequencyScheduler({
       {/* Preview */}
       {showPreview && validation.isValid && preview.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
+          <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
             Next {maxPreviewOccurrences} occurrences
           </h4>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {preview.map((occurrence, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
+                className="flex items-center justify-between p-2 bg-tactical-grey-100 rounded text-sm"
               >
-                <span className="text-gray-700">
+                <span className="text-tactical-grey-600">
                   {new Date(occurrence.date).toLocaleDateString("en-US", {
                     weekday: "short",
                     month: "short",
@@ -537,7 +537,7 @@ export default function FrequencyScheduler({
                 </span>
                 <div className="flex items-center space-x-2">
                   {occurrence.metadata?.isWeekend && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                    <span className="px-2 py-1 bg-tactical-gold-muted text-tactical-brown-dark text-xs rounded">
                       Weekend
                     </span>
                   )}
@@ -565,10 +565,10 @@ export default function FrequencyScheduler({
 
       {/* Summary */}
       {validation.isValid && rule.frequency && rule.interval && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="p-4 bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg">
           <div className="flex items-start space-x-2">
             <svg
-              className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
+              className="w-5 h-5 text-tactical-grey-2000 flex-shrink-0 mt-0.5"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -579,10 +579,10 @@ export default function FrequencyScheduler({
               />
             </svg>
             <div>
-              <h4 className="text-sm font-medium text-blue-900 mb-1">
+              <h4 className="text-sm font-medium text-tactical-brown-dark mb-1">
                 Schedule Summary
               </h4>
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-tactical-brown-dark">
                 {FrequencyCalculator.describeScheduleRule(rule as ScheduleRule)}
               </p>
             </div>

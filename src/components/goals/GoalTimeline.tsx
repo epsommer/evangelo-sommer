@@ -262,13 +262,13 @@ const GoalTimeline: React.FC<GoalTimelineProps> = ({
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "relative p-2 min-h-[80px] border border-light-grey rounded-lg transition-colors",
+                    "relative p-2 min-h-[80px] border border-hud-border rounded-lg transition-colors",
                     hasItems && "bg-light-background hover:bg-medium-grey/10",
                     !hasItems && "bg-white hover:bg-light-background"
                   )}
                 >
                   {/* Date number */}
-                  <div className="text-sm font-medium text-dark-grey mb-1">
+                  <div className="text-sm font-medium text-hud-text-primary mb-1">
                     {format(day, viewType === 'year' ? 'MMM' : 'd')}
                   </div>
                   
@@ -316,9 +316,9 @@ const GoalTimeline: React.FC<GoalTimelineProps> = ({
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-4 pt-4 border-t border-light-grey">
+          <div className="flex flex-wrap gap-4 pt-4 border-t border-hud-border">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-blue-500" />
+              <Target className="w-4 h-4 text-tactical-grey-2000" />
               <span className="text-sm text-medium-grey">Goal</span>
             </div>
             <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ const GoalTimeline: React.FC<GoalTimelineProps> = ({
               <span className="text-sm text-medium-grey">Completed</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-500" />
+              <Clock className="w-4 h-4 text-tactical-grey-2000" />
               <span className="text-sm text-medium-grey">In Progress</span>
             </div>
             <div className="flex items-center gap-2">
@@ -340,15 +340,15 @@ const GoalTimeline: React.FC<GoalTimelineProps> = ({
           </div>
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-light-grey">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-hud-border">
             <div className="text-center">
-              <div className="text-2xl font-bold text-dark-grey">
+              <div className="text-2xl font-bold text-hud-text-primary">
                 {visibleItems.filter(item => item.type === 'goal').length}
               </div>
               <div className="text-sm text-medium-grey">Goals</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-dark-grey">
+              <div className="text-2xl font-bold text-hud-text-primary">
                 {visibleItems.filter(item => item.type === 'milestone').length}
               </div>
               <div className="text-sm text-medium-grey">Milestones</div>

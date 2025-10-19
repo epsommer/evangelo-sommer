@@ -1,6 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
 
 // Global variable to store the Prisma client instance
 declare global {
@@ -54,33 +52,11 @@ class PrismaClientSingleton {
         throw new Error('DATABASE_URL environment variable is not set');
       }
 
-      // For SQLite, check if database file exists or can be created
-      if (process.env.DATABASE_URL.startsWith('file:')) {
-        const dbPath = process.env.DATABASE_URL.replace('file:', '');
-        const fullPath = path.resolve(process.cwd(), dbPath);
-        const dirPath = path.dirname(fullPath);
-        
-        // Ensure directory exists
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath, { recursive: true });
-        }
-
-        // Check if file exists or can be created
-        if (!fs.existsSync(fullPath)) {
-          try {
-            fs.writeFileSync(fullPath, '');
-            console.log(`Created SQLite database file: ${fullPath}`);
-          } catch (error) {
-            throw new Error(`Cannot create SQLite database file: ${fullPath} - ${error}`);
-          }
-        }
-
-        // Check if file is writable
-        try {
-          fs.accessSync(fullPath, fs.constants.W_OK | fs.constants.R_OK);
-        } catch (error) {
-          throw new Error(`SQLite database file is not accessible: ${fullPath} - ${error}`);
-        }
+      // For SQLite, we'll rely on Prisma to handle file creation
+      // File system operations are handled server-side only
+      if (typeof window !== 'undefined') {
+        // We're in the browser, don't initialize Prisma
+        throw new Error('Prisma should not be initialized in the browser');
       }
 
       // In development, use global variable to prevent hot reload issues
@@ -137,8 +113,14 @@ class PrismaClientSingleton {
   }
 }
 
-// Export the singleton instance getter
-export const getPrismaClient = () => PrismaClientSingleton.getInstance();
+// Export the singleton instance getter - only on server side
+export const getPrismaClient = () => {
+  if (typeof window !== 'undefined') {
+    console.error('Prisma client should not be accessed on the client side')
+    return null
+  }
+  return PrismaClientSingleton.getInstance()
+};
 
 // Export availability checker
 export const isPrismaAvailable = () => PrismaClientSingleton.isAvailable();
@@ -149,5 +131,5 @@ export const testPrismaConnection = () => PrismaClientSingleton.testConnection()
 // Export disconnect function for cleanup
 export const disconnectPrisma = () => PrismaClientSingleton.disconnect();
 
-// Default export for backward compatibility
-export default getPrismaClient();
+// Default export for backward compatibility - only initialize on server side
+export default typeof window === 'undefined' ? getPrismaClient() : null;

@@ -37,7 +37,7 @@ function ErrorContent() {
   const errorInfo = errorMessages[error || "Default"] || errorMessages.Default;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-tactical-grey-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-red-100 rounded-full flex items-center justify-center">
@@ -55,10 +55,10 @@ function ErrorContent() {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-tactical-grey-800">
             {errorInfo.title}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-tactical-grey-500">
             {errorInfo.description}
           </p>
 
@@ -91,14 +91,14 @@ function ErrorContent() {
           <div className="mt-6 space-y-4">
             <Link
               href="/auth/signin"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-tactical-gold hover:bg-tactical-gold-dark"
             >
               Try Again
             </Link>
             <div>
               <Link
                 href="/"
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-tactical-grey-500 hover:text-tactical-grey-600"
               >
                 ← Back to Homepage
               </Link>
@@ -115,7 +115,7 @@ export default function AuthError() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tactical-gold"></div>
         </div>
       }
     >

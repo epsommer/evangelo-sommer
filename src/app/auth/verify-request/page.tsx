@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function VerifyRequest() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-tactical-grey-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -21,17 +21,17 @@ export default function VerifyRequest() {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-tactical-grey-800">
             Check your email
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-tactical-grey-500">
             A sign-in link has been sent to your email address.
           </p>
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+          <div className="mt-6 bg-tactical-gold-muted border border-tactical-grey-300 rounded-md p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-blue-400"
+                  className="h-5 w-5 text-tactical-gold-400"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -43,10 +43,10 @@ export default function VerifyRequest() {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
+                <h3 className="text-sm font-medium text-tactical-brown-dark">
                   Tips for finding your email:
                 </h3>
-                <div className="mt-2 text-sm text-blue-700">
+                <div className="mt-2 text-sm text-tactical-brown-dark">
                   <ul className="list-disc pl-5 space-y-1">
                     <li>Check your spam/junk folder</li>
                     <li>Look for an email from admin@evangelosommer.com</li>
@@ -59,14 +59,14 @@ export default function VerifyRequest() {
           <div className="mt-6 space-y-4">
             <Link
               href="/auth/signin"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-tactical-gold hover:bg-tactical-gold-dark"
             >
               Send Another Link
             </Link>
             <div>
               <Link
                 href="/"
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-tactical-grey-500 hover:text-tactical-grey-600"
               >
                 ← Back to Homepage
               </Link>

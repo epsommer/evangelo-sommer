@@ -51,7 +51,7 @@ export default function SettingsPanel({
       <div className="bg-gray-900 text-white p-8 rounded-xl border border-gray-600 w-96 max-w-90vw">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-400">⚙️ Settings</h2>
+          <h2 className="text-2xl font-bold text-tactical-gold-400">⚙️ Settings</h2>
           <button
             onClick={onToggle}
             className="text-gray-400 hover:text-red-400 text-xl"
@@ -67,7 +67,7 @@ export default function SettingsPanel({
               type="checkbox"
               checked={audioEnabled}
               onChange={(e) => setAudioEnabled(e.target.checked)}
-              className="w-5 h-5 text-blue-600"
+              className="w-5 h-5 text-tactical-gold"
             />
             <span className="text-lg">🔊 Enable Audio</span>
           </label>
@@ -128,13 +128,13 @@ export default function SettingsPanel({
         <div className="flex space-x-3">
           <button
             onClick={handleSave}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+            className="flex-1 bg-tactical-gold hover:bg-tactical-gold-dark text-white py-2 px-4 rounded-lg transition-colors"
           >
             💾 Save & Close
           </button>
           <button
             onClick={handleReset}
-            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors"
+            className="flex-1 bg-gray-600 hover:bg-tactical-grey-700 text-white py-2 px-4 rounded-lg transition-colors"
           >
             🔄 Reset
           </button>

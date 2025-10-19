@@ -334,12 +334,12 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white border-2 border-light-grey">
-        <DialogHeader className="bg-off-white border-b border-light-grey p-6 -m-6 mb-6">
-          <DialogTitle className="text-xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+      <DialogContent className="sm:max-w-[500px] bg-white border-2 border-hud-border">
+        <DialogHeader className="bg-hud-background-secondary border-b border-hud-border p-6 -m-6 mb-6">
+          <DialogTitle className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             SET UP SCHEDULE
           </DialogTitle>
-          <p className="text-sm text-medium-grey font-space-grotesk mt-2">
+          <p className="text-sm text-medium-grey font-primary mt-2">
             Schedule landscaping service for {clientName}
           </p>
         </DialogHeader>
@@ -348,7 +348,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+              <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
                 DATE
               </label>
               <input
@@ -356,19 +356,19 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
                 value={formData.scheduledDate}
                 onChange={(e) => handleInputChange("scheduledDate", e.target.value)}
                 min={today}
-                className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+                className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+              <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
                 TIME
               </label>
               <input
                 type="time"
                 value={formData.scheduledTime}
                 onChange={(e) => handleInputChange("scheduledTime", e.target.value)}
-                className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+                className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
                 required
               />
             </div>
@@ -376,7 +376,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
           {/* Service Type */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               SERVICE TYPE
               {isLoadingServices && (
                 <span className="ml-2 text-xs text-medium-grey font-normal lowercase">
@@ -386,12 +386,12 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
             </label>
             
             {isLoadingServices ? (
-              <div className="w-full p-3 border-2 border-light-grey bg-gray-50 text-medium-grey font-space-grotesk flex items-center">
+              <div className="w-full p-3 border-2 border-hud-border bg-tactical-grey-100 text-medium-grey font-primary flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-medium-grey mr-2"></div>
                 Loading client services...
               </div>
             ) : clientServices.length === 0 && !error ? (
-              <div className="w-full p-3 border-2 border-orange-200 bg-orange-50 text-orange-700 font-space-grotesk">
+              <div className="w-full p-3 border-2 border-orange-200 bg-orange-50 text-orange-700 font-primary">
                 <p className="text-sm">No active services found for this client.</p>
                 <p className="text-xs mt-1">Using default service options.</p>
               </div>
@@ -401,7 +401,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
               value={formData.serviceType}
               onChange={(e) => handleInputChange("serviceType", e.target.value)}
               disabled={isLoadingServices}
-              className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none disabled:bg-tactical-grey-100 disabled:text-gray-400 disabled:cursor-not-allowed"
             >
               {serviceTypes.map(type => (
                 <option key={type.value} value={type.value}>
@@ -412,12 +412,12 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
             
             {/* Show service info for client-specific services */}
             {clientServices.length > 0 && !isLoadingServices && (
-              <div className="mt-2 text-xs text-medium-grey font-space-grotesk">
+              <div className="mt-2 text-xs text-medium-grey font-primary">
                 <p>
                   Showing {clientServices.length} active service{clientServices.length !== 1 ? 's' : ''} for {clientName}
                 </p>
                 {clientServices.find(s => s.type === formData.serviceType)?.lastServiceDate && (
-                  <p className="text-dark-grey">
+                  <p className="text-hud-text-primary">
                     Last service: {new Date(clientServices.find(s => s.type === formData.serviceType)!.lastServiceDate!).toLocaleDateString()}
                   </p>
                 )}
@@ -427,13 +427,13 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
           {/* Duration */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               DURATION
             </label>
             <select
               value={formData.duration}
               onChange={(e) => handleInputChange("duration", parseInt(e.target.value))}
-              className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+              className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
             >
               {durationOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -445,13 +445,13 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
           {/* Recurrence */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               RECURRENCE
             </label>
             <select
               value={formData.recurrencePattern}
               onChange={(e) => handleInputChange("recurrencePattern", e.target.value)}
-              className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+              className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
             >
               {recurrenceOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -464,7 +464,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
             {formData.recurrencePattern === "CUSTOM" && (
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-dark-grey mb-1 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-hud-text-primary mb-1 font-primary uppercase tracking-wide">
                     EVERY
                   </label>
                   <input
@@ -472,18 +472,18 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
                     value={formData.customInterval}
                     onChange={(e) => handleInputChange("customInterval", parseInt(e.target.value) || 1)}
                     min="1"
-                    className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+                    className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
                     placeholder="1"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-dark-grey mb-1 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-hud-text-primary mb-1 font-primary uppercase tracking-wide">
                     UNIT
                   </label>
                   <select
                     value={formData.customIntervalUnit}
                     onChange={(e) => handleInputChange("customIntervalUnit", e.target.value)}
-                    className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+                    className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
                   >
                     {intervalUnitOptions.map(option => (
                       <option key={option.value} value={option.value}>
@@ -498,13 +498,13 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               PRIORITY
             </label>
             <select
               value={formData.priority}
               onChange={(e) => handleInputChange("priority", e.target.value)}
-              className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none"
+              className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none"
             >
               {priorityOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -516,7 +516,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               NOTES / DESCRIPTION
             </label>
             <textarea
@@ -524,7 +524,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
               onChange={(e) => handleInputChange("notes", e.target.value)}
               placeholder="Add any specific notes or agenda items..."
               rows={3}
-              className="w-full p-3 border-2 border-light-grey bg-white text-dark-grey font-space-grotesk focus:border-gold focus:outline-none resize-none"
+              className="w-full p-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-hud-border-accent focus:outline-none resize-none"
             />
           </div>
 
@@ -537,19 +537,19 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
             }`}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className={`text-sm font-space-grotesk font-medium ${
+                  <p className={`text-sm font-primary font-medium ${
                     !isDatabaseAvailable ? "text-yellow-800" : "text-red-700"
                   }`}>
                     {!isDatabaseAvailable && "⚠️ Connection Issue"}
                     {isDatabaseAvailable && "❌ Error"}
                   </p>
-                  <p className={`text-sm font-space-grotesk mt-1 ${
+                  <p className={`text-sm font-primary mt-1 ${
                     !isDatabaseAvailable ? "text-yellow-700" : "text-red-700"
                   }`}>
                     {error}
                   </p>
                   {retryCount > 0 && (
-                    <p className={`text-xs font-space-grotesk mt-2 ${
+                    <p className={`text-xs font-primary mt-2 ${
                       !isDatabaseAvailable ? "text-yellow-600" : "text-red-600"
                     }`}>
                       Retry attempt {retryCount} of 2
@@ -592,7 +592,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
             type="submit"
             onClick={handleSubmit}
             disabled={isLoading || isLoadingServices}
-            className="flex-1 bg-gold text-dark-grey hover:bg-gold-dark"
+            className="flex-1 bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-dark"
           >
             {isLoading ? (
               <>

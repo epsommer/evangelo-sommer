@@ -1,14 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import SessionProviderWrapper from "../components/providers/SessionProviderWrapper";
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "COMMAND CENTER | MSCRMS (Multi-service Client Relationship Management Service)",
@@ -22,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} font-space-grotesk antialiased`}>
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/xmz8zog.css" />
+        <meta name="color-scheme" content="light dark" />
+      </head>
+      <body className="font-hud-ui antialiased">
         <SessionProviderWrapper>{children}</SessionProviderWrapper>
       </body>
     </html>

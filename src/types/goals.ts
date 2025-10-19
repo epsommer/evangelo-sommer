@@ -435,12 +435,12 @@ export const QUARTERS: Quarter[] = [
 ]
 
 export const GOAL_CATEGORIES: { value: GoalCategory; label: string; color: string }[] = [
-  { value: 'business', label: 'Business', color: '#3B82F6' },
+  { value: 'business', label: 'Business', color: '#D4AF37' },
   { value: 'personal', label: 'Personal', color: '#10B981' },
   { value: 'client', label: 'Client', color: '#F59E0B' },
   { value: 'project', label: 'Project', color: '#8B5CF6' },
   { value: 'health', label: 'Health', color: '#EF4444' },
-  { value: 'learning', label: 'Learning', color: '#06B6D4' },
+  { value: 'learning', label: 'Learning', color: '#D4AF37' },
   { value: 'financial', label: 'Financial', color: '#84CC16' }
 ]
 
@@ -453,7 +453,7 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
 
 export const STATUS_COLORS: Record<GoalStatus, string> = {
   'not-started': '#6B7280',
-  'in-progress': '#3B82F6',
+  'in-progress': '#D4AF37',
   'completed': '#10B981',
   'overdue': '#EF4444',
   'cancelled': '#9CA3AF',

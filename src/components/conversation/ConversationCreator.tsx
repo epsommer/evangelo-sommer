@@ -188,16 +188,16 @@ export default function ConversationCreator({
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <div key={step.key} className="flex items-center">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 font-bold font-space-grotesk ${
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 font-bold font-primary ${
                 index <= currentStepIndex
-                  ? 'bg-gold border-gold text-dark-grey'
-                  : 'bg-white border-light-grey text-medium-grey'
+                  ? 'bg-tactical-gold border-hud-border-accent text-hud-text-primary'
+                  : 'bg-white border-hud-border text-medium-grey'
               }`}>
                 {index + 1}
               </div>
               {index < steps.length - 1 && (
                 <div className={`h-0.5 w-20 ml-4 ${
-                  index < currentStepIndex ? 'bg-gold' : 'bg-light-grey'
+                  index < currentStepIndex ? 'bg-tactical-gold' : 'bg-light-grey'
                 }`} />
               )}
             </div>
@@ -205,10 +205,10 @@ export default function ConversationCreator({
         </div>
         
         <div className="mt-4">
-          <h2 className="text-xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+          <h2 className="text-xl font-bold text-hud-text-primary font-primary uppercase tracking-wide">
             {steps[currentStepIndex]?.title}
           </h2>
-          <p className="text-medium-grey font-space-grotesk">
+          <p className="text-medium-grey font-primary">
             {steps[currentStepIndex]?.description}
           </p>
         </div>
@@ -221,14 +221,14 @@ export default function ConversationCreator({
             <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
-            <span className="font-space-grotesk font-bold text-red-800">Error:</span>
-            <span className="ml-2 font-space-grotesk text-red-700">{error}</span>
+            <span className="font-primary font-bold text-red-800">Error:</span>
+            <span className="ml-2 font-primary text-red-700">{error}</span>
           </div>
         </div>
       )}
 
       {/* Step Content */}
-      <div className="bg-white rounded-lg border-2 border-light-grey p-6 mb-6">
+      <div className="bg-white rounded-lg border-2 border-hud-border p-6 mb-6">
         {currentStep === 'import' && (
           <FileImportEngine
             onMessagesImported={handleMessagesImported}
@@ -273,13 +273,13 @@ export default function ConversationCreator({
       <div className="flex items-center justify-between">
         <button
           onClick={currentStep === 'import' ? onCancel : handlePrevious}
-          className="px-6 py-2 border-2 border-medium-grey text-medium-grey hover:border-dark-grey hover:text-dark-grey font-space-grotesk font-bold uppercase tracking-wide transition-colors"
+          className="px-6 py-2 border-2 border-medium-grey text-medium-grey hover:border-dark-grey hover:text-hud-text-primary font-primary font-bold uppercase tracking-wide transition-colors"
         >
           {currentStep === 'import' ? 'Cancel' : 'Previous'}
         </button>
 
         <div className="text-center">
-          <span className="text-sm text-medium-grey font-space-grotesk">
+          <span className="text-sm text-medium-grey font-primary">
             Step {currentStepIndex + 1} of {steps.length}
           </span>
         </div>
@@ -288,9 +288,9 @@ export default function ConversationCreator({
           <button
             onClick={handleNext}
             disabled={!canProceedToNext()}
-            className={`px-6 py-2 font-space-grotesk font-bold uppercase tracking-wide transition-colors ${
+            className={`px-6 py-2 font-primary font-bold uppercase tracking-wide transition-colors ${
               canProceedToNext()
-                ? 'bg-gold text-dark-grey hover:bg-gold-light'
+                ? 'bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light'
                 : 'bg-light-grey text-medium-grey cursor-not-allowed'
             }`}
           >

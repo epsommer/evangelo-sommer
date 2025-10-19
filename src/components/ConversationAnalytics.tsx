@@ -110,10 +110,10 @@ export default function ConversationAnalytics({
         className={`bg-white rounded-lg shadow p-8 text-center ${className}`}
       >
         <div className="text-4xl mb-4">📊</div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-tactical-grey-800 mb-2">
           No Data Available
         </h3>
-        <p className="text-gray-600">
+        <p className="text-tactical-grey-500">
           No conversations found for the selected criteria.
         </p>
       </div>
@@ -124,7 +124,7 @@ export default function ConversationAnalytics({
     <div className={`space-y-6 ${className}`}>
       {/* Header Controls */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-tactical-grey-800">
           Conversation Analytics
         </h2>
         <div className="flex items-center space-x-4">
@@ -133,7 +133,7 @@ export default function ConversationAnalytics({
             <select
               value={selectedTimeframe}
               onChange={(e) => setSelectedTimeframe(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white text-sm"
+              className="px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white text-sm"
             >
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
@@ -143,7 +143,7 @@ export default function ConversationAnalytics({
           )}
 
           {/* View Mode Selector */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-tactical-grey-200 rounded-lg p-1">
             {[
               { key: "overview", name: "Overview" },
               { key: "detailed", name: "Detailed" },
@@ -155,8 +155,8 @@ export default function ConversationAnalytics({
                 onClick={() => setViewMode(mode.key as ViewMode)}
                 className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                   viewMode === mode.key
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "bg-white text-tactical-gold shadow-sm"
+                    : "text-tactical-grey-500 hover:text-tactical-grey-800"
                 }`}
               >
                 {mode.name}
@@ -171,15 +171,15 @@ export default function ConversationAnalytics({
         <div className="space-y-6">
           {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="bg-tactical-gold-muted rounded-lg p-4 border border-tactical-grey-300">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-tactical-gold">
                   {analytics.engagementData.totalMessages}
                 </div>
-                <div className="text-blue-500">💬</div>
+                <div className="text-tactical-grey-2000">💬</div>
               </div>
-              <div className="text-sm text-blue-800">Total Messages</div>
-              <div className="text-xs text-blue-600 mt-1">
+              <div className="text-sm text-tactical-brown-dark">Total Messages</div>
+              <div className="text-xs text-tactical-gold mt-1">
                 {analytics.engagementData.messagesFromYou} from you,{" "}
                 {analytics.engagementData.messagesFromClient} from clients
               </div>
@@ -233,12 +233,12 @@ export default function ConversationAnalytics({
           {/* Quick Insights */}
           {insights.length > 0 && (
             <div className="bg-white rounded-lg shadow border p-6">
-              <h3 className="font-medium text-gray-900 mb-4">Key Insights</h3>
+              <h3 className="font-medium text-tactical-grey-800 mb-4">Key Insights</h3>
               <div className="space-y-3">
                 {insights.slice(0, 3).map((insight, index) => (
                   <div
                     key={index}
-                    className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
+                    className="flex items-start space-x-3 p-3 bg-tactical-grey-100 rounded-lg"
                   >
                     <div className="text-lg">
                       {insight.type === "opportunity"
@@ -250,10 +250,10 @@ export default function ConversationAnalytics({
                             : "💡"}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900 text-sm">
+                      <div className="font-medium text-tactical-grey-800 text-sm">
                         {insight.title}
                       </div>
-                      <div className="text-gray-600 text-sm">
+                      <div className="text-tactical-grey-500 text-sm">
                         {insight.description}
                       </div>
                     </div>
@@ -265,7 +265,7 @@ export default function ConversationAnalytics({
                             ? "bg-orange-100 text-orange-800"
                             : insight.priority === "medium"
                               ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
+                              : "bg-tactical-grey-200 text-tactical-grey-700"
                       }`}
                     >
                       {insight.priority}
@@ -283,12 +283,12 @@ export default function ConversationAnalytics({
         <div className="space-y-6">
           {/* Communication Patterns */}
           <div className="bg-white rounded-lg shadow border p-6">
-            <h3 className="font-medium text-gray-900 mb-4">
+            <h3 className="font-medium text-tactical-grey-800 mb-4">
               Communication Patterns
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
                   Preferred Methods
                 </h4>
                 <div className="space-y-2">
@@ -307,10 +307,10 @@ export default function ConversationAnalytics({
                       key={method}
                       className="flex items-center justify-between"
                     >
-                      <span className="text-sm text-gray-700 capitalize">
+                      <span className="text-sm text-tactical-grey-600 capitalize">
                         {method}
                       </span>
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-tactical-grey-800">
                         {time > 0 ? formatDuration(time) : "N/A"}
                       </span>
                     </div>
@@ -319,7 +319,7 @@ export default function ConversationAnalytics({
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
                   Best Response Times
                 </h4>
                 <div className="space-y-2">
@@ -330,19 +330,19 @@ export default function ConversationAnalytics({
                         key={index}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-tactical-grey-600">
                           {time.hour}:00 - {time.hour + 1}:00
                         </span>
                         <div className="flex items-center space-x-2">
-                          <div className="w-16 h-2 bg-gray-200 rounded-full">
+                          <div className="w-16 h-2 bg-tactical-grey-300 rounded-full">
                             <div
-                              className="h-full bg-blue-500 rounded-full"
+                              className="h-full bg-tactical-gold-muted0 rounded-full"
                               style={{
                                 width: `${(time.responseRate / Math.max(...analytics.communicationPatterns.bestResponseTimes.map((t) => t.responseRate))) * 100}%`,
                               }}
                             />
                           </div>
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-tactical-grey-500">
                             {time.responseRate}
                           </span>
                         </div>
@@ -355,38 +355,38 @@ export default function ConversationAnalytics({
 
           {/* Action Items Breakdown */}
           <div className="bg-white rounded-lg shadow border p-6">
-            <h3 className="font-medium text-gray-900 mb-4">
+            <h3 className="font-medium text-tactical-grey-800 mb-4">
               Action Items Analysis
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-tactical-gold">
                   {analytics.actionItemsTracking.totalActionItems}
                 </div>
-                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-sm text-tactical-grey-500">Total</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {analytics.actionItemsTracking.completedActionItems}
                 </div>
-                <div className="text-sm text-gray-600">Completed</div>
+                <div className="text-sm text-tactical-grey-500">Completed</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-600">
                   {analytics.actionItemsTracking.pendingActionItems}
                 </div>
-                <div className="text-sm text-gray-600">Pending</div>
+                <div className="text-sm text-tactical-grey-500">Pending</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
                   {analytics.actionItemsTracking.overdueActionItems}
                 </div>
-                <div className="text-sm text-gray-600">Overdue</div>
+                <div className="text-sm text-tactical-grey-500">Overdue</div>
               </div>
             </div>
 
             <div className="mt-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
+              <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
                 By Priority
               </h4>
               <div className="space-y-2">
@@ -397,11 +397,11 @@ export default function ConversationAnalytics({
                     key={priority}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm text-gray-700 capitalize">
+                    <span className="text-sm text-tactical-grey-600 capitalize">
                       {priority}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-24 h-2 bg-gray-200 rounded-full">
+                      <div className="w-24 h-2 bg-tactical-grey-300 rounded-full">
                         <div
                           className={`h-full rounded-full ${
                             priority === "urgent"
@@ -410,14 +410,14 @@ export default function ConversationAnalytics({
                                 ? "bg-orange-500"
                                 : priority === "medium"
                                   ? "bg-yellow-500"
-                                  : "bg-gray-500"
+                                  : "bg-tactical-grey-1000"
                           }`}
                           style={{
                             width: `${(count / Math.max(...Object.values(analytics.actionItemsTracking.actionsByPriority))) * 100}%`,
                           }}
                         />
                       </div>
-                      <span className="text-sm text-gray-900 font-medium">
+                      <span className="text-sm text-tactical-grey-800 font-medium">
                         {count}
                       </span>
                     </div>
@@ -429,7 +429,7 @@ export default function ConversationAnalytics({
 
           {/* Topic Analysis */}
           <div className="bg-white rounded-lg shadow border p-6">
-            <h3 className="font-medium text-gray-900 mb-4">Topic Analysis</h3>
+            <h3 className="font-medium text-tactical-grey-800 mb-4">Topic Analysis</h3>
             <div className="space-y-3">
               {analytics.topicAnalysis.keyTopics
                 .slice(0, 8)
@@ -439,7 +439,7 @@ export default function ConversationAnalytics({
                     className="flex items-center justify-between"
                   >
                     <div className="flex items-center space-x-3">
-                      <span className="text-sm text-gray-700 capitalize">
+                      <span className="text-sm text-tactical-grey-600 capitalize">
                         {topic.topic}
                       </span>
                       <span
@@ -448,7 +448,7 @@ export default function ConversationAnalytics({
                             ? "bg-green-100 text-green-700"
                             : topic.sentiment < -0.3
                               ? "bg-red-100 text-red-700"
-                              : "bg-gray-100 text-gray-700"
+                              : "bg-tactical-grey-200 text-tactical-grey-600"
                         }`}
                       >
                         {topic.sentiment > 0.3
@@ -459,7 +459,7 @@ export default function ConversationAnalytics({
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-20 h-2 bg-gray-200 rounded-full">
+                      <div className="w-20 h-2 bg-tactical-grey-300 rounded-full">
                         <div
                           className="h-full bg-purple-500 rounded-full"
                           style={{
@@ -467,7 +467,7 @@ export default function ConversationAnalytics({
                           }}
                         />
                       </div>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-tactical-grey-500">
                         {topic.frequency}
                       </span>
                     </div>
@@ -483,15 +483,15 @@ export default function ConversationAnalytics({
         <div className="space-y-6">
           {/* Sentiment Trend */}
           <div className="bg-white rounded-lg shadow border p-6">
-            <h3 className="font-medium text-gray-900 mb-4">Sentiment Trend</h3>
+            <h3 className="font-medium text-tactical-grey-800 mb-4">Sentiment Trend</h3>
             <div className="space-y-3">
               {analytics.sentimentTrend.slice(-10).map((point, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-tactical-grey-500">
                     {new Date(point.date).toLocaleDateString()}
                   </span>
                   <div className="flex items-center space-x-3">
-                    <div className="w-32 h-3 bg-gray-200 rounded-full">
+                    <div className="w-32 h-3 bg-tactical-grey-300 rounded-full">
                       <div
                         className={`h-full rounded-full ${
                           point.sentiment > 0.3
@@ -509,11 +509,11 @@ export default function ConversationAnalytics({
                         }}
                       />
                     </div>
-                    <span className="text-sm text-gray-700 min-w-[3rem] text-right">
+                    <span className="text-sm text-tactical-grey-600 min-w-[3rem] text-right">
                       {point.sentiment > 0 ? "+" : ""}
                       {(point.sentiment * 100).toFixed(0)}%
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-tactical-grey-500">
                       ({point.messageCount} msgs)
                     </span>
                   </div>
@@ -524,12 +524,12 @@ export default function ConversationAnalytics({
 
           {/* Activity Patterns */}
           <div className="bg-white rounded-lg shadow border p-6">
-            <h3 className="font-medium text-gray-900 mb-4">
+            <h3 className="font-medium text-tactical-grey-800 mb-4">
               Activity Patterns
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
                   Most Active Hours
                 </h4>
                 <div className="space-y-2">
@@ -540,11 +540,11 @@ export default function ConversationAnalytics({
                         key={index}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-tactical-grey-600">
                           {hour}:00 - {hour + 1}:00
                         </span>
-                        <div className="w-16 h-2 bg-blue-200 rounded-full">
-                          <div className="w-full h-full bg-blue-500 rounded-full" />
+                        <div className="w-16 h-2 bg-tactical-gold-light rounded-full">
+                          <div className="w-full h-full bg-tactical-gold-muted0 rounded-full" />
                         </div>
                       </div>
                     ))}
@@ -552,7 +552,7 @@ export default function ConversationAnalytics({
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
                   Most Active Days
                 </h4>
                 <div className="space-y-2">
@@ -571,7 +571,7 @@ export default function ConversationAnalytics({
                         key={index}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-tactical-grey-600">
                           {dayNames[day]}
                         </span>
                         <div className="w-16 h-2 bg-green-200 rounded-full">
@@ -586,24 +586,24 @@ export default function ConversationAnalytics({
 
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-lg font-semibold text-tactical-grey-800">
                   {formatDuration(
                     analytics.engagementData.conversationGaps.average,
                   )}
                 </div>
-                <div className="text-sm text-gray-600">Avg Gap</div>
+                <div className="text-sm text-tactical-grey-500">Avg Gap</div>
               </div>
               <div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-lg font-semibold text-tactical-grey-800">
                   {Math.round(analytics.engagementData.messageLengthAverage)}
                 </div>
-                <div className="text-sm text-gray-600">Avg Length</div>
+                <div className="text-sm text-tactical-grey-500">Avg Length</div>
               </div>
               <div>
-                <div className="text-lg font-semibold text-gray-900 capitalize">
+                <div className="text-lg font-semibold text-tactical-grey-800 capitalize">
                   {analytics.communicationPatterns.communicationFrequency}
                 </div>
-                <div className="text-sm text-gray-600">Frequency</div>
+                <div className="text-sm text-tactical-grey-500">Frequency</div>
               </div>
             </div>
           </div>
@@ -634,15 +634,15 @@ export default function ConversationAnalytics({
             {Object.entries(health.factors).map(([key, factor]) => (
               <div key={key} className="bg-white rounded-lg shadow border p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-medium text-gray-900 capitalize">
+                  <h3 className="font-medium text-tactical-grey-800 capitalize">
                     {key.replace(/([A-Z])/g, " $1").trim()}
                   </h3>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-bold text-tactical-grey-800">
                     {Math.round(factor.score)}%
                   </span>
                 </div>
 
-                <div className="w-full h-3 bg-gray-200 rounded-full mb-3">
+                <div className="w-full h-3 bg-tactical-grey-300 rounded-full mb-3">
                   <div
                     className={`h-full rounded-full ${
                       factor.score >= 80
@@ -658,14 +658,14 @@ export default function ConversationAnalytics({
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">{factor.details}</span>
+                  <span className="text-tactical-grey-500">{factor.details}</span>
                   <span
                     className={`font-medium ${
                       factor.trend === "improving"
                         ? "text-green-600"
                         : factor.trend === "declining"
                           ? "text-red-600"
-                          : "text-gray-600"
+                          : "text-tactical-grey-500"
                     }`}
                   >
                     {factor.trend === "improving"
@@ -682,21 +682,21 @@ export default function ConversationAnalytics({
           {/* Recommendations */}
           {health.recommendations.length > 0 && (
             <div className="bg-white rounded-lg shadow border p-6">
-              <h3 className="font-medium text-gray-900 mb-4">
+              <h3 className="font-medium text-tactical-grey-800 mb-4">
                 Recommendations
               </h3>
               <div className="space-y-3">
                 {health.recommendations.map((rec, index) => (
                   <div
                     key={index}
-                    className="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200"
+                    className="flex items-start space-x-3 p-4 bg-tactical-gold-muted rounded-lg border border-tactical-grey-300"
                   >
-                    <div className="text-blue-600 mt-0.5">💡</div>
+                    <div className="text-tactical-gold mt-0.5">💡</div>
                     <div className="flex-1">
-                      <div className="font-medium text-blue-900 text-sm">
+                      <div className="font-medium text-tactical-brown-dark text-sm">
                         {rec.category}
                       </div>
-                      <div className="text-blue-800 text-sm">
+                      <div className="text-tactical-brown-dark text-sm">
                         {rec.suggestion}
                       </div>
                     </div>
@@ -707,7 +707,7 @@ export default function ConversationAnalytics({
                             ? "bg-red-100 text-red-700"
                             : rec.priority === "medium"
                               ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-700"
+                              : "bg-tactical-grey-200 text-tactical-grey-600"
                         }`}
                       >
                         {rec.priority}
@@ -733,7 +733,7 @@ export default function ConversationAnalytics({
           {/* Risk Factors */}
           {health.riskFactors.length > 0 && (
             <div className="bg-white rounded-lg shadow border p-6">
-              <h3 className="font-medium text-gray-900 mb-4">Risk Factors</h3>
+              <h3 className="font-medium text-tactical-grey-800 mb-4">Risk Factors</h3>
               <div className="space-y-3">
                 {health.riskFactors.map((risk, index) => (
                   <div
@@ -760,7 +760,7 @@ export default function ConversationAnalytics({
                             ? "bg-orange-100 text-orange-800"
                             : risk.severity === "medium"
                               ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
+                              : "bg-tactical-grey-200 text-tactical-grey-700"
                       }`}
                     >
                       {risk.severity}

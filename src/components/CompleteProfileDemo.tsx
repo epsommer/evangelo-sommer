@@ -63,22 +63,22 @@ export default function CompleteProfileDemo() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-tactical-grey-800 mb-2">
           Complete Profile Demo
         </h1>
-        <p className="text-gray-600">
+        <p className="text-tactical-grey-500">
           This demo shows the complete profile functionality for clients with missing contact information.
         </p>
       </div>
 
       <div className="space-y-6">
         {clients.map((client) => (
-          <div key={client.id} className="bg-white border border-gray-200 rounded-lg p-6">
+          <div key={client.id} className="bg-white border border-tactical-grey-300 rounded-lg p-6">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-tactical-grey-800 mb-2">
                 {client.name}
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+              <div className="grid grid-cols-2 gap-4 text-sm text-tactical-grey-500">
                 <div>
                   <span className="font-medium">Email:</span>{" "}
                   {client.email || <span className="text-red-500">Missing</span>}
@@ -98,15 +98,15 @@ export default function CompleteProfileDemo() {
                       ? "bg-green-100 text-green-800"
                       : client.status === "prospect"
                         ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
+                        : "bg-tactical-grey-200 text-tactical-grey-700"
                   }`}>
                     {client.status}
                   </span>
                 </div>
               </div>
               <div className="mt-2">
-                <span className="font-medium text-sm text-gray-600">Services:</span>{" "}
-                <span className="text-sm text-gray-600">
+                <span className="font-medium text-sm text-tactical-grey-500">Services:</span>{" "}
+                <span className="text-sm text-tactical-grey-500">
                   {client.serviceTypes.join(", ")}
                 </span>
               </div>
@@ -122,9 +122,9 @@ export default function CompleteProfileDemo() {
       </div>
 
       {/* Summary */}
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-medium text-blue-900 mb-2">Demo Instructions</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
+      <div className="mt-8 bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-4">
+        <h3 className="font-medium text-tactical-brown-dark mb-2">Demo Instructions</h3>
+        <ul className="text-sm text-tactical-brown-dark space-y-1">
           <li>• Clients with missing email or phone will show a "Complete Client Profile" section</li>
           <li>• Click "Complete Profile" to open the modal and fill in missing information</li>
           <li>• The form will only show fields that are actually missing</li>

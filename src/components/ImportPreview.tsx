@@ -84,19 +84,19 @@ export default function ImportPreview({
   return (
     <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto max-h-[90vh] overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b bg-gray-50">
+      <div className="p-6 border-b bg-tactical-grey-100">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3 className="text-xl font-semibold text-tactical-grey-800">
               Import Preview
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-tactical-grey-500 mt-1">
               Review and correct message senders before importing
             </p>
           </div>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-tactical-gold hover:text-tactical-brown-dark"
           >
             {showDetails ? "Hide Details" : "Show Details"}
           </button>
@@ -104,15 +104,15 @@ export default function ImportPreview({
 
         {/* Participant Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+              <div className="w-8 h-8 bg-tactical-gold rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
                 Y
               </div>
               <div>
-                <div className="font-medium text-gray-900">You</div>
-                <div className="text-sm text-gray-600">{userInfo.name}</div>
-                <div className="text-sm text-gray-500">{userInfo.phone}</div>
+                <div className="font-medium text-tactical-grey-800">You</div>
+                <div className="text-sm text-tactical-grey-500">{userInfo.name}</div>
+                <div className="text-sm text-tactical-grey-500">{userInfo.phone}</div>
               </div>
             </div>
           </div>
@@ -123,9 +123,9 @@ export default function ImportPreview({
                 C
               </div>
               <div>
-                <div className="font-medium text-gray-900">Client</div>
-                <div className="text-sm text-gray-600">{clientInfo.name}</div>
-                <div className="text-sm text-gray-500">{clientInfo.phone}</div>
+                <div className="font-medium text-tactical-grey-800">Client</div>
+                <div className="text-sm text-tactical-grey-500">{clientInfo.name}</div>
+                <div className="text-sm text-tactical-grey-500">{clientInfo.phone}</div>
               </div>
             </div>
           </div>
@@ -134,39 +134,39 @@ export default function ImportPreview({
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div className="bg-white rounded-lg p-3 border">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-tactical-grey-800">
               {stats.total}
             </div>
-            <div className="text-sm text-gray-600">Total Messages</div>
+            <div className="text-sm text-tactical-grey-500">Total Messages</div>
           </div>
           <div className="bg-white rounded-lg p-3 border">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-tactical-gold">
               {stats.fromYou}
             </div>
-            <div className="text-sm text-gray-600">From You</div>
+            <div className="text-sm text-tactical-grey-500">From You</div>
           </div>
           <div className="bg-white rounded-lg p-3 border">
             <div className="text-2xl font-bold text-green-600">
               {stats.fromClient}
             </div>
-            <div className="text-sm text-gray-600">From Client</div>
+            <div className="text-sm text-tactical-grey-500">From Client</div>
           </div>
         </div>
 
         {showDetails && (
-          <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-2">Import Details</h4>
+          <div className="mt-4 p-4 bg-tactical-grey-200 rounded-lg">
+            <h4 className="font-medium text-tactical-grey-800 mb-2">Import Details</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium">Date Range:</span>
-                <div className="text-gray-600">
+                <div className="text-tactical-grey-500">
                   {formatTimestamp(conversation.metadata.dateRange.start)} -
                   {formatTimestamp(conversation.metadata.dateRange.end)}
                 </div>
               </div>
               <div>
                 <span className="font-medium">Source:</span>
-                <div className="text-gray-600">Text Message Export</div>
+                <div className="text-tactical-grey-500">Text Message Export</div>
               </div>
             </div>
           </div>
@@ -179,19 +179,19 @@ export default function ImportPreview({
           <div className="flex items-center space-x-4">
             <button
               onClick={selectAllMessages}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-tactical-gold hover:text-tactical-brown-dark"
             >
               {selectedMessages.size === conversation.messages.length
                 ? "Deselect All"
                 : "Select All"}
             </button>
             {selectedMessages.size > 0 && (
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-tactical-grey-500">
                 {selectedMessages.size} selected
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-tactical-grey-500">
             Click sender badges to switch between You/Client
           </div>
         </div>
@@ -202,9 +202,9 @@ export default function ImportPreview({
               key={message.id || `message-${index}`}
               className={`relative p-4 rounded-lg border transition-all ${
                 message.role === "you"
-                  ? "bg-blue-50 border-blue-200"
+                  ? "bg-tactical-gold-muted border-tactical-grey-300"
                   : "bg-green-50 border-green-200"
-              } ${selectedMessages.has(index) ? "ring-2 ring-blue-500" : ""}`}
+              } ${selectedMessages.has(index) ? "ring-2 ring-tactical-gold-500" : ""}`}
             >
               {/* Selection Checkbox */}
               <div className="absolute top-2 left-2">
@@ -212,7 +212,7 @@ export default function ImportPreview({
                   type="checkbox"
                   checked={selectedMessages.has(index)}
                   onChange={() => toggleMessageSelection(index)}
-                  className="h-4 w-4 text-blue-600 rounded"
+                  className="h-4 w-4 text-tactical-gold rounded"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export default function ImportPreview({
                     onClick={() => onSenderCorrection(index)}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                       message.role === "you"
-                        ? "bg-blue-200 text-blue-800 hover:bg-blue-300"
+                        ? "bg-tactical-gold-light text-tactical-brown-dark hover:bg-tactical-gold-300"
                         : "bg-green-200 text-green-800 hover:bg-green-300"
                     }`}
                     title="Click to switch sender"
@@ -232,7 +232,7 @@ export default function ImportPreview({
                   </button>
                   <button
                     onClick={() => onSenderCorrection(index)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-tactical-grey-500"
                     title="Switch sender"
                   >
                     <svg
@@ -250,18 +250,18 @@ export default function ImportPreview({
                     </svg>
                   </button>
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-tactical-grey-500">
                   {formatTimestamp(message.timestamp)}
                 </div>
               </div>
 
               {/* Message Content */}
-              <div className="text-gray-900 whitespace-pre-wrap ml-6">
+              <div className="text-tactical-grey-800 whitespace-pre-wrap ml-6">
                 {message.content}
               </div>
 
               {/* Message Metadata */}
-              <div className="mt-3 ml-6 text-xs text-gray-500 bg-white bg-opacity-50 rounded p-2">
+              <div className="mt-3 ml-6 text-xs text-tactical-grey-500 bg-white bg-opacity-50 rounded p-2">
                 <div className="flex justify-between">
                   <span>
                     Original: {message.metadata.originalData.originalType}
@@ -277,10 +277,10 @@ export default function ImportPreview({
       </div>
 
       {/* Footer Actions */}
-      <div className="flex justify-between items-center p-6 border-t bg-gray-50">
+      <div className="flex justify-between items-center p-6 border-t bg-tactical-grey-100">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors"
         >
           ← Back to User Info
         </button>
@@ -288,13 +288,13 @@ export default function ImportPreview({
         <div className="flex space-x-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors"
           >
             Cancel Import
           </button>
           <button
             onClick={onConfirmImport}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors"
           >
             Import {stats.total} Messages
           </button>

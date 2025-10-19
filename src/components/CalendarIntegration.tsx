@@ -35,21 +35,21 @@ export default function CalendarIntegration({
       id: "google",
       name: "Google Calendar",
       icon: "📅",
-      color: "bg-blue-500",
+      color: "bg-tactical-gold",
       description: "Sync with Google Calendar for seamless scheduling",
     },
     {
       id: "outlook",
       name: "Microsoft Outlook",
       icon: "📆",
-      color: "bg-indigo-500",
+      color: "bg-tactical-brown",
       description: "Connect with Outlook calendar and email",
     },
     {
       id: "apple",
       name: "Apple Calendar",
       icon: "🍎",
-      color: "bg-gray-800",
+      color: "bg-tactical-grey-700",
       description: "Integrate with Apple Calendar (iCloud)",
     },
     {
@@ -104,15 +104,15 @@ export default function CalendarIntegration({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-tactical-grey-800">
             Calendar Integration
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-tactical-grey-500 mt-1">
             Connect your calendar services to sync events and appointments
           </p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-tactical-grey-500">
             {integrations.filter((i) => i.isActive).length} of{" "}
             {providers.length} connected
           </div>
@@ -121,14 +121,14 @@ export default function CalendarIntegration({
 
       {/* Integration Status */}
       {integrations.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm font-medium text-blue-900">
+            <span className="text-sm font-medium text-tactical-brown-dark">
               Calendar integrations are active
             </span>
           </div>
-          <div className="text-sm text-blue-800">
+          <div className="text-sm text-tactical-brown-dark">
             Last sync:{" "}
             {integrations.find((i) => i.lastSyncAt)?.lastSyncAt
               ? new Date(
@@ -154,7 +154,7 @@ export default function CalendarIntegration({
               className={`border-2 rounded-lg p-6 transition-all ${
                 isConnected
                   ? "border-green-200 bg-green-50"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-tactical-grey-300 hover:border-tactical-grey-400"
               }`}
             >
               <div className="flex items-start justify-between mb-4">
@@ -165,10 +165,10 @@ export default function CalendarIntegration({
                     {provider.icon}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">
+                    <h3 className="font-medium text-tactical-grey-800">
                       {provider.name}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-tactical-grey-500">
                       {provider.description}
                     </p>
                   </div>
@@ -189,14 +189,14 @@ export default function CalendarIntegration({
                   {/* Integration Details */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-500">Calendar</div>
-                      <div className="font-medium text-gray-900">
+                      <div className="text-tactical-grey-500">Calendar</div>
+                      <div className="font-medium text-tactical-grey-800">
                         {integration.calendarId}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Sync Direction</div>
-                      <div className="font-medium text-gray-900 capitalize">
+                      <div className="text-tactical-grey-500">Sync Direction</div>
+                      <div className="font-medium text-tactical-grey-800 capitalize">
                         {integration.syncSettings.syncDirection.replace(
                           "-",
                           " ",
@@ -212,12 +212,12 @@ export default function CalendarIntegration({
                       disabled={currentSyncStatus === "syncing"}
                       className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         currentSyncStatus === "syncing"
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ? "bg-tactical-grey-200 text-gray-400 cursor-not-allowed"
                           : currentSyncStatus === "success"
                             ? "bg-green-100 text-green-700 hover:bg-green-200"
                             : currentSyncStatus === "error"
                               ? "bg-red-100 text-red-700 hover:bg-red-200"
-                              : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                              : "bg-tactical-gold-muted text-tactical-brown-dark hover:bg-tactical-gold-light"
                       }`}
                     >
                       {currentSyncStatus === "syncing" && "🔄 Syncing..."}
@@ -236,10 +236,10 @@ export default function CalendarIntegration({
 
                   {/* Sync Settings */}
                   <details className="text-sm">
-                    <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+                    <summary className="cursor-pointer text-tactical-grey-500 hover:text-tactical-grey-700">
                       Sync Settings
                     </summary>
-                    <div className="mt-2 space-y-2 text-xs text-gray-600 bg-white rounded p-3">
+                    <div className="mt-2 space-y-2 text-xs text-tactical-grey-500 bg-white rounded p-3">
                       <div className="flex justify-between">
                         <span>Auto-create events:</span>
                         <span
@@ -278,8 +278,8 @@ export default function CalendarIntegration({
                   disabled={isConnecting && selectedProvider === provider.id}
                   className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
                     isConnecting && selectedProvider === provider.id
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
+                      ? "bg-tactical-grey-200 text-gray-400 cursor-not-allowed"
+                      : "bg-tactical-gold text-white hover:bg-tactical-gold-dark"
                   }`}
                 >
                   {isConnecting && selectedProvider === provider.id
@@ -295,39 +295,39 @@ export default function CalendarIntegration({
       {/* Events Summary */}
       {events.length > 0 && (
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="font-medium text-gray-900 mb-4">
+          <h3 className="font-medium text-tactical-grey-800 mb-4">
             Synchronized Events
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-tactical-gold">
                 {events.length}
               </div>
-              <div className="text-sm text-gray-600">Total Events</div>
+              <div className="text-sm text-tactical-grey-500">Total Events</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
                 {events.filter((e) => e.status === "scheduled").length}
               </div>
-              <div className="text-sm text-gray-600">Scheduled</div>
+              <div className="text-sm text-tactical-grey-500">Scheduled</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
                 {events.filter((e) => e.status === "completed").length}
               </div>
-              <div className="text-sm text-gray-600">Completed</div>
+              <div className="text-sm text-tactical-grey-500">Completed</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
                 {events.filter((e) => e.metadata?.autoGenerated).length}
               </div>
-              <div className="text-sm text-gray-600">Auto-Generated</div>
+              <div className="text-sm text-tactical-grey-500">Auto-Generated</div>
             </div>
           </div>
 
           {/* Recent Events */}
           <div className="mt-6">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">
+            <h4 className="text-sm font-medium text-tactical-grey-600 mb-3">
               Recent Events
             </h4>
             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -341,7 +341,7 @@ export default function CalendarIntegration({
                 .map((event) => (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-tactical-grey-100 rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
                       <div className="text-lg">
@@ -354,10 +354,10 @@ export default function CalendarIntegration({
                               : "🔔"}
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 text-sm">
+                        <div className="font-medium text-tactical-grey-800 text-sm">
                           {event.title}
                         </div>
-                        <div className="text-gray-600 text-xs">
+                        <div className="text-tactical-grey-500 text-xs">
                           {new Date(event.startTime).toLocaleDateString()} •{" "}
                           {event.type}
                         </div>
@@ -366,12 +366,12 @@ export default function CalendarIntegration({
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
                         event.status === "scheduled"
-                          ? "bg-blue-100 text-blue-800"
+                          ? "bg-tactical-gold-muted text-tactical-brown-dark"
                           : event.status === "completed"
                             ? "bg-green-100 text-green-800"
                             : event.status === "cancelled"
                               ? "bg-red-100 text-red-800"
-                              : "bg-gray-100 text-gray-800"
+                              : "bg-tactical-grey-200 text-tactical-grey-700"
                       }`}
                     >
                       {event.status}
@@ -425,7 +425,7 @@ export default function CalendarIntegration({
       </div>
 
       {/* Help Text */}
-      <div className="text-center text-sm text-gray-500">
+      <div className="text-center text-sm text-tactical-grey-500">
         <p>
           Calendar integration is currently in beta. Full functionality will be
           available in the next release.

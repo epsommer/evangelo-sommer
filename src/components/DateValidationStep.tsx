@@ -188,13 +188,13 @@ export default function DateValidationStep({
           </button>
           <button
             onClick={() => setShowingProblematic(!showingProblematic)}
-            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+            className="px-3 py-1 bg-tactical-gold text-white text-sm rounded hover:bg-tactical-gold-dark transition-colors"
           >
             {showingProblematic ? "Show All Messages" : "Show Problems Only"}
           </button>
           <button
             onClick={resetDates}
-            className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+            className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-tactical-grey-700 transition-colors"
           >
             Reset
           </button>
@@ -218,7 +218,7 @@ export default function DateValidationStep({
               className={`border rounded-lg p-4 transition-colors ${
                 hasIssue
                   ? "border-red-200 bg-red-50"
-                  : "border-gray-200 bg-white"
+                  : "border-tactical-grey-300 bg-white"
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -227,8 +227,8 @@ export default function DateValidationStep({
                     <span
                       className={`px-2 py-1 text-xs rounded whitespace-nowrap ${
                         message.role === "you"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-tactical-gold-muted text-tactical-brown-dark"
+                          : "bg-tactical-grey-200 text-tactical-grey-700"
                       }`}
                     >
                       {message.role === "you" ? "You" : "Client"}
@@ -253,7 +253,7 @@ export default function DateValidationStep({
                     )}
 
                     {message.metadata?.manuallyEdited && (
-                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs bg-tactical-gold-muted text-tactical-brown-dark rounded whitespace-nowrap">
                         Manually Edited
                       </span>
                     )}
@@ -265,13 +265,13 @@ export default function DateValidationStep({
                     )}
                   </div>
 
-                  <p className="text-sm text-gray-700 mb-2 break-words">
+                  <p className="text-sm text-tactical-grey-600 mb-2 break-words">
                     {message.content.length > 100
                       ? `${message.content.substring(0, 100)}...`
                       : message.content}
                   </p>
 
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <div className="text-xs text-tactical-grey-500 space-y-1">
                     <div>
                       Original:{" "}
                       {message.metadata?.originalTimestamp
@@ -296,7 +296,7 @@ export default function DateValidationStep({
                     onChange={(e) =>
                       handleDateChange(message.id, e.target.value)
                     }
-                    className="text-sm border border-gray-300 rounded px-2 py-1 w-48"
+                    className="text-sm border border-tactical-grey-400 rounded px-2 py-1 w-48"
                   />
                 </div>
               </div>
@@ -305,21 +305,21 @@ export default function DateValidationStep({
         })}
 
         {!showingProblematic && editedMessages.length > 20 && (
-          <div className="text-center py-4 text-gray-500 text-sm">
+          <div className="text-center py-4 text-tactical-grey-500 text-sm">
             Showing first 20 messages. Use &quot;Show Problems Only&quot; to see
             all problematic messages.
           </div>
         )}
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="font-medium text-gray-800 mb-2">
+      <div className="bg-tactical-grey-100 border border-tactical-grey-300 rounded-lg p-4">
+        <h4 className="font-medium text-tactical-grey-700 mb-2">
           Date Analysis Summary
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <div className="font-medium text-gray-600">Total Messages</div>
-            <div className="text-lg font-bold text-gray-900">
+            <div className="font-medium text-tactical-grey-500">Total Messages</div>
+            <div className="text-lg font-bold text-tactical-grey-800">
               {editedMessages.length}
             </div>
           </div>
@@ -347,13 +347,13 @@ export default function DateValidationStep({
       <div className="flex justify-between">
         <button
           onClick={onSkip}
-          className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-tactical-grey-500 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors"
         >
           Skip Validation
         </button>
         <button
           onClick={() => onDatesCorrected(editedMessages)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors"
         >
           Continue with Corrected Dates ({editedMessages.length} messages)
         </button>

@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    
+
     // Validate required fields
     if (!body.name) {
       return NextResponse.json({
@@ -145,29 +145,59 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Create participant first
-    const participant = await prisma.participant.create({
-      data: {
-        name: body.name,
-        email: body.email || null,
-        phone: body.phone || null,
-        company: body.company || null,
-        role: 'CLIENT',
-        services: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : null,
-        contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : null
-      }
-    });
+    // Convert status to uppercase for Prisma enum
+    const statusMap: Record<string, string> = {
+      'active': 'ACTIVE',
+      'inactive': 'INACTIVE',
+      'prospect': 'PROSPECT',
+      'completed': 'COMPLETED'
+    };
+    const prismaStatus = body.status ? statusMap[body.status.toLowerCase()] || 'ACTIVE' : 'ACTIVE';
+
+    // Clean phone and email - only use if non-empty
+    const cleanPhone = body.phone && body.phone.trim() ? body.phone.trim() : null;
+    const cleanEmail = body.email && body.email.trim() ? body.email.trim() : null;
+
+    // Try to find existing participant with same phone or email
+    let participant = null;
+    if (cleanPhone || cleanEmail) {
+      const searchConditions = [];
+      if (cleanPhone) searchConditions.push({ phone: cleanPhone });
+      if (cleanEmail) searchConditions.push({ email: cleanEmail });
+
+      participant = await prisma.participant.findFirst({
+        where: {
+          OR: searchConditions
+        }
+      });
+    }
+
+    // Create participant if not found
+    if (!participant) {
+      participant = await prisma.participant.create({
+        data: {
+          name: body.name,
+          email: cleanEmail,
+          phone: cleanPhone,
+          company: body.company || null,
+          role: 'CLIENT',
+          services: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : null,
+          contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : null
+        }
+      });
+    }
 
     // Create client record
     const client = await prisma.clientRecord.create({
       data: {
+        id: body.id, // Use provided ID if available
         participantId: participant.id,
         name: body.name,
-        email: body.email || null,
-        phone: body.phone || null,
+        email: cleanEmail,
+        phone: cleanPhone,
         company: body.company || null,
         serviceId: body.serviceId || `client_${Date.now()}`,
-        status: body.status || 'ACTIVE',
+        status: prismaStatus,
         tags: body.tags ? JsonFieldSerializers.serializeStringArray(body.tags) : null,
         notes: body.notes || null,
         projectType: body.projectType || null,
@@ -204,11 +234,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Client creation error:', error);
-    
+    console.error('Error details:', error instanceof Error ? error.message : String(error));
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
     return NextResponse.json({
       success: false,
-      error: 'Failed to create client'
-    }, { 
+      error: 'Failed to create client',
+      details: error instanceof Error ? error.message : String(error)
+    }, {
       status: 500,
       headers: {
         'Content-Type': 'application/json',

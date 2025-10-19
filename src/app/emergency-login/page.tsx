@@ -89,7 +89,7 @@ const EmergencyLogin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-off-white flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-hud-background-secondary flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 font-space-grotesk uppercase">
@@ -109,7 +109,7 @@ const EmergencyLogin = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-light-grey text-dark-grey font-space-grotesk focus:outline-none focus:border-gold"
+              className="w-full px-4 py-3 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent"
               required
             />
           </div>
@@ -137,7 +137,7 @@ const EmergencyLogin = () => {
         <div className="space-y-2">
           <button
             onClick={testAPIRoute}
-            className="w-full py-2 px-4 bg-blue-600 text-white text-sm font-bold font-space-grotesk uppercase hover:bg-blue-700"
+            className="w-full py-2 px-4 bg-tactical-gold text-white text-sm font-bold font-space-grotesk uppercase hover:bg-tactical-gold-dark"
           >
             TEST AUTH API
           </button>

@@ -120,20 +120,20 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
     switch (priority) {
       case 'URGENT': return 'bg-red-100 text-red-800 border-red-200';
       case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'MEDIUM': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'LOW': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'MEDIUM': return 'bg-tactical-gold-muted text-tactical-brown-dark border-tactical-grey-300';
+      case 'LOW': return 'bg-tactical-grey-200 text-tactical-grey-700 border-tactical-grey-300';
+      default: return 'bg-tactical-grey-200 text-tactical-grey-700 border-tactical-grey-300';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'SCHEDULED': return 'bg-blue-100 text-blue-800';
+      case 'SCHEDULED': return 'bg-tactical-gold-muted text-tactical-brown-dark';
       case 'CONFIRMED': return 'bg-green-100 text-green-800';
-      case 'COMPLETED': return 'bg-gray-100 text-gray-800';
+      case 'COMPLETED': return 'bg-tactical-grey-200 text-tactical-grey-700';
       case 'CANCELLED': return 'bg-red-100 text-red-800';
       case 'MISSED': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-tactical-grey-200 text-tactical-grey-700';
     }
   };
 
@@ -174,7 +174,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Follow-up Dashboard</h2>
-          <p className="text-gray-600">
+          <p className="text-tactical-grey-500">
             Manage and track client follow-ups
           </p>
         </div>
@@ -194,10 +194,10 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5 text-tactical-gold" />
               <div>
                 <p className="text-2xl font-bold">{quickStats.total}</p>
-                <p className="text-sm text-gray-600">Total Follow-ups</p>
+                <p className="text-sm text-tactical-grey-500">Total Follow-ups</p>
               </div>
             </div>
           </CardContent>
@@ -209,7 +209,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
               <Clock className="w-5 h-5 text-green-600" />
               <div>
                 <p className="text-2xl font-bold">{quickStats.today}</p>
-                <p className="text-sm text-gray-600">Due Today</p>
+                <p className="text-sm text-tactical-grey-500">Due Today</p>
               </div>
             </div>
           </CardContent>
@@ -218,10 +218,10 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <Bell className="w-5 h-5 text-blue-600" />
+              <Bell className="w-5 h-5 text-tactical-gold" />
               <div>
                 <p className="text-2xl font-bold">{quickStats.upcoming}</p>
-                <p className="text-sm text-gray-600">Upcoming</p>
+                <p className="text-sm text-tactical-grey-500">Upcoming</p>
               </div>
             </div>
           </CardContent>
@@ -233,7 +233,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
               <AlertTriangle className="w-5 h-5 text-orange-600" />
               <div>
                 <p className="text-2xl font-bold">{quickStats.overdue}</p>
-                <p className="text-sm text-gray-600">Overdue</p>
+                <p className="text-sm text-tactical-grey-500">Overdue</p>
               </div>
             </div>
           </CardContent>
@@ -242,10 +242,10 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-gray-600" />
+              <CheckCircle className="w-5 h-5 text-tactical-grey-500" />
               <div>
                 <p className="text-2xl font-bold">{quickStats.completed}</p>
-                <p className="text-sm text-gray-600">Completed</p>
+                <p className="text-sm text-tactical-grey-500">Completed</p>
               </div>
             </div>
           </CardContent>
@@ -359,7 +359,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
             {followUps.map((followUp) => (
               <div
                 key={followUp.id}
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                className="border rounded-lg p-4 hover:bg-tactical-grey-100 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -378,15 +378,15 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                       <div>
-                        <p className="text-sm text-gray-600">Client</p>
+                        <p className="text-sm text-tactical-grey-500">Client</p>
                         <p className="font-medium">{followUp.client.name}</p>
                         {followUp.client.company && (
-                          <p className="text-sm text-gray-500">{followUp.client.company}</p>
+                          <p className="text-sm text-tactical-grey-500">{followUp.client.company}</p>
                         )}
                       </div>
                       
                       <div>
-                        <p className="text-sm text-gray-600">Scheduled</p>
+                        <p className="text-sm text-tactical-grey-500">Scheduled</p>
                         <p className="font-medium">
                           {new Date(followUp.scheduledDate).toLocaleDateString('en-US', {
                             weekday: 'short',
@@ -395,7 +395,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
                             year: 'numeric'
                           })}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-tactical-grey-500">
                           {new Date(followUp.scheduledDate).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit',
@@ -405,7 +405,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
                       </div>
                       
                       <div>
-                        <p className="text-sm text-gray-600">Category</p>
+                        <p className="text-sm text-tactical-grey-500">Category</p>
                         <p className="font-medium">
                           {followUp.category.replace(/_/g, ' ').toLowerCase()
                             .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
@@ -415,21 +415,21 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
 
                     {followUp.notes && (
                       <div className="mb-3">
-                        <p className="text-sm text-gray-600">Notes</p>
+                        <p className="text-sm text-tactical-grey-500">Notes</p>
                         <p className="text-sm">{followUp.notes}</p>
                       </div>
                     )}
 
                     {followUp.outcome && (
                       <div className="mb-3">
-                        <p className="text-sm text-gray-600">Outcome</p>
+                        <p className="text-sm text-tactical-grey-500">Outcome</p>
                         <p className="text-sm">{followUp.outcome}</p>
                       </div>
                     )}
 
                     {followUp.actionItems && followUp.actionItems.length > 0 && (
                       <div className="mb-3">
-                        <p className="text-sm text-gray-600">Action Items</p>
+                        <p className="text-sm text-tactical-grey-500">Action Items</p>
                         <ul className="text-sm list-disc list-inside">
                           {followUp.actionItems.map((item, index) => (
                             <li key={index}>{item}</li>
@@ -438,7 +438,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs text-tactical-grey-500">
                       <span>Created: {new Date(followUp.createdAt).toLocaleDateString()}</span>
                       {followUp.notifications.length > 0 && (
                         <span>
@@ -488,7 +488,7 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
             {followUps.length === 0 && !loading && (
               <div className="text-center py-8">
                 <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">No follow-ups found</p>
+                <p className="text-tactical-grey-500">No follow-ups found</p>
                 <p className="text-sm text-gray-400">Try adjusting your filters or create a new follow-up</p>
               </div>
             )}

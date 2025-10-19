@@ -215,16 +215,16 @@ export default function CRMIntegrator({
 
     return (
       <div key={client.client_id} className="space-y-3 mb-3">
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-tactical-grey-100 rounded-lg p-4">
           <div className="flex justify-between items-start mb-2">
-            <h4 className="font-semibold text-gray-900">
+            <h4 className="font-semibold text-tactical-grey-800">
               {client.personal_info.name}
             </h4>
-            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            <span className="text-xs bg-tactical-gold-muted text-tactical-brown-dark px-2 py-1 rounded">
               {client.personal_info.preferred_contact}
             </span>
           </div>
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-tactical-grey-500 space-y-1">
             <p>📞 {updatedClients[client.client_id]?.phone || client.personal_info.phone}</p>
             {(updatedClients[client.client_id]?.email || client.personal_info.email) && (
               <p>✉️ {updatedClients[client.client_id]?.email || client.personal_info.email}</p>
@@ -262,7 +262,7 @@ export default function CRMIntegrator({
                 service.completion_status === "completed"
                   ? "bg-green-200 text-green-800"
                   : service.completion_status === "scheduled"
-                    ? "bg-blue-200 text-blue-800"
+                    ? "bg-tactical-gold-light text-tactical-brown-dark"
                     : "bg-yellow-200 text-yellow-800"
               }`}
             >
@@ -278,7 +278,7 @@ export default function CRMIntegrator({
         </div>
       ))}
       {services.length > 5 && (
-        <p className="text-sm text-gray-500 text-center">
+        <p className="text-sm text-tactical-grey-500 text-center">
           +{services.length - 5} more services
         </p>
       )}
@@ -344,7 +344,7 @@ export default function CRMIntegrator({
                   ? "bg-orange-200 text-orange-800"
                   : insights.next_action_priority === "this_month"
                     ? "bg-yellow-200 text-yellow-800"
-                    : "bg-gray-200 text-gray-800"
+                    : "bg-tactical-grey-300 text-tactical-grey-700"
             }`}
           >
             {insights.next_action_priority}
@@ -371,9 +371,9 @@ export default function CRMIntegrator({
 
   return (
     <div className={`bg-white rounded-lg shadow-lg ${className}`}>
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">CRM Integration</h2>
-        <p className="text-gray-600 mt-1">
+      <div className="p-6 border-b border-tactical-grey-300">
+        <h2 className="text-xl font-semibold text-tactical-grey-800">CRM Integration</h2>
+        <p className="text-tactical-grey-500 mt-1">
           Convert SMS conversations into structured CRM data with AI analysis
         </p>
       </div>
@@ -392,8 +392,8 @@ export default function CRMIntegrator({
                 <div
                   className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                     isDragOver
-                      ? "border-blue-400 bg-blue-50"
-                      : "border-gray-300 hover:border-gray-400"
+                      ? "border-tactical-gold-400 bg-tactical-gold-muted"
+                      : "border-tactical-grey-400 hover:border-tactical-grey-400"
                   }`}
                   onDrop={handleDrop}
                   onDragOver={(e) => {
@@ -405,10 +405,10 @@ export default function CRMIntegrator({
                   <div className="space-y-4">
                     <div className="text-4xl">📊</div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium text-tactical-grey-800">
                         Upload SMS Export
                       </h3>
-                      <p className="text-gray-600">
+                      <p className="text-tactical-grey-500">
                         Drag & drop your Excel SMS export or click to browse
                       </p>
                     </div>
@@ -421,7 +421,7 @@ export default function CRMIntegrator({
                     />
                     <label
                       htmlFor="excel-upload"
-                      className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
+                      className="inline-block px-6 py-3 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark cursor-pointer transition-colors"
                     >
                       Choose File
                     </label>
@@ -461,14 +461,14 @@ export default function CRMIntegrator({
               )}
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-tactical-grey-600">
                   Custom Instructions (Optional)
                 </label>
                 <textarea
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
                   placeholder="Add specific instructions for CRM processing..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-3 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   rows={3}
                 />
               </div>
@@ -482,7 +482,7 @@ export default function CRMIntegrator({
               <button
                 onClick={processCRMIntegration}
                 disabled={!file && !importedConversation}
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-6 py-3 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 🚀 Process with AI
               </button>
@@ -496,11 +496,11 @@ export default function CRMIntegrator({
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-12"
             >
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-tactical-gold-600 mb-4"></div>
+              <h3 className="text-lg font-medium text-tactical-grey-800 mb-2">
                 Processing SMS Data
               </h3>
-              <p className="text-gray-600">
+              <p className="text-tactical-grey-500">
                 AI is analyzing conversations and generating CRM records...
               </p>
             </motion.div>
@@ -525,10 +525,10 @@ export default function CRMIntegrator({
                     <div className="text-green-700">Clients</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-tactical-gold">
                       {processingResult.metadata.servicesDetected}
                     </div>
-                    <div className="text-blue-700">Services</div>
+                    <div className="text-tactical-brown-dark">Services</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-purple-600">
@@ -547,14 +547,14 @@ export default function CRMIntegrator({
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">
+                  <h3 className="font-semibold text-tactical-grey-800 mb-3">
                     👥 Clients
                   </h3>
                   {processingResult.data.clients.map(renderClientSummary)}
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">
+                  <h3 className="font-semibold text-tactical-grey-800 mb-3">
                     🏠 Services
                   </h3>
                   {renderServiceSummary(processingResult.data.service_history)}
@@ -570,13 +570,13 @@ export default function CRMIntegrator({
                       JSON.stringify(processingResult.data, null, 2),
                     );
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-tactical-grey-700 transition-colors"
                 >
                   📋 Copy JSON Data
                 </button>
                 <button
                   onClick={resetIntegrator}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors"
                 >
                   🔄 Process Another
                 </button>
@@ -592,13 +592,13 @@ export default function CRMIntegrator({
               className="text-center py-12"
             >
               <div className="text-6xl mb-4">❌</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-tactical-grey-800 mb-2">
                 Processing Failed
               </h3>
-              <p className="text-gray-600 mb-6">{error}</p>
+              <p className="text-tactical-grey-500 mb-6">{error}</p>
               <button
                 onClick={resetIntegrator}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors"
               >
                 Try Again
               </button>

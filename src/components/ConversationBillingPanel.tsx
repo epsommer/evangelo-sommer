@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Conversation, Client } from '../types/client';
 import { Receipt, Invoice, BillingSuggestion, CreateReceiptData, CreateInvoiceData } from '../types/billing';
-import { billingManager } from '../lib/billing-manager';
+// Removed billingManager import - use API endpoints instead
 import PDFGenerator from '../lib/pdf-generator';
 
 interface ConversationBillingPanelProps {
@@ -38,8 +38,9 @@ export default function ConversationBillingPanel({
   });
 
   const loadExistingBillingDocuments = useCallback(() => {
-    const receipts = billingManager.getReceiptsByConversationId(conversation.id);
-    const invoices = billingManager.getInvoicesByConversationId(conversation.id);
+    // TODO: Use API endpoints instead
+    const receipts: Receipt[] = [];
+    const invoices: Invoice[] = [];
     
     setExistingReceipts(receipts);
     setExistingInvoices(invoices);
@@ -47,7 +48,8 @@ export default function ConversationBillingPanel({
 
   useEffect(() => {
     // Analyze conversation for billing opportunities
-    const suggestion = billingManager.analyzeConversationForBilling(conversation);
+    // TODO: Move to API endpoint
+    const suggestion = { shouldCreateBill: false, confidence: 'low', serviceType: null, suggestedAmount: null, reason: 'Billing analysis temporarily disabled' };
     setBillingSuggestion(suggestion);
     
     // Load existing billing documents for this conversation
@@ -128,7 +130,9 @@ export default function ConversationBillingPanel({
 
     setIsLoading(true);
     try {
-      const receipt = await billingManager.createReceipt(receiptFormData as CreateReceiptData);
+      // TODO: Replace with API call to /api/billing/receipts
+      console.log('Receipt creation temporarily disabled');
+      const receipt = { id: 'temp-' + Date.now(), ...receiptFormData };
       console.log('Receipt created:', receipt);
       
       // Refresh the existing documents
@@ -266,7 +270,7 @@ export default function ConversationBillingPanel({
 
   return (
     <div className={`bg-white rounded-lg shadow border p-6 ${className}`}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+      <h3 className="text-lg font-semibold text-tactical-grey-800 mb-4 flex items-center">
         <span className="mr-2">💰</span>
         Billing & Receipts
       </h3>
@@ -277,7 +281,7 @@ export default function ConversationBillingPanel({
           {/* Existing Receipts */}
           {existingReceipts.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Receipts</h4>
+              <h4 className="text-sm font-medium text-tactical-grey-600 mb-2">Receipts</h4>
               <div className="space-y-2">
                 {existingReceipts.map(receipt => (
                   <div key={receipt.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -303,13 +307,13 @@ export default function ConversationBillingPanel({
           {/* Existing Invoices */}
           {existingInvoices.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Invoices</h4>
+              <h4 className="text-sm font-medium text-tactical-grey-600 mb-2">Invoices</h4>
               <div className="space-y-2">
                 {existingInvoices.map(invoice => (
-                  <div key={invoice.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div key={invoice.id} className="flex items-center justify-between p-3 bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg">
                     <div>
-                      <span className="font-medium text-blue-900">{invoice.invoiceNumber}</span>
-                      <span className="text-blue-700 ml-2">${invoice.totalAmount.toFixed(2)}</span>
+                      <span className="font-medium text-tactical-brown-dark">{invoice.invoiceNumber}</span>
+                      <span className="text-tactical-brown-dark ml-2">${invoice.totalAmount.toFixed(2)}</span>
                       <span className={`text-xs ml-2 px-2 py-1 rounded-full ${
                         invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
                         invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
@@ -319,7 +323,7 @@ export default function ConversationBillingPanel({
                       </span>
                     </div>
                     <button 
-                      className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                      className="text-sm bg-tactical-gold text-white px-3 py-1 rounded hover:bg-tactical-gold-dark"
                       onClick={() => viewInvoice(invoice.id)}
                     >
                       View Invoice
@@ -357,7 +361,7 @@ export default function ConversationBillingPanel({
             
             {billingSuggestion?.type === 'invoice' && (
               <button 
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                className="flex items-center px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark text-sm"
                 onClick={generateInvoiceFromConversation}
               >
                 <span className="mr-2">📄</span>
@@ -371,14 +375,14 @@ export default function ConversationBillingPanel({
       {/* Manual Actions */}
       <div className="flex space-x-3 mb-6">
         <button 
-          className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
+          className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-tactical-grey-700 text-sm"
           onClick={() => setShowReceiptForm(true)}
         >
           <span className="mr-2">+</span>
           Create Receipt
         </button>
         <button 
-          className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
+          className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-tactical-grey-700 text-sm"
           onClick={() => setShowInvoiceForm(true)}
         >
           <span className="mr-2">+</span>
@@ -395,7 +399,7 @@ export default function ConversationBillingPanel({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Payment Method
                   </label>
                   <select
@@ -404,7 +408,7 @@ export default function ConversationBillingPanel({
                       ...receiptFormData,
                       paymentMethod: e.target.value as Receipt['paymentMethod']
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   >
                     <option value="cash">Cash</option>
                     <option value="card">Card</option>
@@ -414,7 +418,7 @@ export default function ConversationBillingPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Service Date
                   </label>
                   <input
@@ -424,39 +428,39 @@ export default function ConversationBillingPanel({
                       ...receiptFormData,
                       serviceDate: e.target.value ? new Date(e.target.value) : undefined
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">Items</label>
+                  <label className="block text-sm font-medium text-tactical-grey-600">Items</label>
                   <button
                     type="button"
                     onClick={addReceiptItem}
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    className="text-sm bg-tactical-gold text-white px-3 py-1 rounded hover:bg-tactical-gold-dark"
                   >
                     Add Item
                   </button>
                 </div>
                 
                 {receiptFormData.items?.map((item, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 mb-2 p-3 bg-gray-50 rounded">
+                  <div key={index} className="grid grid-cols-12 gap-2 mb-2 p-3 bg-tactical-grey-100 rounded">
                     <div className="col-span-4">
                       <input
                         type="text"
                         placeholder="Description"
                         value={item.description}
                         onChange={(e) => updateReceiptItem(index, 'description', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       />
                     </div>
                     <div className="col-span-2">
                       <select
                         value={item.serviceType}
                         onChange={(e) => updateReceiptItem(index, 'serviceType', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       >
                         <option value="consultation">Consultation</option>
                         <option value="landscaping">Landscaping</option>
@@ -471,7 +475,7 @@ export default function ConversationBillingPanel({
                         placeholder="Qty"
                         value={item.quantity}
                         onChange={(e) => updateReceiptItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       />
                     </div>
                     <div className="col-span-2">
@@ -481,7 +485,7 @@ export default function ConversationBillingPanel({
                         placeholder="Price"
                         value={item.unitPrice}
                         onChange={(e) => updateReceiptItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       />
                     </div>
                     <div className="col-span-1">
@@ -507,7 +511,7 @@ export default function ConversationBillingPanel({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Notes
                 </label>
                 <textarea
@@ -517,7 +521,7 @@ export default function ConversationBillingPanel({
                     notes: e.target.value
                   })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   placeholder="Additional notes..."
                 />
               </div>
@@ -526,7 +530,7 @@ export default function ConversationBillingPanel({
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowReceiptForm(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100"
               >
                 Cancel
               </button>
@@ -551,7 +555,7 @@ export default function ConversationBillingPanel({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Payment Terms
                   </label>
                   <select
@@ -560,7 +564,7 @@ export default function ConversationBillingPanel({
                       ...invoiceFormData,
                       paymentTerms: e.target.value as Invoice['paymentTerms']
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   >
                     <option value="due_on_receipt">Due on Receipt</option>
                     <option value="net15">Net 15</option>
@@ -568,7 +572,7 @@ export default function ConversationBillingPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                     Due Date
                   </label>
                   <input
@@ -578,39 +582,39 @@ export default function ConversationBillingPanel({
                       ...invoiceFormData,
                       dueDate: e.target.value ? new Date(e.target.value) : undefined
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">Items</label>
+                  <label className="block text-sm font-medium text-tactical-grey-600">Items</label>
                   <button
                     type="button"
                     onClick={addInvoiceItem}
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    className="text-sm bg-tactical-gold text-white px-3 py-1 rounded hover:bg-tactical-gold-dark"
                   >
                     Add Item
                   </button>
                 </div>
                 
                 {invoiceFormData.items?.map((item, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 mb-2 p-3 bg-gray-50 rounded">
+                  <div key={index} className="grid grid-cols-12 gap-2 mb-2 p-3 bg-tactical-grey-100 rounded">
                     <div className="col-span-4">
                       <input
                         type="text"
                         placeholder="Description"
                         value={item.description}
                         onChange={(e) => updateInvoiceItem(index, 'description', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       />
                     </div>
                     <div className="col-span-2">
                       <select
                         value={item.serviceType}
                         onChange={(e) => updateInvoiceItem(index, 'serviceType', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       >
                         <option value="consultation">Consultation</option>
                         <option value="landscaping">Landscaping</option>
@@ -625,7 +629,7 @@ export default function ConversationBillingPanel({
                         placeholder="Qty"
                         value={item.quantity}
                         onChange={(e) => updateInvoiceItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       />
                     </div>
                     <div className="col-span-2">
@@ -635,7 +639,7 @@ export default function ConversationBillingPanel({
                         placeholder="Price"
                         value={item.unitPrice}
                         onChange={(e) => updateInvoiceItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 border border-tactical-grey-400 rounded text-sm"
                       />
                     </div>
                     <div className="col-span-1">
@@ -664,14 +668,14 @@ export default function ConversationBillingPanel({
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowInvoiceForm(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateInvoice}
                 disabled={isLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark disabled:opacity-50"
               >
                 {isLoading ? 'Creating...' : 'Create Invoice'}
               </button>

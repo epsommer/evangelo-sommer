@@ -213,35 +213,35 @@ const ServiceLineDebugger: React.FC<ServiceLineDebuggerProps> = ({ client, clien
           {/* Quick Status */}
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-lg font-bold text-blue-600">
+              <div className="text-lg font-bold text-tactical-gold">
                 {client?.serviceContracts?.length || 0}
               </div>
-              <div className="text-sm text-gray-600">Contracts</div>
+              <div className="text-sm text-tactical-grey-500">Contracts</div>
             </div>
             <div>
               <div className="text-lg font-bold text-green-600">
                 {client?.serviceRecords?.length || 0}
               </div>
-              <div className="text-sm text-gray-600">Records</div>
+              <div className="text-sm text-tactical-grey-500">Records</div>
             </div>
             <div>
               <div className="text-lg font-bold text-purple-600">
                 {client?.billingRecords?.length || 0}
               </div>
-              <div className="text-sm text-gray-600">Billing</div>
+              <div className="text-sm text-tactical-grey-500">Billing</div>
             </div>
           </div>
 
           {/* Service Line Breakdown */}
           {breakdown && (
             <div className="grid grid-cols-2 gap-4">
-              <div className="border border-blue-200 rounded p-3 bg-blue-50">
-                <h4 className="font-medium text-blue-900 mb-2">❄️ White Knight Snow</h4>
+              <div className="border border-tactical-grey-300 rounded p-3 bg-tactical-gold-muted">
+                <h4 className="font-medium text-tactical-brown-dark mb-2">❄️ White Knight Snow</h4>
                 <div className="space-y-1 text-sm">
                   <div>Contracts: {breakdown.whiteKnight.contracts.length}</div>
                   <div>Records: {breakdown.whiteKnight.records.length}</div>
                   <div>Billing: {breakdown.whiteKnight.billing.length}</div>
-                  <div className="text-xs text-blue-600">
+                  <div className="text-xs text-tactical-gold">
                     Types: {[...new Set(breakdown.whiteKnight.records.map(r => r.serviceType))].join(', ')}
                   </div>
                 </div>
@@ -263,8 +263,8 @@ const ServiceLineDebugger: React.FC<ServiceLineDebuggerProps> = ({ client, clien
 
           {/* Debug Data Display */}
           {debugData && (
-            <div className="bg-gray-100 rounded p-3">
-              <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+            <div className="bg-tactical-grey-200 rounded p-3">
+              <h4 className="font-medium text-tactical-grey-800 mb-2 flex items-center">
                 <Eye className="w-4 h-4 mr-1" />
                 Latest Debug Results
               </h4>

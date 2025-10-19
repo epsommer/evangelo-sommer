@@ -20,7 +20,7 @@ export const SERVICE_LINE_DEFINITIONS: ServiceLineDefinition[] = [
     name: 'White Knight Snow Service',
     slug: 'whiteknight',
     description: 'Professional winter snow removal and ice management services',
-    color: '#4A90E2', // Blue for winter services
+    color: '#6B7280', // Tactical Grey for winter services (no blue)
     keywords: [
       'snow', 'winter', 'plowing', 'salting', 'ice', 'driveway', 'walkway', 
       'deicing', 'calcium', 'magnesium', 'salt', 'removal', 'clearing'

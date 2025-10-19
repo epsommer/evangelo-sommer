@@ -179,14 +179,14 @@ export default function EnhancedConversationModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white border-2 border-light-grey max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 bg-off-white border-b-2 border-gold">
-          <h2 className="text-xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+      <div className="bg-white border-2 border-hud-border max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 bg-hud-background-secondary border-b-2 border-hud-border-accent">
+          <h2 className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             ADD CONVERSATION WITH {clientName.toUpperCase()}
           </h2>
           <button
             onClick={onClose}
-            className="text-medium-grey hover:text-dark-grey transition-colors"
+            className="text-medium-grey hover:text-hud-text-primary transition-colors"
           >
             <svg
               className="w-6 h-6"
@@ -209,7 +209,7 @@ export default function EnhancedConversationModal({
             {/* Conversation Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                   COMMUNICATION TYPE
                 </label>
                 <select
@@ -220,7 +220,7 @@ export default function EnhancedConversationModal({
                       source: e.target.value as Conversation["source"],
                     }))
                   }
-                  className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                  className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
                 >
                   <option value="email">EMAIL</option>
                   <option value="text">TEXT MESSAGES</option>
@@ -231,7 +231,7 @@ export default function EnhancedConversationModal({
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                   PRIORITY
                 </label>
                 <select
@@ -242,7 +242,7 @@ export default function EnhancedConversationModal({
                       priority: e.target.value as Conversation["priority"],
                     }))
                   }
-                  className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                  className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
                 >
                   <option value="low">LOW</option>
                   <option value="medium">MEDIUM</option>
@@ -252,7 +252,7 @@ export default function EnhancedConversationModal({
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                   STATUS
                 </label>
                 <select
@@ -263,7 +263,7 @@ export default function EnhancedConversationModal({
                       status: e.target.value as Conversation["status"],
                     }))
                   }
-                  className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                  className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
                 >
                   <option value="active">ACTIVE</option>
                   <option value="pending">PENDING RESPONSE</option>
@@ -275,7 +275,7 @@ export default function EnhancedConversationModal({
 
             {/* Conversation Title */}
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+              <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                 CONVERSATION TITLE (OPTIONAL)
               </label>
               <input
@@ -284,14 +284,14 @@ export default function EnhancedConversationModal({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                 placeholder="E.G., KITCHEN RENOVATION DISCUSSION, QUOTE FOLLOW-UP"
               />
             </div>
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+              <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                 TAGS (COMMA-SEPARATED)
               </label>
               <input
@@ -300,14 +300,14 @@ export default function EnhancedConversationModal({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, tags: e.target.value }))
                 }
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                 placeholder="QUOTE, URGENT, FOLLOW-UP, PRICING"
               />
             </div>
 
             {/* Conversation Content */}
-            <div className="border-2 border-light-grey p-4 bg-off-white">
-              <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk mb-4">
+            <div className="border-2 border-hud-border p-4 bg-hud-background-secondary">
+              <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary mb-4">
                 CONVERSATION CONTENT
               </h3>
               <ConversationBatchManager
@@ -319,28 +319,28 @@ export default function EnhancedConversationModal({
 
             {/* Error Display */}
             {error && (
-              <div className="p-4 bg-red-50 border-2 border-red-600 text-red-700 font-space-grotesk text-sm">
+              <div className="p-4 bg-red-50 border-2 border-red-600 text-red-700 font-primary text-sm">
                 <p className="font-bold uppercase tracking-wide">{error}</p>
               </div>
             )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 p-6 border-t-2 border-light-grey bg-off-white">
+          <div className="flex justify-end space-x-3 p-6 border-t-2 border-hud-border bg-hud-background-secondary">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-dark-grey border-2 border-light-grey hover:bg-light-grey font-space-grotesk font-bold uppercase tracking-wide"
+              className="px-4 py-2 text-hud-text-primary border-2 border-hud-border hover:bg-light-grey font-primary font-bold uppercase tracking-wide"
             >
               CANCEL
             </button>
             <button
               type="submit"
               disabled={isProcessing || processedMessages.length === 0}
-              className={`px-4 py-2 font-space-grotesk font-bold uppercase tracking-wide ${
+              className={`px-4 py-2 font-primary font-bold uppercase tracking-wide ${
                 isProcessing || processedMessages.length === 0
                   ? "bg-medium-grey text-white cursor-not-allowed"
-                  : "bg-gold text-dark-grey hover:bg-gold-light"
+                  : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
               }`}
             >
               {isProcessing ? "PROCESSING..." : "SAVE CONVERSATION"}

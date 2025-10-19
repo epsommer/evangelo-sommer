@@ -41,7 +41,7 @@ export async function POST() {
         name: 'White Knight Snow Service',
         slug: 'whiteknight',
         description: 'Professional winter snow removal and ice management services',
-        color: '#4A90E2',
+        color: '#6B7280',
         isActive: true
       },
       {

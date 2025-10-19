@@ -83,8 +83,18 @@ export const generateTimeSlots = (tasks: DailyTask[]): TimeSlot[] => {
     
     // Find tasks that start in this hour
     const hourTasks = tasks.filter(task => {
-      const taskHour = task.startTime.getHours();
-      return taskHour === hour;
+      try {
+        const startTime = task.startTime instanceof Date ? task.startTime : new Date(task.startTime);
+        if (isNaN(startTime.getTime())) {
+          console.warn('Invalid startTime in task:', task.id, task.startTime);
+          return false;
+        }
+        const taskHour = startTime.getHours();
+        return taskHour === hour;
+      } catch (error) {
+        console.error('Error processing task startTime:', error, task.id);
+        return false;
+      }
     });
     
     slots.push({
@@ -131,9 +141,19 @@ export const getTasksForDate = (tasks: DailyTask[], date: Date): DailyTask[] => 
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
   
-  return tasks.filter(task => 
-    isWithinInterval(task.startTime, { start: dayStart, end: dayEnd })
-  );
+  return tasks.filter(task => {
+    try {
+      const startTime = task.startTime instanceof Date ? task.startTime : new Date(task.startTime);
+      if (isNaN(startTime.getTime())) {
+        console.warn('Invalid startTime in getTasksForDate:', task.id, task.startTime);
+        return false;
+      }
+      return isWithinInterval(startTime, { start: dayStart, end: dayEnd });
+    } catch (error) {
+      console.error('Error filtering task by date:', error, task.id);
+      return false;
+    }
+  });
 };
 
 // Create a new task
@@ -197,8 +217,21 @@ const generateTaskId = (): string => {
 };
 
 // Format time for display
-export const formatTime = (date: Date): string => {
-  return format(date, 'HH:mm');
+export const formatTime = (date: Date | string): string => {
+  try {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      console.warn('Invalid date provided to formatTime:', date);
+      return '--:--';
+    }
+    
+    return format(dateObj, 'HH:mm');
+  } catch (error) {
+    console.error('Error formatting time:', error, 'Date:', date);
+    return '--:--';
+  }
 };
 
 // Format duration
@@ -252,28 +285,56 @@ export const getServiceTypeColorClass = (serviceType?: DailyTask['serviceType'])
 
 // Sort tasks by start time
 export const sortTasksByTime = (tasks: DailyTask[]): DailyTask[] => {
-  return [...tasks].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+  return [...tasks].sort((a, b) => {
+    const timeA = a.startTime instanceof Date ? a.startTime : new Date(a.startTime);
+    const timeB = b.startTime instanceof Date ? b.startTime : new Date(b.startTime);
+    return timeA.getTime() - timeB.getTime();
+  });
 };
 
 // Get upcoming tasks (next 3 tasks that are not completed)
 export const getUpcomingTasks = (tasks: DailyTask[], limit: number = 3): DailyTask[] => {
   const now = new Date();
   return tasks
-    .filter(task => task.status !== 'completed' && task.startTime >= now)
-    .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+    .filter(task => {
+      const startTime = task.startTime instanceof Date ? task.startTime : new Date(task.startTime);
+      return task.status !== 'completed' && startTime >= now;
+    })
+    .sort((a, b) => {
+      const timeA = a.startTime instanceof Date ? a.startTime : new Date(a.startTime);
+      const timeB = b.startTime instanceof Date ? b.startTime : new Date(b.startTime);
+      return timeA.getTime() - timeB.getTime();
+    })
     .slice(0, limit);
 };
 
 // Check for task conflicts (overlapping times)
 export const checkTaskConflicts = (tasks: DailyTask[], newTask: Omit<DailyTask, 'id' | 'createdAt' | 'updatedAt'>): DailyTask[] => {
   return tasks.filter(task => {
-    const taskStart = task.startTime.getTime();
-    const taskEnd = task.endTime.getTime();
-    const newStart = newTask.startTime.getTime();
-    const newEnd = newTask.endTime.getTime();
-    
-    // Check if times overlap
-    return (newStart < taskEnd && newEnd > taskStart);
+    try {
+      const taskStartTime = task.startTime instanceof Date ? task.startTime : new Date(task.startTime);
+      const taskEndTime = task.endTime instanceof Date ? task.endTime : new Date(task.endTime);
+      const newStartTime = newTask.startTime instanceof Date ? newTask.startTime : new Date(newTask.startTime);
+      const newEndTime = newTask.endTime instanceof Date ? newTask.endTime : new Date(newTask.endTime);
+      
+      // Validate dates
+      if (isNaN(taskStartTime.getTime()) || isNaN(taskEndTime.getTime()) || 
+          isNaN(newStartTime.getTime()) || isNaN(newEndTime.getTime())) {
+        console.warn('Invalid date in checkTaskConflicts:', task.id);
+        return false;
+      }
+      
+      const taskStart = taskStartTime.getTime();
+      const taskEnd = taskEndTime.getTime();
+      const newStart = newStartTime.getTime();
+      const newEnd = newEndTime.getTime();
+      
+      // Check if times overlap
+      return (newStart < taskEnd && newEnd > taskStart);
+    } catch (error) {
+      console.error('Error checking task conflicts:', error, task.id);
+      return false;
+    }
   });
 };
 

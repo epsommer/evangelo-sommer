@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Search, Calendar, Clock, User, Settings, LogOut } from "lucide-react"
+import { Search, Calendar, Clock, User, Settings, LogOut, Shield, Command, Activity } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import AccountSettingsModal, { AccountSettings } from "@/components/AccountSettingsModal"
 import PreferencesModal, { SystemPreferences } from "@/components/PreferencesModal"
+import { ThemeToggle } from "./ThemeToggle"
 
 interface ScheduledService {
   id: string;
@@ -25,9 +26,42 @@ const Header = () => {
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([]);
   const [showScheduleDropdown, setShowScheduleDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  // Click outside to close dropdown handler
+  useEffect(() => {
+    if (showProfileDropdown || showScheduleDropdown) {
+      const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const clickedInDropdown = target.closest('.modal-tactical') || target.closest('[data-dropdown-trigger]');
+        
+        if (!clickedInDropdown) {
+          setShowScheduleDropdown(false);
+          setShowProfileDropdown(false);
+        }
+      };
+      
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showProfileDropdown, showScheduleDropdown]);
+  
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  // Scroll tracking for compact mode
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 100); // Compact after scrolling 100px
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
 
   useEffect(() => {
     try {
@@ -51,11 +85,13 @@ const Header = () => {
   }, []);
 
   const handleAccountSettings = () => {
+    console.log('🔧 Account settings clicked - handler called');
     setShowProfileDropdown(false);
     setShowAccountSettings(true);
   };
 
   const handlePreferences = () => {
+    console.log('⚙️ Preferences clicked - handler called');
     setShowProfileDropdown(false);
     setShowPreferences(true);
   };
@@ -109,137 +145,202 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-dark-grey text-white h-16 flex items-center justify-between px-6 border-b-2 border-gold">
-      <div className="flex items-center space-x-6">
+    <header className={`fixed top-0 left-0 right-0 z-50 bg-hud-overlay flex items-center justify-between px-8 border-b-4 border-tactical-gold transition-all duration-300 ${isScrolled ? 'h-14' : 'h-20'}`}>
+      {/* Removed distracting tactical frame overlay */}
+      
+      <div className="flex items-center space-x-8 relative">
         <button 
           onClick={() => router.push('/dashboard')}
-          className="text-2xl font-bold tracking-wide font-space-grotesk hover:text-gold transition-colors duration-200"
+          className={`logo-button flex items-center space-x-3 tracking-wide text-tactical-white hover-tactical-glow transition-all duration-300 group bg-transparent border-none ${isScrolled ? 'text-lg' : 'text-2xl'}`}
         >
-          COMMAND CENTER
+          <Shield className={`text-tactical-gold group-hover:animate-pulse transition-all duration-300 ${isScrolled ? 'w-6 h-6' : 'w-8 h-8'}`} />
+          <div>
+            <div className="text-tactical-gold text-lg font-bold tracking-wider" style={{ fontFamily: 'lores-9-wide, sans-serif' }}>TACTICAL</div>
+            <div className="text-tactical-white text-sm font-normal tracking-[0.2em] -mt-1" style={{ fontFamily: 'lores-12-narrow, sans-serif' }}>COMMAND CENTER</div>
+          </div>
         </button>
-        <div className="h-6 w-px bg-gold"></div>
-        <span className="text-sm font-medium text-gold uppercase tracking-wider font-space-grotesk">
-          MSCRMS
-        </span>
+        
+        <div className="chevron-separator"></div>
+        
+        <div className="hud-metric bg-transparent border-none p-0">
+          <Activity className="w-5 h-5 text-tactical-amber animate-pulse" />
+          <div>
+            <div className="text-tactical-amber text-xs font-tactical">SYSTEM_ID</div>
+            <div className="text-tactical-white font-tactical text-sm">MSCRMS_V2.1</div>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center space-x-4">
-        <Button variant="outline" size="sm" className="text-white border-white hover:bg-white hover:text-dark-grey">
+      <div className="flex items-center space-x-6 relative z-10">
+        <ThemeToggle />
+        
+        <button className="btn-secondary flex items-center px-4 py-2">
           <Search className="h-4 w-4 mr-2" />
           SEARCH
-        </Button>
+        </button>
 
-        {/* Schedule Dropdown */}
+        {/* Tactical Schedule Dropdown */}
         <div className="relative">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-white border-white hover:bg-white hover:text-dark-grey"
+          <button 
+            className="btn-tactical flex items-center px-4 py-2 relative"
             onClick={() => setShowScheduleDropdown(!showScheduleDropdown)}
           >
             <Calendar className="h-4 w-4 mr-2" />
             SCHEDULE
             {scheduledServices.length > 0 && (
-              <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-blue-600 text-white">
+              <div className="ml-2 bg-tactical-red text-tactical-white px-2 py-1 text-xs font-tactical clip-path-diamond animate-pulse">
                 {scheduledServices.length}
-              </Badge>
+              </div>
             )}
-          </Button>
+            {/* Status indicator */}
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-tactical-green rounded-full animate-pulse"></div>
+          </button>
 
           {showScheduleDropdown && (
-            <div className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-              <div className="p-4 bg-off-white border-b border-gray-200 rounded-t-lg">
-                <h3 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide text-sm">
-                  Upcoming Schedules
-                </h3>
+            <div className="modal-tactical absolute right-0 top-16 w-96 z-50 overflow-hidden">
+              <div className="p-4 bg-hud-overlay border-b-2 border-tactical-gold relative">
+                <div className="corner-markers">
+                  <h3 className="text-heading text-sm mb-0">
+                    UPCOMING TACTICAL SCHEDULES
+                  </h3>
+                </div>
+                <div className="status-online mt-2"></div>
               </div>
-              <div className="max-h-64 overflow-y-auto">
+              <div className="max-h-80 overflow-y-auto bg-hud-background-primary/50 backdrop-blur-sm">
                 {scheduledServices.length > 0 ? (
                   scheduledServices.map(service => (
-                    <div key={service.id} className="p-3 border-b border-gray-100 hover:bg-gray-50">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-dark-grey text-sm">
-                          {service.service}
+                    <div key={service.id} className="tactical-frame m-2 p-3 hover-schematic transition-all duration-300">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-hud-primary font-hud-ui text-sm font-medium">
+                          {service.service.toUpperCase()}
                         </span>
-                        <Badge className={`text-xs ${
-                          service.priority === 'high' ? 'bg-red-100 text-red-800' :
-                          service.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {service.priority}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-medium-grey">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{format(new Date(service.scheduledDate), 'MMM d, h:mm a')}</span>
+                        <div className={`px-2 py-1 text-xs font-tactical ${
+                          service.priority === 'high' ? 'bg-tactical-red text-tactical-white' :
+                          service.priority === 'medium' ? 'bg-tactical-amber text-tactical-gray-900' :
+                          'bg-tactical-green text-tactical-white'
+                        } clip-path-angled`}>
+                          {service.priority.toUpperCase()}
                         </div>
-                        <div className="mt-1">Client: {service.clientName}</div>
+                      </div>
+                      <div className="text-sm text-hud-secondary">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Clock className="h-3 w-3 text-tactical-gold" />
+                          <span className="font-tactical">
+                            {format(new Date(service.scheduledDate), 'MMM dd, HH:mm')}
+                          </span>
+                        </div>
+                        <div className="text-tactical-data text-xs">
+                          TARGET: {service.clientName.toUpperCase()}
+                        </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-medium-grey">
-                    No upcoming schedules
+                  <div className="p-6 text-center">
+                    <div className="data-terminal text-center p-4">
+                      <div className="text-tactical-green font-tactical text-sm">
+                        &gt; NO SCHEDULED OPERATIONS<br />
+                        &gt; ALL CLEAR FOR DEPLOYMENT
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
               {scheduledServices.length > 0 && (
-                <div className="p-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-                  <a 
-                    href="/time-manager" 
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    onClick={() => setShowScheduleDropdown(false)}
+                <div className="p-4 bg-hud-overlay border-t-2 border-tactical-gold">
+                  <button 
+                    onClick={() => {
+                      router.push('/time-manager');
+                      setShowScheduleDropdown(false);
+                    }}
+                    className="btn-outline w-full text-xs py-2 flex items-center justify-center"
                   >
-                    View all schedules →
-                  </a>
+                    ACCESS FULL MISSION CONTROL
+                    <Command className="w-3 h-3 ml-2" />
+                  </button>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <div className="flex items-center space-x-3 relative">
-          <span className="text-sm font-medium text-white font-space-grotesk uppercase tracking-wide">
-            Evangelo Sommer
-          </span>
+        <div className="flex items-center space-x-4 relative">
+          <div className="text-right">
+            <div className="text-tactical-gold text-xs font-tactical">OPERATOR_ID</div>
+            <div className="text-tactical-white text-sm font-hud-ui font-medium">
+              E.SOMMER
+            </div>
+          </div>
+          
           <button 
-            className="w-10 h-10 bg-gold flex items-center justify-center text-dark-grey font-bold font-space-grotesk hover:bg-gold-dark transition-colors duration-200"
-            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            className="rounded-full w-12 h-12 bg-tactical-gold text-tactical-gray-900 font-bold font-hud-ui hover-tactical-glow transition-all duration-300 relative corner-markers"
+            data-dropdown-trigger
+            onClick={() => {
+              setShowProfileDropdown(!showProfileDropdown);
+            }}
           >
-            ES
+            <span className="relative z-10">ES</span>
+            <div className="absolute -top-1 -right-1 w-3 h-3">
+              <div className="status-online"></div>
+            </div>
           </button>
           
-          {/* Profile Dropdown */}
+          {/* Tactical Profile Dropdown */}
           {showProfileDropdown && (
-            <div className="absolute right-0 top-12 w-56 bg-white border border-gray-200 shadow-lg z-50">
-              <div className="p-4 bg-off-white border-b border-gray-200">
-                <h3 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide text-sm">
-                  Profile Settings
-                </h3>
+            <div 
+              className="modal-tactical absolute right-0 top-16 w-72 z-50"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from bubbling up to overlay
+              }}
+            >
+              <div 
+                className="p-4 bg-hud-overlay border-b-2 border-tactical-gold"
+              >
+                <div className="corner-markers">
+                  <h3 className="text-heading text-sm mb-2">
+                    OPERATOR CONTROL PANEL
+                  </h3>
+                  <div className="text-tactical-data text-xs font-tactical">
+                    CLEARANCE_LEVEL: ALPHA
+                  </div>
+                </div>
               </div>
-              <div className="p-2">
+              <div 
+                className="p-3 space-y-2 bg-hud-background-primary/50 backdrop-blur-sm"
+              >
                 <button 
-                  onClick={handleAccountSettings}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 text-dark-grey text-sm font-space-grotesk flex items-center space-x-2"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAccountSettings();
+                  }}
+                  className="nav-tactical w-full flex items-center space-x-3 p-3"
                 >
-                  <User className="h-4 w-4" />
-                  <span>Account Settings</span>
+                  <User className="h-4 w-4 text-tactical-gold" />
+                  <span>ACCOUNT CONFIG</span>
                 </button>
                 <button 
-                  onClick={handlePreferences}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 text-dark-grey text-sm font-space-grotesk flex items-center space-x-2"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePreferences();
+                  }}
+                  className="nav-tactical w-full flex items-center space-x-3 p-3"
                 >
-                  <Settings className="h-4 w-4" />
-                  <span>Preferences</span>
+                  <Settings className="h-4 w-4 text-tactical-gold" />
+                  <span>SYSTEM PREFERENCES</span>
                 </button>
-                <hr className="my-2" />
+                
+                <div className="divider my-3"></div>
+                
                 <button 
                   onClick={handleSignOut}
                   disabled={isSigningOut}
-                  className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 text-sm font-space-grotesk flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="nav-tactical w-full flex items-center space-x-3 p-3 border-tactical-red hover:border-tactical-red hover:bg-tactical-red/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
+                  <LogOut className="h-4 w-4 text-tactical-red" />
+                  <span className="text-tactical-red">
+                    {isSigningOut ? 'LOGOUT IN PROGRESS...' : 'TERMINATE SESSION'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -247,16 +348,10 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Click outside to close dropdowns */}
-      {(showScheduleDropdown || showProfileDropdown) && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => {
-            setShowScheduleDropdown(false);
-            setShowProfileDropdown(false);
-          }}
-        />
-      )}
+      {/* Tactical scan line animation */}
+      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-tactical-gold to-transparent opacity-50 animate-pulse"></div>
+
+      {/* Click outside handled by useEffect document listener now */}
 
       {/* Account Settings Modal */}
       <AccountSettingsModal

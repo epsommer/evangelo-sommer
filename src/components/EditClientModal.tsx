@@ -306,20 +306,20 @@ export default function EditClientModal({
             className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-tactical-grey-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3 className="text-xl font-semibold text-tactical-grey-800">
                     Edit Client
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-tactical-grey-500 mt-1">
                     {client.name}
                   </p>
                 </div>
                 <button
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                  className="text-gray-400 hover:text-tactical-grey-500 transition-colors disabled:opacity-50"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -335,8 +335,8 @@ export default function EditClientModal({
                     onClick={() => setActiveSection(section.key)}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       activeSection === section.key
-                        ? "bg-blue-100 text-blue-700"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                        ? "bg-tactical-gold-muted text-tactical-brown-dark"
+                        : "text-tactical-grey-500 hover:text-tactical-grey-800 hover:bg-tactical-grey-200"
                     }`}
                   >
                     <span>{section.icon}</span>
@@ -353,15 +353,15 @@ export default function EditClientModal({
                 {activeSection === "basic" && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Name *
                       </label>
                       <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                          errors.name ? "border-red-300 bg-red-50" : "border-gray-300 bg-white"
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
+                          errors.name ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
                         }`}
                         placeholder="Client name"
                         disabled={isSubmitting}
@@ -373,27 +373,27 @@ export default function EditClientModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Company
                       </label>
                       <input
                         type="text"
                         value={formData.company}
                         onChange={(e) => handleInputChange("company", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                         placeholder="Company name (optional)"
                         disabled={isSubmitting}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Status
                       </label>
                       <select
                         value={formData.status}
                         onChange={(e) => handleInputChange("status", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                         disabled={isSubmitting}
                       >
                         <option value="prospect">Prospect</option>
@@ -404,14 +404,14 @@ export default function EditClientModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Notes
                       </label>
                       <textarea
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                         placeholder="Additional notes about the client..."
                         disabled={isSubmitting}
                       />
@@ -424,15 +424,15 @@ export default function EditClientModal({
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                           Email Address
                         </label>
                         <input
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                            errors.email ? "border-red-300 bg-red-50" : "border-gray-300 bg-white"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
+                            errors.email ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
                           }`}
                           placeholder="client@example.com"
                           disabled={isSubmitting}
@@ -443,15 +443,15 @@ export default function EditClientModal({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                           Phone Number
                         </label>
                         <input
                           type="tel"
                           value={formData.phone}
                           onChange={handlePhoneChange}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                            errors.phone ? "border-red-300 bg-red-50" : "border-gray-300 bg-white"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
+                            errors.phone ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
                           }`}
                           placeholder="(123) 456-7890"
                           disabled={isSubmitting}
@@ -463,7 +463,7 @@ export default function EditClientModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Address
                       </label>
                       <div className="space-y-3">
@@ -471,7 +471,7 @@ export default function EditClientModal({
                           type="text"
                           value={formData.address.street}
                           onChange={(e) => handleInputChange("address.street", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                          className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                           placeholder="Street address"
                           disabled={isSubmitting}
                         />
@@ -480,7 +480,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.city}
                             onChange={(e) => handleInputChange("address.city", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                             placeholder="City"
                             disabled={isSubmitting}
                           />
@@ -488,16 +488,16 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.state}
                             onChange={(e) => handleInputChange("address.state", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                            placeholder="State"
+                            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                            placeholder="Province"
                             disabled={isSubmitting}
                           />
                           <input
                             type="text"
                             value={formData.address.zip}
                             onChange={(e) => handleInputChange("address.zip", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                            placeholder="ZIP"
+                            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                            placeholder="Postal Code"
                             disabled={isSubmitting}
                           />
                         </div>
@@ -511,29 +511,29 @@ export default function EditClientModal({
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                           Project Type
                         </label>
                         <input
                           type="text"
                           value={formData.projectType}
                           onChange={(e) => handleInputChange("projectType", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                          className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                           placeholder="e.g., Landscape Design, Snow Removal"
                           disabled={isSubmitting}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                           Budget
                         </label>
                         <input
                           type="text"
                           value={formData.budget}
                           onChange={(e) => handleInputChange("budget", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                            errors.budget ? "border-red-300 bg-red-50" : "border-gray-300 bg-white"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
+                            errors.budget ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
                           }`}
                           placeholder="e.g., 5000"
                           disabled={isSubmitting}
@@ -545,21 +545,21 @@ export default function EditClientModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Timeline
                       </label>
                       <input
                         type="text"
                         value={formData.timeline}
                         onChange={(e) => handleInputChange("timeline", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                         placeholder="e.g., 2-3 weeks, Spring 2024"
                         disabled={isSubmitting}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-3">
                         Service Types
                       </label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -572,10 +572,10 @@ export default function EditClientModal({
                               type="checkbox"
                               checked={formData.serviceTypes.includes(serviceType)}
                               onChange={() => handleServiceTypeToggle(serviceType)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
                               disabled={isSubmitting}
                             />
-                            <span className="text-sm text-gray-700 capitalize">
+                            <span className="text-sm text-tactical-grey-600 capitalize">
                               {serviceType.replace('_', ' ')}
                             </span>
                           </label>
@@ -589,13 +589,13 @@ export default function EditClientModal({
                 {activeSection === "preferences" && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                         Preferred Contact Method
                       </label>
                       <select
                         value={formData.contactPreferences.preferredMethod}
                         onChange={(e) => handleInputChange("contactPreferences.preferredMethod", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
                         disabled={isSubmitting}
                       >
                         <option value="email">Email</option>
@@ -606,14 +606,14 @@ export default function EditClientModal({
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-gray-700">Automation Settings</h4>
+                      <h4 className="text-sm font-medium text-tactical-grey-600">Automation Settings</h4>
                       
                       <div className="flex items-center justify-between">
                         <div>
-                          <label className="text-sm font-medium text-gray-700">
+                          <label className="text-sm font-medium text-tactical-grey-600">
                             Auto-send Invoices
                           </label>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-tactical-grey-500">
                             Automatically email invoices when generated
                           </p>
                         </div>
@@ -621,17 +621,17 @@ export default function EditClientModal({
                           type="checkbox"
                           checked={formData.contactPreferences.autoInvoicing}
                           onChange={(e) => handleInputChange("contactPreferences.autoInvoicing", e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
                           disabled={isSubmitting || !formData.email.trim()}
                         />
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <label className="text-sm font-medium text-gray-700">
+                          <label className="text-sm font-medium text-tactical-grey-600">
                             Auto-send Receipts
                           </label>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-tactical-grey-500">
                             Automatically email receipts when payment received
                           </p>
                         </div>
@@ -639,7 +639,7 @@ export default function EditClientModal({
                           type="checkbox"
                           checked={formData.contactPreferences.autoReceipts}
                           onChange={(e) => handleInputChange("contactPreferences.autoReceipts", e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
                           disabled={isSubmitting || !formData.email.trim()}
                         />
                       </div>
@@ -662,14 +662,14 @@ export default function EditClientModal({
               </div>
 
               {/* Actions */}
-              <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex justify-between items-center px-6 py-4 border-t border-tactical-grey-300 bg-tactical-grey-100">
                 <div className="flex space-x-2">
                   {sections.map((section, index) => (
                     <div
                       key={section.key}
                       className={`w-2 h-2 rounded-full ${
                         activeSection === section.key
-                          ? "bg-blue-500"
+                          ? "bg-tactical-gold-muted0"
                           : index < sections.findIndex(s => s.key === activeSection)
                             ? "bg-green-500"
                             : "bg-gray-300"
@@ -683,7 +683,7 @@ export default function EditClientModal({
                     type="button"
                     onClick={handleClose}
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -692,8 +692,8 @@ export default function EditClientModal({
                     disabled={isSubmitting}
                     className={`px-6 py-2 rounded-lg transition-colors ${
                       isSubmitting
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
+                        ? "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
+                        : "bg-tactical-gold text-white hover:bg-tactical-gold-dark"
                     }`}
                   >
                     {isSubmitting ? (

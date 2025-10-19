@@ -175,6 +175,72 @@ model VoiceCommand {
   @@index([status])
 }
 
+// Unified Event model for calendar system - matches UnifiedEvent interface
+model Event {
+  id            String   @id @default(cuid())
+
+  // Basic event information
+  type          EventType
+  title         String
+  description   String?
+  startDateTime String
+  endDateTime   String?
+  duration      Int      // minutes
+  priority      Priority
+
+  // Client relationship
+  clientId      String?
+  clientName    String?
+  client        ClientRecord? @relation(fields: [clientId], references: [id])
+
+  // Location and notes
+  location      String?
+  notes         String?
+
+  // Multi-day and all-day support
+  isAllDay      Boolean @default(false)
+  isMultiDay    Boolean @default(false)
+
+  // Notifications
+  notifications Json? // NotificationRule[] - stored as JSON array
+
+  // Recurrence settings
+  recurrence    Json? // RecurrenceRule - stored as JSON object
+  isRecurring   Boolean @default(false)
+  parentEventId String?
+  parentEvent   Event? @relation("EventRecurrence", fields: [parentEventId], references: [id])
+  childEvents   Event[] @relation("EventRecurrence")
+
+  // Legacy compatibility fields
+  status        String?
+  service       String?
+  scheduledDate String?
+
+  // Goal-specific fields
+  goalTimeframe GoalTimeframe?
+  progressTarget Float?
+  currentProgress Float?
+
+  // Milestone-specific fields
+  deadline      String?
+  dependencies  Json? // String[] - stored as JSON array
+
+  // External calendar integration
+  googleCalendarEventId String?
+  outlookCalendarEventId String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startDateTime])
+  @@index([type])
+  @@index([priority])
+  @@index([clientId])
+  @@index([isRecurring])
+  @@index([parentEventId])
+}
+
 // Enhanced Client Record (extends existing Client interface)
 model ClientRecord {
   id            String @id @default(cuid())
@@ -224,7 +290,9 @@ model ClientRecord {
   documents        Document[]
   conversations    Conversation[]
   followUps        FollowUp[]
-  
+  events           Event[]
+  billingDocuments BillingDocument[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -423,10 +491,13 @@ model Conversation {
   
   // Messages
   messages      Message[]
-  
+
+  // Billing documents
+  billingDocuments BillingDocument[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([clientId])
   @@index([status])
   @@index([priority])
@@ -602,6 +673,31 @@ model CalendarIntegration {
 }
 
 // Enums
+
+// Event system enums (matching EventCreationModal.tsx interface)
+enum EventType {
+  EVENT
+  TASK
+  GOAL
+  MILESTONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum GoalTimeframe {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
 enum ParticipantRole {
   CLIENT
   SERVICE_PROVIDER
@@ -949,4 +1045,95 @@ model BillingRecord {
   @@index([status])
   @@index([billingDate])
   @@index([invoiceNumber])
+}
+
+// Conflict Resolution tracking model for persistent conflict resolution choices
+model ConflictResolution {
+  id               String   @id @default(cuid())
+
+  // Conflict identification
+  conflictId       String   // The specific conflict ID (e.g., "temporal_event-123", "business_work_days")
+  conflictType     String   // Type of conflict (temporal_overlap, resource_conflict, business_rule)
+
+  // User and resolution details
+  userId           String?  // Optional user who made the resolution
+  resolutionType   ConflictResolutionType
+
+  // Affected entities
+  affectedEventIds String   // JSON array of event IDs involved in conflict
+
+  // Resolution context and metadata
+  resolutionData   Json?    // Additional context about the resolution (why, how, etc.)
+  conflictMessage  String?  // Original conflict message for reference
+
+  // Audit trail
+  resolvedAt       DateTime @default(now())
+  expiresAt        DateTime? // Optional expiration for temporary resolutions
+
+  // Performance indexes
+  @@unique([conflictId])
+  @@index([conflictType])
+  @@index([resolvedAt])
+  @@index([conflictId, resolutionType])
+}
+
+enum ConflictResolutionType {
+  ACCEPT          // User accepted the conflict (e.g., override business rule)
+  DELETE          // User deleted the conflicting event
+  RESCHEDULE      // User rescheduled the conflicting event
+  OVERRIDE        // User overrode a business rule/policy
+  IGNORE          // User chose to ignore the conflict
+}
+
+// Billing Documents - Receipts, Invoices, Quotes, Estimates
+model BillingDocument {
+  id              String @id @default(cuid())
+  documentNumber  String @unique // REC-2025-001, INV-2025-001, QUO-2025-001, EST-2025-001
+  documentType    BillingDocumentType
+
+  // Relationships
+  clientId        String
+  client          ClientRecord @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  conversationId  String?
+  conversation    Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  // Financial details
+  serviceType     String
+  amount          Float
+  description     String?
+  date            DateTime
+
+  // Status tracking
+  status          BillingDocumentStatus @default(DRAFT)
+  sentAt          DateTime?
+  paidAt          DateTime?
+
+  // Metadata
+  metadata        Json? // Additional document-specific data
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([conversationId])
+  @@index([status])
+  @@index([documentType])
+  @@index([date])
+}
+
+enum BillingDocumentType {
+  RECEIPT
+  INVOICE
+  QUOTE
+  ESTIMATE
+}
+
+enum BillingDocumentStatus {
+  DRAFT
+  SENT
+  PAID
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
 }

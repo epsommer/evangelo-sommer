@@ -109,15 +109,15 @@ export default function CRMIntegrationExample({
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
               currentStep === "import"
-                ? "bg-blue-600 text-white"
+                ? "bg-tactical-gold text-white"
                 : messages.length > 0
                   ? "bg-green-500 text-white"
-                  : "bg-gray-300 text-gray-600"
+                  : "bg-gray-300 text-tactical-grey-500"
             }`}
           >
             {messages.length > 0 ? "✓" : "1"}
           </div>
-          <span className="ml-2 text-sm font-medium text-gray-700">
+          <span className="ml-2 text-sm font-medium text-tactical-grey-600">
             Import Messages
           </span>
         </div>
@@ -130,15 +130,15 @@ export default function CRMIntegrationExample({
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
               currentStep === "crm"
-                ? "bg-blue-600 text-white"
+                ? "bg-tactical-gold text-white"
                 : crmResults?.success
                   ? "bg-green-500 text-white"
-                  : "bg-gray-300 text-gray-600"
+                  : "bg-gray-300 text-tactical-grey-500"
             }`}
           >
             {isProcessing ? "⚡" : crmResults?.success ? "✓" : "2"}
           </div>
-          <span className="ml-2 text-sm font-medium text-gray-700">
+          <span className="ml-2 text-sm font-medium text-tactical-grey-600">
             CRM Integration
           </span>
         </div>
@@ -151,15 +151,15 @@ export default function CRMIntegrationExample({
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
               currentStep === "results"
-                ? "bg-blue-600 text-white"
+                ? "bg-tactical-gold text-white"
                 : crmResults?.success
                   ? "bg-green-500 text-white"
-                  : "bg-gray-300 text-gray-600"
+                  : "bg-gray-300 text-tactical-grey-500"
             }`}
           >
             {crmResults?.success ? "✓" : "3"}
           </div>
-          <span className="ml-2 text-sm font-medium text-gray-700">
+          <span className="ml-2 text-sm font-medium text-tactical-grey-600">
             CRM Data
           </span>
         </div>
@@ -176,11 +176,11 @@ export default function CRMIntegrationExample({
 
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">
+        <div className="bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-tactical-gold">
             {data.clients.length}
           </div>
-          <div className="text-sm text-blue-800">Clients Identified</div>
+          <div className="text-sm text-tactical-brown-dark">Clients Identified</div>
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-green-600">
@@ -206,25 +206,25 @@ export default function CRMIntegrationExample({
 
   // Render client details
   const renderClientDetails = (data: CRMIntegrationOutput) => (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="bg-white border border-tactical-grey-300 rounded-lg p-6 mb-6">
+      <h3 className="text-lg font-semibold text-tactical-grey-800 mb-4">
         👥 Client Information
       </h3>
       {data.clients.map((client) => (
         <div
           key={client.client_id}
-          className="bg-gray-50 rounded-lg p-4 mb-4 last:mb-0"
+          className="bg-tactical-grey-100 rounded-lg p-4 mb-4 last:mb-0"
         >
           <div className="flex justify-between items-start mb-3">
             <div>
-              <h4 className="font-semibold text-gray-900">
+              <h4 className="font-semibold text-tactical-grey-800">
                 {client.personal_info.name}
               </h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-tactical-grey-500">
                 {client.personal_info.phone}
               </p>
               {client.personal_info.email && (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-tactical-grey-500">
                   {client.personal_info.email}
                 </p>
               )}
@@ -240,7 +240,7 @@ export default function CRMIntegrationExample({
                           "negative",
                         )
                       ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800"
+                      : "bg-tactical-grey-200 text-tactical-grey-700"
                 }`}
               >
                 {client.relationship_data.satisfaction_indicators[0] ||
@@ -251,12 +251,12 @@ export default function CRMIntegrationExample({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <strong className="text-gray-700">Services:</strong>
+              <strong className="text-tactical-grey-600">Services:</strong>
               <div className="mt-1">
                 {client.service_profile.service_types.map((service) => (
                   <span
                     key={service}
-                    className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-1 mb-1"
+                    className="inline-block bg-tactical-gold-muted text-tactical-brown-dark px-2 py-1 rounded text-xs mr-1 mb-1"
                   >
                     {service.replace("_", " ")}
                   </span>
@@ -264,8 +264,8 @@ export default function CRMIntegrationExample({
               </div>
             </div>
             <div>
-              <strong className="text-gray-700">Frequency:</strong>
-              <p className="text-gray-600 mt-1">
+              <strong className="text-tactical-grey-600">Frequency:</strong>
+              <p className="text-tactical-grey-500 mt-1">
                 {client.service_profile.service_frequency}
               </p>
             </div>
@@ -273,10 +273,10 @@ export default function CRMIntegrationExample({
 
           {client.service_profile.special_requirements.length > 0 && (
             <div className="mt-3">
-              <strong className="text-gray-700 text-sm">
+              <strong className="text-tactical-grey-600 text-sm">
                 Special Requirements:
               </strong>
-              <ul className="mt-1 text-sm text-gray-600">
+              <ul className="mt-1 text-sm text-tactical-grey-500">
                 {client.service_profile.special_requirements.map((req, idx) => (
                   <li key={idx} className="flex items-center">
                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>
@@ -289,10 +289,10 @@ export default function CRMIntegrationExample({
 
           {/* Schedule Follow-up Button for Mark Levy */}
           {client.personal_info.name === "Mark Levy" && (
-            <div className="mt-4 pt-3 border-t border-gray-200">
+            <div className="mt-4 pt-3 border-t border-tactical-grey-300">
               <button
                 onClick={openScheduleModal}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                className="w-full px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors text-sm font-medium"
               >
                 📅 Set Up Schedule
               </button>
@@ -305,38 +305,38 @@ export default function CRMIntegrationExample({
 
   // Render business insights
   const renderBusinessInsights = (data: CRMIntegrationOutput) => (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="bg-white border border-tactical-grey-300 rounded-lg p-6 mb-6">
+      <h3 className="text-lg font-semibold text-tactical-grey-800 mb-4">
         🧠 Business Intelligence
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h4 className="font-medium text-gray-700 mb-3">Quality Metrics</h4>
+          <h4 className="font-medium text-tactical-grey-600 mb-3">Quality Metrics</h4>
           <div className="space-y-3">
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-gray-600">Lead Quality</span>
+                <span className="text-sm text-tactical-grey-500">Lead Quality</span>
                 <span className="text-sm font-medium">
                   {data.insights.lead_quality_score}/10
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-tactical-grey-300 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full"
+                  className="bg-tactical-gold h-2 rounded-full"
                   style={{ width: `${data.insights.lead_quality_score * 10}%` }}
                 ></div>
               </div>
             </div>
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-tactical-grey-500">
                   Referral Potential
                 </span>
                 <span className="text-sm font-medium">
                   {data.insights.referral_potential}/10
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-tactical-grey-300 rounded-full h-2">
                 <div
                   className="bg-green-600 h-2 rounded-full"
                   style={{ width: `${data.insights.referral_potential * 10}%` }}
@@ -347,10 +347,10 @@ export default function CRMIntegrationExample({
         </div>
 
         <div>
-          <h4 className="font-medium text-gray-700 mb-3">Risk Assessment</h4>
+          <h4 className="font-medium text-tactical-grey-600 mb-3">Risk Assessment</h4>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Lifetime Value:</span>
+              <span className="text-sm text-tactical-grey-500">Lifetime Value:</span>
               <span
                 className={`px-2 py-1 rounded text-xs font-medium ${
                   data.insights.client_lifetime_value_indicator === "high"
@@ -364,7 +364,7 @@ export default function CRMIntegrationExample({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Retention Risk:</span>
+              <span className="text-sm text-tactical-grey-500">Retention Risk:</span>
               <span
                 className={`px-2 py-1 rounded text-xs font-medium ${
                   data.insights.retention_risk === "low"
@@ -378,7 +378,7 @@ export default function CRMIntegrationExample({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Action Priority:</span>
+              <span className="text-sm text-tactical-grey-500">Action Priority:</span>
               <span
                 className={`px-2 py-1 rounded text-xs font-medium ${
                   data.insights.next_action_priority === "immediate"
@@ -387,7 +387,7 @@ export default function CRMIntegrationExample({
                       ? "bg-orange-100 text-orange-800"
                       : data.insights.next_action_priority === "this_month"
                         ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
+                        : "bg-tactical-grey-200 text-tactical-grey-700"
                 }`}
               >
                 {data.insights.next_action_priority.replace("_", " ")}
@@ -398,15 +398,15 @@ export default function CRMIntegrationExample({
       </div>
 
       {data.insights.upsell_opportunities.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">
+        <div className="mt-6 p-4 bg-tactical-gold-muted rounded-lg">
+          <h4 className="font-medium text-tactical-brown-dark mb-2">
             💡 Upsell Opportunities
           </h4>
           <div className="flex flex-wrap gap-2">
             {data.insights.upsell_opportunities.map((opportunity, idx) => (
               <span
                 key={idx}
-                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                className="bg-tactical-gold-muted text-tactical-brown-dark px-3 py-1 rounded-full text-sm"
               >
                 {opportunity}
               </span>
@@ -421,10 +421,10 @@ export default function CRMIntegrationExample({
     <div className={`max-w-6xl mx-auto ${className}`}>
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-tactical-grey-800 mb-2">
           🤖 AI-Powered CRM Integration
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-lg text-tactical-grey-500">
           Transform SMS conversations into actionable business intelligence
         </p>
       </div>
@@ -444,10 +444,10 @@ export default function CRMIntegrationExample({
               className="p-6"
             >
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-xl font-semibold text-tactical-grey-800 mb-2">
                   Step 1: Import Your Messages
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-tactical-grey-500">
                   Upload your SMS conversation data from Excel or paste text
                   conversations
                 </p>
@@ -474,7 +474,7 @@ export default function CRMIntegrationExample({
                     </div>
                     <button
                       onClick={proceedToCRM}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-6 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors"
                     >
                       Process with AI →
                     </button>
@@ -493,10 +493,10 @@ export default function CRMIntegrationExample({
               className="p-6"
             >
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-xl font-semibold text-tactical-grey-800 mb-2">
                   Step 2: AI Processing
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-tactical-grey-500">
                   Advanced AI analysis to extract business intelligence from
                   your conversations
                 </p>
@@ -520,10 +520,10 @@ export default function CRMIntegrationExample({
               <div className="mb-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h2 className="text-xl font-semibold text-tactical-grey-800 mb-2">
                       Step 3: CRM Integration Results
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-tactical-grey-500">
                       Your conversation data has been transformed into
                       structured CRM records
                     </p>
@@ -537,7 +537,7 @@ export default function CRMIntegrationExample({
                     </button>
                     <button
                       onClick={resetWorkflow}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-tactical-grey-700 transition-colors"
                     >
                       🔄 Start Over
                     </button>
@@ -555,25 +555,25 @@ export default function CRMIntegrationExample({
               {crmResults.data && renderBusinessInsights(crmResults.data)}
 
               {/* Processing Metadata */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-700 mb-2">
+              <div className="bg-tactical-grey-100 rounded-lg p-4">
+                <h3 className="font-medium text-tactical-grey-600 mb-2">
                   ⚡ Processing Details
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Processing Time:</span>
+                    <span className="text-tactical-grey-500">Processing Time:</span>
                     <p className="font-medium">
                       {crmResults.metadata.processingTimeMs}ms
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Messages Processed:</span>
+                    <span className="text-tactical-grey-500">Messages Processed:</span>
                     <p className="font-medium">
                       {crmResults.metadata.messagesProcessed}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Processed At:</span>
+                    <span className="text-tactical-grey-500">Processed At:</span>
                     <p className="font-medium">
                       {new Date(
                         crmResults.metadata.processedAt,
@@ -581,7 +581,7 @@ export default function CRMIntegrationExample({
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Data Quality:</span>
+                    <span className="text-tactical-grey-500">Data Quality:</span>
                     <p className="font-medium">
                       {crmResults.metadata.confidence}/10
                     </p>
@@ -600,13 +600,13 @@ export default function CRMIntegrationExample({
               className="p-6 text-center"
             >
               <div className="text-6xl mb-4">❌</div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-tactical-grey-800 mb-2">
                 Processing Failed
               </h2>
-              <p className="text-gray-600 mb-6">{crmResults.error}</p>
+              <p className="text-tactical-grey-500 mb-6">{crmResults.error}</p>
               <button
                 onClick={resetWorkflow}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark transition-colors"
               >
                 Try Again
               </button>
@@ -635,9 +635,9 @@ export default function CRMIntegrationExample({
       />
 
       {/* Usage Instructions */}
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="font-medium text-blue-900 mb-2">💡 How It Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800">
+      <div className="mt-8 bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-6">
+        <h3 className="font-medium text-tactical-brown-dark mb-2">💡 How It Works</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-tactical-brown-dark">
           <div className="flex items-start space-x-2">
             <span className="text-lg">📱</span>
             <div>

@@ -95,27 +95,27 @@ export default function DataExportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-tactical-grey-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow rounded-lg p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          <h1 className="text-3xl font-bold text-tactical-grey-800 mb-8">
             LocalStorage to Database Migration Tool
           </h1>
 
           <div className="space-y-6">
             {/* Export Section */}
             <div className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold text-tactical-grey-700 mb-4">
                 Step 1: Export LocalStorage Data
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-tactical-grey-500 mb-4">
                 Export your conversations and client data from browser localStorage to a JSON file.
               </p>
               
               <button
                 onClick={exportLocalStorageData}
                 disabled={isLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 bg-tactical-gold text-white rounded hover:bg-tactical-gold-dark disabled:opacity-50"
               >
                 {isLoading ? 'Exporting...' : 'Export LocalStorage Data'}
               </button>
@@ -138,10 +138,10 @@ export default function DataExportPage() {
 
             {/* Import Section */}
             <div className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-xl font-semibold text-tactical-grey-700 mb-4">
                 Step 2: Import to Database
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-tactical-grey-500 mb-4">
                 Import the exported data into your Prisma database. This will create new client records and conversations.
               </p>
               
@@ -154,7 +154,7 @@ export default function DataExportPage() {
               </button>
 
               {!exportData && (
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-tactical-grey-500 mt-2">
                   Please export data first before importing.
                 </p>
               )}
@@ -180,18 +180,18 @@ export default function DataExportPage() {
             {/* Preview Section */}
             {exportData && (
               <div className="border rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                <h2 className="text-xl font-semibold text-tactical-grey-700 mb-4">
                   Data Preview
                 </h2>
                 
                 {exportData.conversations.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="font-medium text-gray-700 mb-2">Sample Conversations:</h3>
-                    <div className="bg-gray-50 p-3 rounded text-sm max-h-60 overflow-y-auto">
+                    <h3 className="font-medium text-tactical-grey-600 mb-2">Sample Conversations:</h3>
+                    <div className="bg-tactical-grey-100 p-3 rounded text-sm max-h-60 overflow-y-auto">
                       {exportData.conversations.slice(0, 3).map((conv: any) => (
                         <div key={conv.id} className="mb-3 p-2 bg-white rounded border">
                           <div className="font-medium">{conv.title || conv.id}</div>
-                          <div className="text-gray-600 text-xs">
+                          <div className="text-tactical-grey-500 text-xs">
                             Client: {conv.clientId} | Messages: {conv.messages?.length || 0} | Status: {conv.status}
                           </div>
                           {conv.clientId === 'client_udpu1m387' && (
@@ -207,12 +207,12 @@ export default function DataExportPage() {
 
                 {exportData.clients.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-gray-700 mb-2">Sample Clients:</h3>
-                    <div className="bg-gray-50 p-3 rounded text-sm max-h-40 overflow-y-auto">
+                    <h3 className="font-medium text-tactical-grey-600 mb-2">Sample Clients:</h3>
+                    <div className="bg-tactical-grey-100 p-3 rounded text-sm max-h-40 overflow-y-auto">
                       {exportData.clients.slice(0, 3).map((client: any) => (
                         <div key={client.id} className="mb-2">
                           <span className="font-medium">{client.name}</span>
-                          <span className="text-gray-600 ml-2">({client.id})</span>
+                          <span className="text-tactical-grey-500 ml-2">({client.id})</span>
                           {client.id === 'client_udpu1m387' && (
                             <span className="text-green-600 font-medium ml-2">← Mark Levy</span>
                           )}

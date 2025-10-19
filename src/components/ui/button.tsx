@@ -3,16 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-sm font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 font-space-grotesk",
+  "inline-flex items-center justify-center whitespace-nowrap text-sm font-semibold uppercase tracking-wide transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 font-primary",
   {
     variants: {
       variant: {
-        default: "bg-gold text-dark-grey hover:bg-gold-dark border-0",
-        destructive: "bg-red-600 text-white hover:bg-red-700 border-0",
-        outline: "border-2 border-gold bg-transparent text-dark-grey hover:bg-gold hover:text-dark-grey",
-        secondary: "bg-dark-grey text-white hover:bg-medium-grey border-0",
-        ghost: "hover:bg-light-grey hover:text-dark-grey text-medium-grey",
-        link: "text-gold underline-offset-4 hover:underline hover:text-gold-dark",
+        default: "bg-tactical-gold text-tactical-gray-900 hover:bg-tactical-amber border-0 hover:shadow-tactical",
+        destructive: "bg-tactical-red text-tactical-white hover:bg-red-700 border-0",
+        outline: "border-2 border-tactical-gold bg-transparent text-hud-text-primary hover:bg-tactical-gold hover:text-tactical-gray-900",
+        secondary: "bg-hud-background-secondary text-hud-text-primary hover:bg-tactical-gray-600 border-0",
+        ghost: "hover:bg-hud-background-secondary hover:text-hud-text-primary text-hud-text-secondary",
+        link: "text-tactical-gold underline-offset-4 hover:underline hover:text-tactical-amber",
       },
       size: {
         default: "h-10 px-4 py-2",

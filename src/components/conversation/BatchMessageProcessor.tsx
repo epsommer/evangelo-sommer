@@ -173,12 +173,12 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Batch Status */}
-      <div className="flex items-center justify-between bg-white p-4 border-2 border-light-grey">
+      <div className="flex items-center justify-between bg-white p-4 border-2 border-hud-border">
         <div>
-          <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+          <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             MESSAGE BATCH REVIEW
           </h3>
-          <p className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+          <p className="text-sm text-medium-grey font-primary uppercase tracking-wide">
             {messages.length} MESSAGES DETECTED
             {batch.confidence > 0 &&
               ` WITH ${Math.round(batch.confidence * 100)}% CONFIDENCE`}
@@ -188,10 +188,10 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
           <button
             onClick={handleMergeMessages}
             disabled={selectedMessages.size < 2}
-            className={`px-3 py-1 text-sm font-space-grotesk font-bold uppercase tracking-wide ${
+            className={`px-3 py-1 text-sm font-primary font-bold uppercase tracking-wide ${
               selectedMessages.size < 2
                 ? "bg-light-grey text-medium-grey"
-                : "bg-gold text-dark-grey hover:bg-gold-light"
+                : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
             }`}
           >
             MERGE SELECTED
@@ -199,10 +199,10 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
           <button
             onClick={() => handleSplitMessage(Array.from(selectedMessages)[0])}
             disabled={selectedMessages.size !== 1}
-            className={`px-3 py-1 text-sm font-space-grotesk font-bold uppercase tracking-wide ${
+            className={`px-3 py-1 text-sm font-primary font-bold uppercase tracking-wide ${
               selectedMessages.size !== 1
                 ? "bg-light-grey text-medium-grey"
-                : "bg-gold text-dark-grey hover:bg-gold-light"
+                : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
             }`}
           >
             SPLIT MESSAGE
@@ -220,7 +220,7 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
           }`}
         >
           <h4
-            className={`text-sm font-bold uppercase tracking-wide font-space-grotesk ${
+            className={`text-sm font-bold uppercase tracking-wide font-primary ${
               hasErrors ? "text-red-700" : "text-yellow-700"
             }`}
           >
@@ -228,12 +228,12 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
           </h4>
           <ul className="mt-2 space-y-1">
             {validation?.errors.map((error, index) => (
-              <li key={`error_${index}`} className="text-sm text-red-700 font-space-grotesk uppercase tracking-wide">
+              <li key={`error_${index}`} className="text-sm text-red-700 font-primary uppercase tracking-wide">
                 • {error.message}
               </li>
             ))}
             {validation?.warnings.map((warning, index) => (
-              <li key={`warning_${index}`} className="text-sm text-yellow-700 font-space-grotesk uppercase tracking-wide">
+              <li key={`warning_${index}`} className="text-sm text-yellow-700 font-primary uppercase tracking-wide">
                 • {warning.message}
               </li>
             ))}
@@ -248,8 +248,8 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
             key={message.id}
             className={`bg-white p-4 border-2 ${
               selectedMessages.has(message.id)
-                ? "border-gold bg-gold-light"
-                : "border-light-grey"
+                ? "border-hud-border-accent bg-tactical-gold-light"
+                : "border-hud-border"
             }`}
           >
             <div className="flex items-start space-x-4">
@@ -258,7 +258,7 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                 type="checkbox"
                 checked={selectedMessages.has(message.id)}
                 onChange={() => toggleMessageSelection(message.id)}
-                className="mt-1 h-4 w-4 text-gold border-2 border-light-grey focus:ring-gold"
+                className="mt-1 h-4 w-4 text-gold border-2 border-hud-border focus:ring-gold"
               />
 
               <div className="flex-1 min-w-0">
@@ -266,23 +266,23 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span
-                      className={`px-2 py-1 text-xs font-bold uppercase tracking-wide font-space-grotesk ${
+                      className={`px-2 py-1 text-xs font-bold uppercase tracking-wide font-primary ${
                         message.detectedSender === "client"
                           ? "bg-medium-grey text-white"
                           : message.detectedSender === "you"
-                            ? "bg-gold text-dark-grey"
-                            : "bg-light-grey text-dark-grey"
+                            ? "bg-tactical-gold text-hud-text-primary"
+                            : "bg-light-grey text-hud-text-primary"
                       }`}
                     >
                       {message.detectedSender.toUpperCase()}
                     </span>
                     {message.type && (
-                      <span className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+                      <span className="text-xs text-medium-grey font-primary uppercase tracking-wide">
                         {message.type.toUpperCase()}
                       </span>
                     )}
                     {message.timestamp && (
-                      <span className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+                      <span className="text-xs text-medium-grey font-primary uppercase tracking-wide">
                         {new Date(message.timestamp).toLocaleString().toUpperCase()}
                       </span>
                     )}
@@ -290,19 +290,19 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setEditingMessage(message.id)}
-                      className="text-sm text-gold hover:text-gold-dark font-space-grotesk font-bold uppercase tracking-wide"
+                      className="text-sm text-gold hover:text-gold-dark font-primary font-bold uppercase tracking-wide"
                     >
                       EDIT
                     </button>
                     <div className="flex items-center space-x-1">
-                      <span className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">CONFIDENCE:</span>
+                      <span className="text-xs text-medium-grey font-primary uppercase tracking-wide">CONFIDENCE:</span>
                       <div className="w-20 h-2 bg-light-grey">
                         <div
                           className={`h-full ${
                             message.confidence > 0.8
                               ? "bg-green-600"
                               : message.confidence > 0.5
-                                ? "bg-gold"
+                                ? "bg-tactical-gold"
                                 : "bg-red-600"
                           }`}
                           style={{ width: `${message.confidence * 100}%` }}
@@ -320,7 +320,7 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                       onChange={(e) =>
                         updateMessage(message.id, { content: e.target.value })
                       }
-                      className="w-full min-h-[100px] p-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                      className="w-full min-h-[100px] p-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                     />
                     <div className="flex space-x-2">
                       <select
@@ -333,7 +333,7 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                               | "unknown",
                           })
                         }
-                        className="border-2 border-light-grey px-2 py-1 bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide focus:border-gold"
+                        className="border-2 border-hud-border px-2 py-1 bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide focus:border-hud-border-accent"
                       >
                         <option value="client">CLIENT</option>
                         <option value="you">YOU</option>
@@ -341,14 +341,14 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                       </select>
                       <button
                         onClick={() => setEditingMessage(null)}
-                        className="px-3 py-1 text-sm text-gold hover:text-gold-dark font-space-grotesk font-bold uppercase tracking-wide"
+                        className="px-3 py-1 text-sm text-gold hover:text-gold-dark font-primary font-bold uppercase tracking-wide"
                       >
                         DONE
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-dark-grey whitespace-pre-wrap font-space-grotesk">
+                  <p className="text-sm text-hud-text-primary whitespace-pre-wrap font-primary">
                     {message.content}
                   </p>
                 )}
@@ -356,8 +356,8 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
                 {/* Pattern Indicators */}
                 {message.indicators.length > 0 && (
                   <div className="mt-2">
-                    <details className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
-                      <summary className="cursor-pointer hover:text-dark-grey font-bold">
+                    <details className="text-xs text-medium-grey font-primary uppercase tracking-wide">
+                      <summary className="cursor-pointer hover:text-hud-text-primary font-bold">
                         DETECTION DETAILS
                       </summary>
                       <ul className="mt-1 space-y-1 pl-4">
@@ -378,21 +378,21 @@ const BatchMessageProcessor: React.FC<BatchMessageProcessorProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-4 pt-4 border-t-2 border-light-grey">
+      <div className="flex justify-end space-x-4 pt-4 border-t-2 border-hud-border">
         <button
           onClick={onReject}
           disabled={isProcessing}
-          className="px-4 py-2 text-sm font-bold text-dark-grey bg-white border-2 border-light-grey hover:bg-light-grey font-space-grotesk uppercase tracking-wide"
+          className="px-4 py-2 text-sm font-bold text-hud-text-primary bg-white border-2 border-hud-border hover:bg-light-grey font-primary uppercase tracking-wide"
         >
           CANCEL
         </button>
         <button
           onClick={handleApprove}
           disabled={isProcessing || hasErrors || messages.length === 0}
-          className={`px-4 py-2 text-sm font-bold font-space-grotesk uppercase tracking-wide ${
+          className={`px-4 py-2 text-sm font-bold font-primary uppercase tracking-wide ${
             isProcessing || hasErrors || messages.length === 0
               ? "bg-medium-grey text-white cursor-not-allowed"
-              : "bg-gold text-dark-grey hover:bg-gold-light"
+              : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
           }`}
         >
           {isProcessing ? "PROCESSING..." : "APPROVE & SAVE"}

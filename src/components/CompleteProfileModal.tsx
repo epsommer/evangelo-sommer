@@ -202,20 +202,20 @@ export default function CompleteProfileModal({
             className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
           >
             {/* Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-tactical-grey-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-tactical-grey-800">
                     Complete Client Profile
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-tactical-grey-500 mt-1">
                     {client.name}
                   </p>
                 </div>
                 <button
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                  className="text-gray-400 hover:text-tactical-grey-500 transition-colors disabled:opacity-50"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -230,17 +230,17 @@ export default function CompleteProfileModal({
                 {/* Email field - only show if missing */}
                 {missingFields.email && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                       Email Address *
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold transition-colors ${
                         errors.email
                           ? "border-red-300 bg-red-50"
-                          : "border-gray-300 bg-white"
+                          : "border-tactical-grey-400 bg-white"
                       }`}
                       placeholder="client@example.com"
                       autoComplete="email"
@@ -255,17 +255,17 @@ export default function CompleteProfileModal({
                 {/* Phone field - only show if missing */}
                 {missingFields.phone && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                       Phone Number *
                     </label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={handlePhoneChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold transition-colors ${
                         errors.phone
                           ? "border-red-300 bg-red-50"
-                          : "border-gray-300 bg-white"
+                          : "border-tactical-grey-400 bg-white"
                       }`}
                       placeholder="(123) 456-7890"
                       autoComplete="tel"
@@ -274,7 +274,7 @@ export default function CompleteProfileModal({
                     {errors.phone && (
                       <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-tactical-grey-500 mt-1">
                       Format: (123) 456-7890 or 1234567890
                     </p>
                   </div>
@@ -294,7 +294,7 @@ export default function CompleteProfileModal({
                   type="button"
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -303,8 +303,8 @@ export default function CompleteProfileModal({
                   disabled={isSubmitting}
                   className={`px-6 py-2 rounded-lg transition-colors ${
                     isSubmitting
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
+                      ? "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
+                      : "bg-tactical-gold text-tactical-brown-dark hover:bg-tactical-gold-dark"
                   }`}
                 >
                   {isSubmitting ? (

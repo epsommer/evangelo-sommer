@@ -250,10 +250,10 @@ export default function RecurringEventManager({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-tactical-grey-800">
             Recurring Events
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-tactical-grey-500 mt-1">
             Manage recurring appointments and automatic event generation
           </p>
         </div>
@@ -263,7 +263,7 @@ export default function RecurringEventManager({
             disabled={isLoading}
             variant="outline"
             size="sm"
-            className="border-gold text-gold hover:bg-gold hover:text-dark-grey"
+            className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary"
           >
             <Repeat className="h-4 w-4 mr-2" />
             Quick Bi-weekly
@@ -271,7 +271,7 @@ export default function RecurringEventManager({
           <Button
             onClick={() => setShowCreateForm(!showCreateForm)}
             disabled={isLoading}
-            className="bg-gold text-dark-grey hover:bg-gold/90"
+            className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Create Recurring Event
@@ -282,13 +282,13 @@ export default function RecurringEventManager({
       {/* Create Form */}
       {showCreateForm && (
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-tactical-grey-800 mb-4">
             Create New Recurring Event
           </h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
                 Event Title
               </label>
               <input
@@ -296,7 +296,7 @@ export default function RecurringEventManager({
                 value={newEventTitle}
                 onChange={(e) => setNewEventTitle(e.target.value)}
                 placeholder="Enter event title..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-gold focus:border-hud-border-accent text-tactical-grey-800 bg-white"
               />
             </div>
 
@@ -318,7 +318,7 @@ export default function RecurringEventManager({
               <Button
                 onClick={createRecurringEvent}
                 disabled={!validation.isValid || !newEventTitle.trim() || isLoading}
-                className="bg-gold text-dark-grey hover:bg-gold/90"
+                className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold/90"
                 size="sm"
               >
                 Create & Generate Events
@@ -341,30 +341,30 @@ export default function RecurringEventManager({
                 className={`border rounded-lg p-4 transition-all ${
                   event.isActive
                     ? "border-green-200 bg-green-50"
-                    : "border-gray-200 bg-gray-50"
+                    : "border-tactical-grey-300 bg-tactical-grey-100"
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <Calendar className="h-5 w-5 text-gold" />
-                      <h3 className="font-medium text-gray-900">
+                      <h3 className="font-medium text-tactical-grey-800">
                         {event.title}
                       </h3>
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
                           event.isActive
                             ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                            : "bg-tactical-grey-200 text-tactical-grey-700"
                         }`}
                       >
                         {event.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-tactical-grey-500">
                       <div>
-                        <div className="font-medium text-gray-700">Pattern</div>
+                        <div className="font-medium text-tactical-grey-600">Pattern</div>
                         <div>
                           {rule.frequency === "bi-weekly"
                             ? `Every other week${
@@ -388,7 +388,7 @@ export default function RecurringEventManager({
                         </div>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-700">Next Event</div>
+                        <div className="font-medium text-tactical-grey-600">Next Event</div>
                         <div>
                           {event.nextOccurrence
                             ? new Date(event.nextOccurrence).toLocaleDateString()
@@ -396,13 +396,13 @@ export default function RecurringEventManager({
                         </div>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-700">
+                        <div className="font-medium text-tactical-grey-600">
                           Total Generated
                         </div>
                         <div>{event.totalOccurrences} events</div>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-700">End Rule</div>
+                        <div className="font-medium text-tactical-grey-600">End Rule</div>
                         <div>
                           {rule.endRule.type === "never"
                             ? "Never ends"
@@ -414,7 +414,7 @@ export default function RecurringEventManager({
                     </div>
 
                     {event.description && (
-                      <p className="text-sm text-gray-600 mt-2">
+                      <p className="text-sm text-tactical-grey-500 mt-2">
                         {event.description}
                       </p>
                     )}
@@ -426,7 +426,7 @@ export default function RecurringEventManager({
                       disabled={isLoading}
                       variant="outline"
                       size="sm"
-                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      className="text-tactical-gold border-tactical-grey-300 hover:bg-tactical-gold-muted"
                     >
                       <Play className="h-4 w-4" />
                     </Button>
@@ -463,18 +463,18 @@ export default function RecurringEventManager({
           })}
         </div>
       ) : (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
+        <div className="text-center py-12 bg-tactical-grey-100 rounded-lg">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-tactical-grey-800 mb-2">
             No Recurring Events
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-tactical-grey-500 mb-4">
             Create recurring events to automatically generate calendar appointments
           </p>
           <Button
             onClick={() => createBiWeeklyEvent("My Bi-weekly Meeting")}
             disabled={isLoading}
-            className="bg-gold text-dark-grey hover:bg-gold/90"
+            className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold/90"
           >
             Create Your First Bi-weekly Event
           </Button>
@@ -485,7 +485,7 @@ export default function RecurringEventManager({
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-hud-border-accent"></div>
             <span>Processing...</span>
           </div>
         </div>

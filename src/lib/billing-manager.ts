@@ -63,7 +63,7 @@ class BillingManager {
       paymentMethod: data.paymentMethod,
       paymentDate: data.paymentDate || new Date(),
       serviceDate: data.serviceDate || new Date(),
-      status: 'issued',
+      status: data.status || 'draft',
       notes: data.notes,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -154,6 +154,100 @@ class BillingManager {
     }
   }
 
+  // Individual Message Analysis for Billing
+  analyzeMessageForBilling(message: Message, client: Client): BillingSuggestion {
+    // Only analyze client messages
+    if (message.role !== 'client') {
+      return { type: 'none', confidence: 'low', reason: 'Not a client message' };
+    }
+
+    const content = message.content.toLowerCase();
+    
+    // High confidence patterns
+    if (this.hasHighConfidencePattern(content)) {
+      return {
+        type: this.determineDocumentType(content),
+        confidence: 'high',
+        suggestedAmount: this.extractAmount([message]),
+        reason: 'Strong billing indicators detected in message'
+      };
+    }
+    
+    // Medium confidence patterns
+    if (this.hasMediumConfidencePattern(content)) {
+      return {
+        type: this.determineDocumentType(content),
+        confidence: 'medium',
+        suggestedAmount: this.extractAmount([message]),
+        reason: 'Possible billing opportunity detected'
+      };
+    }
+    
+    // Low confidence patterns
+    if (this.hasLowConfidencePattern(content)) {
+      return {
+        type: 'receipt',
+        confidence: 'low',
+        suggestedAmount: this.extractAmount([message]),
+        reason: 'Service-related content detected'
+      };
+    }
+    
+    return { type: 'none', confidence: 'low', reason: 'No billing indicators found' };
+  }
+
+  private hasHighConfidencePattern(content: string): boolean {
+    const highConfidencePatterns = [
+      /paid.*\$\d+/,
+      /payment.*received/,
+      /cash.*\$\d+/,
+      /(service|work).*completed.*paid/,
+      /done.*job.*\$\d+/,
+      /finished.*here.*money/,
+      /etransfer.*sent/,
+      /card.*payment/
+    ];
+    
+    return highConfidencePatterns.some(pattern => pattern.test(content));
+  }
+
+  private hasMediumConfidencePattern(content: string): boolean {
+    const mediumConfidencePatterns = [
+      /(job|work|service).*done/,
+      /(finished|completed).*today/,
+      /all.*set/,
+      /ready.*for.*invoice/,
+      /how.*much.*owe/,
+      /send.*bill/,
+      /what.*cost/,
+      /payment.*ready/
+    ];
+    
+    return mediumConfidencePatterns.some(pattern => pattern.test(content));
+  }
+
+  private hasLowConfidencePattern(content: string): boolean {
+    const serviceKeywords = [
+      'lawn', 'grass', 'mowing', 'landscaping', 'garden',
+      'snow', 'driveway', 'shovel', 'salt', 'plowing',
+      'hair', 'cut', 'trim', 'style', 'color',
+      'website', 'app', 'design', 'development', 'coding'
+    ];
+    
+    return serviceKeywords.some(keyword => content.includes(keyword));
+  }
+
+  private determineDocumentType(content: string): 'receipt' | 'invoice' {
+    const receiptIndicators = ['paid', 'payment', 'cash', 'card', 'etransfer'];
+    const invoiceIndicators = ['bill', 'invoice', 'charge', 'owe'];
+    
+    if (receiptIndicators.some(indicator => content.includes(indicator))) {
+      return 'receipt';
+    }
+    
+    return 'invoice';
+  }
+
   // Conversation Analysis for Billing
   analyzeConversationForBilling(conversation: Conversation): BillingSuggestion {
     const messages = conversation.messages;
@@ -195,16 +289,109 @@ class BillingManager {
     };
   }
 
-  // Service completion detection patterns
+  // Enhanced message-level analysis for auto-draft billing with seasonal intelligence
+  analyzeMessageForAutoDraft(message: Message, context: { conversation: Conversation, client: Client }): {
+    shouldTrigger: boolean;
+    confidence: 'high' | 'medium' | 'low';
+    serviceType: string | null;
+    suggestedAmount: number | null;
+    reason: string;
+  } {
+    const content = message.content.toLowerCase();
+    const currentSeason = this.getCurrentSeason();
+    const clientServices = context.client.serviceTypes || [];
+    const isSeasonalService = this.isClientSeasonalService(context.client);
+    
+    // Dynamic service patterns based on season and client services
+    const servicePatterns = this.getSeasonalServicePatterns(currentSeason, clientServices, isSeasonalService);
+
+    // Check for service type
+    let detectedService = null;
+    let serviceAmount = null;
+    
+    for (const [serviceType, patterns] of Object.entries(servicePatterns)) {
+      if (patterns.triggers.some(trigger => content.includes(trigger))) {
+        detectedService = serviceType;
+        serviceAmount = patterns.defaultAmount;
+        
+        // Check for completion indicators
+        const isCompleted = patterns.completion.some(completion => content.includes(completion));
+        
+        if (isCompleted) {
+          const contractInfo = patterns.contractType === 'seasonal' ? '(Seasonal Contract)' : '(Per-Service)';
+          const seasonInfo = `${currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)} Season`;
+          
+          // High confidence for explicit completion + payment mention
+          if (this.checkForPaymentMention([message])) {
+            return {
+              shouldTrigger: true,
+              confidence: 'high',
+              serviceType: serviceType,
+              suggestedAmount: this.extractAmount([message]) || serviceAmount,
+              reason: `${seasonInfo} ${serviceType} completion detected with payment mention ${contractInfo}`
+            };
+          }
+          
+          // Medium confidence for completion without payment
+          return {
+            shouldTrigger: true,
+            confidence: 'medium',
+            serviceType: serviceType,
+            suggestedAmount: serviceAmount,
+            reason: `${seasonInfo} ${serviceType} completion detected ${contractInfo}`
+          };
+        }
+        
+        // Low confidence for service mention without completion
+        if (this.checkForSchedulingLanguage([message])) {
+          return {
+            shouldTrigger: false, // Don't trigger on scheduling, just track
+            confidence: 'low',
+            serviceType: serviceType,
+            suggestedAmount: null,
+            reason: `${currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)} service scheduling detected for ${serviceType}`
+          };
+        }
+      }
+    }
+
+    return {
+      shouldTrigger: false,
+      confidence: 'low',
+      serviceType: null,
+      suggestedAmount: null,
+      reason: `No ${currentSeason} service indicators detected for client services: ${clientServices.length > 0 ? clientServices.join(', ') : 'none configured'}`
+    };
+  }
+
+  // Enhanced service completion detection with context
   private checkForServiceCompletion(messages: Message[]): boolean {
     const completionPhrases = [
       'job is done', 'finished', 'completed', 'all set',
       'work is finished', 'service completed', 'task completed',
-      'wrapped up', 'done with', 'finished up'
+      'wrapped up', 'done with', 'finished up', 'work completed',
+      'finished cutting', 'lawn is done', 'grass is cut', 'mowing completed',
+      'driveway is clear', 'snow removed', 'finished plowing', 'clearing done',
+      'landscaping done', 'yard work finished', 'trimming completed'
     ];
     
     return messages.some(msg => 
       completionPhrases.some(phrase => 
+        msg.content.toLowerCase().includes(phrase)
+      )
+    );
+  }
+
+  // Check for scheduling language patterns
+  private checkForSchedulingLanguage(messages: Message[]): boolean {
+    const schedulingPhrases = [
+      'availability', 'schedule', 'which time', 'which dates', 'time slots',
+      'when can you', 'what time', 'appointment', 'booking', 'available',
+      'next week', 'tomorrow', 'this week', 'when are you free'
+    ];
+    
+    return messages.some(msg => 
+      schedulingPhrases.some(phrase => 
         msg.content.toLowerCase().includes(phrase)
       )
     );
@@ -343,12 +530,65 @@ class BillingManager {
 
   // Number generation
   private async generateReceiptNumber(): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = this.receipts.filter(r => 
-      r.receiptNumber.startsWith(`REC-${year}`)
-    ).length + 1;
-    
-    return `REC-${year}-${count.toString().padStart(3, '0')}`;
+    try {
+      const year = new Date().getFullYear();
+      const prefix = `REC-${year}-`;
+      
+      // Check database for existing receipt numbers to prevent duplicates
+      if (typeof window === 'undefined') {
+        const { getPrismaClient } = await import('./prisma');
+        const prisma = getPrismaClient();
+        
+        if (prisma) {
+          // Get all receipts from current year from database
+          const existingReceipts = await prisma.document.findMany({
+            where: { type: 'RECEIPT' },
+            select: { content: true }
+          });
+          
+          // Extract receipt numbers from content and filter by current year
+          const currentYearNumbers: number[] = [];
+          
+          existingReceipts.forEach(doc => {
+            try {
+              const receiptData = typeof doc.content === 'string' ? JSON.parse(doc.content) : doc.content;
+              if (receiptData.receiptNumber && receiptData.receiptNumber.startsWith(prefix)) {
+                // Extract the number part (e.g., "REC-2025-001" -> 1)
+                const numberPart = receiptData.receiptNumber.split('-').pop();
+                if (numberPart) {
+                  const num = parseInt(numberPart, 10);
+                  if (!isNaN(num)) {
+                    currentYearNumbers.push(num);
+                  }
+                }
+              }
+            } catch (error) {
+              console.warn('Error parsing receipt content for numbering:', error);
+            }
+          });
+          
+          // Find the next available number
+          const maxNumber = currentYearNumbers.length > 0 ? Math.max(...currentYearNumbers) : 0;
+          const nextNumber = maxNumber + 1;
+          
+          return `REC-${year}-${nextNumber.toString().padStart(3, '0')}`;
+        }
+      }
+      
+      // Fallback to in-memory method if database is not available
+      const count = this.receipts.filter(r => 
+        r.receiptNumber.startsWith(prefix)
+      ).length + 1;
+      
+      return `REC-${year}-${count.toString().padStart(3, '0')}`;
+      
+    } catch (error) {
+      console.error('Error generating receipt number:', error);
+      // Emergency fallback with timestamp
+      const year = new Date().getFullYear();
+      const timestamp = Date.now().toString().slice(-6);
+      return `REC-${year}-${timestamp}`;
+    }
   }
 
   private async generateInvoiceNumber(): Promise<string> {
@@ -366,6 +606,52 @@ class BillingManager {
 
   // Data persistence (mock implementation - replace with actual database)
   private async saveReceipt(receipt: Receipt): Promise<Receipt> {
+    try {
+      // Only use Prisma on server-side
+      if (typeof window === 'undefined') {
+        // Import Prisma client dynamically to avoid circular dependencies
+        const { getPrismaClient } = await import('./prisma');
+        const prisma = getPrismaClient();
+      
+      if (prisma) {
+        // Save to database as a Document with type RECEIPT
+        const savedDocument = await prisma.document.create({
+          data: {
+            clientId: receipt.clientId,
+            name: `Receipt ${receipt.receiptNumber}`,
+            type: 'RECEIPT',
+            status: receipt.status === 'paid' ? 'PAID' : 'DRAFT',
+            content: JSON.stringify({
+              receiptNumber: receipt.receiptNumber,
+              items: receipt.items,
+              subtotal: receipt.subtotal,
+              taxAmount: receipt.taxAmount,
+              totalAmount: receipt.totalAmount,
+              paymentMethod: receipt.paymentMethod,
+              paymentDate: receipt.paymentDate,
+              serviceDate: receipt.serviceDate,
+              notes: receipt.notes
+            }),
+            amount: receipt.totalAmount,
+            currency: 'CAD',
+            sentDate: new Date(),
+            paidDate: receipt.status === 'paid' ? new Date() : null,
+            metadata: {
+              originalReceipt: receipt
+            }
+          }
+        });
+        
+          // Update receipt with database ID
+          receipt.id = savedDocument.id;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to save receipt to database:', error);
+      // Fall back to in-memory storage
+    }
+    
+    // Also save to memory for backward compatibility
     const existingIndex = this.receipts.findIndex(r => r.id === receipt.id);
     if (existingIndex >= 0) {
       this.receipts[existingIndex] = receipt;
@@ -390,7 +676,7 @@ class BillingManager {
     try {
       // Import clientManager dynamically to avoid circular dependencies
       const { clientManager } = await import('./client-config');
-      const client = clientManager.getClient(clientId);
+      const client = await clientManager.getClient(clientId);
       
       if (!client) {
         console.error(`Client with ID ${clientId} not found`);
@@ -405,6 +691,74 @@ class BillingManager {
   }
 
   // Public getters
+  async getAllReceipts(includeArchived: boolean = false): Promise<Receipt[]> {
+    try {
+      // Only use Prisma on server-side
+      if (typeof window === 'undefined') {
+        // Import Prisma client dynamically
+        const { getPrismaClient } = await import('./prisma');
+        const prisma = getPrismaClient();
+      
+      if (prisma) {
+        const documents = await prisma.document.findMany({
+          where: { type: 'RECEIPT' },
+          include: { client: true },
+          orderBy: { createdAt: 'desc' }
+        });
+        
+        // Transform database documents to Receipt format
+        const allReceipts: Receipt[] = documents.map(doc => {
+          const receiptData = typeof doc.content === 'string' ? JSON.parse(doc.content) : doc.content;
+          return {
+            id: doc.id,
+            receiptNumber: receiptData.receiptNumber || `REC-${doc.id.slice(-6).toUpperCase()}`,
+            clientId: doc.clientId,
+            client: {
+              id: doc.client.participantId,
+              name: doc.client.name,
+              email: doc.client.email || undefined,
+              phone: doc.client.phone || undefined,
+              company: doc.client.company || undefined
+            },
+            items: receiptData.items || [],
+            subtotal: receiptData.subtotal || doc.amount || 0,
+            taxAmount: receiptData.taxAmount || 0,
+            totalAmount: receiptData.totalAmount || doc.amount || 0,
+            paymentMethod: receiptData.paymentMethod || 'cash',
+            paymentDate: receiptData.paymentDate ? new Date(receiptData.paymentDate) : doc.paidDate || new Date(),
+            serviceDate: receiptData.serviceDate ? new Date(receiptData.serviceDate) : doc.createdAt,
+            status: doc.status === 'PAID' ? 'paid' : (receiptData.emailSentAt ? 'sent' : 'draft'),
+            emailStatus: receiptData.emailStatus || null,
+            emailSentAt: receiptData.emailSentAt ? new Date(receiptData.emailSentAt) : undefined,
+            emailDeliveredAt: receiptData.emailDeliveredAt ? new Date(receiptData.emailDeliveredAt) : undefined,
+            emailError: receiptData.emailError || undefined,
+            notes: receiptData.notes || '',
+            archived: receiptData.archived || false,
+            archivedAt: receiptData.archivedAt ? new Date(receiptData.archivedAt) : undefined,
+            createdAt: doc.createdAt,
+            updatedAt: doc.updatedAt,
+            conversationId: receiptData.conversationId
+          } as Receipt;
+        });
+        
+        // Filter based on archive status
+        const receipts = includeArchived 
+          ? allReceipts 
+          : allReceipts.filter(receipt => !receipt.archived);
+        
+          return receipts;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch receipts from database:', error);
+    }
+    
+    // Fall back to in-memory receipts
+    return [...this.receipts].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
   getReceiptsByClientId(clientId: string): Receipt[] {
     return this.receipts.filter(r => r.clientId === clientId);
   }
@@ -421,8 +775,160 @@ class BillingManager {
     return this.invoices.filter(i => i.conversationId === conversationId);
   }
 
-  getReceiptById(receiptId: string): Receipt | null {
-    return this.receipts.find(r => r.id === receiptId) || null;
+  async getReceiptById(receiptId: string): Promise<Receipt | null> {
+    try {
+      // Only use Prisma on server-side
+      if (typeof window === 'undefined') {
+        const { getPrismaClient } = await import('./prisma');
+        const prisma = getPrismaClient();
+        
+        if (prisma) {
+          const document = await prisma.document.findUnique({
+            where: { 
+              id: receiptId,
+              type: 'RECEIPT'
+            },
+            include: { client: true }
+          });
+          
+          if (document) {
+            // Transform database document to Receipt format
+            const receiptData = typeof document.content === 'string' ? JSON.parse(document.content) : document.content;
+            return {
+              id: document.id,
+              receiptNumber: receiptData.receiptNumber || `REC-${document.id.slice(-6).toUpperCase()}`,
+              clientId: document.clientId,
+              client: document.client,
+              conversationId: receiptData.conversationId || null,
+              items: receiptData.items || [],
+              subtotal: receiptData.subtotal || 0,
+              taxAmount: receiptData.taxAmount || 0,
+              totalAmount: receiptData.totalAmount || 0,
+              paymentMethod: receiptData.paymentMethod || 'cash',
+              paymentDate: receiptData.paymentDate ? new Date(receiptData.paymentDate) : new Date(),
+              serviceDate: receiptData.serviceDate ? new Date(receiptData.serviceDate) : new Date(),
+              status: receiptData.status === 'paid' ? 'paid' : (receiptData.emailSentAt ? 'sent' : 'draft'),
+              emailStatus: receiptData.emailStatus || null,
+              emailSentAt: receiptData.emailSentAt ? new Date(receiptData.emailSentAt) : undefined,
+              emailDeliveredAt: receiptData.emailDeliveredAt ? new Date(receiptData.emailDeliveredAt) : undefined,
+              notes: receiptData.notes || '',
+              createdAt: document.createdAt,
+              updatedAt: document.updatedAt
+            };
+          }
+        }
+      }
+      
+      // Fallback to in-memory search
+      return this.receipts.find(r => r.id === receiptId) || null;
+    } catch (error) {
+      console.error('Error fetching receipt by ID:', error);
+      // Fallback to in-memory search
+      return this.receipts.find(r => r.id === receiptId) || null;
+    }
+  }
+
+  async updateReceipt(receiptId: string, updateData: any): Promise<Receipt | null> {
+    try {
+      // Only use Prisma on server-side
+      if (typeof window === 'undefined') {
+        const { getPrismaClient } = await import('./prisma');
+        const prisma = getPrismaClient();
+      
+      if (!prisma) {
+        console.error('Database connection failed');
+        return null;
+      }
+
+      // Find the existing document
+      const existingDoc = await prisma.document.findUnique({
+        where: { 
+          id: receiptId,
+          type: 'RECEIPT'
+        },
+        include: { client: true }
+      });
+
+      if (!existingDoc) {
+        console.error(`Receipt with ID ${receiptId} not found`);
+        return null;
+      }
+
+      // Parse existing receipt data
+      const existingReceiptData = typeof existingDoc.content === 'string' ? JSON.parse(existingDoc.content) : existingDoc.content;
+      
+      // Calculate new totals if items were updated
+      const items = updateData.items || existingReceiptData.items || [];
+      const subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+      const taxAmount = 0; // No tax for unregistered business
+      const totalAmount = subtotal + taxAmount;
+
+      // Merge updated data with existing data
+      const updatedReceiptData = {
+        ...existingReceiptData,
+        ...updateData,
+        items: items,
+        subtotal: subtotal,
+        taxAmount: taxAmount,
+        totalAmount: totalAmount
+      };
+
+      // Update the document
+      const updatedDoc = await prisma.document.update({
+        where: { id: receiptId },
+        data: {
+          content: JSON.stringify(updatedReceiptData),
+          amount: totalAmount,
+          status: updateData.status === 'paid' ? 'PAID' : existingDoc.status,
+          paidDate: updateData.status === 'paid' ? new Date() : (updateData.status === 'issued' ? null : existingDoc.paidDate),
+          updatedAt: new Date()
+        },
+        include: { client: true }
+      });
+
+      // Transform back to Receipt format
+      const updatedReceipt: Receipt = {
+        id: updatedDoc.id,
+        receiptNumber: updatedReceiptData.receiptNumber || `REC-${updatedDoc.id.slice(-6).toUpperCase()}`,
+        clientId: updatedDoc.clientId,
+        client: {
+          id: updatedDoc.client.participantId,
+          name: updatedDoc.client.name,
+          email: updatedDoc.client.email || undefined,
+          phone: updatedDoc.client.phone || undefined,
+          company: updatedDoc.client.company || undefined
+        },
+        items: updatedReceiptData.items || [],
+        subtotal: updatedReceiptData.subtotal || 0,
+        taxAmount: updatedReceiptData.taxAmount || 0,
+        totalAmount: updatedReceiptData.totalAmount || 0,
+        paymentMethod: updatedReceiptData.paymentMethod || 'cash',
+        paymentDate: new Date(updatedReceiptData.paymentDate || updatedDoc.paidDate || new Date()),
+        serviceDate: new Date(updatedReceiptData.serviceDate || updatedDoc.createdAt),
+        status: updatedDoc.status === 'PAID' ? 'paid' : (updatedReceiptData.emailSentAt ? 'sent' : 'draft'),
+        emailStatus: updatedReceiptData.emailStatus || null,
+        emailSentAt: updatedReceiptData.emailSentAt ? new Date(updatedReceiptData.emailSentAt) : undefined,
+        emailDeliveredAt: updatedReceiptData.emailDeliveredAt ? new Date(updatedReceiptData.emailDeliveredAt) : undefined,
+        emailError: updatedReceiptData.emailError || undefined,
+        notes: updatedReceiptData.notes || '',
+        createdAt: updatedDoc.createdAt,
+        updatedAt: updatedDoc.updatedAt,
+        conversationId: updatedReceiptData.conversationId
+      };
+
+      // Update in-memory storage as well
+      const existingIndex = this.receipts.findIndex(r => r.id === receiptId);
+      if (existingIndex >= 0) {
+        this.receipts[existingIndex] = updatedReceipt;
+      }
+
+        return updatedReceipt;
+      }
+
+    } catch (error) {
+      console.error('Failed to update receipt:', error);
+      return null;
+    }
   }
 
   getInvoiceById(invoiceId: string): Invoice | null {
@@ -651,6 +1157,94 @@ Cancellation policy: 24 hours notice required.`
       monthlyRevenue: [], // Would implement monthly breakdown
       topServices: [] // Would implement service breakdown
     };
+  }
+
+  // Seasonal service intelligence methods
+  private getCurrentSeason(): 'winter' | 'spring' | 'summer' | 'fall' {
+    const month = new Date().getMonth(); // 0-11
+    if (month >= 11 || month <= 1) return 'winter';    // Dec, Jan, Feb
+    if (month >= 2 && month <= 4) return 'spring';     // Mar, Apr, May
+    if (month >= 5 && month <= 7) return 'summer';     // Jun, Jul, Aug
+    return 'fall';                                      // Sep, Oct, Nov
+  }
+
+  private isClientSeasonalService(client: Client): boolean {
+    // Check if client has seasonal service indicators
+    const serviceTypes = client.serviceTypes || [];
+    const seasonalIndicators = ['seasonal', 'contract', 'monthly', 'annual'];
+    
+    return serviceTypes.some(service => 
+      seasonalIndicators.some(indicator => 
+        service.toLowerCase().includes(indicator)
+      )
+    ) || (client as any).contractType === 'seasonal';
+  }
+
+  private getSeasonalServicePatterns(season: string, clientServices: string[], isSeasonalService: boolean) {
+    const patterns: any = {};
+
+    // Base completion patterns
+    const baseCompletionPatterns = [
+      'is completed', 'is finished', 'is done', 'service completed', 'service finished',
+      'finished', 'completed', 'done', 'all set', 'wrapped up'
+    ];
+
+    // Seasonal contract completion patterns
+    const seasonalContractPatterns = [
+      'monthly invoice', 'monthly billing', 'monthly charge', 'monthly service',
+      'seasonal billing', 'contract billing', 'monthly payment due',
+      'time to invoice', 'ready to bill', 'send monthly bill'
+    ];
+
+    // Per-service completion patterns
+    const perServicePatterns = [...baseCompletionPatterns];
+
+    // Winter services (Snow removal)
+    if (season === 'winter' || clientServices.some(s => s.toLowerCase().includes('snow'))) {
+      patterns.snowRemoval = {
+        triggers: ['snow removal', 'snow clearing', 'driveway clearing', 'plowing', 'salting', 'de-icing', 'winter service'],
+        completion: isSeasonalService ? 
+          [...seasonalContractPatterns, 'driveway is clear', 'snow removed', 'finished plowing', 'clearing done', ...baseCompletionPatterns] :
+          ['driveway is clear', 'snow removed', 'finished plowing', 'clearing done', ...perServicePatterns],
+        defaultAmount: isSeasonalService ? 150 : 75, // Higher for monthly contract
+        contractType: isSeasonalService ? 'seasonal' : 'per-service'
+      };
+    }
+
+    // Spring/Summer/Fall services (Landscaping)
+    if (['spring', 'summer', 'fall'].includes(season) || clientServices.some(s => 
+      ['lawn', 'landscaping', 'garden', 'mowing'].some(keyword => s.toLowerCase().includes(keyword)))) {
+      
+      patterns.lawnService = {
+        triggers: ['lawn service', 'lawn maintenance', 'grass cut', 'grass cutting', 'mowing', 'lawn care'],
+        completion: isSeasonalService ? 
+          [...seasonalContractPatterns, 'finished cutting', 'lawn is done', 'grass is cut', 'mowing completed', ...baseCompletionPatterns] :
+          ['finished cutting', 'lawn is done', 'grass is cut', 'mowing completed', ...perServicePatterns],
+        defaultAmount: isSeasonalService ? 120 : 50, // Higher for monthly contract
+        contractType: isSeasonalService ? 'seasonal' : 'per-service'
+      };
+
+      patterns.landscaping = {
+        triggers: ['landscaping', 'garden work', 'trimming', 'hedge cutting', 'yard work'],
+        completion: isSeasonalService ? 
+          [...seasonalContractPatterns, 'landscaping done', 'yard work finished', 'trimming completed', ...baseCompletionPatterns] :
+          ['landscaping done', 'yard work finished', 'trimming completed', ...perServicePatterns],
+        defaultAmount: isSeasonalService ? 200 : 100, // Higher for monthly contract
+        contractType: isSeasonalService ? 'seasonal' : 'per-service'
+      };
+    }
+
+    // Always include general patterns if client has multiple services
+    if (clientServices.length > 1) {
+      patterns.generalService = {
+        triggers: ['service', 'work completed', 'job done'],
+        completion: isSeasonalService ? [...seasonalContractPatterns, ...baseCompletionPatterns] : baseCompletionPatterns,
+        defaultAmount: isSeasonalService ? 100 : 50,
+        contractType: isSeasonalService ? 'seasonal' : 'per-service'
+      };
+    }
+
+    return patterns;
   }
 }
 

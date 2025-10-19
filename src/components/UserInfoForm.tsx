@@ -97,11 +97,11 @@ export default function UserInfoForm({
 
   return (
     <div className={`bg-white rounded-lg ${className}`}>
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
+      <div className="p-6 border-b border-tactical-grey-300">
+        <h3 className="text-lg font-semibold text-tactical-grey-800">
           Your Contact Information
         </h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-sm text-tactical-grey-500 mt-1">
           This information will be used to properly identify your messages in
           the import.
         </p>
@@ -110,17 +110,17 @@ export default function UserInfoForm({
       <div className="p-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
               Your Name *
             </label>
             <input
               type="text"
               value={userInfo.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
                 errors.name
                   ? "border-red-300 bg-red-50"
-                  : "border-gray-300 bg-white"
+                  : "border-tactical-grey-400 bg-white"
               }`}
               placeholder="Evangelo P. Sommer"
               autoComplete="name"
@@ -131,17 +131,17 @@ export default function UserInfoForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
               Your Phone Number *
             </label>
             <input
               type="tel"
               value={userInfo.phone}
               onChange={handlePhoneChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
                 errors.phone
                   ? "border-red-300 bg-red-50"
-                  : "border-gray-300 bg-white"
+                  : "border-tactical-grey-400 bg-white"
               }`}
               placeholder="(647) 327-8401"
               autoComplete="tel"
@@ -149,23 +149,23 @@ export default function UserInfoForm({
             {errors.phone && (
               <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-tactical-grey-500 mt-1">
               Format: (123) 456-7890 or 1234567890
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
               Your Email (Optional)
             </label>
             <input
               type="email"
               value={userInfo.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
                 errors.email
                   ? "border-red-300 bg-red-50"
-                  : "border-gray-300 bg-white"
+                  : "border-tactical-grey-400 bg-white"
               }`}
               placeholder="evangelo@company.com"
               autoComplete="email"
@@ -181,7 +181,7 @@ export default function UserInfoForm({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors"
             >
               Cancel
             </button>
@@ -192,8 +192,8 @@ export default function UserInfoForm({
             disabled={!isFormValid}
             className={`px-6 py-2 rounded-lg transition-colors ${
               isFormValid
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? "bg-tactical-gold text-white hover:bg-tactical-gold-dark"
+                : "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
             }`}
           >
             Continue with Import
@@ -202,11 +202,11 @@ export default function UserInfoForm({
       </div>
 
       <div className="px-6 pb-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-3">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-blue-400"
+                className="h-5 w-5 text-tactical-gold-400"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -218,10 +218,10 @@ export default function UserInfoForm({
               </svg>
             </div>
             <div className="ml-3">
-              <h4 className="text-sm font-medium text-blue-800">
+              <h4 className="text-sm font-medium text-tactical-brown-dark">
                 Why do we need this?
               </h4>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm text-tactical-brown-dark mt-1">
                 Excel message exports often don&apos;t include your contact
                 information for outgoing messages. We use this to properly
                 identify which messages are from you vs. your client.

@@ -42,13 +42,13 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-off-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-hud-background-secondary py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="mx-auto h-16 w-16 bg-gold flex items-center justify-center">
-            <span className="text-2xl font-bold text-dark-grey font-space-grotesk">ES</span>
+          <div className="mx-auto h-16 w-16 bg-tactical-gold flex items-center justify-center">
+            <span className="text-2xl font-bold text-hud-text-primary font-space-grotesk">ES</span>
           </div>
-          <h2 className="mt-6 text-center text-2xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+          <h2 className="mt-6 text-center text-2xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
             COMMAND CENTER | MSCRMS
           </h2>
           <p className="mt-2 text-center text-sm text-medium-grey font-space-grotesk">
@@ -65,7 +65,7 @@ export default function SignIn() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="relative block w-full px-4 py-3 border-2 border-light-grey text-dark-grey font-space-grotesk focus:outline-none focus:border-gold transition-colors duration-200"
+              className="relative block w-full px-4 py-3 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent transition-colors duration-200"
               placeholder="username"
             />
           </div>
@@ -74,7 +74,7 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={isLoading || !email.trim()}
-              className="group relative w-full flex justify-center py-3 px-4 border-2 border-transparent text-sm font-bold font-space-grotesk uppercase tracking-wide text-dark-grey bg-gold hover:bg-gold-dark focus:outline-none transition-colors duration-200 disabled:bg-light-grey disabled:cursor-not-allowed disabled:text-medium-grey"
+              className="group relative w-full flex justify-center py-3 px-4 border-2 border-transparent text-sm font-bold font-space-grotesk uppercase tracking-wide text-hud-text-primary bg-tactical-gold hover:bg-tactical-gold-dark focus:outline-none transition-colors duration-200 disabled:bg-light-grey disabled:cursor-not-allowed disabled:text-medium-grey"
             >
               {isLoading ? (
                 <div className="animate-spin h-4 w-4 border-b-2 border-dark-grey"></div>

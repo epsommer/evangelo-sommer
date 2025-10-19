@@ -211,7 +211,7 @@ export default function RobustFileUploader({
     switch (stage) {
       case 'complete': return 'bg-green-500';
       case 'error': return 'bg-red-500';
-      case 'processing': return 'bg-blue-500';
+      case 'processing': return 'bg-tactical-gold-muted0';
       case 'recovery': return 'bg-yellow-500';
       default: return 'bg-gray-400';
     }
@@ -224,7 +224,7 @@ export default function RobustFileUploader({
       case 'processing': 
       case 'recovery': 
       case 'parsing': 
-      case 'storing': return <Clock className="w-5 h-5 text-blue-600 animate-spin" />;
+      case 'storing': return <Clock className="w-5 h-5 text-tactical-gold animate-spin" />;
       default: return null;
     }
   };
@@ -238,8 +238,8 @@ export default function RobustFileUploader({
         onDragLeave={handleDragLeave}
         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           dragActive
-            ? 'border-blue-400 bg-blue-50'
-            : 'border-gray-300 hover:border-gray-400'
+            ? 'border-tactical-gold-400 bg-tactical-gold-muted'
+            : 'border-tactical-grey-400 hover:border-tactical-grey-400'
         } ${isUploading ? 'pointer-events-none opacity-50' : ''}`}
       >
         <input
@@ -257,10 +257,10 @@ export default function RobustFileUploader({
           </div>
 
           <div>
-            <p className="text-lg font-medium text-gray-900 mb-2">
+            <p className="text-lg font-medium text-tactical-grey-800 mb-2">
               Upload Conversation File
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-tactical-grey-500">
               Drop your SMS export file here or click to browse
             </p>
           </div>
@@ -285,12 +285,12 @@ export default function RobustFileUploader({
 
       {/* File Selection Display */}
       {selectedFile && (
-        <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-tactical-grey-100 border border-tactical-grey-300 rounded-lg">
           <div className="flex items-center space-x-3">
-            <FileText className="w-5 h-5 text-gray-500" />
+            <FileText className="w-5 h-5 text-tactical-grey-500" />
             <div>
-              <p className="font-medium text-gray-900">{selectedFile.name}</p>
-              <p className="text-sm text-gray-500">{formatFileSize(selectedFile.size)}</p>
+              <p className="font-medium text-tactical-grey-800">{selectedFile.name}</p>
+              <p className="text-sm text-tactical-grey-500">{formatFileSize(selectedFile.size)}</p>
             </div>
           </div>
           
@@ -298,7 +298,7 @@ export default function RobustFileUploader({
             {!isUploading && !uploadResult && (
               <button
                 onClick={handleUpload}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-tactical-gold text-white rounded-md hover:bg-tactical-gold-dark transition-colors"
               >
                 Process File
               </button>
@@ -307,7 +307,7 @@ export default function RobustFileUploader({
             <button
               onClick={clearSelection}
               disabled={isUploading}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              className="p-2 text-gray-400 hover:text-tactical-grey-500 transition-colors disabled:opacity-50"
             >
               <X className="w-4 h-4" />
             </button>
@@ -322,15 +322,15 @@ export default function RobustFileUploader({
             <div className="flex items-center space-x-3">
               {getStageIcon(currentProgress.stage)}
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-tactical-grey-800">
                   Processing for {clientName}
                 </p>
-                <p className="text-sm text-gray-600">{currentProgress.message}</p>
+                <p className="text-sm text-tactical-grey-500">{currentProgress.message}</p>
               </div>
             </div>
             
             {currentProgress.progress >= 0 && (
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-tactical-grey-600">
                 {currentProgress.progress}%
               </span>
             )}
@@ -338,7 +338,7 @@ export default function RobustFileUploader({
 
           {/* Progress Bar */}
           {currentProgress.progress >= 0 && (
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-tactical-grey-300 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(currentProgress.stage)}`}
                 style={{ width: `${currentProgress.progress}%` }}
@@ -351,29 +351,29 @@ export default function RobustFileUploader({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {currentProgress.details.totalRows && (
                 <div className="text-center">
-                  <p className="font-medium text-gray-900">{currentProgress.details.totalRows}</p>
-                  <p className="text-gray-500">Total Rows</p>
+                  <p className="font-medium text-tactical-grey-800">{currentProgress.details.totalRows}</p>
+                  <p className="text-tactical-grey-500">Total Rows</p>
                 </div>
               )}
               
               {currentProgress.details.recoveredRows !== undefined && (
                 <div className="text-center">
-                  <p className="font-medium text-gray-900">{currentProgress.details.recoveredRows}</p>
-                  <p className="text-gray-500">Recovered</p>
+                  <p className="font-medium text-tactical-grey-800">{currentProgress.details.recoveredRows}</p>
+                  <p className="text-tactical-grey-500">Recovered</p>
                 </div>
               )}
               
               {currentProgress.details.extractedMessages && (
                 <div className="text-center">
-                  <p className="font-medium text-gray-900">{currentProgress.details.extractedMessages}</p>
-                  <p className="text-gray-500">Messages</p>
+                  <p className="font-medium text-tactical-grey-800">{currentProgress.details.extractedMessages}</p>
+                  <p className="text-tactical-grey-500">Messages</p>
                 </div>
               )}
               
               {currentProgress.details.errors && currentProgress.details.errors.length > 0 && (
                 <div className="text-center">
                   <p className="font-medium text-red-600">{currentProgress.details.errors.length}</p>
-                  <p className="text-gray-500">Errors</p>
+                  <p className="text-tactical-grey-500">Errors</p>
                 </div>
               )}
             </div>

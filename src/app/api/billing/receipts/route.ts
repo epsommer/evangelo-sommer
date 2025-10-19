@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
     const conversationId = searchParams.get('conversationId');
+    const includeArchived = searchParams.get('archived') === 'true';
     
     let receipts: Receipt[];
     
@@ -17,8 +18,8 @@ export async function GET(request: NextRequest) {
     } else if (conversationId) {
       receipts = billingManager.getReceiptsByConversationId(conversationId);
     } else {
-      // Return all receipts (in a real implementation, you'd want pagination)
-      receipts = [];
+      // Return all receipts
+      receipts = await billingManager.getAllReceipts(includeArchived);
     }
 
     return NextResponse.json({

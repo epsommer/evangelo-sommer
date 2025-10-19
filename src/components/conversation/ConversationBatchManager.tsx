@@ -133,7 +133,7 @@ const ConversationBatchManager: React.FC<ConversationBatchManagerProps> = ({
       {/* Show error message if any */}
       {error && (
         <div className="p-4 bg-red-50 border-2 border-red-600">
-          <p className="text-sm text-red-700 font-space-grotesk font-bold uppercase tracking-wide">{error}</p>
+          <p className="text-sm text-red-700 font-primary font-bold uppercase tracking-wide">{error}</p>
         </div>
       )}
 
@@ -158,10 +158,10 @@ const ConversationBatchManager: React.FC<ConversationBatchManagerProps> = ({
       {/* Loading overlay */}
       {isProcessing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 border-2 border-light-grey">
+          <div className="bg-white p-6 border-2 border-hud-border">
             <div className="flex items-center space-x-4">
-              <div className="animate-spin h-8 w-8 border-4 border-gold border-t-transparent"></div>
-              <p className="text-dark-grey font-space-grotesk font-bold uppercase tracking-wide">PROCESSING MESSAGES...</p>
+              <div className="animate-spin h-8 w-8 border-4 border-hud-border-accent border-t-transparent"></div>
+              <p className="text-hud-text-primary font-primary font-bold uppercase tracking-wide">PROCESSING MESSAGES...</p>
             </div>
           </div>
         </div>

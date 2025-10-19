@@ -75,13 +75,13 @@ export default function ManualMessageEntry({
       {/* Message List */}
       {messages.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-gray-700">Messages</h3>
+          <h3 className="text-sm font-medium text-tactical-grey-600">Messages</h3>
           {messages.map((message, index) => (
             <div
               key={index}
               className={`p-4 rounded-lg border relative group ${
                 message.role === "you"
-                  ? "bg-blue-50 border-blue-200"
+                  ? "bg-tactical-gold-muted border-tactical-grey-300"
                   : "bg-green-50 border-green-200"
               }`}
             >
@@ -96,17 +96,17 @@ export default function ManualMessageEntry({
                 <span
                   className={`px-2 py-1 rounded text-sm font-medium ${
                     message.role === "you"
-                      ? "bg-blue-200 text-blue-800"
+                      ? "bg-tactical-gold-light text-tactical-brown-dark"
                       : "bg-green-200 text-green-800"
                   }`}
                 >
                   {message.role === "you" ? userName : clientName}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-tactical-grey-500">
                   {formatTimestamp(message.timestamp)}
                 </span>
               </div>
-              <div className="text-gray-900 whitespace-pre-wrap">
+              <div className="text-tactical-grey-800 whitespace-pre-wrap">
                 {message.content}
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function ManualMessageEntry({
       <div className="space-y-4">
         <div className="flex items-center space-x-4 mb-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
               Sender
             </label>
             <select
@@ -129,7 +129,7 @@ export default function ManualMessageEntry({
                   sender: e.target.value as "you" | "client",
                 }))
               }
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+              className="px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white"
             >
               <option value="you">{userName}</option>
               <option value="client">{clientName}</option>
@@ -137,7 +137,7 @@ export default function ManualMessageEntry({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
               Timestamp
             </label>
             <input
@@ -155,13 +155,13 @@ export default function ManualMessageEntry({
                   timestamp: new Date(e.target.value).toISOString(),
                 }))
               }
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+              className="px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white"
             />
           </div>
 
           {messageType === "email" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                 Subject
               </label>
               <input
@@ -173,7 +173,7 @@ export default function ManualMessageEntry({
                     metadata: { ...prev.metadata, subject: e.target.value },
                   }))
                 }
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                className="px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white"
                 placeholder="Email subject"
               />
             </div>
@@ -181,7 +181,7 @@ export default function ManualMessageEntry({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
             Message Content
           </label>
           <textarea
@@ -194,7 +194,7 @@ export default function ManualMessageEntry({
             }
             onKeyDown={handleKeyDown}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 text-tactical-grey-800 bg-white"
             placeholder="Type your message here... (⌘+Enter to add)"
           />
         </div>
@@ -205,8 +205,8 @@ export default function ManualMessageEntry({
             disabled={!currentMessage.content?.trim()}
             className={`px-4 py-2 rounded-lg ${
               currentMessage.content?.trim()
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? "bg-tactical-gold text-white hover:bg-tactical-gold-dark"
+                : "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
             }`}
           >
             Add Message

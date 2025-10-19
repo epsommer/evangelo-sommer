@@ -69,7 +69,7 @@ const mockGoals: Goal[] = [
       time: '09:00',
       advanceNotice: 3
     },
-    color: '#3B82F6',
+    color: '#D4AF37',
     tags: ['growth', 'sales', 'marketing'],
     notes: 'Focus on residential properties in affluent neighborhoods',
     attachments: [],
@@ -111,7 +111,7 @@ const mockGoals: Goal[] = [
       time: '18:00',
       advanceNotice: 7
     },
-    color: '#06B6D4',
+    color: '#D4AF37',
     tags: ['education', 'professional-development'],
     notes: 'Online course with practical assignments',
     attachments: [],
@@ -204,7 +204,7 @@ const mockMilestones: Milestone[] = [
     estimatedHours: 40,
     actualHours: 25,
     tags: ['sales', 'contracts'],
-    color: '#3B82F6',
+    color: '#D4AF37',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },

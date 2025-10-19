@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, isToday, startOfDay, endOfDay } from 'date-fns'
-import { Clock, MapPin, User, Calendar, Filter, Search } from 'lucide-react'
+import { Clock, MapPin, User, Calendar, Filter, Search, Plus, Target, Briefcase, Home } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useViewManager } from '@/contexts/ViewManagerContext'
+import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
 import { DailyTask } from '@/types/daily-planner'
+import { UnifiedEvent } from '@/components/EventCreationModal'
+import { EventCategorizer, EventCategory, eventCategorizer } from '@/lib/event-categorizer'
 
 interface ScheduledService {
   id: string
@@ -35,20 +38,36 @@ interface AgendaItem {
   location?: string
   notes?: string
   service?: string
+  category?: EventCategory
+  confidence?: number
+  matchedKeywords?: string[]
 }
 
 interface AgendaViewProps {
   onItemClick?: (item: AgendaItem) => void
+  onEventView?: (event: UnifiedEvent) => void
+  onAddEvent?: () => void
   viewRange?: 'day' | 'week' | 'month'
+  refreshTrigger?: number
 }
 
-const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week' }) => {
+const AgendaView: React.FC<AgendaViewProps> = ({ 
+  onItemClick, 
+  onEventView, 
+  onAddEvent, 
+  viewRange = 'week', 
+  refreshTrigger 
+}) => {
   const { state } = useViewManager()
   const { selectedDate } = state
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([])
   const [tasks, setTasks] = useState<DailyTask[]>([])
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'high-priority'>('all')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'high-priority' | 'primary' | 'secondary' | 'tertiary'>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [categorizer, setCategorizer] = useState<EventCategorizer>(eventCategorizer.instance)
+  
+  // Use unified events hook
+  const { events: unifiedEvents, getEventsForDate } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger })
 
   useEffect(() => {
     try {
@@ -57,10 +76,14 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
 
       const dailyTasks = JSON.parse(localStorage.getItem('daily-tasks') || '[]')
       setTasks(dailyTasks)
+      
+      // Update categorizer with latest preferences
+      const config = EventCategorizer.loadConfigFromPreferences()
+      setCategorizer(new EventCategorizer(config))
     } catch (error) {
       console.error('Error loading agenda data:', error)
     }
-  }, [])
+  }, [refreshTrigger])
 
   // Convert services and tasks to unified agenda items
   const getAgendaItems = (): AgendaItem[] => {
@@ -91,10 +114,10 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
         return serviceDate >= startDate && serviceDate <= endDate
       })
       .forEach(service => {
-        items.push({
+        const baseItem = {
           id: service.id,
           title: service.title || service.service,
-          type: 'service',
+          type: 'service' as const,
           date: new Date(service.scheduledDate),
           startTime: format(new Date(service.scheduledDate), 'HH:mm'),
           duration: service.duration || 60,
@@ -104,6 +127,23 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
           location: `${service.clientName}'s Property`,
           notes: service.notes,
           service: service.service
+        }
+        
+        // Categorize the service
+        const categorization = categorizer.categorizeEvent({
+          title: baseItem.title,
+          description: baseItem.notes,
+          service: baseItem.service,
+          clientName: baseItem.clientName,
+          location: baseItem.location,
+          type: 'service'
+        })
+        
+        items.push({
+          ...baseItem,
+          category: categorization.category,
+          confidence: categorization.confidence,
+          matchedKeywords: categorization.matchedKeywords
         })
       })
 
@@ -114,10 +154,10 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
         return taskDate >= startDate && taskDate <= endDate
       })
       .forEach(task => {
-        items.push({
+        const baseItem = {
           id: task.id,
           title: task.title,
-          type: 'task',
+          type: 'task' as const,
           date: new Date(task.startTime || task.date),
           startTime: format(new Date(task.startTime || task.date), 'HH:mm'),
           duration: task.estimatedDuration || 60,
@@ -125,6 +165,61 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
           status: task.status,
           location: task.location,
           notes: task.notes
+        }
+        
+        // Categorize the task
+        const categorization = categorizer.categorizeEvent({
+          title: baseItem.title,
+          description: baseItem.notes,
+          location: baseItem.location,
+          type: 'task'
+        })
+        
+        items.push({
+          ...baseItem,
+          category: categorization.category,
+          confidence: categorization.confidence,
+          matchedKeywords: categorization.matchedKeywords
+        })
+      })
+
+    // Add unified events
+    unifiedEvents
+      .filter(event => {
+        const eventDate = new Date(event.startDateTime)
+        return eventDate >= startDate && eventDate <= endDate
+      })
+      .forEach(event => {
+        const baseItem = {
+          id: event.id,
+          title: event.title,
+          type: (event.type === 'service' ? 'service' : 'task') as 'service' | 'task',
+          date: new Date(event.startDateTime),
+          startTime: format(new Date(event.startDateTime), 'HH:mm'),
+          duration: event.duration || 60,
+          priority: event.priority || 'medium',
+          status: event.status || 'pending',
+          clientName: event.clientId,
+          location: event.location,
+          notes: event.notes || event.description,
+          service: event.type === 'service' ? event.title : undefined
+        }
+        
+        // Categorize the unified event
+        const categorization = categorizer.categorizeEvent({
+          title: baseItem.title,
+          description: baseItem.notes,
+          service: baseItem.service,
+          clientName: baseItem.clientName,
+          location: baseItem.location,
+          type: event.type
+        })
+        
+        items.push({
+          ...baseItem,
+          category: categorization.category,
+          confidence: categorization.confidence,
+          matchedKeywords: categorization.matchedKeywords
         })
       })
 
@@ -138,11 +233,20 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
             return item.status === 'completed'
           case 'high-priority':
             return item.priority === 'high' || item.priority === 'urgent'
+          case 'primary':
+            return item.category === 'primary'
+          case 'secondary':
+            return item.category === 'secondary'
+          case 'tertiary':
+            return item.category === 'tertiary'
           default:
             return true
         }
       })
     }
+    
+    // Sort by category priority if enabled
+    items = categorizer.sortEventsByPriority(items)
 
     // Apply search
     if (searchTerm) {
@@ -185,7 +289,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
       case 'low':
         return 'bg-green-100 text-green-800 border-green-200'
       default:
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-tactical-gold-muted text-tactical-brown-dark border-tactical-grey-300'
     }
   }
 
@@ -195,7 +299,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
         return 'bg-green-600'
       case 'in_progress':
       case 'in-progress':
-        return 'bg-gold'
+        return 'bg-tactical-gold'
       case 'cancelled':
         return 'bg-red-600'
       default:
@@ -207,21 +311,88 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
     return type === 'service' ? Calendar : Clock
   }
 
+  const getCategoryInfo = (category: EventCategory) => {
+    return categorizer.getCategoryInfo(category)
+  }
+
+  const getCategoryIcon = (category: EventCategory) => {
+    switch (category) {
+      case 'primary':
+        return Target
+      case 'secondary':
+        return Briefcase
+      case 'tertiary':
+        return Home
+      default:
+        return Briefcase
+    }
+  }
+
+  // Convert agenda item to unified event for detail viewing
+  const convertToUnifiedEvent = (item: AgendaItem): UnifiedEvent => {
+    const startDateTime = new Date(item.date)
+    startDateTime.setHours(parseInt(item.startTime.split(':')[0]))
+    startDateTime.setMinutes(parseInt(item.startTime.split(':')[1]))
+    
+    const endDateTime = new Date(startDateTime)
+    endDateTime.setMinutes(endDateTime.getMinutes() + item.duration)
+
+    return {
+      id: item.id,
+      type: item.type === 'service' ? 'service' : 'task',
+      title: item.title,
+      description: item.notes,
+      startDateTime: startDateTime.toISOString(),
+      endDateTime: endDateTime.toISOString(),
+      duration: item.duration,
+      priority: item.priority,
+      clientId: item.clientName,
+      location: item.location,
+      notes: item.notes,
+      status: item.status
+    }
+  }
+
+  const handleItemClick = (item: AgendaItem) => {
+    const unifiedEvent = convertToUnifiedEvent(item)
+    onEventView?.(unifiedEvent)
+    onItemClick?.(item)
+  }
+
   return (
     <div className="space-y-6">
       {/* Agenda Header */}
       <Card>
-        <CardHeader className="bg-off-white border-b-2 border-gold">
+        <CardHeader className="bg-hud-background-secondary border-b-2 border-hud-border-accent">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide mb-2">
-                Agenda View
-              </h2>
-              <p className="text-medium-grey font-medium font-space-grotesk uppercase tracking-wider text-sm">
-                {viewRange === 'day' ? format(selectedDate, 'EEEE, MMMM do, yyyy') :
-                 viewRange === 'week' ? `${format(startOfWeek(selectedDate), 'MMM d')} - ${format(endOfWeek(selectedDate), 'MMM d, yyyy')}` :
-                 format(selectedDate, 'MMMM yyyy')}
-              </p>
+              <div className="flex items-center space-x-3 mb-2">
+                <Target className="h-6 w-6 text-tactical-gold" />
+                <h2 className="text-section font-display font-medium text-hud-text-primary uppercase tracking-wide">
+                  Mission Objectives
+                </h2>
+              </div>
+              <div className="text-medium-grey font-light font-interface uppercase tracking-wider text-label">
+                <div className="flex items-center space-x-4 mb-1">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span>Primary: Money-Making</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <span>Secondary: Business Support</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-tactical-gold-muted0"></div>
+                    <span>Tertiary: Personal Life</span>
+                  </div>
+                </div>
+                <div>
+                  {viewRange === 'day' ? format(selectedDate, 'EEEE, MMMM do, yyyy') :
+                   viewRange === 'week' ? `${format(startOfWeek(selectedDate), 'MMM d')} - ${format(endOfWeek(selectedDate), 'MMM d, yyyy')}` :
+                   format(selectedDate, 'MMMM yyyy')}
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -233,7 +404,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                   placeholder="Search agenda..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-light-grey rounded-md focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold text-sm"
+                  className="pl-10 pr-4 py-2 border border-hud-border rounded-md focus:outline-none focus:ring-2 focus:ring-gold focus:border-hud-border-accent text-sm"
                 />
               </div>
 
@@ -243,21 +414,24 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value as any)}
-                  className="border border-light-grey rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
+                  className="border border-hud-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-hud-border-accent"
                 >
                   <option value="all">All Items</option>
                   <option value="pending">Pending</option>
                   <option value="completed">Completed</option>
                   <option value="high-priority">High Priority</option>
+                  <option value="primary">Primary Objectives</option>
+                  <option value="secondary">Secondary Objectives</option>
+                  <option value="tertiary">Tertiary Objectives</option>
                 </select>
               </div>
 
               {/* Stats */}
               <div className="text-center">
-                <div className="text-lg font-bold text-gold font-space-grotesk">
+                <div className="text-kpi font-display font-semibold text-gold uppercase">
                   {agendaItems.length}
                 </div>
-                <div className="text-xs uppercase tracking-wider text-medium-grey font-space-grotesk">
+                <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
                   Items
                 </div>
               </div>
@@ -272,7 +446,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
           <Card>
             <CardContent className="p-12 text-center">
               <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50 text-medium-grey" />
-              <p className="text-lg font-medium uppercase tracking-wide text-medium-grey">
+              <p className="text-widget font-display font-semibold uppercase tracking-wide text-medium-grey">
                 No Items Found
               </p>
               <p className="text-sm mt-2 text-medium-grey">
@@ -287,12 +461,12 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
 
             return (
               <Card key={dateKey} className={isCurrentDay ? 'ring-2 ring-gold' : ''}>
-                <CardHeader className={`${isCurrentDay ? 'bg-gold-light' : 'bg-light-grey'} border-b border-light-grey`}>
+                <CardHeader className={`${isCurrentDay ? 'bg-tactical-gold-light' : 'bg-light-grey'} border-b border-hud-border`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+                    <h3 className="text-panel font-display font-medium text-hud-text-primary uppercase tracking-wide">
                       {format(date, 'EEEE, MMMM do')}
                       {isCurrentDay && (
-                        <Badge className="ml-3 bg-gold text-dark-grey">TODAY</Badge>
+                        <Badge className="ml-3 bg-tactical-gold text-hud-text-primary">TODAY</Badge>
                       )}
                     </h3>
                     <div className="flex items-center space-x-4">
@@ -305,7 +479,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                             e.stopPropagation()
                             onAddEvent()
                           }}
-                          className="border-gold text-gold hover:bg-gold hover:text-dark-grey text-xs"
+                          className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary text-xs"
                           title="Add event for this day"
                         >
                           <Plus className="h-3 w-3 mr-1" />
@@ -330,16 +504,16 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                       return (
                         <div
                           key={item.id}
-                          className="p-4 hover:bg-gray-50 transition-colors cursor-pointer border-l-4 border-l-transparent hover:border-l-gold"
-                          onClick={() => onItemClick?.(item)}
+                          className="p-4 hover:bg-tactical-grey-100 transition-colors cursor-pointer border-l-4 border-l-transparent hover:border-l-gold"
+                          onClick={() => handleItemClick(item)}
                         >
                           <div className="flex items-start space-x-4">
                             {/* Time */}
                             <div className="text-center min-w-[60px]">
-                              <div className="text-sm font-bold text-dark-grey font-space-grotesk">
+                              <div className="text-tooltip font-interface font-light text-hud-text-primary">
                                 {item.startTime}
                               </div>
-                              <div className="text-xs text-medium-grey font-space-grotesk">
+                              <div className="text-xs text-medium-grey font-primary">
                                 {item.duration}min
                               </div>
                             </div>
@@ -350,10 +524,19 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
                                     <TypeIcon className="h-4 w-4 text-gold" />
-                                    <h4 className="font-bold text-dark-grey font-space-grotesk">
+                                    {item.category && (() => {
+                                      const CategoryIcon = getCategoryIcon(item.category)
+                                      return <CategoryIcon className="h-4 w-4 text-tactical-gold" />
+                                    })()}
+                                    <h4 className="text-kpi font-display font-semibold text-hud-text-primary uppercase">
                                       {item.title}
                                     </h4>
-                                    <Badge className={`px-2 py-1 text-xs font-bold uppercase ${getPriorityColor(item.priority)}`}>
+                                    {item.category && (
+                                      <Badge className={`px-2 py-1 text-tooltip font-interface font-light uppercase ${getCategoryInfo(item.category).badgeClass}`}>
+                                        {getCategoryInfo(item.category).label}
+                                      </Badge>
+                                    )}
+                                    <Badge className={`px-2 py-1 text-tooltip font-interface font-light uppercase ${getPriorityColor(item.priority)}`}>
                                       {item.priority?.toUpperCase() || 'MEDIUM'}
                                     </Badge>
                                     {item.type === 'service' && (
@@ -361,9 +544,14 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                                         {item.service?.replace('_', ' ')}
                                       </Badge>
                                     )}
+                                    {item.confidence && item.confidence > 0.7 && item.matchedKeywords && item.matchedKeywords.length > 0 && (
+                                      <Badge variant="outline" className="text-xs text-tactical-gold border-tactical-gold" title={`Matched: ${item.matchedKeywords.join(', ')}`}>
+                                        AI: {Math.round(item.confidence * 100)}%
+                                      </Badge>
+                                    )}
                                   </div>
 
-                                  <div className="flex items-center space-x-4 text-sm text-medium-grey font-space-grotesk mb-2">
+                                  <div className="flex items-center space-x-4 text-sm text-medium-grey font-primary mb-2">
                                     {item.clientName && (
                                       <span className="flex items-center">
                                         <User className="h-3 w-3 mr-1" />
@@ -379,7 +567,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                                   </div>
 
                                   {item.notes && (
-                                    <p className="text-sm text-medium-grey font-space-grotesk mt-2">
+                                    <p className="text-sm text-medium-grey font-primary mt-2">
                                       {item.notes}
                                     </p>
                                   )}
@@ -393,7 +581,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({ onItemClick, viewRange = 'week'
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="px-3 py-1 text-xs font-bold uppercase border-gold text-gold hover:bg-gold hover:text-dark-grey"
+                                    className="px-3 py-1 text-tooltip font-interface font-light uppercase border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary"
                                   >
                                     View
                                   </Button>

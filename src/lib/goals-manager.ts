@@ -31,6 +31,9 @@ export class GoalsManager {
   // ============================================================================
 
   private static saveToStorage<T>(key: string, data: T[]): void {
+    // SSR safety check
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem(key, JSON.stringify(data))
     } catch (error) {
@@ -40,6 +43,9 @@ export class GoalsManager {
   }
 
   private static loadFromStorage<T>(key: string): T[] {
+    // SSR safety check
+    if (typeof window === 'undefined') return []
+    
     try {
       const stored = localStorage.getItem(key)
       return stored ? JSON.parse(stored) : []

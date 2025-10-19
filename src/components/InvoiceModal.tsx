@@ -261,12 +261,12 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-tactical-grey-800">
             Create Invoice - {client.name}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-tactical-grey-500"
             disabled={isSubmitting}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,7 +279,7 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
           {/* Service Items Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Services to Invoice</h3>
+              <h3 className="text-lg font-medium text-tactical-grey-800">Services to Invoice</h3>
               <div className="flex space-x-2">
                 <button
                   type="button"
@@ -291,7 +291,7 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
                 <button
                   type="button"
                   onClick={addLineItem}
-                  className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                  className="px-3 py-1 text-sm bg-tactical-gold-muted text-tactical-brown-dark rounded hover:bg-tactical-gold-light"
                 >
                   + Add Service
                 </button>
@@ -300,18 +300,18 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
 
             {/* Service Templates */}
             {showTemplates && (
-              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Quick Add Templates:</h4>
+              <div className="mb-4 p-4 bg-tactical-grey-100 rounded-lg">
+                <h4 className="text-sm font-medium text-tactical-grey-600 mb-2">Quick Add Templates:</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {getServiceTemplates().map((template, index) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => addTemplateItem(template)}
-                      className="text-left p-2 text-sm bg-white border rounded hover:bg-blue-50 hover:border-blue-300"
+                      className="text-left p-2 text-sm bg-white border rounded hover:bg-tactical-gold-muted hover:border-tactical-gold"
                     >
                       <div className="font-medium">{template.description}</div>
-                      <div className="text-gray-500">${template.unitPrice}</div>
+                      <div className="text-tactical-grey-500">${template.unitPrice}</div>
                     </button>
                   ))}
                 </div>
@@ -321,29 +321,29 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
             {/* Line Items */}
             <div className="space-y-3">
               {formData.items.map((item, index) => (
-                <div key={item.id} className="grid grid-cols-12 gap-3 items-end p-3 bg-gray-50 rounded-lg">
+                <div key={item.id} className="grid grid-cols-12 gap-3 items-end p-3 bg-tactical-grey-100 rounded-lg">
                   <div className="col-span-4">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
                       Description *
                     </label>
                     <input
                       type="text"
                       value={item.description}
                       onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
                       placeholder="Service description"
                       required
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
                       Service Type
                     </label>
                     <select
                       value={item.serviceType}
                       onChange={(e) => updateLineItem(index, 'serviceType', e.target.value)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
                     >
                       <option value="landscaping">Landscaping</option>
                       <option value="snow_removal">Snow Removal</option>
@@ -356,7 +356,7 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
                   </div>
 
                   <div className="col-span-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
                       Qty *
                     </label>
                     <input
@@ -365,13 +365,13 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
                       step="0.1"
                       value={item.quantity}
                       onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
                       required
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
                       Unit Price *
                     </label>
                     <input
@@ -380,17 +380,17 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
                       step="0.01"
                       value={item.unitPrice}
                       onChange={(e) => updateLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
                       placeholder="0.00"
                       required
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
                       Total
                     </label>
-                    <div className="px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded">
+                    <div className="px-2 py-1 text-sm bg-tactical-grey-200 border border-tactical-grey-400 rounded">
                       ${item.totalPrice.toFixed(2)}
                     </div>
                   </div>
@@ -401,9 +401,9 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
                         type="checkbox"
                         checked={item.taxable}
                         onChange={(e) => updateLineItem(index, 'taxable', e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold"
                       />
-                      <span className="ml-1 text-xs text-gray-600">Tax</span>
+                      <span className="ml-1 text-xs text-tactical-grey-500">Tax</span>
                     </label>
                     {formData.items.length > 1 && (
                       <button
@@ -422,16 +422,16 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
 
           {/* Payment Terms & Due Date */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Terms</h3>
+            <h3 className="text-lg font-medium text-tactical-grey-800 mb-4">Payment Terms</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Payment Terms *
                 </label>
                 <select
                   value={formData.paymentTerms}
                   onChange={(e) => setFormData(prev => ({ ...prev, paymentTerms: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
                   required
                 >
                   <option value="due_on_receipt">Due on Receipt</option>
@@ -442,35 +442,35 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
                   Due Date *
                 </label>
                 <input
                   type="date"
                   value={formData.dueDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
                   required
                 />
               </div>
             </div>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-tactical-grey-500 mt-2">
               Selected terms: <strong>{getPaymentTermsLabel(formData.paymentTerms)}</strong>
             </p>
           </div>
 
           {/* Totals Summary */}
           <div className="mb-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Invoice Summary</h3>
+            <div className="bg-tactical-grey-100 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-tactical-grey-800 mb-3">Invoice Summary</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
                   <span>${calculateSubtotal().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>{DEFAULT_TAX_CONFIG.name} ({(DEFAULT_TAX_CONFIG.rate * 100).toFixed(1)}%):</span>
-                  <span>${calculateTax().toFixed(2)}</span>
+                  <span>Tax ({DEFAULT_TAX_CONFIG.name}):</span>
+                  <span>{DEFAULT_TAX_CONFIG.rate === 0 ? 'N/A' : `$${calculateTax().toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t pt-2">
                   <span>Total Amount Due:</span>
@@ -482,14 +482,14 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
 
           {/* Notes */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
               Notes & Terms
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold focus:border-tactical-gold"
               placeholder="Additional terms, conditions, or notes for this invoice..."
             />
           </div>
@@ -500,7 +500,7 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+              className="px-4 py-2 text-tactical-grey-600 bg-tactical-grey-200 rounded-lg hover:bg-tactical-grey-300 disabled:opacity-50"
             >
               Cancel
             </button>

@@ -137,23 +137,81 @@ export async function PATCH(
       );
     }
 
-    // TODO: Replace with actual database update
-    // For now, return the updated client data
-    const updatedClient: Partial<Client> = {
-      id: clientId,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
+    // If database is not available, return error
+    if (!isDatabaseAvailable || !prisma) {
+      return NextResponse.json({
+        success: false,
+        error: 'Database not available'
+      }, { status: 503 });
+    }
+
+    // Update client in database
+    const updatedClient = await prisma.clientRecord.update({
+      where: { id: clientId },
+      data: {
+        name: updates.name,
+        email: updates.email,
+        phone: updates.phone,
+        company: updates.company,
+        status: updates.status,
+        projectType: updates.projectType,
+        budget: updates.budget,
+        timeline: updates.timeline,
+        serviceTypes: updates.serviceTypes ? JSON.stringify(updates.serviceTypes) : undefined,
+        notes: updates.notes,
+        address: updates.address ? JSON.stringify(updates.address) : undefined,
+        contactPreferences: updates.contactPreferences ? JSON.stringify(updates.contactPreferences) : undefined,
+      },
+      include: {
+        participant: true
+      }
+    });
+
+    const transformedClient = transformClientRecordForResponse(updatedClient);
 
     return NextResponse.json({
       success: true,
-      client: updatedClient,
+      data: transformedClient,
       message: "Client profile updated successfully"
     });
   } catch (error) {
     console.error("Error updating client:", error);
     return NextResponse.json(
       { error: "Failed to update client" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/clients/[clientId]
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ clientId: string }> }
+) {
+  try {
+    const { clientId } = await params;
+
+    // If database is not available, return error
+    if (!isDatabaseAvailable || !prisma) {
+      return NextResponse.json({
+        success: false,
+        error: 'Database not available'
+      }, { status: 503 });
+    }
+
+    // Delete client from database
+    await prisma.clientRecord.delete({
+      where: { id: clientId }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Client deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting client:", error);
+    return NextResponse.json(
+      { error: "Failed to delete client" },
       { status: 500 }
     );
   }

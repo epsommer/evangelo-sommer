@@ -2,15 +2,51 @@ import { CalendarEvent, CalendarIntegration } from '@/types/scheduling'
 
 export class CalendarService {
   private integrations: Map<string, CalendarIntegration> = new Map()
+  private readonly STORAGE_KEY = 'calendar-integrations'
+
+  constructor() {
+    this.loadFromStorage()
+  }
+
+  // Load integrations from localStorage
+  private loadFromStorage() {
+    if (typeof window === 'undefined') return // SSR safety
+    
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY)
+      if (stored) {
+        const integrations: CalendarIntegration[] = JSON.parse(stored)
+        integrations.forEach(integration => {
+          this.integrations.set(integration.id, integration)
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load calendar integrations from storage:', error)
+    }
+  }
+
+  // Save integrations to localStorage
+  private saveToStorage() {
+    if (typeof window === 'undefined') return // SSR safety
+    
+    try {
+      const integrations = Array.from(this.integrations.values())
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(integrations))
+    } catch (error) {
+      console.error('Failed to save calendar integrations to storage:', error)
+    }
+  }
 
   // Add integration
   addIntegration(integration: CalendarIntegration) {
     this.integrations.set(integration.id, integration)
+    this.saveToStorage()
   }
 
   // Remove integration
   removeIntegration(integrationId: string) {
     this.integrations.delete(integrationId)
+    this.saveToStorage()
   }
 
   // Get integration
@@ -21,6 +57,12 @@ export class CalendarService {
   // Get all integrations
   getAllIntegrations(): CalendarIntegration[] {
     return Array.from(this.integrations.values())
+  }
+
+  // Clear all integrations (useful for debugging/resetting)
+  clearAllIntegrations() {
+    this.integrations.clear()
+    this.saveToStorage()
   }
 
   // Initiate OAuth for a provider
@@ -52,7 +94,7 @@ export class CalendarService {
         accessToken: integration.credentials?.accessToken,
         refreshToken: integration.credentials?.refreshToken,
         calendarId: integration.calendarId,
-        databaseId: integration.provider === 'notion' ? integration.calendarId : undefined
+        databaseId: integration.provider === 'notion' && integration.calendarId ? integration.calendarId : undefined
       })
     })
 
@@ -125,7 +167,7 @@ export class CalendarService {
       id: `${provider}-${Date.now()}`,
       provider: provider as any,
       accountId: data.accountId,
-      calendarId: data.calendarId || data.workspaceId,
+      calendarId: data.calendarId,
       isActive: true,
       syncEnabled: true,
       syncSettings: {
@@ -153,28 +195,28 @@ export class CalendarService {
         id: 'google',
         name: 'Google Calendar',
         icon: '📅',
-        color: 'bg-blue-500',
+        color: 'bg-tactical-gold',
         description: 'Sync with Google Calendar for seamless scheduling'
       },
       outlook: {
         id: 'outlook',
         name: 'Microsoft Outlook',
         icon: '📆',
-        color: 'bg-indigo-500',
+        color: 'bg-tactical-brown',
         description: 'Connect with Outlook calendar and email'
       },
       notion: {
         id: 'notion',
         name: 'Notion Calendar',
         icon: '📝',
-        color: 'bg-gray-800',
+        color: 'bg-tactical-grey-800',
         description: 'Integrate with Notion databases as calendars'
       },
       apple: {
         id: 'apple',
         name: 'Apple Calendar',
         icon: '🍎',
-        color: 'bg-gray-800',
+        color: 'bg-tactical-grey-700',
         description: 'Integrate with Apple Calendar (iCloud)'
       },
       custom: {

@@ -20,11 +20,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Exchange code for access token
+    const notionClientId = process.env.NOTION_CLIENT_ID
+    const notionClientSecret = process.env.NOTION_CLIENT_SECRET
+
+    if (!notionClientId || !notionClientSecret) {
+      console.error('Missing Notion OAuth credentials')
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=missing_credentials`
+      )
+    }
+    
     const tokenResponse = await fetch('https://api.notion.com/v1/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(`${process.env.NOTION_CLIENT_ID}:${process.env.NOTION_CLIENT_SECRET}`).toString('base64')}`,
+        'Authorization': `Basic ${Buffer.from(`${notionClientId}:${notionClientSecret}`).toString('base64')}`,
         'Notion-Version': '2022-06-28'
       },
       body: JSON.stringify({
@@ -56,7 +66,8 @@ export async function GET(request: NextRequest) {
       workspaceName: workspaceInfo,
       accessToken: tokenData.access_token,
       botId: tokenData.bot_id,
-      workspaceId: tokenData.workspace_id
+      workspaceId: tokenData.workspace_id,
+      calendarId: null // Let sync search for available databases
     }
 
     const params = new URLSearchParams({

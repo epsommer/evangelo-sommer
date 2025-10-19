@@ -34,20 +34,26 @@ export const convertCalendarEventToUnified = (calendarEvent: CalendarEvent): Uni
 }
 
 export const convertDailyTaskToUnified = (task: DailyTask): UnifiedEvent => {
+  // Convert Date objects to local timezone format (YYYY-MM-DDTHH:MM:SS)
+  const startDateTime = `${task.startTime.getFullYear()}-${(task.startTime.getMonth() + 1).toString().padStart(2, '0')}-${task.startTime.getDate().toString().padStart(2, '0')}T${task.startTime.getHours().toString().padStart(2, '0')}:${task.startTime.getMinutes().toString().padStart(2, '0')}:${task.startTime.getSeconds().toString().padStart(2, '0')}`
+  const endDateTime = `${task.endTime.getFullYear()}-${(task.endTime.getMonth() + 1).toString().padStart(2, '0')}-${task.endTime.getDate().toString().padStart(2, '0')}T${task.endTime.getHours().toString().padStart(2, '0')}:${task.endTime.getMinutes().toString().padStart(2, '0')}:${task.endTime.getSeconds().toString().padStart(2, '0')}`
+  const createdAt = `${task.createdAt.getFullYear()}-${(task.createdAt.getMonth() + 1).toString().padStart(2, '0')}-${task.createdAt.getDate().toString().padStart(2, '0')}T${task.createdAt.getHours().toString().padStart(2, '0')}:${task.createdAt.getMinutes().toString().padStart(2, '0')}:${task.createdAt.getSeconds().toString().padStart(2, '0')}`
+  const updatedAt = `${task.updatedAt.getFullYear()}-${(task.updatedAt.getMonth() + 1).toString().padStart(2, '0')}-${task.updatedAt.getDate().toString().padStart(2, '0')}T${task.updatedAt.getHours().toString().padStart(2, '0')}:${task.updatedAt.getMinutes().toString().padStart(2, '0')}:${task.updatedAt.getSeconds().toString().padStart(2, '0')}`
+  
   return {
     id: task.id,
     type: 'task' as EventType,
     title: task.title,
     description: task.description,
-    startDateTime: task.startTime.toISOString(),
-    endDateTime: task.endTime.toISOString(),
+    startDateTime: startDateTime,
+    endDateTime: endDateTime,
     duration: task.estimatedDuration,
     priority: task.priority,
     clientId: task.clientId,
     location: task.location,
     notes: task.notes,
-    createdAt: task.createdAt.toISOString(),
-    updatedAt: task.updatedAt.toISOString()
+    createdAt: createdAt,
+    updatedAt: updatedAt
   }
 }
 
@@ -90,6 +96,9 @@ export const convertUnifiedToDailyTask = (unifiedEvent: UnifiedEvent): DailyTask
 export class UnifiedEventsManager {
   // Get all events from localStorage
   static getAllEvents(): UnifiedEvent[] {
+    // SSR safety check
+    if (typeof window === 'undefined') return []
+    
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.UNIFIED_EVENTS)
       return stored ? JSON.parse(stored) : []
@@ -101,6 +110,9 @@ export class UnifiedEventsManager {
 
   // Save all events to localStorage
   static saveAllEvents(events: UnifiedEvent[]): void {
+    // SSR safety check
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem(STORAGE_KEYS.UNIFIED_EVENTS, JSON.stringify(events))
       
@@ -113,6 +125,9 @@ export class UnifiedEventsManager {
 
   // Sync to legacy storage systems for backward compatibility
   static syncToLegacyStorage(events: UnifiedEvent[]): void {
+    // SSR safety check
+    if (typeof window === 'undefined') return
+    
     try {
       // Separate events by type
       const calendarEvents: CalendarEvent[] = []
@@ -154,7 +169,11 @@ export class UnifiedEventsManager {
       ...eventData,
       id: `${eventData.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      // Add legacy compatibility fields
+      status: eventData.status || 'scheduled',
+      service: eventData.service || eventData.title,
+      scheduledDate: eventData.scheduledDate || eventData.startDateTime
     }
 
     const existingEvents = this.getAllEvents()
@@ -215,9 +234,10 @@ export class UnifiedEventsManager {
 
   // Get events for a specific date
   static getEventsForDate(date: Date): UnifiedEvent[] {
-    const dateStr = format(date, 'yyyy-MM-dd')
+    // Create date string in local timezone format (YYYY-MM-DD)
+    const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
     return this.getAllEvents().filter(event => {
-      const eventDateStr = format(parseISO(event.startDateTime), 'yyyy-MM-dd')
+      const eventDateStr = event.startDateTime.split('T')[0]
       return eventDateStr === dateStr
     })
   }
@@ -326,6 +346,9 @@ export class UnifiedEventsManager {
 
   // Import from legacy storage
   static importFromLegacyStorage(): void {
+    // SSR safety check
+    if (typeof window === 'undefined') return
+    
     try {
       const events: UnifiedEvent[] = []
       

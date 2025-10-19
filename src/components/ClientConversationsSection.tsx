@@ -30,7 +30,7 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
 
   const getStatusColor = (status: Conversation['status']) => {
     const colors = {
-      active: 'bg-gold text-dark-grey',
+      active: 'bg-tactical-gold text-hud-text-primary',
       resolved: 'bg-green-600 text-white',
       archived: 'bg-medium-grey text-white',
       pending: 'bg-yellow-600 text-white'
@@ -41,7 +41,7 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
   const getPriorityColor = (priority: Conversation['priority']) => {
     const colors = {
       low: 'bg-light-grey text-medium-grey',
-      medium: 'bg-gold text-dark-grey',
+      medium: 'bg-tactical-gold text-hud-text-primary',
       high: 'bg-dark-grey text-white',
       urgent: 'bg-red-600 text-white'
     }
@@ -87,20 +87,21 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
   }
 
   return (
-    <Card className="bg-white border-2 border-light-grey p-6">
+    <Card className="bg-white border-2 border-hud-border p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+        <h2 className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
           CONVERSATIONS WITH {client.name.toUpperCase()}
         </h2>
         <div className="flex items-center space-x-2">
           <Link 
             href={`/conversations?client=${clientId}`}
-            className="bg-white border-2 border-gold text-gold px-4 py-2 font-bold uppercase text-sm tracking-wide hover:bg-gold hover:text-dark-grey cursor-pointer transition-colors"
+            className="p-2 text-tactical-grey-500 hover:text-tactical-gold transition-colors"
+            title="View All Conversations"
           >
-            VIEW ALL
+            <MessageSquare className="h-4 w-4" />
           </Link>
           <Button 
-            className="bg-gold text-dark-grey px-4 py-2 font-bold uppercase text-sm tracking-wide hover:bg-gold-light cursor-pointer"
+            className="bg-tactical-gold text-hud-text-primary px-4 py-2 font-bold uppercase text-sm tracking-wide hover:bg-tactical-gold-light cursor-pointer"
             onClick={() => router.push(`/conversations/create?client=${clientId}`)}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -112,16 +113,16 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
       {/* Error Display */}
       {error && (
         <div className="bg-red-50 border-2 border-red-600 text-red-700 p-4 mb-4">
-          <div className="font-bold font-space-grotesk uppercase tracking-wide">ERROR</div>
-          <div className="text-sm font-space-grotesk">{error}</div>
+          <div className="font-bold font-primary uppercase tracking-wide">ERROR</div>
+          <div className="text-sm font-primary">{error}</div>
         </div>
       )}
 
       {/* Loading State */}
       {loading && (
         <div className="text-center py-8">
-          <div className="w-12 h-12 border-4 border-gold border-t-transparent animate-spin mx-auto mb-4"></div>
-          <p className="text-medium-grey font-space-grotesk uppercase tracking-wide">LOADING CONVERSATIONS...</p>
+          <div className="w-12 h-12 border-4 border-hud-border-accent border-t-transparent animate-spin mx-auto mb-4"></div>
+          <p className="text-medium-grey font-primary uppercase tracking-wide">LOADING CONVERSATIONS...</p>
         </div>
       )}
 
@@ -131,14 +132,14 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
           {conversations.length === 0 ? (
           <div className="text-center py-8">
             <MessageSquare className="h-12 w-12 mx-auto mb-4 text-light-grey" />
-            <h3 className="text-lg font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               NO CONVERSATIONS YET
             </h3>
-            <p className="text-medium-grey font-space-grotesk mb-4">
+            <p className="text-medium-grey font-primary mb-4">
               START A CONVERSATION TO TRACK COMMUNICATIONS WITH THIS CLIENT.
             </p>
             <Button
-              className="bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk text-sm uppercase tracking-wide"
+              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-sm uppercase tracking-wide"
               onClick={() => router.push(`/conversations/create?client=${clientId}`)}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -234,10 +235,10 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
 
   return (
     <Link href={`/conversations/${conversation.id}`}>
-      <Card className="border-2 border-light-grey p-4 hover:border-gold transition-colors cursor-pointer">
+      <Card className="border-2 border-hud-border p-4 hover:border-hud-border-accent transition-colors cursor-pointer">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <h4 className="font-bold text-dark-grey font-space-grotesk">
+            <h4 className="font-bold text-hud-text-primary font-primary">
               {(conversation.title || 'Untitled Conversation').toUpperCase()}
             </h4>
             <Badge className={`${getStatusColor(conversation.status)} text-xs font-bold uppercase tracking-wide`}>
@@ -252,7 +253,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
             <Button
               size="sm"
               variant="outline"
-              className="text-xs bg-gold text-dark-grey px-2 py-1 font-bold uppercase hover:bg-gold-light cursor-pointer border-gold"
+              className="text-xs bg-tactical-gold text-hud-text-primary px-2 py-1 font-bold uppercase hover:bg-tactical-gold-light cursor-pointer border-hud-border-accent"
               onClick={(e) => {
                 e.stopPropagation()
                 onAddMessage(conversation)
@@ -264,7 +265,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
             <Button 
               size="sm"
               variant="outline"
-              className="text-xs bg-white text-dark-grey px-2 py-1 font-bold uppercase hover:bg-light-grey cursor-pointer border-light-grey"
+              className="text-xs bg-white text-hud-text-primary px-2 py-1 font-bold uppercase hover:bg-light-grey cursor-pointer border-hud-border"
               onClick={(e) => {
                 e.stopPropagation()
                 onEdit(conversation)
@@ -300,7 +301,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
         </div>
 
         {/* Conversation Meta */}
-        <div className="flex items-center justify-between text-xs text-medium-grey font-space-grotesk">
+        <div className="flex items-center justify-between text-xs text-medium-grey font-primary">
           <div className="flex items-center space-x-4">
             <span>{conversation.messages.length} MESSAGES</span>
             <span>LAST: {format(new Date(conversation.updatedAt), 'MMM dd, HH:mm').toUpperCase()}</span>
@@ -331,21 +332,21 @@ interface MessageItemProps {
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, getMessageTypeIcon }) => (
   <div className={`flex items-start space-x-3 p-2 ${
-    (message.role === 'client' || message.role === 'CLIENT') ? 'bg-off-white' : 'bg-gold-light'
+    (message.role === 'client' || message.role === 'CLIENT') ? 'bg-hud-background-secondary' : 'bg-tactical-gold-light'
   }`}>
     <div className="flex items-center space-x-2">
       {getMessageTypeIcon(message.type)}
       <Badge className={`text-xs font-bold uppercase ${
-        (message.role === 'client' || message.role === 'CLIENT') ? 'bg-medium-grey text-white' : 'bg-gold text-dark-grey'
+        (message.role === 'client' || message.role === 'CLIENT') ? 'bg-medium-grey text-white' : 'bg-tactical-gold text-hud-text-primary'
       }`}>
         {(message.role === 'client' || message.role === 'CLIENT') ? 'CLIENT' : 'YOU'}
       </Badge>
     </div>
     <div className="flex-1">
-      <p className="text-sm text-dark-grey font-space-grotesk">
+      <p className="text-sm text-hud-text-primary font-primary">
         {message.content}
       </p>
-      <div className="flex items-center space-x-2 text-xs text-medium-grey font-space-grotesk mt-1">
+      <div className="flex items-center space-x-2 text-xs text-medium-grey font-primary mt-1">
         <Clock className="h-3 w-3" />
         <span>{format(new Date(message.timestamp), 'MMM dd, HH:mm').toUpperCase()}</span>
         {message.metadata?.duration && (
@@ -445,20 +446,20 @@ const ConversationModal: React.FC<{
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[min(90vw,800px)] max-h-[90vh] overflow-y-auto bg-white border-2 border-light-grey">
+      <DialogContent className="max-w-[min(90vw,800px)] max-h-[90vh] overflow-y-auto bg-white border-2 border-hud-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+          <DialogTitle className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             {conversation ? 'EDIT CONVERSATION' : 'NEW CONVERSATION'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Creation Type Selection */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-3 uppercase tracking-wide font-space-grotesk">
+            <label className="block text-sm font-bold text-hud-text-primary mb-3 uppercase tracking-wide font-primary">
               HOW WOULD YOU LIKE TO CREATE THIS CONVERSATION?
             </label>
             <div className="space-y-3">
-              <label className="flex items-start p-3 border-2 border-light-grey cursor-pointer hover:bg-off-white transition-colors">
+              <label className="flex items-start p-3 border-2 border-hud-border cursor-pointer hover:bg-hud-background-secondary transition-colors">
                 <input
                   type="radio"
                   value="manual"
@@ -467,15 +468,15 @@ const ConversationModal: React.FC<{
                   className="mt-1 mr-3"
                 />
                 <div>
-                  <div className="font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                  <div className="font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                     MANUAL ENTRY
                   </div>
-                  <div className="text-sm text-medium-grey font-space-grotesk">
+                  <div className="text-sm text-medium-grey font-primary">
                     ENTER CONVERSATION DETAILS AND FIRST MESSAGE
                   </div>
                 </div>
               </label>
-              <label className="flex items-start p-3 border-2 border-light-grey cursor-pointer hover:bg-off-white transition-colors">
+              <label className="flex items-start p-3 border-2 border-hud-border cursor-pointer hover:bg-hud-background-secondary transition-colors">
                 <input
                   type="radio"
                   value="import"
@@ -484,10 +485,10 @@ const ConversationModal: React.FC<{
                   className="mt-1 mr-3"
                 />
                 <div>
-                  <div className="font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                  <div className="font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                     IMPORT MESSAGES
                   </div>
-                  <div className="text-sm text-medium-grey font-space-grotesk">
+                  <div className="text-sm text-medium-grey font-primary">
                     IMPORT FROM EXCEL FILE, PASTE TEXT, OR CRM INTEGRATION
                   </div>
                 </div>
@@ -496,7 +497,7 @@ const ConversationModal: React.FC<{
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
               CONVERSATION TITLE
             </label>
             <input
@@ -504,20 +505,20 @@ const ConversationModal: React.FC<{
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="E.G., LANDSCAPING QUOTE DISCUSSION"
-              className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+              className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
               required
             />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+              <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
                 SOURCE
               </label>
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value as Conversation['source'])}
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
               >
                 <option value="email">EMAIL</option>
                 <option value="text">TEXT</option>
@@ -526,13 +527,13 @@ const ConversationModal: React.FC<{
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+              <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
                 PRIORITY
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Conversation['priority'])}
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
               >
                 <option value="low">LOW</option>
                 <option value="medium">MEDIUM</option>
@@ -541,13 +542,13 @@ const ConversationModal: React.FC<{
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+              <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
                 STATUS
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as Conversation['status'])}
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
               >
                 <option value="active">ACTIVE</option>
                 <option value="pending">PENDING</option>
@@ -560,7 +561,7 @@ const ConversationModal: React.FC<{
           {/* Manual Entry Fields */}
           {creationType === 'manual' && (
             <div>
-              <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+              <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
                 INITIAL MESSAGE
               </label>
               <textarea
@@ -568,7 +569,7 @@ const ConversationModal: React.FC<{
                 onChange={(e) => setInitialMessage(e.target.value)}
                 placeholder="ENTER THE FIRST MESSAGE IN THIS CONVERSATION..."
                 rows={4}
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                 required
               />
             </div>
@@ -576,18 +577,18 @@ const ConversationModal: React.FC<{
 
           {/* Import Fields */}
           {creationType === 'import' && (
-            <div className="border-2 border-light-grey p-4 max-h-[60vh] overflow-y-auto">
+            <div className="border-2 border-hud-border p-4 max-h-[60vh] overflow-y-auto">
               <MessageImporter
                 onMessagesDetected={handleMessagesImported}
                 clientName={client.name}
                 userName="You"
               />
               {importedMessages.length > 0 && (
-                <div className="mt-4 p-3 bg-gold-light border border-gold">
-                  <div className="text-sm font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+                <div className="mt-4 p-3 bg-tactical-gold-light border border-hud-border-accent">
+                  <div className="text-sm font-bold text-hud-text-primary font-primary uppercase tracking-wide">
                     ✅ {importedMessages.length} MESSAGES IMPORTED
                   </div>
-                  <div className="text-xs text-medium-grey font-space-grotesk mt-1">
+                  <div className="text-xs text-medium-grey font-primary mt-1">
                     MESSAGES ARE READY TO BE ADDED TO THE CONVERSATION
                   </div>
                 </div>
@@ -596,7 +597,7 @@ const ConversationModal: React.FC<{
           )}
 
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
               TAGS (COMMA SEPARATED)
             </label>
             <input
@@ -604,22 +605,22 @@ const ConversationModal: React.FC<{
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="QUOTE, URGENT, FOLLOW-UP"
-              className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+              className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t-2 border-light-grey">
+          <div className="flex justify-end space-x-3 pt-4 border-t-2 border-hud-border">
             <Button 
               type="button"
               variant="outline" 
               onClick={onClose}
-              className="border-2 border-light-grey text-dark-grey hover:bg-light-grey font-space-grotesk font-bold uppercase tracking-wide"
+              className="border-2 border-hud-border text-hud-text-primary hover:bg-light-grey font-primary font-bold uppercase tracking-wide"
             >
               CANCEL
             </Button>
             <Button 
               type="submit"
-              className="bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary font-bold uppercase tracking-wide"
               disabled={creationType === 'import' && importedMessages.length === 0}
             >
               {conversation ? 'UPDATE' : 'CREATE'} CONVERSATION
@@ -649,9 +650,9 @@ const MessageModal: React.FC<{
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white border-2 border-light-grey">
-        <DialogHeader className="bg-off-white border-b-2 border-gold p-6">
-          <DialogTitle className="text-xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+      <DialogContent className="max-w-2xl bg-white border-2 border-hud-border">
+        <DialogHeader className="bg-hud-background-secondary border-b-2 border-hud-border-accent p-6">
+          <DialogTitle className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             ADD MESSAGE
           </DialogTitle>
         </DialogHeader>
@@ -660,18 +661,18 @@ const MessageModal: React.FC<{
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="TYPE YOUR MESSAGE..."
-            className="w-full h-32 p-3 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+            className="w-full h-32 p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
           />
           <div className="flex justify-end space-x-2 mt-4">
             <Button 
               variant="outline" 
               onClick={onClose}
-              className="border-2 border-light-grey text-dark-grey hover:bg-light-grey font-space-grotesk font-bold uppercase tracking-wide"
+              className="border-2 border-hud-border text-hud-text-primary hover:bg-light-grey font-primary font-bold uppercase tracking-wide"
             >
               CANCEL
             </Button>
             <Button 
-              className="bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary font-bold uppercase tracking-wide"
               onClick={handleSave}
               disabled={!message.trim()}
             >

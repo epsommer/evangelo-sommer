@@ -154,7 +154,7 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               Search Messages
             </label>
             <input
@@ -162,19 +162,19 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search content..."
-              className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white font-space-grotesk"
+              className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
             />
           </div>
 
           {/* Role Filter */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               Filter by Role
             </label>
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value as typeof filterRole)}
-              className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white font-space-grotesk"
+              className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
             >
               <option value="all">All Messages</option>
               <option value="you">Your Messages</option>
@@ -184,13 +184,13 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
 
           {/* Sort Order */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               Sort Order
             </label>
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white font-space-grotesk"
+              className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
             >
               <option value="chronological">Chronological</option>
               <option value="reverse-chronological">Reverse Chronological</option>
@@ -200,10 +200,10 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
 
           {/* Message Count */}
           <div>
-            <label className="block text-sm font-bold text-dark-grey mb-2 font-space-grotesk uppercase tracking-wide">
+            <label className="block text-sm font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
               Message Count
             </label>
-            <div className="px-3 py-2 border-2 border-light-grey bg-white font-space-grotesk font-bold text-gold">
+            <div className="px-3 py-2 border-2 border-hud-border bg-white font-primary font-bold text-gold">
               {filteredAndSortedMessages.length} / {editableMessages.length}
             </div>
           </div>
@@ -212,33 +212,33 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
 
       {/* Bulk Operations */}
       {selectedMessages.size > 0 && (
-        <div className="bg-gold bg-opacity-10 border-2 border-gold p-4 rounded-lg">
+        <div className="bg-tactical-gold bg-opacity-10 border-2 border-hud-border-accent p-4 rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="font-space-grotesk font-bold text-dark-grey">
+            <span className="font-primary font-bold text-hud-text-primary">
               {selectedMessages.size} messages selected
             </span>
             <div className="space-x-2">
               <button
                 onClick={() => bulkChangeRole('you')}
-                className="px-3 py-1 bg-blue-100 text-blue-800 font-space-grotesk font-bold text-xs uppercase tracking-wide rounded hover:bg-blue-200"
+                className="px-3 py-1 bg-tactical-gold-muted text-tactical-brown-dark font-primary font-bold text-xs uppercase tracking-wide rounded hover:bg-tactical-gold-light"
               >
                 Set as You
               </button>
               <button
                 onClick={() => bulkChangeRole('client')}
-                className="px-3 py-1 bg-green-100 text-green-800 font-space-grotesk font-bold text-xs uppercase tracking-wide rounded hover:bg-green-200"
+                className="px-3 py-1 bg-green-100 text-green-800 font-primary font-bold text-xs uppercase tracking-wide rounded hover:bg-green-200"
               >
                 Set as Client
               </button>
               <button
                 onClick={bulkDeleteSelected}
-                className="px-3 py-1 bg-red-100 text-red-800 font-space-grotesk font-bold text-xs uppercase tracking-wide rounded hover:bg-red-200"
+                className="px-3 py-1 bg-red-100 text-red-800 font-primary font-bold text-xs uppercase tracking-wide rounded hover:bg-red-200"
               >
                 Delete
               </button>
               <button
                 onClick={clearSelection}
-                className="px-3 py-1 bg-gray-100 text-gray-800 font-space-grotesk font-bold text-xs uppercase tracking-wide rounded hover:bg-gray-200"
+                className="px-3 py-1 bg-tactical-grey-200 text-tactical-grey-700 font-primary font-bold text-xs uppercase tracking-wide rounded hover:bg-tactical-grey-300"
               >
                 Clear
               </button>
@@ -252,13 +252,13 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
         <div className="space-x-4">
           <button
             onClick={selectAllFiltered}
-            className="text-gold hover:text-gold-dark font-space-grotesk font-bold text-sm uppercase tracking-wide"
+            className="text-gold hover:text-gold-dark font-primary font-bold text-sm uppercase tracking-wide"
           >
             Select All Visible
           </button>
           <button
             onClick={autoAdjustTimestamps}
-            className="text-gold hover:text-gold-dark font-space-grotesk font-bold text-sm uppercase tracking-wide"
+            className="text-gold hover:text-gold-dark font-primary font-bold text-sm uppercase tracking-wide"
           >
             Auto-Adjust Timestamps
           </button>
@@ -280,17 +280,17 @@ export default function MessageEditor({ messages, onMessagesUpdated, onComplete 
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-6 border-t-2 border-light-grey">
-        <div className="text-medium-grey font-space-grotesk">
+      <div className="flex items-center justify-between pt-6 border-t-2 border-hud-border">
+        <div className="text-medium-grey font-primary">
           <strong>{editableMessages.length}</strong> messages ready for preview
         </div>
         
         <button
           onClick={handleComplete}
           disabled={editableMessages.length === 0}
-          className={`px-6 py-2 font-space-grotesk font-bold uppercase tracking-wide transition-colors ${
+          className={`px-6 py-2 font-primary font-bold uppercase tracking-wide transition-colors ${
             editableMessages.length > 0
-              ? 'bg-gold text-dark-grey hover:bg-gold-light'
+              ? 'bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light'
               : 'bg-light-grey text-medium-grey cursor-not-allowed'
           }`}
         >
@@ -343,7 +343,7 @@ function MessageEditRow({
 
   return (
     <div className={`border-2 rounded-lg p-4 transition-colors ${
-      isSelected ? 'border-gold bg-gold bg-opacity-5' : 'border-light-grey bg-white'
+      isSelected ? 'border-hud-border-accent bg-tactical-gold bg-opacity-5' : 'border-hud-border bg-white'
     }`}>
       <div className="flex items-start space-x-3">
         {/* Selection Checkbox */}
@@ -351,15 +351,15 @@ function MessageEditRow({
           type="checkbox"
           checked={isSelected}
           onChange={onToggleSelection}
-          className="mt-1 w-4 h-4 text-gold focus:ring-gold border-gray-300 rounded"
+          className="mt-1 w-4 h-4 text-gold focus:ring-gold border-tactical-grey-400 rounded"
         />
 
         {/* Role Badge */}
         <button
           onClick={toggleRole}
-          className={`px-2 py-1 rounded text-xs font-bold font-space-grotesk uppercase tracking-wide ${
+          className={`px-2 py-1 rounded text-xs font-bold font-primary uppercase tracking-wide ${
             message.role === 'you'
-              ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+              ? 'bg-tactical-gold-muted text-tactical-brown-dark hover:bg-tactical-gold-light'
               : 'bg-green-100 text-green-800 hover:bg-green-200'
           }`}
         >
@@ -373,25 +373,25 @@ function MessageEditRow({
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white font-space-grotesk resize-none"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary resize-none"
                 rows={3}
               />
               <input
                 type="datetime-local"
                 value={editTimestamp}
                 onChange={(e) => setEditTimestamp(e.target.value)}
-                className="px-3 py-1 border-2 border-light-grey focus:border-gold bg-white font-space-grotesk text-sm"
+                className="px-3 py-1 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary text-sm"
               />
               <div className="flex space-x-2">
                 <button
                   onClick={handleSave}
-                  className="px-3 py-1 bg-gold text-dark-grey font-space-grotesk font-bold text-xs uppercase tracking-wide rounded hover:bg-gold-light"
+                  className="px-3 py-1 bg-tactical-gold text-hud-text-primary font-primary font-bold text-xs uppercase tracking-wide rounded hover:bg-tactical-gold-light"
                 >
                   Save
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="px-3 py-1 bg-gray-200 text-gray-800 font-space-grotesk font-bold text-xs uppercase tracking-wide rounded hover:bg-gray-300"
+                  className="px-3 py-1 bg-tactical-grey-300 text-tactical-grey-700 font-primary font-bold text-xs uppercase tracking-wide rounded hover:bg-tactical-grey-300"
                 >
                   Cancel
                 </button>
@@ -399,11 +399,11 @@ function MessageEditRow({
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="font-space-grotesk text-dark-grey">{message.content}</p>
-              <div className="flex items-center space-x-4 text-xs text-medium-grey font-space-grotesk">
+              <p className="font-primary text-hud-text-primary">{message.content}</p>
+              <div className="flex items-center space-x-4 text-xs text-medium-grey font-primary">
                 <span>{new Date(message.timestamp).toLocaleString()}</span>
                 {message.metadata?.importMethod && (
-                  <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded uppercase tracking-wide">
+                  <span className="px-2 py-0.5 bg-tactical-grey-200 text-tactical-grey-600 rounded uppercase tracking-wide">
                     {message.metadata.importMethod}
                   </span>
                 )}

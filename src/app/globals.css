@@ -1,72 +1,541 @@
-/* Sharp Modern ServicePro CRM - Gold/Dark Grey/White Theme */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/* Futuristic Military HUD Design System - Adobe Fonts Integration */
 @import "tailwindcss";
 
 :root {
-  /* Primary Colors - Gold Theme */
-  --gold: #D4AF37;
+  /* Updated color tokens to gold/white/warm-gray/brown military aesthetic */
+  --background: oklch(0.12 0.015 45); /* Dark warm brown-gray background */
+  --foreground: oklch(0.95 0.01 45); /* Warm white text */
+  --card: oklch(0.15 0.02 45); /* Slightly lighter card background */
+  --card-foreground: oklch(0.95 0.01 45); /* Card text */
+  --popover: oklch(0.1 0.015 45); /* Darker popover */
+  --popover-foreground: oklch(0.9 0.01 45); /* Popover text */
+  --primary: oklch(0.75 0.12 80); /* Warm gold accent */
+  --primary-foreground: oklch(0.05 0.015 45); /* Dark text on primary */
+  --secondary: oklch(0.85 0.015 45); /* Light warm gray secondary */
+  --secondary-foreground: oklch(0.15 0.015 45); /* Dark text on secondary */
+  --muted: oklch(0.2 0.015 45); /* Muted elements */
+  --muted-foreground: oklch(0.6 0.015 45); /* Muted text */
+  --accent: oklch(0.75 0.12 80); /* Gold accent color */
+  --accent-foreground: oklch(0.05 0.015 45); /* Accent text */
+  --destructive: oklch(0.6 0.15 25); /* Orange-red for alerts */
+  --destructive-foreground: oklch(0.95 0.01 45); /* Light text on destructive */
+  --border: oklch(0.25 0.02 45); /* Subtle warm borders */
+  --input: oklch(0.18 0.015 45); /* Input background */
+  --ring: oklch(0.75 0.12 80); /* Focus ring */
+  --chart-1: oklch(0.7 0.12 80); /* Chart colors */
+  --chart-2: oklch(0.6 0.15 25);
+  --chart-3: oklch(0.5 0.08 45);
+  --chart-4: oklch(0.75 0.12 80);
+  --chart-5: oklch(0.3 0.015 45);
+  --radius: 0.25rem; /* Sharper corners for military feel */
+  --sidebar: oklch(0.1 0.015 45);
+  --sidebar-foreground: oklch(0.9 0.01 45);
+  --sidebar-primary: oklch(0.15 0.015 45);
+  --sidebar-primary-foreground: oklch(0.95 0.01 45);
+  --sidebar-accent: oklch(0.75 0.12 80);
+  --sidebar-accent-foreground: oklch(0.05 0.015 45);
+  --sidebar-border: oklch(0.25 0.02 45);
+  --sidebar-ring: oklch(0.75 0.12 80);
+
+  /* Tactical HUD Color Palette - Brand Guidelines Exact */
+  /* Primary Colors */
+  --tactical-white: #FFFFFF;
+  --tactical-gold: #D4AF37;
+  --tactical-gold-light: #E6C866;
+  --tactical-gold-dark: #B8941F;
+  --tactical-gold-muted: #F4E4A6;
+  --tactical-brown: #8B4513;
+  --tactical-brown-light: #A0522D;
+  --tactical-brown-dark: #654321;
+  --tactical-brown-warm: #CD853F;
+  
+  /* Warm Grey Scale - 9-step system (NO BLUE TINTS) */
+  --tactical-grey-900: #1C1917;  /* Warm dark brown-grey */
+  --tactical-grey-800: #292524;  /* Stone-800 */
+  --tactical-grey-700: #44403C;  /* Stone-700 */
+  --tactical-grey-600: #57534E;  /* Stone-600 */
+  --tactical-grey-500: #78716C;  /* Stone-500 */
+  --tactical-grey-400: #A8A29E;  /* Stone-400 */
+  --tactical-grey-300: #D6D3D1;  /* Stone-300 */
+  --tactical-grey-200: #E7E5E4;  /* Stone-200 */
+  --tactical-grey-100: #F5F5F4;  /* Stone-100 */
+  
+  /* Semantic Colors - Pure Warm Gold Scheme (NO BLUE) */
+  --tactical-success: #10B981;
+  --tactical-warning: #F59E0B;
+  --tactical-error: #EF4444;
+  --tactical-info: var(--tactical-gold);        /* Gold for all informational states */
+  
+  /* Tactical Accents - Warm Gold Palette Only */
+  --radar-green: #00FF41;
+  --alert-red: #FF0000;
+  --system-amber: #FFB000;
+  --system-gold: var(--tactical-gold);
+  --status-amber: #FFC947;
+  
+  /* HUD Specific Colors - Light Mode */
+  --hud-accent-primary: var(--tactical-gold);
+  --hud-accent-secondary: var(--tactical-gold-light);
+  --hud-background-primary: var(--tactical-white);
+  --hud-background-secondary: var(--tactical-grey-100);
+  --hud-background-overlay: rgba(28, 25, 23, 0.95);
+  --hud-text-primary: var(--tactical-grey-800);
+  --hud-text-secondary: var(--tactical-grey-600);
+  --hud-text-inverted: var(--tactical-white);
+  --hud-border: var(--tactical-grey-300);
+  --hud-border-accent: var(--tactical-gold);
+  
+  /* Glow Effects */
+  --hud-glow-primary: 0 0 10px rgba(212, 175, 55, 0.3);
+  --hud-glow-secondary: 0 0 8px rgba(255, 176, 0, 0.2);
+  --hud-shadow-tactical: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Data Visualization Color Spectrum */
+  --data-red-severe: #8B0000;      /* Dark Red - severe decrease */
+  --data-red-major: #DC143C;       /* Crimson - major decrease */  
+  --data-orange: #FF8C00;          /* Orange - average decrease */
+  --data-yellow: #FFD700;          /* Yellow - mild decrease */
+  --data-green-mild: #32CD32;      /* Lime Green - mild increase */
+  --data-green-good: #00FF7F;      /* Spring Green - good increase */
+  --data-teal: #20B2AA;            /* Teal - solid increase */
+  --data-cyan: #00FFFF;            /* Cyan - strong increase */
+  --data-gold-bright: #FFD700;     /* Bright Gold - excellent increase */
+  --data-violet: #8A2BE2;          /* Violet - outstanding increase */
+  --data-pink: #FF1493;            /* Deep Pink - exceptional increase */
+  --data-crimson: #DC143C;         /* Bright Crimson - most excellent */
+
+  /* Legacy Support */
+  --gold: var(--tactical-gold);
   --gold-light: #F4E8C1;
   --gold-dark: #B8941F;
+  --dark-grey: var(--tactical-grey-800);
+  --medium-grey: var(--tactical-grey-600);
+  --light-grey: var(--tactical-grey-200);
+  --off-white: var(--tactical-grey-100);
+  --bg-primary: var(--hud-background-primary);
+  --bg-secondary: var(--hud-background-secondary);
+  --bg-dark: var(--tactical-grey-800);
+  --text-primary: var(--hud-text-primary);
+  --text-secondary: var(--hud-text-secondary);
+  --text-light: var(--hud-text-inverted);
   
-  /* Grey Scale */
-  --dark-grey: #2C2C2C;
-  --medium-grey: #4A4A4A;
-  --light-grey: #E8E8E8;
-  --off-white: #FAFAFA;
-  
-  /* Background Colors */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #FAFAFA;
-  --bg-dark: #2C2C2C;
-  
-  /* Text Colors */
-  --text-primary: #2C2C2C;
-  --text-secondary: #4A4A4A;
-  --text-light: #FFFFFF;
-  
-  /* Updated CSS Variables for Tailwind */
+  /* Tailwind CSS Variables - Light Mode */
   --background: 0 0% 100%;
-  --foreground: 0 0% 17%;
+  --foreground: 216 13% 17%;
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 17%;
+  --card-foreground: 216 13% 17%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 17%;
+  --popover-foreground: 216 13% 17%;
   --primary: 45 69% 52%;
-  --primary-foreground: 0 0% 17%;
-  --secondary: 0 0% 98%;
-  --secondary-foreground: 0 0% 17%;
-  --muted: 0 0% 98%;
-  --muted-foreground: 0 0% 29%;
+  --primary-foreground: 216 13% 17%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 216 13% 17%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 220 9% 43%;
   --accent: 45 69% 52%;
-  --accent-foreground: 0 0% 17%;
+  --accent-foreground: 216 13% 17%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 91%;
-  --input: 0 0% 91%;
+  --border: 220 13% 83%;
+  --input: 220 13% 83%;
   --ring: 45 69% 52%;
-  --radius: 0rem; /* SQUARE CORNERS ONLY */
+  --radius: 0rem; /* NO ROUNDED CORNERS - TACTICAL ANGLES ONLY */
   
-  /* Typography */
-  --font-space-grotesk: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  /* Adobe Fonts Typography System - Brand Guidelines Integration */
+  /* Primary Typefaces from Adobe Fonts */
+  --font-primary: 'ff-utility-web-pro', sans-serif;               /* FF Utility Web Pro - Primary Interface */
+  --font-body: 'ibm-plex-sans', sans-serif;                       /* IBM Plex Sans - Body Text */
+  --font-mono: 'letter-gothic-std', monospace;                    /* Letter Gothic Std - Technical Data */
+  --font-condensed: 'din-2014-narrow', sans-serif;                /* DIN 2014 Narrow - Condensed Elements */
+  --font-display: 'lores-9-wide', sans-serif;                     /* LoRes 9 Wide - Display Headers */
+  --font-accent: 'termina', sans-serif;                           /* Termina - Accent Elements */
+  
+  /* Brand Guidelines Typography Roles */
+  --font-page-title: var(--font-display);                         /* Page Titles - Interpol Sans Bold/Black */
+  --font-section-header: var(--font-display);                     /* Section Headers - Interpol Sans Medium */
+  --font-widget-title: var(--font-display);                       /* Widget Titles - Interpol Sans SemiBold */
+  --font-body-text: var(--font-body);                             /* Body Text - IBM Plex Sans */
+  --font-labels: var(--font-primary);                             /* Labels - FF Utility Web Pro */
+  --font-tooltips: var(--font-body);                              /* Tooltips - IBM Plex Sans */
+  
+  /* HUD Font Assignment Strategy */
+  --font-headings: var(--font-display);                           /* Headers & Display */
+  --font-ui: var(--font-primary);                                 /* UI Elements - FF Utility Web Pro */
+  --font-data: var(--font-mono);                                  /* Technical Data */
+  
+  /* Legacy HUD Support */
+  --font-hud-display: var(--font-display);
+  --font-hud-mono: var(--font-mono);
+  --font-hud-ui: var(--font-primary);
+  
+  /* Legacy Support & Fallbacks */
+  --font-primary-condensed: var(--font-hud-ui);
+  --font-secondary-modern: var(--font-hud-ui);
+  --font-mono-tactical: var(--font-hud-mono);
+  --font-space-grotesk: var(--font-display);           /* Legacy Support - Interpol Sans */
+  --font-jetbrains-mono: var(--font-hud-mono);
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
 }
 
-/* Force light mode - no dark mode support for sharp modern aesthetic */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+.dark {
+  /* Dark mode uses warm gold/brown/stone tokens for consistent military aesthetic */
+  --background: oklch(0.08 0.015 45);
+  --foreground: oklch(0.95 0.01 45);
+  --card: oklch(0.12 0.02 45);
+  --card-foreground: oklch(0.95 0.01 45);
+  --popover: oklch(0.05 0.015 45);
+  --popover-foreground: oklch(0.9 0.01 45);
+  --primary: oklch(0.8 0.12 80);
+  --primary-foreground: oklch(0.05 0.015 45);
+  --secondary: oklch(0.2 0.02 45);
+  --secondary-foreground: oklch(0.95 0.01 45);
+  --muted: oklch(0.15 0.015 45);
+  --muted-foreground: oklch(0.6 0.015 45);
+  --accent: oklch(0.8 0.12 80);
+  --accent-foreground: oklch(0.05 0.015 45);
+  --destructive: oklch(0.55 0.15 25);
+  --destructive-foreground: oklch(0.95 0.01 45);
+  --border: oklch(0.2 0.02 45);
+  --input: oklch(0.15 0.015 45);
+  --ring: oklch(0.8 0.12 80);
+  --chart-1: oklch(0.7 0.12 80);
+  --chart-2: oklch(0.6 0.15 25);
+  --chart-3: oklch(0.5 0.08 45);
+  --chart-4: oklch(0.8 0.12 80);
+  --chart-5: oklch(0.2 0.015 45);
+  --sidebar: oklch(0.05 0.015 45);
+  --sidebar-foreground: oklch(0.9 0.01 45);
+  --sidebar-primary: oklch(0.7 0.12 80);
+  --sidebar-primary-foreground: oklch(0.05 0.015 45);
+  --sidebar-accent: oklch(0.2 0.02 45);
+  --sidebar-accent-foreground: oklch(0.95 0.01 45);
+  --sidebar-border: oklch(0.2 0.02 45);
+  --sidebar-ring: oklch(0.8 0.12 80);
+}
+
+/* Dark Mode - Military Command Center Aesthetic */
+[data-theme="dark"] {
+  /* HUD Colors - Dark Mode */
+  --hud-background-primary: var(--tactical-grey-900);
+  --hud-background-secondary: var(--tactical-grey-800);
+  --hud-background-overlay: rgba(28, 25, 23, 0.95);
+  --hud-text-primary: var(--tactical-white);
+  --hud-text-secondary: var(--tactical-grey-300);
+  --hud-text-inverted: var(--tactical-grey-900);
+  --hud-border: var(--tactical-grey-700);
+  --hud-border-accent: var(--tactical-gold);
+  
+  /* Enhanced Glow Effects for Dark Mode */
+  --hud-glow-primary: 0 0 15px rgba(212, 175, 55, 0.5);
+  --hud-glow-secondary: 0 0 12px rgba(255, 176, 0, 0.3);
+  --hud-shadow-tactical: 0 4px 20px rgba(0, 0, 0, 0.4);
+  
+  /* Legacy Support - Dark Mode */
+  --bg-primary: var(--hud-background-primary);
+  --bg-secondary: var(--hud-background-secondary);
+  --bg-dark: var(--tactical-grey-900);
+  --text-primary: var(--hud-text-primary);
+  --text-secondary: var(--hud-text-secondary);
+  --text-light: var(--hud-text-primary);
+}
+
+/* Enhanced Base Styling with Typography */
 * {
   border-color: hsl(var(--border));
   box-sizing: border-box;
 }
 
+html {
+  font-family: var(--font-body);
+}
+
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-space-grotesk);
-  line-height: 1.5;
+  background-color: var(--hud-background-primary);
+  color: var(--hud-text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Adobe Fonts CSS Classes - Brand Guidelines */
+.tk-ff-utility-web-pro { font-family: "ff-utility-web-pro", sans-serif; }
+.tk-ibm-plex-sans { font-family: "ibm-plex-sans", sans-serif; }
+.tk-letter-gothic-std { font-family: "letter-gothic-std", monospace; }
+.tk-din-2014-narrow { font-family: "din-2014-narrow", sans-serif; }
+.tk-lores-9-wide { font-family: "lores-9-wide", sans-serif; }
+.tk-termina { font-family: "termina", sans-serif; }
+
+/* Primary Interface Typography - Brand Guidelines */
+.interface-heading { font-family: 'ff-utility-web-pro', sans-serif; }
+.body-text { font-family: 'ibm-plex-sans', sans-serif; }
+.technical-data { font-family: 'letter-gothic-std', monospace; }
+.compact-display { font-family: 'din-2014-narrow', sans-serif; }
+.display-header { font-family: 'lores-9-wide', sans-serif; }
+.accent-text { font-family: 'termina', sans-serif; }
+
+/* HUD Terminology Classes - Tactical Interface */
+.hud-label { 
+  font-family: 'termina', sans-serif; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 0.1em; 
+  color: var(--tactical-gold);
+}
+
+.hud-value { 
+  font-family: 'letter-gothic-std', monospace; 
+  font-weight: 400; 
+  color: var(--hud-text-primary);
+}
+
+.hud-status { 
+  font-family: 'ff-utility-web-pro', sans-serif; 
+  font-weight: 700; 
+  text-transform: uppercase; 
+  letter-spacing: 0.08em;
+}
+
+.hud-command { 
+  font-family: 'termina', sans-serif; 
+  font-weight: 700; 
+  text-transform: uppercase; 
+  letter-spacing: 0.12em;
+  color: var(--tactical-gold);
+}
+
+/* Status Classifications */
+.status-operational { color: var(--tactical-success); }
+.status-standby { color: var(--tactical-warning); }
+.status-critical { color: var(--tactical-error); }
+.status-offline { color: var(--tactical-grey-500); }
+.status-active { color: var(--tactical-gold); }
+.status-pending { color: var(--system-amber); }
+.status-secured { color: var(--tactical-gold-light); }
+
+/* Contact Classifications */
+.priority-target { color: var(--tactical-error); font-weight: 700; }
+.allied-asset { color: var(--tactical-success); }
+.neutral-entity { color: var(--hud-text-secondary); }
+.unknown-status { color: var(--tactical-grey-400); }
+.vip-clearance { color: var(--tactical-gold); font-weight: 700; }
+.field-operative { color: var(--tactical-gold-light); }
+
+/* HUD Interface Components */
+.tactical-frame {
+  border: 2px solid var(--tactical-gold);
+  background: var(--hud-background-secondary);
+  border-radius: 2px 0 2px 0;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+}
+
+/* Terminated Corners for Widgets */
+.widget-terminated-corners {
+  position: relative;
+  border-radius: 0 !important;
+}
+
+.widget-terminated-corners * {
+  border-radius: 0 !important;
+}
+
+.widget-terminated-corners::before,
+.widget-terminated-corners::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--hud-border);
+  z-index: 2;
+  border-radius: 1px;
+}
+
+.widget-terminated-corners::before {
+  top: 4px;
+  left: 4px;
+  border-right: none;
+  border-bottom: none;
+  clip-path: polygon(0 0, calc(100% - 2px) 0, 100% 2px, 2px 100%, 0 calc(100% - 2px));
+}
+
+.widget-terminated-corners::after {
+  bottom: 4px;
+  right: 4px;
+  border-left: none;
+  border-top: none;
+  clip-path: polygon(calc(100% - 2px) 0, 100% 2px, 100% 100%, 2px 100%, 0 calc(100% - 2px));
+}
+
+.corner-markers::before,
+.corner-markers::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--tactical-gold);
+  opacity: 0.6;
+}
+
+.corner-markers::before {
+  top: 4px;
+  left: 4px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner-markers::after {
+  bottom: 4px;
+  right: 4px;
+  border-left: none;
+  border-top: none;
+}
+
+.diagonal-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.diagonal-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(45deg, transparent 40%, var(--tactical-gold) 50%, transparent 60%);
+  opacity: 0.7;
+}
+
+.hud-overlay {
+  background: var(--hud-background-overlay);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--tactical-gold);
+}
+
+.status-beacon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-beacon.operational { background: var(--tactical-success); }
+.status-beacon.critical { background: var(--tactical-error); }
+.status-beacon.standby { background: var(--tactical-warning); }
+.status-beacon.active { background: var(--tactical-gold); }
+
+/* Tactical HUD Font Classes */
+.font-military {
+  font-family: var(--font-primary) !important;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-condensed {
+  font-family: var(--font-condensed) !important;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-tactical {
+  font-family: var(--font-mono) !important;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-display {
+  font-family: var(--font-display) !important;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Military Heading Typography */
+h1, h2, h3, h4, h5, h6,
+.text-heading {
+  font-family: var(--font-display) !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--hud-text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Military UI Elements Typography */
+button:not(.logo-button), .btn,
+.nav-item, .nav-tactical,
+label, .form-label {
+  font-family: var(--font-primary) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* Military Body Text */
+p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
+  font-family: var(--font-body) !important;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legacy Support */
+.font-modern {
+  font-family: var(--font-body) !important;
 }
 
 /* SHARP MODERN COMPONENT STYLES */
@@ -94,7 +563,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
   transition: all 0.2s ease;
 }
 
@@ -111,7 +580,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
 
 .btn-secondary:hover {
@@ -127,7 +596,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
 
 .btn-outline:hover {
@@ -141,7 +610,7 @@ body {
   border-radius: 0 !important;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
   padding: 0.75rem 1rem;
   transition: border-color 0.2s ease;
 }
@@ -171,7 +640,7 @@ body {
 
 /* Typography Styles */
 .text-heading {
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-display);                  /* Halogen */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -179,8 +648,8 @@ body {
 }
 
 .text-subheading {
-  font-family: var(--font-space-grotesk);
-  font-weight: 600;
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-secondary);
@@ -189,7 +658,7 @@ body {
 
 /* Navigation Styles */
 .nav-item {
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -216,7 +685,7 @@ textarea {
   background: var(--bg-primary);
   border: 2px solid var(--light-grey);
   border-radius: 0 !important;
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
 
 input:focus,
@@ -230,12 +699,12 @@ textarea:focus {
 input::placeholder,
 textarea::placeholder {
   color: var(--text-secondary);
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
 
 label {
   color: var(--text-primary);
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-primary);                /* FF Utility Web Pro */
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -280,21 +749,21 @@ label {
   border-left-color: #DC2626;
 }
 
-/* Service Line Colors */
+/* Service Line Colors - Tactical Palette */
 .service-landscaping {
-  background: #16A34A;
+  background: var(--tactical-green);                  /* #16A34A */
 }
 
 .service-snow-removal {
-  background: #3B82F6;
+  background: var(--tactical-grey-600);              /* Remove blue, use tactical grey */
 }
 
 .service-hair-cutting {
-  background: #EC4899;
+  background: var(--tactical-brown);                 /* Use tactical brown */
 }
 
 .service-creative-development {
-  background: #8B5CF6;
+  background: var(--tactical-gold);                  /* Use tactical gold */
 }
 
 /* Progress Bar */
@@ -313,23 +782,62 @@ label {
 }
 
 /* Utility Classes */
-.bg-gold { background-color: var(--gold); }
-.bg-gold-light { background-color: var(--gold-light); }
-.bg-gold-dark { background-color: var(--gold-dark); }
+.bg-tactical-gold { background-color: var(--gold); }
+.bg-tactical-gold-light { background-color: var(--gold-light); }
+.bg-tactical-gold-dark { background-color: var(--gold-dark); }
 .bg-dark-grey { background-color: var(--dark-grey); }
 .bg-medium-grey { background-color: var(--medium-grey); }
 .bg-light-grey { background-color: var(--light-grey); }
-.bg-off-white { background-color: var(--off-white); }
+.bg-hud-background-primary { background-color: var(--hud-background-primary); }
+.bg-hud-background-secondary { background-color: var(--hud-background-secondary); }
 
 .text-gold { color: var(--gold); }
 .text-gold-dark { color: var(--gold-dark); }
-.text-dark-grey { color: var(--dark-grey); }
+.text-hud-text-primary { color: var(--hud-text-primary); }
+.text-hud-text-secondary { color: var(--hud-text-secondary); }
 .text-medium-grey { color: var(--medium-grey); }
 .text-light-grey { color: var(--light-grey); }
 
-.border-gold { border-color: var(--gold); }
+.border-hud-border-accent { border-color: var(--hud-border-accent); }
 .border-dark-grey { border-color: var(--dark-grey); }
-.border-light-grey { border-color: var(--light-grey); }
+.border-hud-border { border-color: var(--hud-border); }
+
+/* Data Color Classes */
+.text-data-red-severe { color: var(--data-red-severe); }
+.text-data-red-major { color: var(--data-red-major); }
+.text-data-orange { color: var(--data-orange); }
+.text-data-yellow { color: var(--data-yellow); }
+.text-data-green-mild { color: var(--data-green-mild); }
+.text-data-green-good { color: var(--data-green-good); }
+.text-data-teal { color: var(--data-teal); }
+.text-data-cyan { color: var(--data-cyan); }
+.text-data-gold-bright { color: var(--data-gold-bright); }
+.text-data-violet { color: var(--data-violet); }
+.text-data-pink { color: var(--data-pink); }
+
+.bg-data-red-severe { background-color: var(--data-red-severe); }
+.bg-data-red-major { background-color: var(--data-red-major); }
+.bg-data-orange { background-color: var(--data-orange); }
+.bg-data-yellow { background-color: var(--data-yellow); }
+.bg-data-green-mild { background-color: var(--data-green-mild); }
+.bg-data-green-good { background-color: var(--data-green-good); }
+.bg-data-teal { background-color: var(--data-teal); }
+.bg-data-cyan { background-color: var(--data-cyan); }
+.bg-data-gold-bright { background-color: var(--data-gold-bright); }
+.bg-data-violet { background-color: var(--data-violet); }
+.bg-data-pink { background-color: var(--data-pink); }
+
+.border-data-red-severe { border-color: var(--data-red-severe); }
+.border-data-red-major { border-color: var(--data-red-major); }
+.border-data-orange { border-color: var(--data-orange); }
+.border-data-yellow { border-color: var(--data-yellow); }
+.border-data-green-mild { border-color: var(--data-green-mild); }
+.border-data-green-good { border-color: var(--data-green-good); }
+.border-data-teal { border-color: var(--data-teal); }
+.border-data-cyan { border-color: var(--data-cyan); }
+.border-data-gold-bright { border-color: var(--data-gold-bright); }
+.border-data-violet { border-color: var(--data-violet); }
+.border-data-pink { border-color: var(--data-pink); }
 
 /* Remove all shadows */
 .shadow,
@@ -343,7 +851,7 @@ label {
 
 /* Ensure consistent font family */
 .font-space-grotesk {
-  font-family: var(--font-space-grotesk);
+  font-family: var(--font-display);                  /* Halogen */
 }
 
 /* Modern spacing and layout */
@@ -404,12 +912,12 @@ button:disabled,
   cursor: pointer !important;
 }
 
-.hover-border-gold:hover {
+.hover-border-hud-border-accent:hover {
   border-color: var(--gold) !important;
   cursor: pointer !important;
 }
 
-.hover-bg-gold:hover {
+.hover-bg-tactical-gold:hover {
   background-color: var(--gold) !important;
   cursor: pointer !important;
 }
@@ -427,4 +935,472 @@ button:disabled,
 
 .interactive:hover {
   opacity: 0.8;
+}
+
+/* Tactical Data Display Elements */
+.data-terminal {
+  background: var(--tactical-grey-900);
+  border: 2px solid var(--tactical-green);
+  color: var(--tactical-green);
+  font-family: var(--font-mono);                     /* Letter Gothic Std */
+  padding: 1rem;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  box-shadow: 
+    inset 0 0 20px rgba(22, 163, 74, 0.1),
+    0 0 20px rgba(22, 163, 74, 0.3);
+}
+
+.hud-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--hud-background-secondary);
+  border-left: 4px solid var(--tactical-gold);
+  font-family: var(--font-mono);                     /* Letter Gothic Std */
+  position: relative;
+}
+
+.hud-metric::before {
+  content: '▶';
+  color: var(--tactical-gold);
+  font-size: 0.75rem;
+}
+
+.hud-alert {
+  background: var(--tactical-red);
+  color: var(--tactical-white);
+  padding: 1rem;
+  border: 2px solid var(--tactical-red);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  animation: pulse-hud 1.5s infinite;
+  font-family: var(--font-mono);                     /* Letter Gothic Std */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Tactical Grid System */
+.tactical-grid {
+  display: grid;
+  gap: 1rem;
+  background-image: 
+    linear-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  padding: 1rem;
+}
+
+/* Tactical Tabs */
+.tab-tactical {
+  background: transparent;
+  border: 2px solid var(--hud-border);
+  color: var(--hud-text-secondary);
+  padding: 0.75rem 1.5rem;
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 100%, 0 100%);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  margin-right: -2px;
+}
+
+.tab-tactical:hover {
+  border-color: var(--tactical-gold);
+  color: var(--hud-text-primary);
+}
+
+.tab-tactical.active {
+  background: var(--tactical-gold);
+  border-color: var(--tactical-gold);
+  color: var(--tactical-grey-900);
+  z-index: 1;
+}
+
+.tab-tactical.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--tactical-gold);
+}
+
+/* Tactical Modal Overlays */
+.modal-tactical {
+  background: var(--hud-background-overlay);
+  border: 3px solid var(--tactical-gold);
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+  box-shadow: 
+    var(--hud-shadow-tactical),
+    inset 0 0 50px rgba(212, 175, 55, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.modal-tactical::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(212, 175, 55, 0.2) 20%, 
+    rgba(212, 175, 55, 0.4) 50%, 
+    rgba(212, 175, 55, 0.2) 80%, 
+    transparent
+  );
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 0 100%);
+  pointer-events: none;
+}
+
+/* Ensure buttons inside modal-tactical have proper cursor behavior */
+.modal-tactical button,
+.modal-tactical .nav-tactical {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 999999 !important;
+}
+
+.modal-tactical button:hover,
+.modal-tactical .nav-tactical:hover {
+  cursor: pointer !important;
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  border-color: var(--tactical-gold) !important;
+}
+
+/* Force remove any pointer-events none from modal-tactical children */
+.modal-tactical > * {
+  pointer-events: auto !important;
+}
+
+.modal-tactical > * > * {
+  pointer-events: auto !important;
+}
+
+/* Additional Utility Classes */
+.font-jetbrains-mono {
+  font-family: var(--font-jetbrains-mono);
+}
+
+.clip-path-diamond {
+  clip-path: polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+}
+
+.clip-path-angled {
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 100%, 4px 100%);
+}
+
+/* =============================================
+   ENHANCED DARK MODE SUPPORT
+   ============================================= */
+
+/* Enhanced Dark Mode Body Background */
+[data-theme="dark"] body {
+  background: linear-gradient(135deg, var(--tactical-grey-900) 0%, var(--tactical-grey-800) 100%);
+}
+
+/* Enhanced Header and Navigation Dark Mode */
+[data-theme="dark"] header,
+[data-theme="dark"] .header,
+[data-theme="dark"] nav {
+  background-color: var(--hud-background-overlay) !important;
+  border-color: var(--tactical-gold) !important;
+}
+
+[data-theme="dark"] .bg-hud-overlay,
+[data-theme="dark"] .bg-dark-grey {
+  background-color: var(--hud-background-overlay) !important;
+}
+
+/* Enhanced Sidebar Dark Mode */
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] [class*="sidebar"],
+[data-theme="dark"] aside {
+  background-color: var(--hud-background-overlay) !important;
+  border-color: var(--tactical-gold) !important;
+  color: var(--hud-text-primary) !important;
+}
+
+/* Specific navigation item styling */
+[data-theme="dark"] .nav-item,
+[data-theme="dark"] .nav-tactical {
+  color: var(--hud-text-secondary) !important;
+  border-color: transparent !important;
+  cursor: pointer !important;
+}
+
+[data-theme="dark"] .nav-item:hover,
+[data-theme="dark"] .nav-tactical:hover {
+  background-color: var(--tactical-grey-700) !important;
+  color: var(--hud-text-primary) !important;
+  border-color: var(--tactical-gold) !important;
+}
+
+[data-theme="dark"] .nav-item.active,
+[data-theme="dark"] .nav-tactical.active {
+  background-color: var(--tactical-gold) !important;
+  color: var(--tactical-grey-900) !important;
+  border-color: var(--tactical-gold) !important;
+}
+
+/* Enhanced Dark Mode Component Overrides */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-gray-50,
+[data-theme="dark"] .bg-gray-100 {
+  background-color: var(--hud-background-secondary) !important;
+}
+
+[data-theme="dark"] .bg-gray-200,
+[data-theme="dark"] .bg-gray-300 {
+  background-color: var(--tactical-grey-700) !important;
+}
+
+[data-theme="dark"] .text-gray-900,
+[data-theme="dark"] .text-black {
+  color: var(--hud-text-primary) !important;
+}
+
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-gray-500 {
+  color: var(--hud-text-secondary) !important;
+}
+
+[data-theme="dark"] .border-gray-200,
+[data-theme="dark"] .border-gray-300 {
+  border-color: var(--hud-border) !important;
+}
+
+/* Enhanced Form Elements Dark Mode */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--hud-background-secondary) !important;
+  color: var(--hud-text-primary) !important;
+  border-color: var(--hud-border) !important;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--tactical-gold) !important;
+  box-shadow: var(--hud-glow-primary) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--hud-text-secondary) !important;
+}
+
+/* Enhanced Button Dark Mode */
+[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button) {
+  background-color: var(--tactical-gold) !important;
+  color: var(--tactical-grey-900) !important;
+  border-color: var(--tactical-gold) !important;
+}
+
+[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button) {
+  background-color: var(--tactical-amber) !important;
+  box-shadow: var(--hud-glow-secondary) !important;
+}
+
+/* Enhanced Modal and Dropdown Dark Mode */
+[data-theme="dark"] .shadow-lg,
+[data-theme="dark"] .shadow-md {
+  box-shadow: var(--hud-shadow-tactical) !important;
+}
+
+[data-theme="dark"] .backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+  background-color: var(--hud-background-overlay) !important;
+}
+
+/* Enhanced Badge and Status Elements */
+[data-theme="dark"] .bg-amber-100,
+[data-theme="dark"] .bg-green-100,
+[data-theme="dark"] .bg-yellow-100,
+[data-theme="dark"] .bg-red-100 {
+  background-color: var(--tactical-grey-700) !important;
+}
+
+[data-theme="dark"] .text-amber-800,
+[data-theme="dark"] .text-green-800,
+[data-theme="dark"] .text-yellow-800,
+[data-theme="dark"] .text-red-800 {
+  color: var(--hud-text-primary) !important;
+}
+
+/* Enhanced Hover States for Dark Mode */
+[data-theme="dark"] .hover-bg-gray-50:hover,
+[data-theme="dark"] .hover-bg-white:hover {
+  background-color: var(--tactical-grey-700) !important;
+}
+
+[data-theme="dark"] .hover-bg-red-50:hover {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+/* Tailwind hover overrides for dark mode */
+[data-theme="dark"] .hover\:bg-gray-50:hover {
+  background-color: var(--tactical-grey-700) !important;
+}
+
+[data-theme="dark"] .hover\:bg-white:hover {
+  background-color: var(--tactical-grey-700) !important;
+}
+
+[data-theme="dark"] .hover\:bg-red-50:hover {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+/* Enhanced Typography Dark Mode */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--hud-text-primary) !important;
+}
+
+[data-theme="dark"] p {
+  color: var(--hud-text-primary) !important;
+}
+
+/* Enhanced UI Component Support */
+[data-theme="dark"] .bg-background {
+  background-color: var(--hud-background-primary) !important;
+}
+
+[data-theme="dark"] .bg-card {
+  background-color: var(--hud-background-secondary) !important;
+}
+
+[data-theme="dark"] .text-foreground {
+  color: var(--hud-text-primary) !important;
+}
+
+[data-theme="dark"] .text-card-foreground {
+  color: var(--hud-text-primary) !important;
+}
+
+[data-theme="dark"] .text-muted-foreground {
+  color: var(--hud-text-secondary) !important;
+}
+
+[data-theme="dark"] .border {
+  border-color: var(--hud-border) !important;
+}
+
+/* Ensure all white backgrounds become dark */
+[data-theme="dark"] [class*="bg-white"],
+[data-theme="dark"] [style*="background: white"],
+[data-theme="dark"] [style*="background-color: white"],
+[data-theme="dark"] [style*="background: #fff"],
+[data-theme="dark"] [style*="background-color: #fff"] {
+  background-color: var(--hud-background-secondary) !important;
+}
+
+/* Ensure all dark text becomes light */
+[data-theme="dark"] [class*="text-black"],
+[data-theme="dark"] [style*="color: black"],
+[data-theme="dark"] [style*="color: #000"] {
+  color: var(--hud-text-primary) !important;
+}
+
+/* Enhanced Dark Mode Link Elements */
+[data-theme="dark"] a {
+  color: var(--tactical-gold) !important;
+}
+
+[data-theme="dark"] a:hover {
+  color: var(--tactical-amber) !important;
+  text-shadow: 0 0 5px var(--tactical-amber) !important;
+}
+
+/* Enhanced Dark Mode Root Elements */
+[data-theme="dark"] html {
+  background-color: var(--tactical-grey-900) !important;
+}
+
+[data-theme="dark"] #__next,
+[data-theme="dark"] main,
+[data-theme="dark"] .app {
+  background-color: var(--hud-background-primary) !important;
+  color: var(--hud-text-primary) !important;
+  min-height: 100vh;
+}
+
+/* Global Dark Mode Enforcement */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Tactical Theme Transition Effects */
+* {
+  transition: 
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Enhanced Selection and Focus States */
+[data-theme="dark"] ::selection {
+  background-color: var(--tactical-gold);
+  color: var(--tactical-grey-900);
+}
+
+[data-theme="dark"] *:focus {
+  outline: 2px solid var(--tactical-gold) !important;
+  outline-offset: 2px;
+}
+
+/* Enhanced Scrollbar Dark Mode */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--tactical-grey-800);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--tactical-gold);
+  border-radius: 0;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--tactical-amber);
+}
+
+/* Modal Open State - Override sidebar styles for proper greying */
+body.modal-open .bg-hud-background-secondary {
+  background-color: transparent !important;
+}
+
+body.modal-open .border-hud-border {
+  border-color: transparent !important;
+}
+
+/* Message Highlight Animation */
+@keyframes highlightFlash {
+  0% {
+    background-color: var(--tactical-gold-muted);
+    box-shadow: 0 0 20px var(--tactical-gold);
+  }
+  50% {
+    background-color: var(--tactical-gold-light);
+    box-shadow: 0 0 30px var(--tactical-gold);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.highlight-flash {
+  animation: highlightFlash 2s ease-in-out;
 }

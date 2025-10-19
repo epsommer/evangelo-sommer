@@ -77,13 +77,13 @@ export default function LoadingScreen() {
             {/* Progress Bar */}
             <div className="w-80 h-2 bg-gray-800 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                className="h-full bg-gradient-to-r from-tactical-grey-1000 to-tactical-brown-500"
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.5 }}
               />
             </div>
 
-            <p className="text-xs text-gray-500 mt-6">
+            <p className="text-xs text-tactical-grey-500 mt-6">
               Evangelo Sommer Portfolio - 3D Gallery Experience
             </p>
           </div>

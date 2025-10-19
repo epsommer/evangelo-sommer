@@ -102,14 +102,14 @@ export default function ConversationModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white border-2 border-light-grey max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 bg-off-white border-b-2 border-gold">
-          <h2 className="text-xl font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+      <div className="bg-white border-2 border-hud-border max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 bg-hud-background-secondary border-b-2 border-hud-border-accent">
+          <h2 className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             ADD CONVERSATION WITH {clientName.toUpperCase()}
           </h2>
           <button
             onClick={onClose}
-            className="text-medium-grey hover:text-dark-grey transition-colors"
+            className="text-medium-grey hover:text-hud-text-primary transition-colors"
           >
             <svg
               className="w-6 h-6"
@@ -130,17 +130,17 @@ export default function ConversationModal({
         <form onSubmit={handleSubmit}>
           {step === "type" && (
             <div className="p-6">
-              <h3 className="text-lg font-bold mb-4 text-dark-grey uppercase tracking-wide font-space-grotesk">
+              <h3 className="text-lg font-bold mb-4 text-hud-text-primary uppercase tracking-wide font-primary">
                 HOW WOULD YOU LIKE TO ADD THIS CONVERSATION?
               </h3>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border-2 border-red-600 text-red-700 font-space-grotesk text-sm">
+                <div className="mb-4 p-3 bg-red-50 border-2 border-red-600 text-red-700 font-primary text-sm">
                   {error}
                 </div>
               )}
               <div className="space-y-4">
-                <label className="flex items-start p-4 border-2 border-light-grey cursor-pointer hover:bg-off-white transition-colors">
+                <label className="flex items-start p-4 border-2 border-hud-border cursor-pointer hover:bg-hud-background-secondary transition-colors">
                   <input
                     type="radio"
                     value="import"
@@ -151,16 +151,16 @@ export default function ConversationModal({
                     className="mt-1 mr-3"
                   />
                   <div>
-                    <div className="font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                    <div className="font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                       IMPORT TEXT HISTORY
                     </div>
-                    <div className="text-sm text-medium-grey font-space-grotesk">
+                    <div className="text-sm text-medium-grey font-primary">
                       PASTE CONVERSATION HISTORY FROM EMAILS, TEXTS, OR MESSAGES
                     </div>
                   </div>
                 </label>
 
-                <label className="flex items-start p-4 border-2 border-light-grey cursor-pointer hover:bg-off-white transition-colors">
+                <label className="flex items-start p-4 border-2 border-hud-border cursor-pointer hover:bg-hud-background-secondary transition-colors">
                   <input
                     type="radio"
                     value="manual"
@@ -171,10 +171,10 @@ export default function ConversationModal({
                     className="mt-1 mr-3"
                   />
                   <div>
-                    <div className="font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                    <div className="font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                       MANUAL ENTRY
                     </div>
-                    <div className="text-sm text-medium-grey font-space-grotesk">
+                    <div className="text-sm text-medium-grey font-primary">
                       ADD MESSAGES ONE BY ONE WITH CUSTOM TIMESTAMPS
                     </div>
                   </div>
@@ -183,7 +183,7 @@ export default function ConversationModal({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 <div>
-                  <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                  <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                     COMMUNICATION TYPE
                   </label>
                   <select
@@ -194,7 +194,7 @@ export default function ConversationModal({
                         source: e.target.value as Conversation["source"],
                       }))
                     }
-                    className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
                   >
                     <option value="email">EMAIL</option>
                     <option value="text">TEXT MESSAGES</option>
@@ -205,7 +205,7 @@ export default function ConversationModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                  <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                     PRIORITY
                   </label>
                   <select
@@ -216,7 +216,7 @@ export default function ConversationModal({
                         priority: e.target.value as Conversation["priority"],
                       }))
                     }
-                    className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
                   >
                     <option value="low">LOW</option>
                     <option value="medium">MEDIUM</option>
@@ -226,7 +226,7 @@ export default function ConversationModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                  <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                     STATUS
                   </label>
                   <select
@@ -237,7 +237,7 @@ export default function ConversationModal({
                         status: e.target.value as Conversation["status"],
                       }))
                     }
-                    className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk text-sm uppercase tracking-wide"
+                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary text-sm uppercase tracking-wide"
                   >
                     <option value="active">ACTIVE</option>
                     <option value="pending">PENDING RESPONSE</option>
@@ -248,7 +248,7 @@ export default function ConversationModal({
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                   CONVERSATION TITLE (OPTIONAL)
                 </label>
                 <input
@@ -257,7 +257,7 @@ export default function ConversationModal({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                  className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                   placeholder="E.G., KITCHEN RENOVATION DISCUSSION, QUOTE FOLLOW-UP"
                 />
               </div>
@@ -270,11 +270,11 @@ export default function ConversationModal({
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="text-gold hover:text-gold-dark mr-3 font-space-grotesk font-bold uppercase tracking-wide"
+                  className="text-gold hover:text-gold-dark mr-3 font-primary font-bold uppercase tracking-wide"
                 >
                   ← BACK
                 </button>
-                <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                   {conversationType === "import"
                     ? "IMPORT CONVERSATION HISTORY"
                     : "ADD MESSAGES"}
@@ -305,7 +305,7 @@ export default function ConversationModal({
               )}
 
               <div className="mt-4">
-                <label className="block text-sm font-bold text-dark-grey mb-1 uppercase tracking-wide font-space-grotesk">
+                <label className="block text-sm font-bold text-hud-text-primary mb-1 uppercase tracking-wide font-primary">
                   TAGS (COMMA-SEPARATED)
                 </label>
                 <input
@@ -314,18 +314,18 @@ export default function ConversationModal({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, tags: e.target.value }))
                   }
-                  className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                  className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                   placeholder="QUOTE, URGENT, FOLLOW-UP, PRICING"
                 />
               </div>
             </div>
           )}
 
-          <div className="flex justify-end space-x-3 p-6 border-t-2 border-light-grey bg-off-white">
+          <div className="flex justify-end space-x-3 p-6 border-t-2 border-hud-border bg-hud-background-secondary">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-dark-grey border-2 border-light-grey hover:bg-light-grey font-space-grotesk font-bold uppercase tracking-wide"
+              className="px-4 py-2 text-hud-text-primary border-2 border-hud-border hover:bg-light-grey font-primary font-bold uppercase tracking-wide"
             >
               CANCEL
             </button>
@@ -333,14 +333,14 @@ export default function ConversationModal({
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-4 py-2 bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+                className="px-4 py-2 bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary font-bold uppercase tracking-wide"
               >
                 NEXT
               </button>
             ) : (
               <button
                 type="submit"
-                className="px-4 py-2 bg-gold text-dark-grey hover:bg-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+                className="px-4 py-2 bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary font-bold uppercase tracking-wide"
               >
                 SAVE CONVERSATION
               </button>

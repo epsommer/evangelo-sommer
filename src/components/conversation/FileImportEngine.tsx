@@ -859,7 +859,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          dragActive ? 'border-gold bg-gold bg-opacity-10' : 'border-light-grey'
+          dragActive ? 'border-hud-border-accent bg-tactical-gold bg-opacity-10' : 'border-hud-border'
         } ${processing ? 'pointer-events-none opacity-50' : ''}`}
       >
         <input
@@ -879,22 +879,22 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
           {processing ? (
             <div>
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto mb-4"></div>
-              <p className="font-space-grotesk font-bold text-dark-grey">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hud-border-accent mx-auto mb-4"></div>
+              <p className="font-primary font-bold text-hud-text-primary">
                 Processing file with multiple strategies...
               </p>
             </div>
           ) : (
             <div>
-              <h3 className="text-xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+              <h3 className="text-xl font-bold text-hud-text-primary font-primary uppercase tracking-wide">
                 Upload Conversation File
               </h3>
-              <p className="text-medium-grey font-space-grotesk mt-2">
+              <p className="text-medium-grey font-primary mt-2">
                 Drag and drop your file here, or click to browse
               </p>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-4 px-6 py-2 bg-gold text-dark-grey font-space-grotesk font-bold uppercase tracking-wide hover:bg-gold-light transition-colors"
+                className="mt-4 px-6 py-2 bg-tactical-gold text-hud-text-primary font-primary font-bold uppercase tracking-wide hover:bg-tactical-gold-light transition-colors"
               >
                 Choose File
               </button>
@@ -904,11 +904,11 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
       </div>
 
       {/* Supported Formats */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-        <h4 className="font-bold text-blue-900 font-space-grotesk uppercase tracking-wide mb-2">
+      <div className="bg-tactical-gold-muted border-2 border-tactical-grey-300 rounded-lg p-4">
+        <h4 className="font-bold text-tactical-brown-dark font-primary uppercase tracking-wide mb-2">
           Supported Formats
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800 font-space-grotesk">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-tactical-brown-dark font-primary">
           <div>
             <strong>Excel Files:</strong>
             <ul className="list-disc list-inside ml-4 mt-1">
@@ -939,7 +939,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
       {/* Parse Results */}
       {parseResults.length > 0 && (
         <div className="space-y-4">
-          <h4 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+          <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
             Parsing Results
           </h4>
           
@@ -948,10 +948,10 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
               result.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
             }`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bold font-space-grotesk">
+                <span className="font-bold font-primary">
                   {parseStrategies[index]?.name}
                 </span>
-                <span className={`px-2 py-1 rounded text-xs font-bold font-space-grotesk ${
+                <span className={`px-2 py-1 rounded text-xs font-bold font-primary ${
                   result.success ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
                 }`}>
                   {result.success ? `${result.messages.length} messages` : 'Failed'}
@@ -961,7 +961,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
               {result.errors.length > 0 && (
                 <ul className="text-sm space-y-1">
                   {result.errors.map((error, errorIndex) => (
-                    <li key={errorIndex} className="text-red-700 font-space-grotesk">
+                    <li key={errorIndex} className="text-red-700 font-primary">
                       • {error}
                     </li>
                   ))}

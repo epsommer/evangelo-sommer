@@ -378,44 +378,44 @@ export default function MessageImporter({
   return (
     <div className="space-y-4">
       {/* Import Type Selection */}
-      <div className="border-b-2 border-light-grey pb-4">
-        <div className="flex space-x-1 bg-off-white p-1 w-fit">
+      <div className="border-b-2 border-hud-border pb-4">
+        <div className="flex space-x-1 bg-hud-background-secondary p-1 w-fit">
           <button
             onClick={() => setImportType("text")}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-space-grotesk ${
+            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-primary ${
               importType === "text"
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:text-hud-text-primary"
             }`}
           >
             PASTE TEXT
           </button>
           <button
             onClick={() => setImportType("excel")}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-space-grotesk ${
+            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-primary ${
               importType === "excel"
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:text-hud-text-primary"
             }`}
           >
             UPLOAD EXCEL
           </button>
           <button
             onClick={() => setImportType("robust")}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-space-grotesk ${
+            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-primary ${
               importType === "robust"
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:text-hud-text-primary"
             }`}
           >
             ROBUST UPLOAD
           </button>
           <button
             onClick={() => setImportType("crm")}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-space-grotesk ${
+            className={`px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors font-primary ${
               importType === "crm"
-                ? "bg-gold text-dark-grey"
-                : "text-medium-grey hover:text-dark-grey"
+                ? "bg-tactical-gold text-hud-text-primary"
+                : "text-medium-grey hover:text-hud-text-primary"
             }`}
           >
             CRM INTEGRATION
@@ -430,11 +430,11 @@ export default function MessageImporter({
           {!previewMode && (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                <label className="block text-sm font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                   PASTE CONVERSATION CONTENT OR UPLOAD CSV FILE
                 </label>
                 {content && (
-                  <span className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+                  <span className="text-sm text-medium-grey font-primary uppercase tracking-wide">
                     DETECTED FORMAT:{" "}
                     {format.toUpperCase()}
                   </span>
@@ -444,7 +444,7 @@ export default function MessageImporter({
                 value={content}
                 onChange={handleContentChange}
                 rows={12}
-                className="w-full px-3 py-2 border-2 border-light-grey focus:border-gold bg-white text-dark-grey font-space-grotesk"
+                className="w-full px-3 py-2 border-2 border-hud-border focus:border-hud-border-accent bg-white text-hud-text-primary font-primary"
                 placeholder={`Paste your conversation here. Supports email threads and text message formats:
 
 Email format:
@@ -459,9 +459,9 @@ Client: Can we meet tomorrow?`}
               />
               
               {/* File Upload Option */}
-              <div className="mt-4 p-4 border-2 border-dashed border-light-grey bg-off-white">
+              <div className="mt-4 p-4 border-2 border-dashed border-hud-border bg-hud-background-secondary">
                 <div className="text-center">
-                  <label className="block text-sm font-bold text-dark-grey mb-2 uppercase tracking-wide font-space-grotesk">
+                  <label className="block text-sm font-bold text-hud-text-primary mb-2 uppercase tracking-wide font-primary">
                     OR UPLOAD CSV FILE
                   </label>
                   <input
@@ -469,9 +469,9 @@ Client: Can we meet tomorrow?`}
                     accept=".csv,.xlsx,.xls"
                     onChange={handleFileUpload}
                     disabled={processing}
-                    className="block w-full text-sm text-dark-grey file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-bold file:bg-gold file:text-dark-grey hover:file:bg-gold-light file:cursor-pointer file:uppercase file:tracking-wide file:font-space-grotesk cursor-pointer"
+                    className="block w-full text-sm text-hud-text-primary file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-bold file:bg-tactical-gold file:text-hud-text-primary hover:file:bg-tactical-gold-light file:cursor-pointer file:uppercase file:tracking-wide file:font-primary cursor-pointer"
                   />
-                  <p className="text-xs text-medium-grey mt-2 font-space-grotesk">
+                  <p className="text-xs text-medium-grey mt-2 font-primary">
                     SUPPORTS CSV, XLSX, AND XLS FILES
                   </p>
                 </div>
@@ -481,9 +481,9 @@ Client: Can we meet tomorrow?`}
                 <button
                   onClick={handleParseContent}
                   disabled={!content || processing}
-                  className={`px-4 py-2 font-space-grotesk font-bold uppercase tracking-wide ${
+                  className={`px-4 py-2 font-primary font-bold uppercase tracking-wide ${
                     content && !processing
-                      ? "bg-gold text-dark-grey hover:bg-gold-light"
+                      ? "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light"
                       : "bg-medium-grey text-white cursor-not-allowed"
                   }`}
                 >
@@ -497,12 +497,12 @@ Client: Can we meet tomorrow?`}
           {previewMode && parsedMessages.length > 0 && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                   PREVIEW MESSAGES
                 </h3>
                 <button
                   onClick={() => setPreviewMode(false)}
-                  className="text-gold hover:text-gold-dark font-space-grotesk font-bold uppercase tracking-wide"
+                  className="text-gold hover:text-gold-dark font-primary font-bold uppercase tracking-wide"
                 >
                   EDIT CONTENT
                 </button>
@@ -514,9 +514,9 @@ Client: Can we meet tomorrow?`}
                     key={index}
                     className={`p-4 border-2 ${
                       message.sender === "you"
-                        ? "bg-gold-light border-gold"
+                        ? "bg-tactical-gold-light border-hud-border-accent"
                         : message.sender === "client"
-                          ? "bg-off-white border-light-grey"
+                          ? "bg-hud-background-secondary border-hud-border"
                           : "bg-light-grey border-medium-grey"
                     }`}
                   >
@@ -524,33 +524,33 @@ Client: Can we meet tomorrow?`}
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => toggleSender(index)}
-                          className={`px-2 py-1 text-sm font-bold uppercase tracking-wide font-space-grotesk ${
+                          className={`px-2 py-1 text-sm font-bold uppercase tracking-wide font-primary ${
                             message.sender === "you"
-                              ? "bg-gold text-dark-grey"
+                              ? "bg-tactical-gold text-hud-text-primary"
                               : message.sender === "client"
                                 ? "bg-medium-grey text-white"
-                                : "bg-light-grey text-dark-grey"
+                                : "bg-light-grey text-hud-text-primary"
                           }`}
                         >
                           {message.sender.toUpperCase()}
                         </button>
-                        <span className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+                        <span className="text-sm text-medium-grey font-primary uppercase tracking-wide">
                           {formatTimestamp(message.timestamp)}
                         </span>
                       </div>
                       <span
-                        className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide"
+                        className="text-xs text-medium-grey font-primary uppercase tracking-wide"
                         title="Detection confidence"
                       >
                         {Math.round(message.confidence * 100)}% CONFIDENCE
                       </span>
                     </div>
-                    <div className="text-dark-grey whitespace-pre-wrap font-space-grotesk">
+                    <div className="text-hud-text-primary whitespace-pre-wrap font-primary">
                       {message.content}
                     </div>
                     {message.metadata &&
                       Object.keys(message.metadata).length > 0 && (
-                        <div className="mt-2 text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+                        <div className="mt-2 text-sm text-medium-grey font-primary uppercase tracking-wide">
                           {Object.entries(message.metadata).map(
                             ([key, value]) => (
                               <div key={key}>
@@ -579,19 +579,19 @@ Client: Can we meet tomorrow?`}
 
           {/* CRM Integration Option */}
           {parsedMessages.length > 0 && (
-            <div className="bg-gold-light border-2 border-gold p-4">
+            <div className="bg-tactical-gold-light border-2 border-hud-border-accent p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+                  <h4 className="font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                     AI-POWERED CRM INTEGRATION
                   </h4>
-                  <p className="text-sm text-medium-grey mt-1 font-space-grotesk">
+                  <p className="text-sm text-medium-grey mt-1 font-primary">
                     CONVERT THESE MESSAGES INTO STRUCTURED CRM DATA WITH BUSINESS INTELLIGENCE
                   </p>
                 </div>
                 <button
                   onClick={() => setShowCRMIntegration(true)}
-                  className="px-4 py-2 bg-gold text-dark-grey hover:bg-gold-light transition-colors font-space-grotesk font-bold uppercase tracking-wide"
+                  className="px-4 py-2 bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light transition-colors font-primary font-bold uppercase tracking-wide"
                 >
                   PROCESS WITH AI
                 </button>
@@ -604,27 +604,27 @@ Client: Can we meet tomorrow?`}
       {/* Robust Upload */}
       {importType === "robust" && (
         <div className="space-y-4">
-          <div className="bg-gold-light border-2 border-gold p-4 rounded-lg">
-            <h3 className="font-bold text-dark-grey uppercase tracking-wide font-space-grotesk mb-2">
+          <div className="bg-tactical-gold-light border-2 border-hud-border-accent p-4 rounded-lg">
+            <h3 className="font-bold text-hud-text-primary uppercase tracking-wide font-primary mb-2">
               Advanced SMS Processing
             </h3>
-            <p className="text-sm text-medium-grey font-space-grotesk mb-4">
+            <p className="text-sm text-medium-grey font-primary mb-4">
               Upload your SMS export files with advanced corruption recovery, smart speaker identification, and robust data processing.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-xs">
               <div className="bg-white p-3 rounded border">
-                <h4 className="font-bold text-dark-grey uppercase tracking-wide">🔧 DATA RECOVERY</h4>
+                <h4 className="font-bold text-hud-text-primary uppercase tracking-wide">🔧 DATA RECOVERY</h4>
                 <p className="text-medium-grey mt-1">Fixes corrupted Excel rows and fragmented data</p>
               </div>
               
               <div className="bg-white p-3 rounded border">
-                <h4 className="font-bold text-dark-grey uppercase tracking-wide">🕒 TIMESTAMP REPAIR</h4>
+                <h4 className="font-bold text-hud-text-primary uppercase tracking-wide">🕒 TIMESTAMP REPAIR</h4>
                 <p className="text-medium-grey mt-1">Reconstructs multi-line timestamps</p>
               </div>
               
               <div className="bg-white p-3 rounded border">
-                <h4 className="font-bold text-dark-grey uppercase tracking-wide">🎯 SMART IDENTIFICATION</h4>
+                <h4 className="font-bold text-hud-text-primary uppercase tracking-wide">🎯 SMART IDENTIFICATION</h4>
                 <p className="text-medium-grey mt-1">Identifies speakers with confidence scoring</p>
               </div>
             </div>
@@ -659,14 +659,14 @@ Client: Can we meet tomorrow?`}
       {/* CRM Integration Modal/Overlay */}
       {showCRMIntegration && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white border-2 border-light-grey max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="p-4 border-b-2 border-gold bg-off-white flex justify-between items-center">
-              <h3 className="text-lg font-bold text-dark-grey uppercase tracking-wide font-space-grotesk">
+          <div className="bg-white border-2 border-hud-border max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div className="p-4 border-b-2 border-hud-border-accent bg-hud-background-secondary flex justify-between items-center">
+              <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary">
                 CRM INTEGRATION
               </h3>
               <button
                 onClick={() => setShowCRMIntegration(false)}
-                className="text-medium-grey hover:text-dark-grey font-bold text-lg"
+                className="text-medium-grey hover:text-hud-text-primary font-bold text-lg"
               >
                 ✕
               </button>

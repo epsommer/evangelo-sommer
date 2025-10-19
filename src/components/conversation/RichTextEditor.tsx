@@ -53,7 +53,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   if (!mounted) {
     return (
-      <div className="h-32 border rounded-md bg-gray-50 animate-pulse" />
+      <div className="h-32 border rounded-md bg-tactical-grey-100 animate-pulse" />
     );
   }
 
@@ -92,10 +92,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           border-color: #e5e7eb;
         }
         .rich-text-editor .ql-toolbar button:hover {
-          color: #1d4ed8;
+          color: #D4AF37;
         }
         .rich-text-editor .ql-toolbar button.ql-active {
-          color: #1d4ed8;
+          color: #D4AF37;
         }
         .rich-text-editor .ql-toolbar .ql-stroke {
           stroke: currentColor;

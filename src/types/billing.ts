@@ -12,8 +12,14 @@ export interface Receipt {
   paymentMethod: 'cash' | 'card' | 'e-transfer' | 'check' | 'other';
   paymentDate: Date;
   serviceDate: Date;
-  status: 'draft' | 'issued' | 'sent';
+  status: 'draft' | 'sent' | 'paid';
+  emailStatus?: 'pending' | 'sent' | 'delivered' | 'failed';
+  emailSentAt?: Date;
+  emailDeliveredAt?: Date;
+  emailError?: string;
   notes?: string;
+  archived?: boolean;
+  archivedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,10 +65,11 @@ export interface InvoiceItem {
 }
 
 export interface BillingSuggestion {
-  type: 'receipt' | 'invoice' | 'none';
+  type: 'receipt' | 'invoice' | 'consultation' | 'service' | 'none';
   confidence: 'high' | 'medium' | 'low';
   suggestedItems?: ReceiptItem[] | InvoiceItem[];
   suggestedAmount?: number;
+  serviceType?: string;
   reason?: string;
 }
 
@@ -73,6 +80,7 @@ export interface CreateReceiptData {
   paymentMethod: Receipt['paymentMethod'];
   paymentDate?: Date;
   serviceDate?: Date;
+  status?: Receipt['status'];
   notes?: string;
 }
 
@@ -150,8 +158,8 @@ export const DEFAULT_BUSINESS_CONFIG: BusinessConfig = {
 
 // Default tax configuration for Ontario, Canada
 export const DEFAULT_TAX_CONFIG: TaxConfig = {
-  rate: 0.13, // 13% HST
-  name: "HST",
+  rate: 0.00, // 0% for unregistered business
+  name: "Tax Not Applicable",
   applicableServices: [
     'landscaping',
     'snow_removal',

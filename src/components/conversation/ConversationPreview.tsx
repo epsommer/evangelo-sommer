@@ -136,11 +136,11 @@ export default function ConversationPreview({
       <div className="bg-light-grey bg-opacity-50 p-4 rounded-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-dark-grey font-space-grotesk uppercase tracking-wide">
+            <h3 className="text-xl font-bold text-hud-text-primary font-primary uppercase tracking-wide">
               Conversation Preview
             </h3>
             {selectedClient && (
-              <p className="text-medium-grey font-space-grotesk">
+              <p className="text-medium-grey font-primary">
                 With <strong>{selectedClient.name}</strong>
                 {selectedClient.email && ` (${selectedClient.email})`}
               </p>
@@ -148,7 +148,7 @@ export default function ConversationPreview({
           </div>
           
           {/* View Mode Selector */}
-          <div className="flex border-2 border-light-grey rounded overflow-hidden">
+          <div className="flex border-2 border-hud-border rounded overflow-hidden">
             {[
               { key: 'conversation', label: 'Preview' },
               { key: 'stats', label: 'Stats' },
@@ -157,10 +157,10 @@ export default function ConversationPreview({
               <button
                 key={key}
                 onClick={() => setViewMode(key as typeof viewMode)}
-                className={`px-4 py-2 font-space-grotesk font-bold text-sm uppercase tracking-wide transition-colors ${
+                className={`px-4 py-2 font-primary font-bold text-sm uppercase tracking-wide transition-colors ${
                   viewMode === key
-                    ? 'bg-gold text-dark-grey'
-                    : 'bg-white text-medium-grey hover:text-dark-grey'
+                    ? 'bg-tactical-gold text-hud-text-primary'
+                    : 'bg-white text-medium-grey hover:text-hud-text-primary'
                 }`}
               >
                 {label}
@@ -172,52 +172,52 @@ export default function ConversationPreview({
 
       {/* Quick Stats Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white border-2 border-light-grey p-4 rounded text-center">
-          <div className="text-2xl font-bold text-gold font-space-grotesk">
+        <div className="bg-white border-2 border-hud-border p-4 rounded text-center">
+          <div className="text-2xl font-bold text-gold font-primary">
             {stats.totalMessages}
           </div>
-          <div className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+          <div className="text-xs text-medium-grey font-primary uppercase tracking-wide">
             Total Messages
           </div>
         </div>
         
-        <div className="bg-white border-2 border-light-grey p-4 rounded text-center">
-          <div className="text-2xl font-bold text-blue-600 font-space-grotesk">
+        <div className="bg-white border-2 border-hud-border p-4 rounded text-center">
+          <div className="text-2xl font-bold text-tactical-gold font-primary">
             {stats.yourMessages}
           </div>
-          <div className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+          <div className="text-xs text-medium-grey font-primary uppercase tracking-wide">
             Your Messages
           </div>
         </div>
         
-        <div className="bg-white border-2 border-light-grey p-4 rounded text-center">
-          <div className="text-2xl font-bold text-green-600 font-space-grotesk">
+        <div className="bg-white border-2 border-hud-border p-4 rounded text-center">
+          <div className="text-2xl font-bold text-green-600 font-primary">
             {stats.clientMessages}
           </div>
-          <div className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+          <div className="text-xs text-medium-grey font-primary uppercase tracking-wide">
             Client Messages
           </div>
         </div>
         
-        <div className="bg-white border-2 border-light-grey p-4 rounded text-center">
-          <div className="text-lg font-bold text-purple-600 font-space-grotesk">
+        <div className="bg-white border-2 border-hud-border p-4 rounded text-center">
+          <div className="text-lg font-bold text-purple-600 font-primary">
             {stats.dateRange.start}
           </div>
-          <div className="text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+          <div className="text-xs text-medium-grey font-primary uppercase tracking-wide">
             First Message
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="bg-white border-2 border-light-grey rounded-lg">
+      <div className="bg-white border-2 border-hud-border rounded-lg">
         {viewMode === 'conversation' && (
           <div className="h-96 overflow-y-auto p-6">
             {messagesByDate.map(({ date, messages: dayMessages }) => (
               <div key={date} className="mb-6">
                 {/* Date Header */}
                 <div className="text-center mb-4">
-                  <span className="bg-light-grey px-3 py-1 rounded-full text-sm font-space-grotesk font-bold text-medium-grey">
+                  <span className="bg-light-grey px-3 py-1 rounded-full text-sm font-primary font-bold text-medium-grey">
                     {formatDate(date)}
                   </span>
                 </div>
@@ -231,14 +231,14 @@ export default function ConversationPreview({
                     >
                       <div className={`max-w-sm px-4 py-3 rounded-lg ${
                         message.role === 'you'
-                          ? 'bg-gold text-dark-grey'
-                          : 'bg-light-grey text-dark-grey'
+                          ? 'bg-tactical-gold text-hud-text-primary'
+                          : 'bg-light-grey text-hud-text-primary'
                       }`}>
-                        <div className="font-space-grotesk">
+                        <div className="font-primary">
                           {message.content}
                         </div>
-                        <div className={`text-xs mt-1 font-space-grotesk ${
-                          message.role === 'you' ? 'text-dark-grey opacity-70' : 'text-medium-grey'
+                        <div className={`text-xs mt-1 font-primary ${
+                          message.role === 'you' ? 'text-hud-text-primary opacity-70' : 'text-medium-grey'
                         }`}>
                           {formatTime(message.timestamp)}
                         </div>
@@ -256,26 +256,26 @@ export default function ConversationPreview({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Message Distribution */}
               <div>
-                <h4 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide mb-4">
+                <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
                   Message Distribution
                 </h4>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-space-grotesk text-medium-grey">Your Messages</span>
-                    <span className="font-space-grotesk font-bold text-blue-600">
+                    <span className="font-primary text-medium-grey">Your Messages</span>
+                    <span className="font-primary font-bold text-tactical-gold">
                       {stats.yourMessages} ({Math.round((stats.yourMessages / stats.totalMessages) * 100)}%)
                     </span>
                   </div>
                   <div className="w-full bg-light-grey h-2 rounded">
                     <div 
-                      className="bg-blue-600 h-2 rounded" 
+                      className="bg-tactical-gold h-2 rounded" 
                       style={{ width: `${(stats.yourMessages / stats.totalMessages) * 100}%` }}
                     />
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="font-space-grotesk text-medium-grey">Client Messages</span>
-                    <span className="font-space-grotesk font-bold text-green-600">
+                    <span className="font-primary text-medium-grey">Client Messages</span>
+                    <span className="font-primary font-bold text-green-600">
                       {stats.clientMessages} ({Math.round((stats.clientMessages / stats.totalMessages) * 100)}%)
                     </span>
                   </div>
@@ -290,27 +290,27 @@ export default function ConversationPreview({
 
               {/* Message Analytics */}
               <div>
-                <h4 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide mb-4">
+                <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
                   Message Analytics
                 </h4>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="font-space-grotesk text-medium-grey">Date Range</span>
-                    <span className="font-space-grotesk font-bold">
+                    <span className="font-primary text-medium-grey">Date Range</span>
+                    <span className="font-primary font-bold">
                       {stats.dateRange.start} - {stats.dateRange.end}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-space-grotesk text-medium-grey">Avg Message Length</span>
-                    <span className="font-space-grotesk font-bold">{stats.averageMessageLength} chars</span>
+                    <span className="font-primary text-medium-grey">Avg Message Length</span>
+                    <span className="font-primary font-bold">{stats.averageMessageLength} chars</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-space-grotesk text-medium-grey">Longest Message</span>
-                    <span className="font-space-grotesk font-bold">{stats.longestMessage} chars</span>
+                    <span className="font-primary text-medium-grey">Longest Message</span>
+                    <span className="font-primary font-bold">{stats.longestMessage} chars</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-space-grotesk text-medium-grey">Shortest Message</span>
-                    <span className="font-space-grotesk font-bold">{stats.shortestMessage} chars</span>
+                    <span className="font-primary text-medium-grey">Shortest Message</span>
+                    <span className="font-primary font-bold">{stats.shortestMessage} chars</span>
                   </div>
                 </div>
               </div>
@@ -318,32 +318,32 @@ export default function ConversationPreview({
 
             {/* Timeline */}
             <div>
-              <h4 className="font-bold text-dark-grey font-space-grotesk uppercase tracking-wide mb-4">
+              <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
                 Message Timeline
               </h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {sortedMessages.slice(0, 20).map((message, index) => (
                   <div key={message.id} className="flex items-center space-x-3 text-sm">
-                    <span className="text-xs text-medium-grey font-space-grotesk w-16">
+                    <span className="text-xs text-medium-grey font-primary w-16">
                       #{index + 1}
                     </span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold font-space-grotesk ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold font-primary ${
                       message.role === 'you' 
-                        ? 'bg-blue-100 text-blue-800' 
+                        ? 'bg-tactical-gold-muted text-tactical-brown-dark' 
                         : 'bg-green-100 text-green-800'
                     }`}>
                       {message.role === 'you' ? 'You' : 'Client'}
                     </span>
-                    <span className="text-medium-grey font-space-grotesk text-xs">
+                    <span className="text-medium-grey font-primary text-xs">
                       {new Date(message.timestamp).toLocaleString()}
                     </span>
-                    <span className="font-space-grotesk flex-1 truncate">
+                    <span className="font-primary flex-1 truncate">
                       {message.content.substring(0, 50)}...
                     </span>
                   </div>
                 ))}
                 {sortedMessages.length > 20 && (
-                  <div className="text-center text-medium-grey font-space-grotesk text-sm">
+                  <div className="text-center text-medium-grey font-primary text-sm">
                     ... and {sortedMessages.length - 20} more messages
                   </div>
                 )}
@@ -354,8 +354,8 @@ export default function ConversationPreview({
 
         {viewMode === 'raw' && (
           <div className="p-6">
-            <div className="bg-gray-50 border-2 border-gray-200 rounded p-4 h-80 overflow-auto">
-              <pre className="text-xs font-mono text-gray-800">
+            <div className="bg-tactical-grey-100 border-2 border-tactical-grey-300 rounded p-4 h-80 overflow-auto">
+              <pre className="text-xs font-mono text-tactical-grey-700">
                 {JSON.stringify(messages, null, 2)}
               </pre>
             </div>
@@ -364,14 +364,14 @@ export default function ConversationPreview({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-6 border-t-2 border-light-grey">
-        <div className="text-medium-grey font-space-grotesk">
+      <div className="flex items-center justify-between pt-6 border-t-2 border-hud-border">
+        <div className="text-medium-grey font-primary">
           Ready to configure conversation details and save to database
         </div>
         
         <button
           onClick={onConfirm}
-          className="px-6 py-3 bg-gold text-dark-grey font-space-grotesk font-bold uppercase tracking-wide hover:bg-gold-light transition-colors"
+          className="px-6 py-3 bg-tactical-gold text-hud-text-primary font-primary font-bold uppercase tracking-wide hover:bg-tactical-gold-light transition-colors"
         >
           Configure & Save
         </button>
