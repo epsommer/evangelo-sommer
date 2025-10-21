@@ -181,7 +181,7 @@ export default function AutoBillingTestPage() {
                                 conversation={mockConversation}
                                 billingSuggestion={{
                                   type: analysis.serviceType ? 'receipt' : 'none',
-                                  confidence: analysis.confidence,
+                                  confidence: analysis.confidence as "low" | "medium" | "high",
                                   serviceType: analysis.serviceType,
                                   suggestedAmount: analysis.suggestedAmount,
                                   reason: analysis.reason
