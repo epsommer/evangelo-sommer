@@ -11,10 +11,10 @@ const isDatabaseAvailable = isPrismaAvailable();
 // GET /api/clients/[clientId]
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = await params;
     
     // If database is not available, return error
     if (!isDatabaseAvailable || !prisma) {
@@ -116,10 +116,10 @@ export async function GET(
 // PATCH /api/clients/[clientId]
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = await params;
     const updates = await request.json();
 
     // Validate required fields if they're being updated
@@ -186,10 +186,10 @@ export async function PATCH(
 // DELETE /api/clients/[clientId]
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = await params;
 
     // If database is not available, return error
     if (!isDatabaseAvailable || !prisma) {

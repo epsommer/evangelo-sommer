@@ -33,9 +33,10 @@ export class MultiServiceManager {
   /**
    * Get all clients for a specific service, including those with the service in their serviceTypes
    */
-  static getClientsForService(serviceId: string): Client[] {
-    return clientManager.getClients().filter(client => 
-      client.serviceId === serviceId || 
+  static async getClientsForService(serviceId: string): Promise<Client[]> {
+    const clients = await clientManager.getClients();
+    return clients.filter(client =>
+      client.serviceId === serviceId ||
       client.serviceTypes.includes(serviceId)
     );
   }
@@ -52,8 +53,8 @@ export class MultiServiceManager {
   /**
    * Add a service to a client's service types
    */
-  static addServiceToClient(clientId: string, serviceId: string): boolean {
-    const client = clientManager.getClient(clientId);
+  static async addServiceToClient(clientId: string, serviceId: string): Promise<boolean> {
+    const client = await clientManager.getClient(clientId);
     if (!client) return false;
 
     if (!client.serviceTypes.includes(serviceId) && client.serviceId !== serviceId) {
@@ -68,8 +69,8 @@ export class MultiServiceManager {
   /**
    * Remove a service from a client's service types
    */
-  static removeServiceFromClient(clientId: string, serviceId: string): boolean {
-    const client = clientManager.getClient(clientId);
+  static async removeServiceFromClient(clientId: string, serviceId: string): Promise<boolean> {
+    const client = await clientManager.getClient(clientId);
     if (!client) return false;
 
     if (client.serviceId === serviceId) {
@@ -91,8 +92,8 @@ export class MultiServiceManager {
   /**
    * Update client's primary service
    */
-  static updatePrimaryService(clientId: string, newPrimaryServiceId: string): boolean {
-    const client = clientManager.getClient(clientId);
+  static async updatePrimaryService(clientId: string, newPrimaryServiceId: string): Promise<boolean> {
+    const client = await clientManager.getClient(clientId);
     if (!client) return false;
 
     const oldPrimaryService = client.serviceId;
@@ -114,8 +115,8 @@ export class MultiServiceManager {
   /**
    * Get enhanced client info with multi-service details
    */
-  static getMultiServiceClient(clientId: string): MultiServiceClient | null {
-    const client = clientManager.getClient(clientId);
+  static async getMultiServiceClient(clientId: string): Promise<MultiServiceClient | null> {
+    const client = await clientManager.getClient(clientId);
     if (!client) return null;
 
     const allServices = this.getClientServices(client);
@@ -131,8 +132,9 @@ export class MultiServiceManager {
   /**
    * Get clients that have multiple services
    */
-  static getMultiServiceClients(): MultiServiceClient[] {
-    return clientManager.getClients()
+  static async getMultiServiceClients(): Promise<MultiServiceClient[]> {
+    const clients = await clientManager.getClients();
+    return clients
       .filter(client => client.serviceTypes.length > 0)
       .map(client => ({
         ...client,
@@ -154,8 +156,8 @@ export class MultiServiceManager {
   /**
    * Get service statistics including multi-service clients
    */
-  static getServiceStats() {
-    const clients = clientManager.getClients();
+  static async getServiceStats() {
+    const clients = await clientManager.getClients();
     const stats = {
       totalClients: clients.length,
       multiServiceClients: clients.filter(c => c.serviceTypes.length > 0).length,

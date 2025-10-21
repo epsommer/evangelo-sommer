@@ -406,10 +406,10 @@ function generateReceiptEmailHtml(receiptData: any, clientName: string): string 
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { receiptId: string } }
+  context: { params: Promise<{ receiptId: string }> }
 ) {
   try {
-    const { receiptId } = params;
+    const { receiptId } = await context.params;
     const body = await request.json();
     const { clientEmail, clientName } = body;
 

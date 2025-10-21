@@ -5,10 +5,10 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params
+    const { clientId } = await params
 
     // Fetch client with all related data
     const client = await prisma.clientRecord.findUnique({
@@ -123,10 +123,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params
+    const { clientId } = await params
     const updates = await request.json()
 
     const updatedClient = await prisma.clientRecord.update({
@@ -167,10 +167,10 @@ export async function PUT(
 // Add endpoints for service line operations
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params
+    const { clientId } = await params
     const { type, data } = await request.json()
 
     let result

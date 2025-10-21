@@ -5,10 +5,10 @@ import { billingManager } from '../../../../../lib/billing-manager';
 // GET - Fetch a specific receipt
 export async function GET(
   request: NextRequest,
-  { params }: { params: { receiptId: string } }
+  context: { params: Promise<{ receiptId: string }> }
 ) {
   try {
-    const receiptId = params.receiptId;
+    const { receiptId } = await context.params;
     const prisma = getPrismaClient();
     
     if (!prisma) {
@@ -84,10 +84,10 @@ export async function GET(
 // PUT - Update a receipt
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { receiptId: string } }
+  context: { params: Promise<{ receiptId: string }> }
 ) {
   try {
-    const receiptId = params.receiptId;
+    const { receiptId } = await context.params;
     const receiptData = await request.json();
     
     // Use billing manager's update method
@@ -121,10 +121,10 @@ export async function PUT(
 // DELETE - Delete a receipt
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { receiptId: string } }
+  context: { params: Promise<{ receiptId: string }> }
 ) {
   try {
-    const receiptId = params.receiptId;
+    const { receiptId } = await context.params;
 
     // Get Prisma client
     const prisma = getPrismaClient();

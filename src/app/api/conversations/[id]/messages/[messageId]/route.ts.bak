@@ -6,7 +6,7 @@ const isDatabaseAvailable = isPrismaAvailable()
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string; messageId: string }> }
+  { params }: { params: { id: string; messageId: string } }
 ) {
   try {
     if (!isDatabaseAvailable || !prisma) {
@@ -16,14 +16,13 @@ export async function PATCH(
       }, { status: 503 })
     }
 
-    const { id, messageId } = await context.params
     const body = await request.json()
 
     // Verify message exists and belongs to the conversation
     const existingMessage = await prisma.message.findFirst({
       where: {
-        id: messageId,
-        conversationId: id
+        id: params.messageId,
+        conversationId: params.id
       }
     })
 
@@ -36,7 +35,7 @@ export async function PATCH(
 
     // Update message
     const message = await prisma.message.update({
-      where: { id: messageId },
+      where: { id: params.messageId },
       data: {
         role: body.role || existingMessage.role,
         content: body.content !== undefined ? body.content : existingMessage.content,
@@ -46,7 +45,7 @@ export async function PATCH(
 
     // Update conversation updatedAt
     await prisma.conversation.update({
-      where: { id },
+      where: { id: params.id },
       data: { updatedAt: new Date() }
     })
 
@@ -75,7 +74,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string; messageId: string }> }
+  { params }: { params: { id: string; messageId: string } }
 ) {
   try {
     if (!isDatabaseAvailable || !prisma) {
@@ -85,13 +84,11 @@ export async function DELETE(
       }, { status: 503 })
     }
 
-    const { id, messageId } = await context.params
-
     // Verify message exists and belongs to the conversation
     const existingMessage = await prisma.message.findFirst({
       where: {
-        id: messageId,
-        conversationId: id
+        id: params.messageId,
+        conversationId: params.id
       }
     })
 
@@ -104,12 +101,12 @@ export async function DELETE(
 
     // Delete message
     await prisma.message.delete({
-      where: { id: messageId }
+      where: { id: params.messageId }
     })
 
     // Update conversation updatedAt
     await prisma.conversation.update({
-      where: { id },
+      where: { id: params.id },
       data: { updatedAt: new Date() }
     })
 

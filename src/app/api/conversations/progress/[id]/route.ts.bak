@@ -30,7 +30,7 @@ interface ProcessingProgress {
  */
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -41,7 +41,7 @@ export async function GET(
       );
     }
 
-    const { id: processingId } = await context.params;
+    const processingId = params.id;
     const progress = progressStore.get(processingId);
 
     if (!progress) {
@@ -52,7 +52,7 @@ export async function GET(
     }
 
     // Verify user owns this processing request
-    if (progress.userId !== session.user?.email) {
+    if (progress.userId !== session.user?.id) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
@@ -89,7 +89,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -100,7 +100,7 @@ export async function PUT(
       );
     }
 
-    const { id: processingId } = await context.params;
+    const processingId = params.id;
     const updateData = await request.json();
 
     const currentProgress = progressStore.get(processingId);
@@ -108,7 +108,7 @@ export async function PUT(
       // Create new progress entry
       const newProgress: ProcessingProgress = {
         id: processingId,
-        userId: session.user?.email || '',
+        userId: session.user?.id || '',
         clientId: updateData.clientId,
         stage: updateData.stage || 'parsing',
         progress: updateData.progress || 0,
@@ -122,7 +122,7 @@ export async function PUT(
     }
 
     // Verify user owns this processing request
-    if (currentProgress.userId !== session.user?.email) {
+    if (currentProgress.userId !== session.user?.id) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
@@ -167,7 +167,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -178,7 +178,7 @@ export async function DELETE(
       );
     }
 
-    const { id: processingId } = await context.params;
+    const processingId = params.id;
     const progress = progressStore.get(processingId);
 
     if (!progress) {
@@ -189,7 +189,7 @@ export async function DELETE(
     }
 
     // Verify user owns this processing request
-    if (progress.userId !== session.user?.email) {
+    if (progress.userId !== session.user?.id) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
@@ -213,8 +213,8 @@ export async function DELETE(
   }
 }
 
-// Utility functions for use by other API routes (not exported from route file)
-class ProgressTracker {
+// Export utility functions for use by other API routes
+export class ProgressTracker {
   static create(
     processingId: string,
     userId: string,

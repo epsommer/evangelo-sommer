@@ -145,14 +145,14 @@ export async function POST(request: NextRequest) {
         clientId: body.clientId,
         title: body.title || `Conversation with ${client.name}`,
         summary: body.summary || null,
-        nextActions: body.nextActions ? JsonFieldSerializers.serializeStringArray(body.nextActions) : null,
+        nextActions: body.nextActions ? JsonFieldSerializers.serializeStringArray(body.nextActions) : undefined,
         sentiment: body.sentiment || 'NEUTRAL',
         priority: body.priority || 'MEDIUM',
-        tags: body.tags ? JsonFieldSerializers.serializeStringArray(body.tags) : null,
+        tags: body.tags ? JsonFieldSerializers.serializeStringArray(body.tags) : undefined,
         status: body.status || 'ACTIVE',
         source: body.source || 'MANUAL',
-        participants: body.participants ? JsonFieldSerializers.serializeStringArray(body.participants) : null,
-        relatedDocuments: body.relatedDocuments ? JsonFieldSerializers.serializeStringArray(body.relatedDocuments) : null
+        participants: body.participants ? JsonFieldSerializers.serializeStringArray(body.participants) : undefined,
+        relatedDocuments: body.relatedDocuments ? JsonFieldSerializers.serializeStringArray(body.relatedDocuments) : undefined
       },
       include: {
         client: {
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
             content: message.content,
             timestamp: message.timestamp ? new Date(message.timestamp) : new Date(),
             type: message.type || 'MEETING_NOTES',
-            metadata: message.metadata ? JsonFieldSerializers.serializeObject(message.metadata) : null
+            metadata: message.metadata ? JsonFieldSerializers.serializeObject(message.metadata) : undefined
           }
         });
       }

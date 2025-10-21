@@ -4,10 +4,10 @@ import { getPrismaClient } from '../../../../../../lib/prisma';
 // POST - Archive a receipt
 export async function POST(
   request: NextRequest,
-  { params }: { params: { receiptId: string } }
+  context: { params: Promise<{ receiptId: string }> }
 ) {
   try {
-    const receiptId = params.receiptId;
+    const { receiptId } = await context.params;
     const prisma = getPrismaClient();
     
     if (!prisma) {
@@ -117,10 +117,10 @@ export async function POST(
 // DELETE - Unarchive a receipt
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { receiptId: string } }
+  context: { params: Promise<{ receiptId: string }> }
 ) {
   try {
-    const receiptId = params.receiptId;
+    const { receiptId } = await context.params;
     const prisma = getPrismaClient();
     
     if (!prisma) {

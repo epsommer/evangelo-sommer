@@ -156,7 +156,7 @@ export async function POST() {
         data: {
           clientId: clientRecord.id,
           ...contractData
-        }
+        } as any // Type cast needed for migration data
       })
     }
 
@@ -186,15 +186,15 @@ export async function POST() {
           clientId: clientRecord.id,
           serviceLineId: recordData.serviceLineId,
           serviceDate: new Date(recordData.date),
-          serviceType: recordData.type,
+          serviceType: recordData.type as any, // Type cast needed for migration data
           serviceArea: recordData.area,
-          completionStatus: 'COMPLETED',
+          completionStatus: 'COMPLETED' as any, // Type cast needed for migration data
           notes: `${recordData.type.replace('_', ' ')} service - ${recordData.date}`,
           amount: recordData.amount,
           currency: 'CAD',
           billingAmount: recordData.amount,
           billingDate: new Date(recordData.date),
-          billingStatus: 'PAID'
+          billingStatus: 'PAID' as any // Type cast needed for migration data
         }
       })
     }
@@ -242,7 +242,7 @@ export async function POST() {
         data: {
           clientId: clientRecord.id,
           ...billingData
-        }
+        } as any // Type cast needed for migration data
       })
     }
 

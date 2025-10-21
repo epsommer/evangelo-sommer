@@ -146,13 +146,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Convert status to uppercase for Prisma enum
-    const statusMap: Record<string, string> = {
-      'active': 'ACTIVE',
-      'inactive': 'INACTIVE',
-      'prospect': 'PROSPECT',
-      'completed': 'COMPLETED'
+    const statusMap: Record<string, ClientStatus> = {
+      'active': ClientStatus.ACTIVE,
+      'inactive': ClientStatus.INACTIVE,
+      'prospect': ClientStatus.PROSPECT,
+      'completed': ClientStatus.COMPLETED
     };
-    const prismaStatus = body.status ? statusMap[body.status.toLowerCase()] || 'ACTIVE' : 'ACTIVE';
+    const prismaStatus: ClientStatus = body.status ? statusMap[body.status.toLowerCase()] || ClientStatus.ACTIVE : ClientStatus.ACTIVE;
 
     // Clean phone and email - only use if non-empty
     const cleanPhone = body.phone && body.phone.trim() ? body.phone.trim() : null;
@@ -181,8 +181,8 @@ export async function POST(request: NextRequest) {
           phone: cleanPhone,
           company: body.company || null,
           role: 'CLIENT',
-          services: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : null,
-          contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : null
+          services: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : undefined,
+          contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : undefined
         }
       });
     }
@@ -198,21 +198,21 @@ export async function POST(request: NextRequest) {
         company: body.company || null,
         serviceId: body.serviceId || `client_${Date.now()}`,
         status: prismaStatus,
-        tags: body.tags ? JsonFieldSerializers.serializeStringArray(body.tags) : null,
+        tags: body.tags ? JsonFieldSerializers.serializeStringArray(body.tags) : undefined,
         notes: body.notes || null,
         projectType: body.projectType || null,
-        serviceTypes: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : null,
+        serviceTypes: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : undefined,
         budget: body.budget || null,
         timeline: body.timeline || null,
         seasonalContract: body.seasonalContract || false,
         recurringService: body.recurringService || 'ONE_TIME',
-        address: body.address ? JsonFieldSerializers.serializeAddress(body.address) : null,
-        metadata: body.metadata ? JsonFieldSerializers.serializeObject(body.metadata) : null,
-        contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : null,
-        personalInfo: body.personalInfo ? JsonFieldSerializers.serializeObject(body.personalInfo) : null,
-        serviceProfile: body.serviceProfile ? JsonFieldSerializers.serializeObject(body.serviceProfile) : null,
-        billingInfo: body.billingInfo ? JsonFieldSerializers.serializeObject(body.billingInfo) : null,
-        relationshipData: body.relationshipData ? JsonFieldSerializers.serializeObject(body.relationshipData) : null
+        address: body.address ? JsonFieldSerializers.serializeAddress(body.address) : undefined,
+        metadata: body.metadata ? JsonFieldSerializers.serializeObject(body.metadata) : undefined,
+        contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : undefined,
+        personalInfo: body.personalInfo ? JsonFieldSerializers.serializeObject(body.personalInfo) : undefined,
+        serviceProfile: body.serviceProfile ? JsonFieldSerializers.serializeObject(body.serviceProfile) : undefined,
+        billingInfo: body.billingInfo ? JsonFieldSerializers.serializeObject(body.billingInfo) : undefined,
+        relationshipData: body.relationshipData ? JsonFieldSerializers.serializeObject(body.relationshipData) : undefined
       },
       include: {
         participant: true

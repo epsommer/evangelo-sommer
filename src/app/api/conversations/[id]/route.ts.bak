@@ -7,7 +7,7 @@ const isDatabaseAvailable = isPrismaAvailable()
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     if (!isDatabaseAvailable || !prisma) {
@@ -17,10 +17,8 @@ export async function GET(
       }, { status: 503 })
     }
 
-    const { id } = await context.params
-
     const conversation = await prisma.conversation.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         client: {
           select: {
@@ -61,7 +59,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     if (!isDatabaseAvailable || !prisma) {
@@ -71,11 +69,10 @@ export async function PATCH(
       }, { status: 503 })
     }
 
-    const { id } = await context.params
     const body = await request.json()
 
     const conversation = await prisma.conversation.update({
-      where: { id },
+      where: { id: params.id },
       data: {
         title: body.title,
         summary: body.summary,
@@ -121,7 +118,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     if (!isDatabaseAvailable || !prisma) {
@@ -131,10 +128,8 @@ export async function DELETE(
       }, { status: 503 })
     }
 
-    const { id } = await context.params
-
     await prisma.conversation.delete({
-      where: { id }
+      where: { id: params.id }
     })
 
     return NextResponse.json({

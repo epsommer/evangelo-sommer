@@ -128,8 +128,8 @@ export class ClientManager {
     }
   }
 
-  searchClients(query: string, serviceId?: string): Client[] {
-    let clients = this.getClients();
+  async searchClients(query: string, serviceId?: string): Promise<Client[]> {
+    let clients = await this.getClients();
 
     if (serviceId) {
       clients = clients.filter((client) => client.serviceId === serviceId);
@@ -363,8 +363,8 @@ export class ClientManager {
   }
 
   // ===== LEGACY METHODS (keeping for compatibility) =====
-  searchClientsByContactInfo(hasEmail: boolean, hasPhone: boolean): Client[] {
-    const clients = this.getClients();
+  async searchClientsByContactInfo(hasEmail: boolean, hasPhone: boolean): Promise<Client[]> {
+    const clients = await this.getClients();
     return clients.filter((client) => {
       if (hasEmail && hasPhone) {
         return client.email && client.phone;
@@ -377,8 +377,8 @@ export class ClientManager {
     });
   }
 
-  getAutomationEnabledClients(serviceId?: string): Client[] {
-    let clients = this.getClients();
+  async getAutomationEnabledClients(serviceId?: string): Promise<Client[]> {
+    let clients = await this.getClients();
 
     if (serviceId) {
       clients = clients.filter((client) => client.serviceId === serviceId);
@@ -393,8 +393,8 @@ export class ClientManager {
     );
   }
 
-  getIncompleteClients(serviceId?: string): Client[] {
-    let clients = this.getClients();
+  async getIncompleteClients(serviceId?: string): Promise<Client[]> {
+    let clients = await this.getClients();
 
     if (serviceId) {
       clients = clients.filter((client) => client.serviceId === serviceId);
@@ -405,11 +405,11 @@ export class ClientManager {
     );
   }
 
-  updateClientContactPreferences(
+  async updateClientContactPreferences(
     clientId: string,
     preferences: Client["contactPreferences"],
-  ): void {
-    const client = this.getClient(clientId);
+  ): Promise<void> {
+    const client = await this.getClient(clientId);
     if (client) {
       client.contactPreferences = preferences;
       client.updatedAt = new Date().toISOString();
@@ -417,8 +417,8 @@ export class ClientManager {
     }
   }
 
-  canReceiveAutomatedEmails(clientId: string): boolean {
-    const client = this.getClient(clientId);
+  async canReceiveAutomatedEmails(clientId: string): Promise<boolean> {
+    const client = await this.getClient(clientId);
     return !!(
       client?.email &&
       client.email.includes("@") &&
@@ -426,8 +426,8 @@ export class ClientManager {
     );
   }
 
-  canReceiveAutomatedTexts(clientId: string): boolean {
-    const client = this.getClient(clientId);
+  async canReceiveAutomatedTexts(clientId: string): Promise<boolean> {
+    const client = await this.getClient(clientId);
     return !!(
       client?.phone &&
       client.phone.length >= 10 &&
@@ -435,8 +435,8 @@ export class ClientManager {
     );
   }
 
-  getClientStats(serviceId?: string) {
-    let clients = this.getClients();
+  async getClientStats(serviceId?: string) {
+    let clients = await this.getClients();
 
     if (serviceId) {
       clients = clients.filter((client) => client.serviceId === serviceId);

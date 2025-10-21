@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { getPrismaClient, isPrismaAvailable } from '@/lib/prisma';
 import { SMSProcessor, RawSMSRow, convertSMSToMessages } from '@/lib/conversation/sms-processor';
 import { dataRecoveryEngine } from '@/lib/conversation/data-recovery';
 import { textCleaner } from '@/lib/conversation/text-cleaner';
 import * as XLSX from 'xlsx';
+
+const prisma = getPrismaClient();
+const isDatabaseAvailable = isPrismaAvailable();
 
 interface ProcessingProgress {
   stage: 'parsing' | 'recovery' | 'processing' | 'storing' | 'complete';
@@ -21,6 +24,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
+      );
+    }
+
+    // Check database availability
+    if (!isDatabaseAvailable || !prisma) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
       );
     }
 

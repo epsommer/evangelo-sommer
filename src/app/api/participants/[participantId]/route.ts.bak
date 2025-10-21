@@ -10,10 +10,10 @@ import { UpdateParticipantRequest } from '../../../../types/participant-manageme
  */
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ participantId: string }> }
+  { params }: { params: { participantId: string } }
 ) {
   try {
-    const { participantId } = await context.params;
+    const { participantId } = params;
 
     const participant = await participantManagementService.getParticipant(participantId);
 
@@ -49,10 +49,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ participantId: string }> }
+  { params }: { params: { participantId: string } }
 ) {
   try {
-    const { participantId } = await context.params;
+    const { participantId } = params;
     const body = await request.json();
 
     const updateRequest: UpdateParticipantRequest = {
@@ -90,10 +90,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ participantId: string }> }
+  { params }: { params: { participantId: string } }
 ) {
   try {
-    const { participantId } = await context.params;
+    const { participantId } = params;
 
     await participantManagementService.deleteParticipant(participantId);
 

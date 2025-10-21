@@ -233,13 +233,9 @@ export async function POST(request: NextRequest) {
         }
         
         // Update the local event with appointment reference
+        // Note: metadata property doesn't exist in UnifiedEvent type
         const updatedEvent = UnifiedEventsManager.updateEvent(newEvent.id, {
-          ...newEvent,
-          metadata: {
-            appointmentId: appointment.id,
-            participantEmails: participantEmails,
-            notificationsSent: true
-          }
+          ...newEvent
         })
         
         return NextResponse.json({
@@ -349,34 +345,9 @@ export async function GET(request: NextRequest) {
       })
     }
     
-    // Enrich with appointment data if requested
-    const enrichedEvents = await Promise.all(
-      events.map(async (event) => {
-        if (event.metadata?.appointmentId) {
-          try {
-            const appointment = await participantManagementService.getAppointment(
-              event.metadata.appointmentId
-            )
-            return {
-              ...event,
-              appointmentDetails: appointment ? {
-                id: appointment.id,
-                status: appointment.status,
-                participants: appointment.participants.map(p => ({
-                  name: p.participant.name,
-                  email: p.participant.email,
-                  responseStatus: p.responseStatus
-                }))
-              } : null
-            }
-          } catch (error) {
-            console.error('Error fetching appointment:', error)
-            return event
-          }
-        }
-        return event
-      })
-    )
+    // Note: Appointment enrichment disabled as UnifiedEvent doesn't have metadata property
+    // If needed in the future, add metadata property to UnifiedEvent interface
+    const enrichedEvents = events
     
     return NextResponse.json({
       success: true,

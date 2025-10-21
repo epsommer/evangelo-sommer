@@ -131,5 +131,8 @@ export const testPrismaConnection = () => PrismaClientSingleton.testConnection()
 // Export disconnect function for cleanup
 export const disconnectPrisma = () => PrismaClientSingleton.disconnect();
 
+// Export prisma as named export for backward compatibility
+export const prisma = typeof window === 'undefined' ? getPrismaClient() : null;
+
 // Default export for backward compatibility - only initialize on server side
-export default typeof window === 'undefined' ? getPrismaClient() : null;
+export default prisma;

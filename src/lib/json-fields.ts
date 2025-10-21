@@ -90,35 +90,35 @@ export const JsonFieldParsers = {
 // Serializers for storing data
 export const JsonFieldSerializers = {
   // Serialize string arrays
-  serializeStringArray: (array: string[]): string | null => {
+  serializeStringArray: (array: string[]): string | undefined => {
     if (!array || !Array.isArray(array) || array.length === 0) {
-      return null;
+      return undefined;
     }
-    return safeJsonStringify(array);
+    return safeJsonStringify(array) ?? undefined;
   },
 
   // Serialize contact preferences
-  serializeContactPreferences: (prefs: any): string | null => {
+  serializeContactPreferences: (prefs: any): string | undefined => {
     if (!prefs || typeof prefs !== 'object') {
-      return null;
+      return undefined;
     }
-    return safeJsonStringify(prefs);
+    return safeJsonStringify(prefs) ?? undefined;
   },
 
   // Serialize address
-  serializeAddress: (address: any): string | null => {
+  serializeAddress: (address: any): string | undefined => {
     if (!address || typeof address !== 'object') {
-      return null;
+      return undefined;
     }
-    return safeJsonStringify(address);
+    return safeJsonStringify(address) ?? undefined;
   },
 
   // Serialize generic object
-  serializeObject: (obj: any): string | null => {
+  serializeObject: (obj: any): string | undefined => {
     if (!obj || typeof obj !== 'object') {
-      return null;
+      return undefined;
     }
-    return safeJsonStringify(obj);
+    return safeJsonStringify(obj) ?? undefined;
   }
 };
 

@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
         priority: finalPriority,
         category: finalCategory,
         recurrencePattern: recurrencePattern || 'NONE',
-        recurrenceData: recurrenceData ? JsonFieldSerializers.serializeObject(recurrenceData) : null,
+        recurrenceData: recurrenceData ? JsonFieldSerializers.serializeObject(recurrenceData) : undefined,
         customInterval,
         customIntervalUnit,
         actionItems: JsonFieldSerializers.serializeStringArray([])

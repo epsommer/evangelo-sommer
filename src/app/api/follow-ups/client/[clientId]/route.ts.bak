@@ -10,10 +10,10 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: { clientId: string } }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = params;
     const url = new URL(request.url);
     
     // Parse query parameters
@@ -157,15 +157,15 @@ export async function GET(
         missedFollowUps,
         lastFollowUpDate: lastFollowUp?.scheduledDate || null,
         nextFollowUpDate: nextFollowUp?.scheduledDate || null,
-        averageResponseRate: totalFollowUps > 0 ?
+        averageResponseRate: totalFollowUps > 0 ? 
           Math.round((completedFollowUps / totalFollowUps) * 100) / 100 : 0,
-        recentFollowUps: followUps.slice(0, 5) as any // Type cast needed due to partial childFollowUps selection
+        recentFollowUps: followUps.slice(0, 5) // Most recent 5
       };
     }
 
     const response: FollowUpListResponse & { history?: ClientFollowUpHistory } = {
       success: true,
-      data: followUps as any, // Type cast needed due to partial childFollowUps selection
+      data: followUps,
       total,
       page,
       limit,
@@ -185,10 +185,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: { clientId: string } }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = params;
     const body = await request.json();
 
     // Verify client exists
@@ -231,10 +231,10 @@ export async function POST(
 // Get follow-up metrics and insights for a specific client
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: { clientId: string } }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = params;
     const url = new URL(request.url);
     const action = url.searchParams.get('action');
 

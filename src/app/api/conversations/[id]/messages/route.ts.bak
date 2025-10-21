@@ -7,7 +7,7 @@ const isDatabaseAvailable = isPrismaAvailable()
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     if (!isDatabaseAvailable || !prisma) {
@@ -17,12 +17,11 @@ export async function POST(
       }, { status: 503 })
     }
 
-    const { id } = await context.params
     const body = await request.json()
 
     // Verify conversation exists
     const conversation = await prisma.conversation.findUnique({
-      where: { id },
+      where: { id: params.id },
       select: { id: true }
     })
 
@@ -36,18 +35,18 @@ export async function POST(
     // Create message
     const message = await prisma.message.create({
       data: {
-        conversationId: id,
+        conversationId: params.id,
         role: body.role || 'CLIENT',
         content: body.content,
         timestamp: body.timestamp ? new Date(body.timestamp) : new Date(),
         type: body.type || 'TEXT',
-        metadata: body.metadata ? JsonFieldSerializers.serializeObject(body.metadata) : undefined
+        metadata: body.metadata ? JsonFieldSerializers.serializeObject(body.metadata) : null
       }
     })
 
     // Update conversation updatedAt
     await prisma.conversation.update({
-      where: { id },
+      where: { id: params.id },
       data: { updatedAt: new Date() }
     })
 

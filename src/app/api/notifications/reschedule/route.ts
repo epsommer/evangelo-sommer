@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gmailNotificationService } from '@/lib/gmail-notification-service'
 import type { Appointment, Participant } from '@/types/participant-management'
+import { ParticipantRole } from '@/types/participant-management'
 
 interface RescheduleNotificationRequest {
   originalAppointment: Appointment
@@ -29,7 +30,8 @@ export async function POST(request: NextRequest) {
         id: `participant-${Date.now()}-${Math.random()}`,
         name: participantEmail.split('@')[0] || 'Participant',
         email: participantEmail,
-        appointmentId: newAppointment.id,
+        role: ParticipantRole.CLIENT,
+        services: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }

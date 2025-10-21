@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrismaClient } from '@/lib/prisma';
-import { ConversationStatus, MessageRole, MessageType, SentimentLevel, PriorityLevel } from '@prisma/client';
+import { ConversationStatus, MessageRole, MessageType, SentimentLevel, PriorityLevel, RecurringServiceType, ConversationSource } from '@prisma/client';
 import { JsonFieldSerializers } from '@/lib/json-fields';
 
 const prisma = getPrismaClient();
@@ -69,7 +69,8 @@ const mapToMessageRole = (role: string): MessageRole => {
   const roleMap: Record<string, MessageRole> = {
     'client': 'CLIENT',
     'you': 'YOU',
-    'system': 'SYSTEM'
+    'system': 'AI_DRAFT', // Map system to AI_DRAFT as SYSTEM is not a valid MessageRole
+    'ai_draft': 'AI_DRAFT'
   };
   return roleMap[role?.toLowerCase()] || 'CLIENT';
 };
@@ -80,7 +81,9 @@ const mapToMessageType = (type: string): MessageType => {
     'text': 'TEXT',
     'call_notes': 'CALL_NOTES',
     'meeting_notes': 'MEETING_NOTES',
-    'file_attachment': 'FILE_ATTACHMENT'
+    'file_attachment': 'FILE_UPLOAD', // Map file_attachment to FILE_UPLOAD (correct enum value)
+    'file_upload': 'FILE_UPLOAD',
+    'voice_memo': 'VOICE_MEMO'
   };
   return typeMap[type?.toLowerCase()] || 'MEETING_NOTES';
 };
@@ -155,8 +158,8 @@ export async function POST(request: NextRequest) {
             phone: localClient.phone || null,
             company: localClient.company || null,
             role: 'CLIENT',
-            services: localClient.serviceTypes.length > 0 ? JsonFieldSerializers.serializeStringArray(localClient.serviceTypes) : null,
-            contactPreferences: localClient.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(localClient.contactPreferences) : null
+            services: localClient.serviceTypes.length > 0 ? JsonFieldSerializers.serializeStringArray(localClient.serviceTypes) : undefined,
+            contactPreferences: localClient.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(localClient.contactPreferences) : undefined
           }
         });
 
@@ -170,16 +173,16 @@ export async function POST(request: NextRequest) {
             company: localClient.company || null,
             serviceId: localClient.serviceId,
             status: localClient.status === 'active' ? 'ACTIVE' : 'INACTIVE',
-            tags: localClient.tags.length > 0 ? JsonFieldSerializers.serializeStringArray(localClient.tags) : null,
+            tags: localClient.tags.length > 0 ? JsonFieldSerializers.serializeStringArray(localClient.tags) : undefined,
             notes: localClient.notes || null,
             projectType: localClient.projectType || null,
-            serviceTypes: localClient.serviceTypes.length > 0 ? JsonFieldSerializers.serializeStringArray(localClient.serviceTypes) : null,
+            serviceTypes: localClient.serviceTypes.length > 0 ? JsonFieldSerializers.serializeStringArray(localClient.serviceTypes) : undefined,
             budget: localClient.budget || null,
             timeline: localClient.timeline || null,
             seasonalContract: localClient.seasonalContract || false,
-            recurringService: localClient.recurringService || 'ONE_TIME',
-            address: localClient.address ? JsonFieldSerializers.serializeAddress(localClient.address) : null,
-            contactPreferences: localClient.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(localClient.contactPreferences) : null,
+            recurringService: (localClient.recurringService as RecurringServiceType) || RecurringServiceType.ONE_TIME,
+            address: localClient.address ? JsonFieldSerializers.serializeAddress(localClient.address) : undefined,
+            contactPreferences: localClient.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(localClient.contactPreferences) : undefined,
             metadata: JsonFieldSerializers.serializeObject({}),
             personalInfo: JsonFieldSerializers.serializeObject({}),
             serviceProfile: JsonFieldSerializers.serializeObject({}),
@@ -235,14 +238,14 @@ export async function POST(request: NextRequest) {
             clientId: newClientId,
             title: localConv.title || `Conversation ${migrationResults.conversationsMigrated + 1}`,
             summary: localConv.summary || null,
-            nextActions: localConv.nextActions ? JsonFieldSerializers.serializeStringArray(localConv.nextActions) : null,
+            nextActions: localConv.nextActions ? JsonFieldSerializers.serializeStringArray(localConv.nextActions) : undefined,
             sentiment: mapToSentiment(localConv.sentiment),
             priority: mapToPriority(localConv.priority),
-            tags: localConv.tags ? JsonFieldSerializers.serializeStringArray(localConv.tags) : null,
+            tags: localConv.tags ? JsonFieldSerializers.serializeStringArray(localConv.tags) : undefined,
             status: mapToConversationStatus(localConv.status),
-            source: localConv.source || 'MANUAL',
-            participants: localConv.participants ? JsonFieldSerializers.serializeStringArray(localConv.participants) : null,
-            relatedDocuments: localConv.relatedDocuments ? JsonFieldSerializers.serializeStringArray(localConv.relatedDocuments) : null,
+            source: (localConv.source as ConversationSource) || ConversationSource.MANUAL,
+            participants: localConv.participants ? JsonFieldSerializers.serializeStringArray(localConv.participants) : undefined,
+            relatedDocuments: localConv.relatedDocuments ? JsonFieldSerializers.serializeStringArray(localConv.relatedDocuments) : undefined,
             createdAt: new Date(localConv.createdAt),
             updatedAt: new Date(localConv.updatedAt)
           }
@@ -259,7 +262,7 @@ export async function POST(request: NextRequest) {
                 content: localMsg.content,
                 timestamp: new Date(localMsg.timestamp),
                 type: mapToMessageType(localMsg.type),
-                metadata: localMsg.metadata ? JsonFieldSerializers.serializeObject(localMsg.metadata) : null
+                metadata: localMsg.metadata ? JsonFieldSerializers.serializeObject(localMsg.metadata) : undefined
               }
             });
             conversationMessageCount++;

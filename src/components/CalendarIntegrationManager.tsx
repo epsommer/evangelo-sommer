@@ -102,7 +102,9 @@ export default function CalendarIntegrationManager({
     setSyncStatus((prev) => ({ ...prev, [integrationId]: "syncing" }));
 
     try {
+      console.log('Starting sync for integration:', integrationId);
       const events = await calendarService.syncEvents(integrationId);
+      console.log('Sync successful, received events:', events.length);
       
       // Update the integration's last sync time
       const integration = integrations.find(i => i.id === integrationId);
@@ -137,14 +139,24 @@ export default function CalendarIntegrationManager({
         setSyncStatus((prev) => ({ ...prev, [integrationId]: "idle" }));
       }, 3000);
     } catch (error) {
-      console.error("Failed to sync:", error);
-      
+      console.error("Failed to sync calendar:", error);
+
+      // Log the error details for debugging
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+
       if (error instanceof Error && error.message === 'REAUTH_REQUIRED') {
         // Handle reauth required
         setSyncStatus((prev) => ({ ...prev, [integrationId]: "error" }));
         alert('Authentication expired. Please reconnect your calendar.');
       } else {
         setSyncStatus((prev) => ({ ...prev, [integrationId]: "error" }));
+
+        // Show user-friendly error message
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        alert(`Sync failed: ${errorMessage}\n\nCheck the browser console for more details.`);
       }
     }
   };

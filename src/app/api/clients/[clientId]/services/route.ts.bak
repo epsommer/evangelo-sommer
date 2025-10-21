@@ -31,21 +31,16 @@ const SERVICE_NAMES: Record<ServiceType, string> = {
   MULCHING: 'Mulching',
   GUTTER_CLEANING: 'Gutter Cleaning',
   DETHATCHING: 'Dethatching',
-  LEAF_REMOVAL: 'Leaf Removal/Fall Cleanup',
-  PREMIUM_SALTING: 'Premium Salting',
-  CALCIUM_MAGNESIUM_MIX: 'Calcium Magnesium Mix',
-  SNOW_PLOWING: 'Snow Plowing',
-  ICE_MANAGEMENT: 'Ice Management',
-  WINTER_MAINTENANCE: 'Winter Maintenance'
+  LEAF_REMOVAL: 'Leaf Removal/Fall Cleanup'
 };
 
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ clientId: string }> }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const { clientId } = await context.params;
+    const { clientId } = await params;
 
     if (!clientId) {
       return NextResponse.json({

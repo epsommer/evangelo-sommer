@@ -435,7 +435,7 @@ function replaceTemplateVariables(template: string, variables: Record<string, st
   }
   
   // Handle conditional blocks (basic implementation)
-  result = result.replace(/{{#if (\w+)}}(.*?){{\/if}}/gs, (match, condition, content) => {
+  result = result.replace(/{{#if (\w+)}}([\s\S]*?){{\/if}}/g, (match, condition, content) => {
     return variables[condition] && variables[condition].trim() ? content : '';
   });
   

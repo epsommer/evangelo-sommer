@@ -12,6 +12,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate environment variables
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REDIRECT_URI) {
+      console.error('Missing Google OAuth environment variables')
+      return NextResponse.json(
+        { error: 'Server configuration error: Missing Google OAuth credentials. Please check environment variables.' },
+        { status: 500 }
+      )
+    }
+
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -67,19 +76,38 @@ export async function POST(request: NextRequest) {
       syncedAt: new Date().toISOString()
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Google Calendar sync error:', error)
-    
+
     // Handle token refresh if needed
-    if ((error as any)?.code === 401) {
+    if (error?.code === 401 || error?.response?.status === 401) {
       return NextResponse.json(
         { error: 'Token expired', requiresReauth: true },
         { status: 401 }
       )
     }
 
+    // Handle specific Google API errors
+    if (error?.response?.data?.error) {
+      const googleError = error.response.data.error
+      console.error('Google API error details:', googleError)
+
+      return NextResponse.json(
+        {
+          error: `Google Calendar API error: ${googleError.message || googleError}`,
+          details: googleError
+        },
+        { status: error.response.status || 500 }
+      )
+    }
+
+    // Generic error with more details
+    const errorMessage = error?.message || 'Unknown error occurred'
     return NextResponse.json(
-      { error: 'Failed to sync Google Calendar' },
+      {
+        error: `Failed to sync Google Calendar: ${errorMessage}`,
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      },
       { status: 500 }
     )
   }

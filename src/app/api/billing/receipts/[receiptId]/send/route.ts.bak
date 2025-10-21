@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { billingManager } from '../../../../../../lib/billing-manager';
-import { getPrismaClient } from '../../../../../../lib/prisma';
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ receiptId: string }> }
+  { params }: { params: { receiptId: string } }
 ) {
   try {
-    const { receiptId } = await context.params;
+    const { receiptId } = params;
 
     // Fetch the receipt using billingManager
     const receipt = await billingManager.getReceiptById(receiptId);
@@ -19,21 +18,13 @@ export async function POST(
     // Check if receipt has already been sent
     if (receipt.status === 'sent') {
       return NextResponse.json(
-        { message: 'This receipt has already been sent' },
+        { message: 'This receipt has already been sent' }, 
         { status: 400 }
       );
     }
 
-    // Get client info using Prisma directly
-    const prisma = getPrismaClient();
-    if (!prisma) {
-      return NextResponse.json({ message: 'Database connection failed' }, { status: 500 });
-    }
-
-    const client = await prisma.clientRecord.findUnique({
-      where: { participantId: receipt.clientId }
-    });
-
+    // Get client info
+    const client = await billingManager.getClientById(receipt.clientId);
     if (!client) {
       return NextResponse.json({ message: 'Client not found' }, { status: 404 });
     }

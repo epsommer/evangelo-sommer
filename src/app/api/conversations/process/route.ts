@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { getPrismaClient, isPrismaAvailable } from '@/lib/prisma';
 import { SMSProcessor, RawSMSRow } from '@/lib/conversation/sms-processor';
 import { dataRecoveryEngine } from '@/lib/conversation/data-recovery';
 import { speakerIdentifier } from '@/lib/conversation/speaker-identifier';
 import { textCleaner } from '@/lib/conversation/text-cleaner';
+
+const prisma = getPrismaClient();
+const isDatabaseAvailable = isPrismaAvailable();
 
 interface ProcessRequest {
   rawData: RawSMSRow[];
@@ -65,6 +68,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
+      );
+    }
+
+    // Check database availability
+    if (!isDatabaseAvailable || !prisma) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
       );
     }
 
@@ -216,7 +227,7 @@ export async function POST(request: NextRequest) {
     // Configure speaker identifier with custom rules
     if (options.customSpeakerRules) {
       speakerIdentifier.updateProfile({
-        userId: session.user?.id || 'unknown',
+        userId: session.user?.email || 'unknown',
         clientId: clientId,
         userIdentifiers: options.customSpeakerRules.userIdentifiers,
         clientIdentifiers: options.customSpeakerRules.clientIdentifiers
@@ -257,12 +268,12 @@ export async function POST(request: NextRequest) {
 
     if (!options.skipTextCleaning) {
       const cleaningMode = options.processingMode === 'fast' ? 'sms' : 'thorough';
-      
+
       finalMessages = smsResult.messages.map(msg => {
-        const cleanedContent = cleaningMode === 'fast' 
+        const cleanedContent = cleaningMode === 'sms'
           ? textCleaner.cleanSMSContent(msg.content)
           : textCleaner.cleanForDatabase(msg.content);
-        
+
         return {
           ...msg,
           content: cleanedContent
