@@ -334,7 +334,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
     const startDateTime = new Date(item.date)
     startDateTime.setHours(parseInt(item.startTime.split(':')[0]))
     startDateTime.setMinutes(parseInt(item.startTime.split(':')[1]))
-    
+
     const endDateTime = new Date(startDateTime)
     endDateTime.setMinutes(endDateTime.getMinutes() + item.duration)
 
@@ -350,7 +350,9 @@ const AgendaView: React.FC<AgendaViewProps> = ({
       clientId: item.clientName,
       location: item.location,
       notes: item.notes,
-      status: item.status as any
+      status: item.status as any,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
   }
 
@@ -384,7 +386,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
                     <span>Secondary: Business Support</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-tactical-gold-muted0"></div>
+                    <div className="w-3 h-3 rounded-full bg-tactical-gold-muted"></div>
                     <span>Tertiary: Personal Life</span>
                   </div>
                 </div>
