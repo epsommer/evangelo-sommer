@@ -169,7 +169,7 @@ export async function DELETE(
     delete updatedContent.archivedAt;
     delete updatedContent.archivedReason;
 
-    const updatedReceipt = await prisma.document.update({
+    await prisma.document.update({
       where: { id: receiptId },
       data: {
         content: JSON.stringify(updatedContent),

@@ -6,6 +6,8 @@ import { participantManagementService } from '../../../lib/participant-managemen
 import {
   CreateAppointmentRequest,
   AppointmentSearchFilters,
+  ServiceType,
+  AppointmentStatus,
 } from '../../../types/participant-management';
 
 /**
@@ -25,10 +27,10 @@ export async function GET(request: NextRequest) {
       filters.endDate = searchParams.get('endDate')!;
     }
     if (searchParams.get('service')) {
-      filters.service = searchParams.get('service') as any;
+      filters.service = searchParams.get('service') as ServiceType;
     }
     if (searchParams.get('status')) {
-      filters.status = searchParams.get('status') as any;
+      filters.status = searchParams.get('status') as AppointmentStatus;
     }
     if (searchParams.get('organizerId')) {
       filters.organizerId = searchParams.get('organizerId')!;

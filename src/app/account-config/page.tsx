@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, User, Mail, Phone, MapPin, Building, Key, Shield, Eye, EyeOff, CheckCircle, AlertCircle, Bell, Globe, Palette, Monitor } from 'lucide-react';
+import { ArrowLeft, Save, User, Key, Shield, Eye, EyeOff, CheckCircle, AlertCircle, Bell, Monitor } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface AccountSettings {
   profile: {
@@ -139,37 +138,10 @@ export default function AccountConfigPage() {
     }));
   };
 
-  const updateSecurity = (key: string, value: any) => {
+  const updateSecurity = (key: string, value: string | boolean | number) => {
     setSettings(prev => ({
       ...prev,
       security: { ...prev.security, [key]: value }
-    }));
-  };
-
-  const updatePrivacy = (key: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      privacy: { ...prev.privacy, [key]: value }
-    }));
-  };
-
-  const updateNotifications = (category: string, key: string, value: boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [category]: {
-          ...prev.notifications[category as keyof typeof prev.notifications],
-          [key]: value
-        }
-      }
-    }));
-  };
-
-  const updatePreferences = (key: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      preferences: { ...prev.preferences, [key]: value }
     }));
   };
 
@@ -250,7 +222,7 @@ export default function AccountConfigPage() {
                     return (
                       <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as 'profile' | 'security' | 'privacy' | 'notifications' | 'preferences')}
                         className={`w-full text-left p-4 border-2 transition-all duration-200 ${
                           activeTab === tab.id
                             ? 'bg-tactical-gold text-hud-text-primary border-tactical-gold'

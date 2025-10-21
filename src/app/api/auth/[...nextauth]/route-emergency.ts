@@ -54,7 +54,7 @@ const authOptions: NextAuthOptions = {
       if (user) {
         token.email = user.email;
         token.name = user.name;
-        token.role = (user as any).role;
+        token.role = (user as { role: string }).role;
         console.log("🎫 JWT created for:", user.email?.substring(0, 3) + "***");
       }
       return token;
@@ -63,7 +63,7 @@ const authOptions: NextAuthOptions = {
       if (session?.user && token) {
         session.user.email = token.email as string;
         session.user.name = token.name as string;
-        (session.user as any).role = token.role;
+        (session.user as { role: string }).role = token.role as string;
         console.log("🎫 Session created for:", session.user.email?.substring(0, 3) + "***");
       }
       return session;

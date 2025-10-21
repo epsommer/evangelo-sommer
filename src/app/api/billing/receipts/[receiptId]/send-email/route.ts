@@ -1,5 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrismaClient } from '../../../../../../lib/prisma';
+import { google } from 'googleapis';
+import { Resend } from 'resend';
+import nodemailer, { SendMailOptions } from 'nodemailer';
+
+interface ReceiptItem {
+  description: string;
+  serviceType?: string;
+}
+interface ReceiptData {
+  receiptNumber: string;
+  totalAmount: number;
+  serviceDate: string | Date;
+  serviceType?: string;
+  items: ReceiptItem[];
+}
 
 // Service-specific email configuration
 function getServiceEmail(serviceType?: string): string {
@@ -182,15 +197,13 @@ function getServiceContact(serviceType?: string): { name: string; address: strin
 async function sendReceiptEmail(
   clientEmail: string, 
   clientName: string, 
-  receiptData: any
+  receiptData: ReceiptData
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     // Check if we should use real email or mock
     const USE_REAL_EMAIL = process.env.GMAIL_CLIENT_ID || process.env.RESEND_API_KEY || process.env.SMTP_HOST;
     
     if (USE_REAL_EMAIL && process.env.GMAIL_CLIENT_ID) {
-      // Use Gmail API for real emails
-      const { google } = require('googleapis');
       
       const oauth2Client = new google.auth.OAuth2(
         process.env.GMAIL_CLIENT_ID,
@@ -240,7 +253,6 @@ async function sendReceiptEmail(
       
     } else if (USE_REAL_EMAIL && process.env.RESEND_API_KEY) {
       // Use Resend for real emails
-      const { Resend } = require('resend');
       const resend = new Resend(process.env.RESEND_API_KEY);
       
       const emailHtml = generateReceiptEmailHtml(receiptData, clientName);
@@ -269,8 +281,6 @@ async function sendReceiptEmail(
       
     } else if (USE_REAL_EMAIL && process.env.SMTP_HOST) {
       // Use Nodemailer for SMTP with service-specific configuration
-      const nodemailer = require('nodemailer');
-      
       const fromEmail = getServiceEmail(receiptData.serviceType);
       const serviceName = getServiceName(receiptData.serviceType);
       const smtpConfig = getServiceSMTPConfig();
@@ -285,7 +295,7 @@ async function sendReceiptEmail(
 
       const emailHtml = generateReceiptEmailHtml(receiptData, clientName);
       
-      const mailOptions: any = {
+      const mailOptions: SendMailOptions = {
         from: `"${serviceName}" <${actualFromEmail}>`,
         to: clientEmail,
         subject: `Receipt ${receiptData.receiptNumber} - Thank you for your business`,
@@ -331,7 +341,7 @@ async function sendReceiptEmail(
 }
 
 // Generate professional HTML email template
-function generateReceiptEmailHtml(receiptData: any, clientName: string): string {
+function generateReceiptEmailHtml(receiptData: ReceiptData, clientName: string): string {
   const serviceBrand = getServiceBrand(receiptData.serviceType);
   const serviceContact = getServiceContact(receiptData.serviceType);
   
@@ -380,7 +390,7 @@ function generateReceiptEmailHtml(receiptData: any, clientName: string): string 
                 </div>
                 <div class="detail-row">
                     <span class="label">Services:</span>
-                    <span class="value">${receiptData.items.map((item: any) => item.description).join(', ')}</span>
+                    <span class="value">${receiptData.items.map((item: ReceiptItem) => item.description).join(', ')}</span>
                 </div>
                 <div class="detail-row total">
                     <span class="label">Total Amount:</span>

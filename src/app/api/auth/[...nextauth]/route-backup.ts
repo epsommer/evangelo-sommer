@@ -1,9 +1,8 @@
 // Enhanced Authentication with Security Features
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthOptions, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { AuthenticationService } from '@/lib/auth-security';
-import { getClientIp } from '@/lib/security';
-
+import { AuthenticationService } from '@/lib/auth/auth-security';
+import { JWT } from "next-auth/jwt";
 const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -109,13 +108,13 @@ const authOptions: NextAuthOptions = {
     updateAge: 5 * 60, // Update every 5 minutes
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }): Promise<JWT | null> {
       // Enhanced JWT with security features
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
-        token.role = (user as any).role;
+        token.role = (user as NextAuthUser & { role: string }).role;
         token.iat = Math.floor(Date.now() / 1000);
       }
       
@@ -131,13 +130,13 @@ const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // Enhanced session with role-based access
       if (session?.user && token) {
-        session.user.id = token.id as string;
+        (session.user as { id: string }).id = token.id as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
-        (session.user as any).role = token.role;
+        (session.user as { role: string }).role = token.role as string;
         
         // Add security metadata
-        (session as any).security = {
+        (session as { security?: object }).security = {
           tokenIssuedAt: token.iat,
           maxAge: 15 * 60,
           role: token.role
@@ -145,7 +144,7 @@ const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user }) {
       // Additional sign-in security checks
       if (!user?.email) {
         console.log('❌ Sign-in rejected: No email provided');
@@ -170,7 +169,6 @@ const authOptions: NextAuthOptions = {
   jwt: {
     secret: process.env.NEXTAUTH_JWT_SECRET || process.env.NEXTAUTH_SECRET,
     maxAge: 15 * 60, // 15 minutes
-    encryption: true,
   },
   
   // Security headers and options
@@ -189,13 +187,13 @@ const authOptions: NextAuthOptions = {
   
   // Security events
   events: {
-    async signIn({ user, account, profile, isNewUser }) {
+    async signIn({ user }) {
       console.log(`🔐 User signed in: ${user.email?.substring(0, 3)}***`);
     },
-    async signOut({ session, token }) {
+    async signOut({ session }) {
       console.log(`🔓 User signed out: ${session?.user?.email?.substring(0, 3)}***`);
     },
-    async session({ session, token }) {
+    async session({ session: _session, token: _token }) {
       // Update last activity timestamp
     },
   },

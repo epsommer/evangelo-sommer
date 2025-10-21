@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
-    const state = searchParams.get('state')
+    searchParams.get('state') // state can be used for CSRF protection or to pass client data
     const error = searchParams.get('error')
 
     if (error) {

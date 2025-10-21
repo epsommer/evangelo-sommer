@@ -1,9 +1,6 @@
 // src/__tests__/conversation/parsing-engine.test.ts
 import ParsingEngine from "../../lib/conversation/parsing-engine";
-import {
-  ConversationParser,
-  MessageBatch,
-} from "../../types/conversation-batch";
+import { ConversationParser } from "../../types/conversation-batch";
 
 describe("ParsingEngine", () => {
   let engine: ParsingEngine;
