@@ -182,8 +182,8 @@ export default function AutoBillingTestPage() {
                                 billingSuggestion={{
                                   type: analysis.serviceType ? 'receipt' : 'none',
                                   confidence: analysis.confidence as "low" | "medium" | "high",
-                                  serviceType: analysis.serviceType,
-                                  suggestedAmount: analysis.suggestedAmount,
+                                  serviceType: analysis.serviceType || undefined,
+                                  suggestedAmount: analysis.suggestedAmount ?? undefined,
                                   reason: analysis.reason
                                 }}
                                 onTriggerAutoDraft={(msg, suggestion) => {

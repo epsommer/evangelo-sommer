@@ -272,8 +272,8 @@ export default function ConversationPage() {
                 onClick={() => {
                   setEditFormData({
                     title: conversation?.title || '',
-                    priority: conversation?.priority || 'MEDIUM',
-                    status: conversation?.status || 'ACTIVE'
+                    priority: (conversation?.priority?.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') || 'MEDIUM',
+                    status: (conversation?.status?.toUpperCase() as 'ACTIVE' | 'ARCHIVED' | 'COMPLETED') || 'ACTIVE'
                   });
                   setShowEditModal(true);
                 }}

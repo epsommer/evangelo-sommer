@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const failed = results.length - successful
     
     const errors = results
-      .filter((r): r is PromiseRejectedResult<unknown> => r.status === 'rejected')
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
       .map(r => r.reason)
     
     const failedResults = results

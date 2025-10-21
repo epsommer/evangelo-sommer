@@ -388,18 +388,17 @@ const ClientDetailPage = () => {
             <CardContent className="p-6">
               {(() => {
                 // Group contracts by service line (proper implementation)
-                const serviceGroups: { [key: string]: any[] } = {}
+                const serviceGroups: { [key: string]: { name: string; color: string; contracts: any[] } } = {}
                 
                 if (client.serviceContracts && client.serviceContracts.length > 0) {
                   client.serviceContracts.forEach(contract => {
                     // Use proper service line grouping
-                    const serviceLineId = contract.serviceLineId || 'legacy'
-                    const serviceLine = contract.serviceLine
-                    
+                    const serviceLineId = contract.serviceId || 'legacy'
+
                     if (!serviceGroups[serviceLineId]) {
                       serviceGroups[serviceLineId] = {
-                        name: serviceLine?.name || (serviceLineId === 'legacy' ? 'Legacy Services' : 'Unknown Service'),
-                        color: serviceLine?.color || '#6B7280',
+                        name: contract.serviceName || (serviceLineId === 'legacy' ? 'Legacy Services' : 'Unknown Service'),
+                        color: '#6B7280',
                         contracts: []
                       }
                     }
@@ -534,7 +533,7 @@ const ClientDetailPage = () => {
                           
                           {/* Service Contracts */}
                           <div className="p-4 space-y-3">
-                            {contracts.map((contract, index) => {
+                            {contracts.map((contract: any, index: number) => {
                               const statusColors = {
                                 'ONGOING': 'bg-green-100 text-green-800',
                                 'COMPLETED': 'bg-tactical-gold-muted text-tactical-brown-dark',
@@ -564,7 +563,7 @@ const ClientDetailPage = () => {
                                         </div>
                                       )}
                                     </div>
-                                    <Badge className={`${statusColors[contract.status]} text-xs font-bold uppercase px-2 py-1`}>
+                                    <Badge className={`${statusColors[contract.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'} text-xs font-bold uppercase px-2 py-1`}>
                                       {contract.status}
                                     </Badge>
                                   </div>

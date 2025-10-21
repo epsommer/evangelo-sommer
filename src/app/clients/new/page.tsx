@@ -36,6 +36,7 @@ export default function NewClientPage() {
       city: "",
       state: "",
       zip: "",
+      country: "",
     },
     metadata: {},
     contactPreferences: {
@@ -104,9 +105,9 @@ export default function NewClientPage() {
         name: formData.name.trim(),
         metadata: {
           ...formData.metadata,
-          secondaryServices: secondaryServices.length > 0 ? secondaryServices : undefined,
-          secondaryServiceTypes: Object.keys(secondaryServiceTypes).length > 0 ? secondaryServiceTypes : undefined,
-        },
+          ...(secondaryServices.length > 0 && { secondaryServices }),
+          ...(Object.keys(secondaryServiceTypes).length > 0 && { secondaryServiceTypes }),
+        } as any,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

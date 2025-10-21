@@ -51,6 +51,7 @@ export interface Client {
     city?: string;
     state?: string;
     zip?: string;
+    country?: string;
     coordinates?: { lat: number; lng: number };
   };
 

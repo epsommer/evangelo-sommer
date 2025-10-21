@@ -232,18 +232,18 @@ export default function ConversationPage() {
                 {conversation.messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${(message.role === "you" || message.role === "YOU") ? "justify-end" : "justify-start"}`}
+                    className={`flex ${message.role === "you" ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-2xl p-4 border-2 ${
-                        (message.role === "you" || message.role === "YOU")
+                        message.role === "you"
                           ? "bg-tactical-gold text-hud-text-primary border-hud-border-accent-dark"
                           : "bg-white text-hud-text-primary border-hud-border"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-bold font-space-grotesk uppercase tracking-wide">
-                          {(message.role === "you" || message.role === "YOU") ? "You" : (client?.name || "Client")}
+                          {message.role === "you" ? "You" : (client?.name || "Client")}
                         </span>
                         <span className="text-xs text-medium-grey font-space-grotesk">
                           {isClient ? new Date(message.timestamp).toLocaleString() : 'Loading...'}

@@ -100,8 +100,8 @@ export default function ConversationDetailPage() {
       
       try {
         // First try to load client from localStorage
-        let foundClient = clientManager.getClient(clientId);
-        
+        let foundClient = await clientManager.getClient(clientId);
+
         // If not found in localStorage, try to fetch from API
         if (!foundClient) {
           console.log('Client not found in localStorage, fetching from API...');
@@ -485,18 +485,18 @@ export default function ConversationDetailPage() {
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${(message.role === "you" || message.role === "YOU") ? "justify-end" : "justify-start"}`}
+                    className={`flex ${message.role === "client" ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-3xl rounded-lg p-4 ${
-                        (message.role === "you" || message.role === "YOU")
+                        message.role === "client"
                           ? "bg-tactical-gold-600 text-white"
                           : "bg-tactical-grey-200 text-tactical-grey-800"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium opacity-90">
-                          {(message.role === "you" || message.role === "YOU") ? "You" : client.name}
+                          {message.role === "client" ? "You" : client.name}
                         </span>
                         <span className="text-xs opacity-75">
                           {new Date(message.timestamp).toLocaleString()}

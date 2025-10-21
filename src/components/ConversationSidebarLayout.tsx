@@ -7,7 +7,7 @@ import ContextualSidebar from './ContextualSidebar';
 
 interface ConversationSidebarLayoutProps {
   conversation: Conversation;
-  client: Client;
+  client: Client | null;
   children: React.ReactNode;
   className?: string;
 }
