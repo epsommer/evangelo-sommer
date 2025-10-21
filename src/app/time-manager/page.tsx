@@ -196,7 +196,9 @@ const TimeManagerContent = () => {
         clientId: task.clientId,
         location: task.location,
         notes: task.notes,
-        status: task.status
+        status: task.status,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
       setEditingEvent(event)
       setShowEventModal(true)
@@ -524,7 +526,9 @@ const TimeManagerContent = () => {
                   clientId: task.clientId,
                   location: task.location,
                   notes: task.notes,
-                  status: task.status
+                  status: task.status,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
                 }
                 handleEventView(event)
               }

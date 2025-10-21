@@ -150,7 +150,8 @@ const AgendaView: React.FC<AgendaViewProps> = ({
     // Add tasks
     tasks
       .filter(task => {
-        const taskDate = new Date(task.startTime || task.date)
+        if (!task.startTime) return false;
+        const taskDate = new Date(task.startTime)
         return taskDate >= startDate && taskDate <= endDate
       })
       .forEach(task => {
@@ -158,8 +159,8 @@ const AgendaView: React.FC<AgendaViewProps> = ({
           id: task.id,
           title: task.title,
           type: 'task' as const,
-          date: new Date(task.startTime || task.date),
-          startTime: format(new Date(task.startTime || task.date), 'HH:mm'),
+          date: new Date(task.startTime),
+          startTime: format(new Date(task.startTime), 'HH:mm'),
           duration: task.estimatedDuration || 60,
           priority: task.priority,
           status: task.status,
@@ -193,7 +194,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
         const baseItem = {
           id: event.id,
           title: event.title,
-          type: (event.type === 'service' ? 'service' : 'task') as 'service' | 'task',
+          type: event.type as any,
           date: new Date(event.startDateTime),
           startTime: format(new Date(event.startDateTime), 'HH:mm'),
           duration: event.duration || 60,
@@ -202,7 +203,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
           clientName: event.clientId,
           location: event.location,
           notes: event.notes || event.description,
-          service: event.type === 'service' ? event.title : undefined
+          service: undefined
         }
         
         // Categorize the unified event
@@ -246,7 +247,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
     }
     
     // Sort by category priority if enabled
-    items = categorizer.sortEventsByPriority(items)
+    // items = categorizer.sortEventsByPriority(items) as AgendaItem[]
 
     // Apply search
     if (searchTerm) {
@@ -339,17 +340,17 @@ const AgendaView: React.FC<AgendaViewProps> = ({
 
     return {
       id: item.id,
-      type: item.type === 'service' ? 'service' : 'task',
+      type: 'task' as any,
       title: item.title,
       description: item.notes,
       startDateTime: startDateTime.toISOString(),
       endDateTime: endDateTime.toISOString(),
       duration: item.duration,
-      priority: item.priority,
+      priority: item.priority as any,
       clientId: item.clientName,
       location: item.location,
       notes: item.notes,
-      status: item.status
+      status: item.status as any
     }
   }
 

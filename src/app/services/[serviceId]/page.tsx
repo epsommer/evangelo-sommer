@@ -31,8 +31,9 @@ export default function ServiceDashboard() {
 
   useEffect(() => {
     if (service) {
-      const serviceClients = MultiServiceManager.getClientsForService(serviceId);
-      setClients(serviceClients);
+      MultiServiceManager.getClientsForService(serviceId).then((serviceClients) => {
+        setClients(serviceClients);
+      });
     }
   }, [serviceId, service]);
 

@@ -327,11 +327,11 @@ export default function ConversationPage() {
                 {conversation.messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${(message.role === "you" || message.role === "YOU") ? "justify-end" : "justify-start"}`}
+                    className={`flex ${message.role === "YOU" ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-2xl p-4 border-2 ${
-                        (message.role === "you" || message.role === "YOU")
+                        message.role === "YOU"
                           ? "bg-tactical-gold text-hud-text-primary border-hud-border-accent-dark"
                           : "bg-white text-hud-text-primary border-hud-border"
                       }`}
@@ -339,10 +339,10 @@ export default function ConversationPage() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <span className="text-sm font-bold font-space-grotesk uppercase tracking-wide">
-                            {(message.role === "you" || message.role === "YOU") ? "You" : (client?.name || "Client")}
+                            {message.role === "YOU" ? "You" : (client?.name || "Client")}
                           </span>
                           {/* Auto-draft trigger for client messages */}
-                          {message.role === "client" && client && conversation && (() => {
+                          {message.role === "CLIENT" && client && conversation && (() => {
                             const analysis = analyzeMessage(message);
                             const shouldShowTrigger = analysis.shouldTrigger ||
                               (analysis.serviceType && analysis.confidence !== 'low');
@@ -354,9 +354,9 @@ export default function ConversationPage() {
                                   conversation={conversation}
                                   billingSuggestion={{
                                     type: analysis.serviceType ? 'receipt' : 'none',
-                                    confidence: analysis.confidence,
-                                    serviceType: analysis.serviceType,
-                                    suggestedAmount: analysis.suggestedAmount,
+                                    confidence: analysis.confidence as "low" | "medium" | "high",
+                                    serviceType: analysis.serviceType ?? undefined,
+                                    suggestedAmount: analysis.suggestedAmount ?? undefined,
                                     reason: analysis.reason
                                   }}
                                   onTriggerAutoDraft={handleTriggerClick}

@@ -383,8 +383,8 @@ export default function ConversationsPage() {
                               {client?.name?.toUpperCase() || 'UNKNOWN CLIENT'}
                             </span>
                           </div>
-                          <Badge className={`${getStatusColor(conversation.status)} text-xs font-bold uppercase tracking-wide`}>
-                            {conversation.status}
+                          <Badge className={`${getStatusColor(conversation.status || 'active')} text-xs font-bold uppercase tracking-wide`}>
+                            {conversation.status || 'ACTIVE'}
                           </Badge>
                           <Badge className={`${getPriorityColor(conversation.priority || 'medium')} text-xs font-bold uppercase tracking-wide`}>
                             {conversation.priority || 'MEDIUM'}

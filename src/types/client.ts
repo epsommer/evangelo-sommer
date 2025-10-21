@@ -148,7 +148,7 @@ export interface Conversation {
 // Enhanced Message interface
 export interface Message {
   id: string;
-  role: "client" | "you" | "ai-draft";
+  role: "CLIENT" | "YOU" | "AI_DRAFT" | "client" | "you" | "ai-draft";
   content: string;
   timestamp: string;
   type:

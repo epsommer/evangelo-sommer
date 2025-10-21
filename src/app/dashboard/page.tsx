@@ -77,8 +77,8 @@ const Dashboard = () => {
   }
 
   const totalClients = allClients.length
-  const activeClients = allClients.filter((c) => c.status === "ACTIVE").length
-  const prospects = allClients.filter((c) => c.status === "PROSPECT").length
+  const activeClients = allClients.filter((c) => c.status === "active").length
+  const prospects = allClients.filter((c) => c.status === "prospect").length
   const totalRevenue = allClients.reduce((sum, client) => sum + (client.budget || 0), 0)
 
   const recentClients = allClients
@@ -370,7 +370,7 @@ const Dashboard = () => {
                               ${(client.budget || 0).toLocaleString()}
                             </div>
                             <div className={`text-xs uppercase font-bold font-primary ${
-                              client.status === 'ACTIVE' ? 'text-green-600' : 'text-hud-text-secondary'
+                              client.status === 'active' ? 'text-green-600' : 'text-hud-text-secondary'
                             }`}>
                               {client.status.toLowerCase()}
                             </div>
@@ -397,7 +397,7 @@ const Dashboard = () => {
               {services.map(service => {
                 const serviceClients = allClients.filter(c => c.serviceId === service.id)
                 const serviceRevenue = serviceClients.reduce((sum, c) => sum + (c.budget || 0), 0)
-                const activeServiceClients = serviceClients.filter(c => c.status === 'ACTIVE').length
+                const activeServiceClients = serviceClients.filter(c => c.status === 'active').length
                 
                 // Data-driven coloring for service performance
                 const averageServiceRevenue = totalRevenue / services.length

@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         participants: [client.name],
         messages: {
           create: standardMessages.map(msg => ({
-            role: msg.role === 'you' ? 'YOU' : 'CLIENT',
+            role: msg.role === 'YOU' ? 'YOU' : 'CLIENT',
             content: msg.content,
             timestamp: new Date(msg.timestamp),
             type: 'TEXT',
