@@ -1,52 +1,72 @@
 [
   {
-    "name": "gemini-api-route-implementer",
+    "name": "api-route-implementer",
     "description": "API endpoint implementation",
-    "path": ".gemini/agents/api-route-implementer.md"
+    "path": ".claude/agents/api-route-implementer.md"
   },
   {
-    "name": "gemini-code-reviewer",
+    "name": "code-reviewer",
     "description": "Code quality and security review",
-    "path": ".gemini/agents/code-reviewer.md"
+    "path": ".claude/agents/code-reviewer.md"
   },
   {
-    "name": "gemini-config-updater",
+    "name": "config-updater",
     "description": "Configuration management",
-    "path": ".gemini/agents/config-updater.md"
+    "path": ".claude/agents/config-updater.md"
   },
   {
-    "name": "gemini-crm-research-architect",
+    "name": "crm-research-architect",
     "description": "CRM pattern research",
-    "path": ".gemini/agents/crm-research-architect.md"
+    "path": ".claude/agents/crm-research-architect.md"
   },
   {
-    "name": "gemini-docs-updater",
+    "name": "docs-updater",
     "description": "Documentation maintenance",
-    "path": ".gemini/agents/docs-updater.md"
+    "path": ".claude/agents/docs-updater.md"
   },
   {
-    "name": "gemini-prisma-schema-implementer",
+    "name": "prisma-schema-implementer",
     "description": "Database schema implementation",
-    "path": ".gemini/agents/prisma-schema-implementer.md"
+    "path": ".claude/agents/prisma-schema-implementer.md"
   },
   {
-    "name": "gemini-dual-site-architecture-researcher",
+    "name": "dual-site-architecture-researcher",
     "description": "Dual-purpose site research",
-    "path": ".gemini/agents/dual-site-architecture-researcher.md"
+    "path": ".claude/agents/dual-site-architecture-researcher.md"
   },
   {
-    "name": "gemini-tech-stack-researcher",
+    "name": "tech-stack-researcher",
     "description": "Technology research",
-    "path": ".gemini/agents/tech-stack-researcher.md"
+    "path": ".claude/agents/tech-stack-researcher.md"
   },
   {
-    "name": "gemini-ui-threejs-implementer",
+    "name": "ui-threejs-implementer",
     "description": "Three.js + React UI implementation",
-    "path": ".gemini/agents/ui-threejs-implementer.md"
+    "path": ".claude/agents/ui-threejs-implementer.md"
   },
   {
-    "name": "gemini-workflow-optimizer",
+    "name": "workflow-optimizer",
     "description": "Business process optimization",
-    "path": ".gemini/agents/workflow-optimizer.md"
+    "path": ".claude/agents/workflow-optimizer.md"
+  },
+  {
+    "name": "lint",
+    "description": "Run linting and fix issues",
+    "path": ".claude/agents/lint.md"
+  },
+  {
+    "name": "migrate",
+    "description": "Database migration management",
+    "path": ".claude/agents/migrate.md"
+  },
+  {
+    "name": "test",
+    "description": "Run tests and fix failures",
+    "path": ".claude/agents/test.md"
+  },
+  {
+    "name": "type-check",
+    "description": "TypeScript type checking and fixes",
+    "path": ".claude/agents/type-check.md"
   }
 ]

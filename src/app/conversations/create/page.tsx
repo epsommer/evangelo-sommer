@@ -1,12 +1,12 @@
 // src/app/conversations/create/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Client, Message } from "../../../types/client";
 import ConversationCreator from "../../../components/conversation/ConversationCreator";
 
-export default function CreateConversationPage() {
+function CreateConversationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [clients, setClients] = useState<Client[]>([]);
@@ -105,5 +105,21 @@ export default function CreateConversationPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function CreateConversationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-hud-background-secondary">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hud-border-accent"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <CreateConversationPageContent />
+    </Suspense>
   );
 }

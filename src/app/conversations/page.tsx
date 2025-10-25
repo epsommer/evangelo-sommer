@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -13,7 +13,7 @@ import CRMLayout from '@/components/CRMLayout'
 import { clientManager } from '@/lib/client-config'
 import { Client, Conversation, Message } from '@/types/client'
 
-export default function ConversationsPage() {
+function ConversationsPageContent() {
   const { status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -460,5 +460,19 @@ export default function ConversationsPage() {
         )}
       </div>
     </CRMLayout>
+  )
+}
+
+export default function ConversationsPage() {
+  return (
+    <Suspense fallback={
+      <CRMLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hud-border-accent"></div>
+        </div>
+      </CRMLayout>
+    }>
+      <ConversationsPageContent />
+    </Suspense>
   )
 }

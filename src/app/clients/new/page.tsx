@@ -1,7 +1,7 @@
 // src/app/clients/new/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { getAllServices, getServiceById } from "../../../lib/service-config";
 import { clientManager } from "../../../lib/client-config";
 import { Client } from "../../../types/client";
 
-export default function NewClientPage() {
+function NewClientPageContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -915,5 +915,17 @@ export default function NewClientPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function NewClientPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <NewClientPageContent />
+    </Suspense>
   );
 }
