@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
+import { verifyOAuthState, validateCSRFToken } from '@/lib/csrf'
+import { getToken } from 'next-auth/jwt'
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -11,7 +13,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
-    searchParams.get('state') // state can be used for CSRF protection or to pass client data
+    const state = searchParams.get('state')
     const error = searchParams.get('error')
 
     if (error) {
@@ -23,6 +25,37 @@ export async function GET(request: NextRequest) {
     if (!code) {
       return NextResponse.redirect(
         `${process.env.NEXTAUTH_URL}/time-manager?error=missing_code`
+      )
+    }
+
+    // Verify CSRF protection via state parameter
+    if (!state) {
+      console.warn('OAuth callback missing state parameter');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=csrf_missing`
+      )
+    }
+
+    const stateData = verifyOAuthState(state);
+    if (!stateData) {
+      console.warn('OAuth callback state verification failed');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=csrf_invalid`
+      )
+    }
+
+    // Get session for CSRF token validation
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    })
+
+    // Validate CSRF token
+    const isValidCSRF = validateCSRFToken(stateData.csrf as string, token?.sub);
+    if (!isValidCSRF) {
+      console.warn('OAuth callback CSRF token validation failed');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=csrf_validation_failed`
       )
     }
 
@@ -46,8 +79,15 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Here you would typically save the integration to your database
-    // For now, we'll pass the data as URL parameters
+    // SECURITY TODO: Store tokens in encrypted database instead of URL parameters
+    // Current implementation exposes tokens in browser history and logs
+    // Required changes:
+    // 1. Create CalendarIntegration table in Prisma schema
+    // 2. Encrypt tokens before storing (use @/lib/encryption)
+    // 3. Pass only integration ID in URL
+    // 4. Frontend fetches integration details via authenticated API
+    //
+    // For now, passing in URL (INSECURE - FIX BEFORE PRODUCTION)
     const integrationData = {
       provider: 'google',
       accountId: primaryCalendar.id,
@@ -61,7 +101,7 @@ export async function GET(request: NextRequest) {
     const params = new URLSearchParams({
       success: 'true',
       provider: 'google',
-      data: JSON.stringify(integrationData)
+      data: JSON.stringify(integrationData) // SECURITY RISK: Contains sensitive tokens
     })
 
     return NextResponse.redirect(

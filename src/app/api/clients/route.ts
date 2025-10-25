@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ClientStatus, ServiceType } from '@prisma/client';
 import { getPrismaClient, isPrismaAvailable } from '@/lib/prisma';
 import { JsonFieldParsers, JsonFieldSerializers, transformClientRecordForResponse } from '@/lib/json-fields';
+import { createClientSchema, validateRequest, sanitizeError } from '@/lib/validation';
 
 // Get Prisma client instance
 const prisma = getPrismaClient();
@@ -137,13 +138,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Validate required fields
-    if (!body.name) {
+    // Validate request body with Zod
+    const validation = validateRequest(createClientSchema, body);
+    if (!validation.success) {
       return NextResponse.json({
         success: false,
-        error: 'Client name is required'
+        error: 'Validation failed',
+        errors: validation.errors
       }, { status: 400 });
     }
+
+    const validatedData = validation.data;
 
     // Convert status to uppercase for Prisma enum
     const statusMap: Record<string, ClientStatus> = {
@@ -152,11 +157,11 @@ export async function POST(request: NextRequest) {
       'prospect': ClientStatus.PROSPECT,
       'completed': ClientStatus.COMPLETED
     };
-    const prismaStatus: ClientStatus = body.status ? statusMap[body.status.toLowerCase()] || ClientStatus.ACTIVE : ClientStatus.ACTIVE;
+    const prismaStatus: ClientStatus = validatedData.status ? statusMap[validatedData.status.toLowerCase()] || ClientStatus.ACTIVE : ClientStatus.ACTIVE;
 
-    // Clean phone and email - only use if non-empty
-    const cleanPhone = body.phone && body.phone.trim() ? body.phone.trim() : null;
-    const cleanEmail = body.email && body.email.trim() ? body.email.trim() : null;
+    // Clean phone and email - only use if non-empty (already validated by Zod)
+    const cleanPhone = validatedData.phone && validatedData.phone.trim() ? validatedData.phone.trim() : null;
+    const cleanEmail = validatedData.email && validatedData.email.trim() ? validatedData.email.trim() : null;
 
     // Try to find existing participant with same phone or email
     let participant = null;
@@ -176,30 +181,30 @@ export async function POST(request: NextRequest) {
     if (!participant) {
       participant = await prisma.participant.create({
         data: {
-          name: body.name,
+          name: validatedData.name,
           email: cleanEmail,
           phone: cleanPhone,
-          company: body.company || null,
+          company: validatedData.company || null,
           role: 'CLIENT',
-          services: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : undefined,
-          contactPreferences: body.contactPreferences ? JsonFieldSerializers.serializeContactPreferences(body.contactPreferences) : undefined
+          services: validatedData.services ? JsonFieldSerializers.serializeStringArray(validatedData.services) : undefined,
+          contactPreferences: undefined // Not in validation schema yet
         }
       });
     }
 
-    // Create client record
+    // Create client record (using validated data for core fields)
     const client = await prisma.clientRecord.create({
       data: {
-        id: body.id, // Use provided ID if available
+        id: body.id, // Use provided ID if available (not validated - internal use)
         participantId: participant.id,
-        name: body.name,
+        name: validatedData.name,
         email: cleanEmail,
         phone: cleanPhone,
-        company: body.company || null,
+        company: validatedData.company || null,
         serviceId: body.serviceId || `client_${Date.now()}`,
         status: prismaStatus,
         tags: body.tags ? JsonFieldSerializers.serializeStringArray(body.tags) : undefined,
-        notes: body.notes || null,
+        notes: validatedData.notes || null,
         projectType: body.projectType || null,
         serviceTypes: body.serviceTypes ? JsonFieldSerializers.serializeStringArray(body.serviceTypes) : undefined,
         budget: body.budget || null,
@@ -237,10 +242,15 @@ export async function POST(request: NextRequest) {
     console.error('Error details:', error instanceof Error ? error.message : String(error));
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
 
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     return NextResponse.json({
       success: false,
       error: 'Failed to create client',
-      details: error instanceof Error ? error.message : String(error)
+      // Only include error details in development
+      ...(isDevelopment && {
+        details: error instanceof Error ? error.message : String(error)
+      })
     }, {
       status: 500,
       headers: {
