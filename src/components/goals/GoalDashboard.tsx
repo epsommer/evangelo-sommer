@@ -235,7 +235,6 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
               <Button
                 variant="outline"
                 size="sm"
-                as="span"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Import
@@ -244,7 +243,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
             
             <Button
               size="sm"
-              onClick={() => setIsCreating(true)}
+              onClick={() => setShowCreateModal(true)}
               className="bg-tactical-gold hover:bg-tactical-gold-dark text-hud-text-primary"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -537,7 +536,7 @@ const GoalDashboard: React.FC<GoalDashboardProps> = ({ className }) => {
                         Due {format(new Date('endDate' in item ? item.endDate : item.dueDate), 'MMM d')}
                       </p>
                     </div>
-                    {'type' in item && item.type === 'milestone' ? (
+                    {'goalId' in item ? (
                       <Badge variant="outline" className="text-xs">
                         Milestone
                       </Badge>

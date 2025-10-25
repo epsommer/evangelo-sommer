@@ -14,17 +14,14 @@ export default function GalleryScene() {
   });
 
   return (
-    // @ts-expect-error Three.js JSX elements not in type definitions
     <group>
       {/* Floor */}
       <Plane args={[50, 50]} rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
-        {/* @ts-expect-error Three.js JSX elements not in type definitions */}
         <meshStandardMaterial color="#222" />
       </Plane>
 
       {/* Test Box */}
       <Box ref={boxRef} position={[0, 1, 0]} args={[1, 1, 1]}>
-        {/* @ts-expect-error Three.js JSX elements not in type definitions */}
         <meshStandardMaterial color="hotpink" />
       </Box>
 
@@ -41,20 +38,16 @@ export default function GalleryScene() {
 
       {/* Walls */}
       <Plane args={[20, 10]} position={[0, 5, -10]}>
-        {/* @ts-expect-error Three.js JSX elements not in type definitions */}
         <meshStandardMaterial color="#333" />
       </Plane>
 
       <Plane args={[20, 10]} position={[-10, 5, 0]} rotation-y={Math.PI / 2}>
-        {/* @ts-expect-error Three.js JSX elements not in type definitions */}
         <meshStandardMaterial color="#333" />
       </Plane>
 
       <Plane args={[20, 10]} position={[10, 5, 0]} rotation-y={-Math.PI / 2}>
-        {/* @ts-expect-error Three.js JSX elements not in type definitions */}
         <meshStandardMaterial color="#333" />
       </Plane>
-      {/* @ts-expect-error Three.js JSX elements not in type definitions */}
     </group>
   );
 }

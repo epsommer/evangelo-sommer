@@ -49,12 +49,14 @@ export default function ConversationSidebarLayout({
   return (
     <div className={`min-h-screen bg-hud-background-secondary relative ${className}`}>
       {/* Contextual Sidebar */}
-      <ContextualSidebar
-        conversation={conversation}
-        client={client}
-        onAutoDetails={handleAutoDetails}
-        onStateChange={handleSidebarStateChange}
-      />
+      {client && (
+        <ContextualSidebar
+          conversation={conversation}
+          client={client}
+          onAutoDetails={handleAutoDetails}
+          onStateChange={handleSidebarStateChange}
+        />
+      )}
 
       {/* Main Content - Adjusted for Sidebar */}
       <div

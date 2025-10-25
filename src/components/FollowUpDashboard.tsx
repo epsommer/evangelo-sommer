@@ -427,11 +427,11 @@ export function FollowUpDashboard({ initialFollowUps, clientFilter }: FollowUpDa
                       </div>
                     )}
 
-                    {followUp.actionItems && followUp.actionItems.length > 0 && (
+                    {followUp.actionItems && Array.isArray(followUp.actionItems) && followUp.actionItems.length > 0 && (
                       <div className="mb-3">
                         <p className="text-sm text-tactical-grey-500">Action Items</p>
                         <ul className="text-sm list-disc list-inside">
-                          {followUp.actionItems.map((item, index) => (
+                          {(followUp.actionItems as string[]).map((item: string, index: number) => (
                             <li key={index}>{item}</li>
                           ))}
                         </ul>

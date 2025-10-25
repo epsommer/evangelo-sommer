@@ -111,7 +111,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
           <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-hud-border rounded-md shadow-lg z-50">
             <div className="py-1">
               {CALENDAR_VIEWS.map((view) => {
-                const config = VIEW_CONFIGS[view]
+                const config = VIEW_CONFIGS[view as keyof typeof VIEW_CONFIGS]
                 const Icon = config.icon
                 const isActive = currentView === view
 

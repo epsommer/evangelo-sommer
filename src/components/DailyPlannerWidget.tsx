@@ -132,7 +132,7 @@ const DailyPlannerWidget: React.FC<DailyPlannerWidgetProps> = ({ onViewAll }) =>
                     </span>
                   </div>
                   <Badge variant="outline" className="text-xs text-gold border-hud-border-accent">
-                    {'type' in item && item.type === 'milestone' ? 'Milestone' : 'Goal'}
+                    {'goalId' in item ? 'Milestone' : 'Goal'}
                   </Badge>
                 </div>
               ))}

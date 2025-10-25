@@ -54,7 +54,7 @@ const authOptions: NextAuthOptions = {
       if (user) {
         token.email = user.email;
         token.name = user.name;
-        token.role = (user as { role: string }).role;
+        token.role = (user as unknown as { role: string }).role;
         console.log("🎫 JWT created for:", user.email?.substring(0, 3) + "***");
       }
       return token;

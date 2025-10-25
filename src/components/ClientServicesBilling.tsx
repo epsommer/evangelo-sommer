@@ -9,6 +9,7 @@ import { CalendarDays, DollarSign, FileText, Settings, Eye, Edit, Plus, CheckCir
 import Link from "next/link"
 import CreateReceiptModal from './CreateReceiptModal'
 import ReceiptDetailsModal from './ReceiptDetailsModal'
+import { Client as ClientType } from '@/types/client'
 
 interface ServiceLine {
   id: string
@@ -100,13 +101,8 @@ interface BillingRecord {
   metadata?: any
 }
 
-interface Client {
-  id: string
-  name: string
-  email: string
-  phone: string
-  company?: string
-  status: string
+// Extended Client interface with billing-specific fields
+type ExtendedClient = ClientType & {
   serviceContracts: ServiceContract[]
   serviceRecords: ServiceRecord[]
   billingRecords: BillingRecord[]
@@ -117,7 +113,7 @@ interface ClientServicesBillingProps {
 }
 
 const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId }) => {
-  const [client, setClient] = useState<Client | null>(null)
+  const [client, setClient] = useState<ExtendedClient | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'billing'>('billing')
   const [selectedServiceLine, setSelectedServiceLine] = useState<string | null>(null)
@@ -182,24 +178,24 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
       // Debug service line separation
       console.log('🔍 DEBUG: Service Line Analysis')
       console.log('Service Records:', data.serviceRecords)
-      
-      const recordsByServiceLine = {}
-      data.serviceRecords?.forEach(record => {
+
+      const recordsByServiceLine: Record<string, ServiceRecord[]> = {}
+      data.serviceRecords?.forEach((record: ServiceRecord) => {
         const serviceLineId = record.serviceLineId || 'unknown'
         if (!recordsByServiceLine[serviceLineId]) {
           recordsByServiceLine[serviceLineId] = []
         }
         recordsByServiceLine[serviceLineId].push(record)
       })
-      
+
       console.log('Records grouped by service line:', recordsByServiceLine)
-      
+
       Object.keys(recordsByServiceLine).forEach(serviceLineId => {
         const records = recordsByServiceLine[serviceLineId]
         const serviceLine = records[0]?.serviceLine
         console.log(`📦 ${serviceLine?.name || 'Unknown'} (${serviceLineId}):`)
         console.log(`   Records: ${records.length}`)
-        console.log(`   Service Types: ${[...new Set(records.map(r => r.serviceType))].join(', ')}`)
+        console.log(`   Service Types: ${[...new Set(records.map((r: ServiceRecord) => r.serviceType))].join(', ')}`)
         console.log(`   Color: ${serviceLine?.color || 'undefined'}`)
       })
       
@@ -522,7 +518,7 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
     )
   }
 
-  if (!client && !loading) {
+  if (!client) {
     return (
       <div className="text-center p-8">
         <div className="max-w-md mx-auto">
@@ -537,8 +533,8 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
               <li>• Ensure the API endpoint is accessible</li>
             </ul>
           </div>
-          <button 
-            onClick={fetchClientData} 
+          <button
+            onClick={fetchClientData}
             className="mt-4 px-4 py-2 bg-tactical-gold text-white rounded hover:bg-tactical-gold-dark"
           >
             Retry Loading
@@ -548,6 +544,7 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
     )
   }
 
+  // At this point, client is guaranteed to be non-null
   const serviceLineGroups = {
     contracts: groupByServiceLine(client.serviceContracts, 'contracts'),
     records: groupByServiceLine(client.serviceRecords, 'service records'),
@@ -559,10 +556,12 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
   
   // Add service lines from all sources
   client.serviceContracts.forEach(c => {
-    if (c.serviceLine) serviceLineMap.set(c.serviceLine.id, c.serviceLine)
+    const line = (c as any).serviceLine as ServiceLine | undefined
+    if (line) serviceLineMap.set(line.id, line)
   })
   client.serviceRecords.forEach(r => {
-    if (r.serviceLine) serviceLineMap.set(r.serviceLine.id, r.serviceLine)
+    const line = (r as any).serviceLine as ServiceLine | undefined
+    if (line) serviceLineMap.set(line.id, line)
   })
   client.billingRecords.forEach(b => {
     if (b.serviceLine) serviceLineMap.set(b.serviceLine.id, b.serviceLine)
@@ -1087,6 +1086,7 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
             setShowReceiptModal(false);
             setSelectedReceipt(null);
           }}
+          client={client as unknown as ClientType}
           receipt={{
             id: selectedReceipt.id,
             receiptNumber: selectedReceipt.receiptNumber || '',
@@ -1098,9 +1098,9 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
               address: {
                 street: client.address?.street || '',
                 city: client.address?.city || '',
-                province: client.address?.province || '',
+                state: client.address?.state || '',
                 country: client.address?.country || '',
-                postalCode: client.address?.postalCode || ''
+                zip: client.address?.zip || ''
               }
             },
             items: [],

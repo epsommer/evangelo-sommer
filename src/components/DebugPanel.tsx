@@ -309,7 +309,7 @@ const DebugPanel: React.FC<DebugPanelProps> = ({
                         {Object.entries(statistics.logsByLevel || {}).map(([level, count]) => (
                           <div key={level} className="flex justify-between text-xs">
                             <span className="capitalize">{level}</span>
-                            <span className="font-medium">{count}</span>
+                            <span className="font-medium">{String(count)}</span>
                           </div>
                         ))}
                       </div>
@@ -325,7 +325,7 @@ const DebugPanel: React.FC<DebugPanelProps> = ({
                         {Object.entries(statistics.operationsByType || {}).map(([type, count]) => (
                           <div key={type} className="flex justify-between text-xs">
                             <span className="capitalize">{type}</span>
-                            <span className="font-medium">{count}</span>
+                            <span className="font-medium">{String(count)}</span>
                           </div>
                         ))}
                       </div>

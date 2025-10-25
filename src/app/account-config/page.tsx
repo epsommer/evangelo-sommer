@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Save, User, Key, Shield, Eye, EyeOff, CheckCircle, AlertCircle, Bell, Monitor } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -207,7 +207,7 @@ export default function AccountConfigPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex space-x-8">
           {/* Sidebar Navigation */}
-          <div className="w-80 flex-shrink-0">
+          <div className="w-80 shrink-0">
             <div className="bg-hud-background-secondary border-2 border-hud-border">
               <div className="p-6">
                 <div className="space-y-2">

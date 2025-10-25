@@ -14,7 +14,7 @@ export const mockTasks: DailyTask[] = [
     priority: 'medium',
     status: 'pending',
     clientId: 'client-1',
-    serviceType: 'landscaping',
+    serviceType: 'woodgreen',
     location: '123 Oak Street',
     estimatedDuration: 120,
     notes: 'Check sprinkler system',
@@ -30,7 +30,7 @@ export const mockTasks: DailyTask[] = [
     priority: 'high',
     status: 'completed',
     clientId: 'client-2',
-    serviceType: 'pet_services',
+    serviceType: 'pupawalk',
     location: 'Riverside Park',
     estimatedDuration: 90,
     actualDuration: 85,
@@ -47,7 +47,7 @@ export const mockTasks: DailyTask[] = [
     priority: 'urgent',
     status: 'in_progress',
     clientId: 'client-3',
-    serviceType: 'snow_removal',
+    serviceType: 'whiteknight',
     location: 'Downtown Plaza',
     estimatedDuration: 120,
     notes: 'Priority: main entrance first',
@@ -63,7 +63,7 @@ export const mockTasks: DailyTask[] = [
     priority: 'medium',
     status: 'pending',
     clientId: 'client-4',
-    serviceType: 'creative_development',
+    serviceType: 'creative',
     location: 'Video Call',
     estimatedDuration: 60,
     notes: 'Prepare mockups for review',
@@ -273,12 +273,12 @@ export const getStatusColorClass = (status: DailyTask['status']): string => {
 // Get service type color class
 export const getServiceTypeColorClass = (serviceType?: DailyTask['serviceType']): string => {
   if (!serviceType) return '';
-  
-  const colorMap = {
-    landscaping: 'service-landscaping',
-    snow_removal: 'service-snow-removal',
-    pet_services: 'service-pet-services',
-    creative_development: 'service-creative-development',
+
+  const colorMap: Record<string, string> = {
+    woodgreen: 'service-landscaping',
+    whiteknight: 'service-snow-removal',
+    pupawalk: 'service-pet-services',
+    creative: 'service-creative-development',
   };
   return colorMap[serviceType] || '';
 };

@@ -153,8 +153,10 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
     try {
       // TODO: Replace with API call to /api/billing/quotes
       console.log('Quote creation temporarily disabled - needs API endpoint');
+      const quoteNumber = `Q-${Date.now()}`;
       const quote = {
         id: 'temp-' + Date.now(),
+        quoteNumber,
         clientId: client.id,
         items: quoteData.items,
         validUntil: quoteData.validUntil,
@@ -165,10 +167,10 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
       // Optionally send quote via email
       if (client.email) {
         // await sendQuoteByEmail(quote.id, client.email);
-        console.log(`Quote ${quote.quoteNumber} would be sent to ${client.email}`);
+        console.log(`Quote ${quoteNumber} would be sent to ${client.email}`);
       }
 
-      alert(`Quote ${quote.quoteNumber} created successfully!`);
+      alert(`Quote ${quoteNumber} created successfully!`);
       onQuoteCreated?.(quote);
       onClose();
     } catch (error) {

@@ -92,13 +92,8 @@ export class EventSyncClient {
 
           newEvents.forEach(event => {
             try {
-              UnifiedEventsManager.createEvent({
-                ...event,
-                // Remove server-generated fields for creation
-                id: undefined,
-                createdAt: undefined,
-                updatedAt: undefined
-              })
+              const { id, createdAt, updatedAt, ...eventData } = event
+              UnifiedEventsManager.createEvent(eventData as any)
             } catch (error) {
               console.error('Error adding event to localStorage:', error)
             }

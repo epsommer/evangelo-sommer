@@ -50,9 +50,11 @@ function createEmptyLineItem(): ReceiptItem {
   return {
     id: Math.random().toString(36).substr(2, 9),
     description: "",
+    serviceType: 'consultation',
     quantity: 1,
     unitPrice: 0,
-    totalPrice: 0
+    totalPrice: 0,
+    taxable: true
   };
 }
 
@@ -83,9 +85,11 @@ export default function EnhancedReceiptModal({
       const autoFilledItem: ReceiptItem = {
         id: Math.random().toString(36).substr(2, 9),
         description: serviceTemplate?.description || `${autoFillData.serviceType.replace(/([A-Z])/g, ' $1')} Service`,
+        serviceType: (autoFillData.serviceType as ReceiptItem['serviceType']) || 'consultation',
         quantity: 1,
         unitPrice: autoFillData.suggestedAmount,
-        totalPrice: autoFillData.suggestedAmount
+        totalPrice: autoFillData.suggestedAmount,
+        taxable: true
       };
 
       // Extract payment method from conversation if available
@@ -203,8 +207,11 @@ export default function EnhancedReceiptModal({
         conversationId: conversation?.id,
         items: formData.items.map(item => ({
           description: item.description,
+          serviceType: item.serviceType,
           quantity: item.quantity,
-          unitPrice: item.unitPrice
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+          taxable: item.taxable
         })),
         paymentMethod: formData.paymentMethod,
         paymentDate: new Date(formData.paymentDate),

@@ -48,6 +48,28 @@ export default function ExcelImporter({
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
+  // CSV Parsing Helper Functions
+  const parseCSVLine = (line: string): string[] => {
+    return line.split('\t').map(part => part.trim());
+  };
+
+  const parseCSVDate = (dateString: string): string | null => {
+    try {
+      if (!dateString) return null;
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) ? null : date.toISOString();
+    } catch {
+      return null;
+    }
+  };
+
+  const determineRoleFromSender = (sender: string, messageType: string): 'YOU' | 'CLIENT' => {
+    if (messageType === 'Sent') return 'YOU';
+    if (messageType === 'Received') return 'CLIENT';
+    // Fallback: check if sender looks like the user's name/number
+    return sender.includes(userName) ? 'YOU' : 'CLIENT';
+  };
+
   // CSV Parsing Functions
   const parseConversationCSV = (csvText: string): Message[] => {
     console.log('📄 Starting CSV parsing...');
@@ -143,10 +165,11 @@ export default function ExcelImporter({
     }
     
     return {
-      messageType,
+      type,
+      dateString,
       sender,
       content: cleanContent(content),
-      role: messageType === 'Sent' ? 'you' : 'client',
+      role: type === 'Sent' ? 'you' : 'client',
       nextIndex: currentIndex
     };
   };

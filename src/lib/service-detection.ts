@@ -348,7 +348,12 @@ export class ServiceDetector {
       MULCHING: 'Mulching',
       GUTTER_CLEANING: 'Gutter Cleaning',
       DETHATCHING: 'Dethatching',
-      LEAF_REMOVAL: 'Leaf Removal/Fall Cleanup'
+      LEAF_REMOVAL: 'Leaf Removal/Fall Cleanup',
+      PREMIUM_SALTING: 'Premium Salting',
+      CALCIUM_MAGNESIUM_MIX: 'Calcium Magnesium Mix',
+      SNOW_PLOWING: 'Snow Plowing',
+      ICE_MANAGEMENT: 'Ice Management',
+      WINTER_MAINTENANCE: 'Winter Maintenance'
     };
 
     return SERVICE_NAMES[serviceType] || serviceType;
@@ -384,15 +389,15 @@ export class ServiceDetector {
         timestamp: mention.timestamp,
         keywords: mention.matchedKeywords
       })),
-      suggestedFrequency: service.frequency?.pattern || 'as-needed',
-      suggestedStatus: service.status?.status || 'active'
+      suggestedFrequency: String(service.frequency?.pattern || 'as-needed'),
+      suggestedStatus: String(service.status?.status || 'active')
     }));
   }
 
   /**
    * Determines recommended action based on service confidence and mentions
    */
-  private static getRecommendedAction(service: DetectedService): string {
+  private static getRecommendedAction(service: DetectedService): 'HIGH_CONFIDENCE_ADD' | 'MEDIUM_CONFIDENCE_REVIEW' | 'LOW_CONFIDENCE_INVESTIGATE' {
     if (service.confidence >= 0.8) {
       return 'HIGH_CONFIDENCE_ADD';
     } else if (service.confidence >= 0.6) {

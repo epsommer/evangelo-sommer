@@ -101,7 +101,8 @@ const mapToMessageRole = (role: string): MessageRole => {
   const roleMap: Record<string, MessageRole> = {
     'client': 'CLIENT',
     'you': 'YOU',
-    'system': 'SYSTEM'
+    'ai_draft': 'AI_DRAFT',
+    'ai-draft': 'AI_DRAFT'
   };
   return roleMap[role.toLowerCase()] || 'CLIENT';
 };
@@ -111,8 +112,13 @@ const mapToMessageType = (type: string): MessageType => {
     'email': 'EMAIL',
     'text': 'TEXT',
     'call_notes': 'CALL_NOTES',
+    'call-notes': 'CALL_NOTES',
     'meeting_notes': 'MEETING_NOTES',
-    'file_attachment': 'FILE_ATTACHMENT'
+    'meeting-notes': 'MEETING_NOTES',
+    'voice_memo': 'VOICE_MEMO',
+    'voice-memo': 'VOICE_MEMO',
+    'file_upload': 'FILE_UPLOAD',
+    'file-upload': 'FILE_UPLOAD'
   };
   return typeMap[type.toLowerCase()] || 'MEETING_NOTES';
 };
@@ -165,8 +171,8 @@ export async function importLocalStorageData(backupFilePath: string) {
             phone: localClient.phone || null,
             company: localClient.company || null,
             role: 'CLIENT',
-            services: localClient.serviceTypes.length > 0 ? JSON.stringify(localClient.serviceTypes) : null,
-            contactPreferences: localClient.contactPreferences ? JSON.stringify(localClient.contactPreferences) : null
+            services: localClient.serviceTypes.length > 0 ? JSON.stringify(localClient.serviceTypes) : undefined,
+            contactPreferences: localClient.contactPreferences ? JSON.stringify(localClient.contactPreferences) : undefined
           }
         });
 
@@ -180,16 +186,16 @@ export async function importLocalStorageData(backupFilePath: string) {
             company: localClient.company || null,
             serviceId: localClient.serviceId,
             status: localClient.status === 'active' ? 'ACTIVE' : 'INACTIVE',
-            tags: localClient.tags.length > 0 ? JSON.stringify(localClient.tags) : null,
+            tags: localClient.tags.length > 0 ? JSON.stringify(localClient.tags) : undefined,
             notes: localClient.notes || null,
             projectType: localClient.projectType || null,
-            serviceTypes: localClient.serviceTypes.length > 0 ? JSON.stringify(localClient.serviceTypes) : null,
+            serviceTypes: localClient.serviceTypes.length > 0 ? JSON.stringify(localClient.serviceTypes) : undefined,
             budget: localClient.budget || null,
             timeline: localClient.timeline || null,
             seasonalContract: localClient.seasonalContract || false,
             recurringService: localClient.recurringService || 'ONE_TIME',
-            address: localClient.address ? JSON.stringify(localClient.address) : null,
-            contactPreferences: localClient.contactPreferences ? JSON.stringify(localClient.contactPreferences) : null,
+            address: localClient.address ? JSON.stringify(localClient.address) : undefined,
+            contactPreferences: localClient.contactPreferences ? JSON.stringify(localClient.contactPreferences) : undefined,
             metadata: JSON.stringify({}),
             personalInfo: JSON.stringify({}),
             serviceProfile: JSON.stringify({}),
@@ -224,14 +230,14 @@ export async function importLocalStorageData(backupFilePath: string) {
             clientId: newClientId,
             title: localConv.title || `Conversation ${conversationCount + 1}`,
             summary: localConv.summary || null,
-            nextActions: localConv.nextActions ? JSON.stringify(localConv.nextActions) : null,
+            nextActions: localConv.nextActions ? JSON.stringify(localConv.nextActions) : undefined,
             sentiment: mapToSentiment(localConv.sentiment),
             priority: mapToPriority(localConv.priority),
-            tags: localConv.tags ? JSON.stringify(localConv.tags) : null,
+            tags: localConv.tags ? JSON.stringify(localConv.tags) : undefined,
             status: mapToConversationStatus(localConv.status),
             source: localConv.source || 'MANUAL',
-            participants: localConv.participants ? JSON.stringify(localConv.participants) : null,
-            relatedDocuments: localConv.relatedDocuments ? JSON.stringify(localConv.relatedDocuments) : null,
+            participants: localConv.participants ? JSON.stringify(localConv.participants) : undefined,
+            relatedDocuments: localConv.relatedDocuments ? JSON.stringify(localConv.relatedDocuments) : undefined,
             createdAt: new Date(localConv.createdAt),
             updatedAt: new Date(localConv.updatedAt)
           }
@@ -247,7 +253,7 @@ export async function importLocalStorageData(backupFilePath: string) {
                 content: localMsg.content,
                 timestamp: new Date(localMsg.timestamp),
                 type: mapToMessageType(localMsg.type),
-                metadata: localMsg.metadata ? JSON.stringify(localMsg.metadata) : null
+                metadata: localMsg.metadata ? JSON.stringify(localMsg.metadata) : undefined
               }
             });
             messageCount++;

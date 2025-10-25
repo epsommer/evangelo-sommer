@@ -271,7 +271,7 @@ export default function ReceiptDetailsModal({
                 {client.address && (
                   <div className="text-sm text-medium-grey">
                     {client.address.street}<br />
-                    {client.address.city}, {client.address.province} {client.address.postalCode}
+                    {client.address.city}, {client.address.state} {client.address.zip}
                   </div>
                 )}
               </div>

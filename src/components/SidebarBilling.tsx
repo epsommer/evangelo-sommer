@@ -50,8 +50,14 @@ export default function SidebarBilling({ conversation, client, onAutoDetails }: 
     messages.forEach(message => {
       if (message.role === 'client') {
         // TODO: Move to API endpoint
-        const suggestion = { shouldCreateBill: false, confidence: 'low', serviceType: null, suggestedAmount: null, reason: 'Billing analysis temporarily disabled' };
-        
+        const suggestion: BillingSuggestion = {
+          type: 'none',
+          confidence: 'low',
+          serviceType: undefined,
+          suggestedAmount: undefined,
+          reason: 'Billing analysis temporarily disabled'
+        };
+
         if (suggestion && suggestion.type !== 'none') {
           opportunities.push({ message, suggestion });
           
@@ -570,9 +576,13 @@ export default function SidebarBilling({ conversation, client, onAutoDetails }: 
           isOpen={showReceiptModal}
           onClose={handleCloseReceiptModal}
           client={client}
-          initialSuggestion={selectedOpportunity.suggestion}
-          contextMessage={selectedOpportunity.message}
-          conversationId={conversation.id}
+          conversation={conversation}
+          autoFillData={{
+            serviceType: selectedOpportunity.suggestion.serviceType || 'consultation',
+            suggestedAmount: selectedOpportunity.suggestion.suggestedAmount || 0,
+            confidence: selectedOpportunity.suggestion.confidence,
+            reason: selectedOpportunity.suggestion.reason || ''
+          }}
         />
       )}
     </div>

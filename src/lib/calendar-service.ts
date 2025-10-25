@@ -94,7 +94,7 @@ export class CalendarService {
         accessToken: integration.credentials?.accessToken,
         refreshToken: integration.credentials?.refreshToken,
         calendarId: integration.calendarId,
-        databaseId: integration.provider === 'notion' && integration.calendarId ? integration.calendarId : undefined
+        databaseId: (integration.provider as string) === 'notion' && integration.calendarId ? integration.calendarId : undefined
       })
     })
 
@@ -144,7 +144,7 @@ export class CalendarService {
         accessToken: integration.credentials?.accessToken,
         refreshToken: integration.credentials?.refreshToken,
         calendarId: integration.calendarId,
-        databaseId: integration.provider === 'notion' ? integration.calendarId : undefined,
+        databaseId: (integration.provider as string) === 'notion' ? integration.calendarId : undefined,
         event
       })
     })

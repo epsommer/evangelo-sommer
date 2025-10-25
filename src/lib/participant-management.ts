@@ -67,7 +67,7 @@ export class ParticipantManagementService {
         company: data.company,
         role: data.role || ParticipantRole.CLIENT,
         services: data.services || [],
-        contactPreferences: data.contactPreferences ? JSON.stringify(data.contactPreferences) : null,
+        contactPreferences: data.contactPreferences ? JSON.stringify(data.contactPreferences) : undefined,
       },
     });
 
@@ -195,10 +195,10 @@ export class ParticipantManagementService {
         startTime: new Date(data.startTime),
         endTime: new Date(data.endTime),
         timezone: data.timezone || 'America/Toronto',
-        service: data.service,
+        service: data.service as any,
         location: data.location,
         organizerId: data.organizerId,
-        voiceCommandData: data.voiceCommandData ? JSON.stringify(data.voiceCommandData) : null,
+        voiceCommandData: data.voiceCommandData ? JSON.stringify(data.voiceCommandData) : undefined,
         participants: {
           create: data.participantIds.map(participantId => ({
             participantId,
@@ -471,7 +471,7 @@ export class ParticipantManagementService {
           confidence: parsedCommand.confidence,
           participantName: parsedCommand.participantName,
           participantPhone: parsedCommand.participantPhone,
-          service: parsedCommand.service,
+          service: parsedCommand.service as any,
           requestedDateTime: parsedCommand.requestedDateTime,
         },
       });

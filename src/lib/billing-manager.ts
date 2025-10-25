@@ -636,9 +636,7 @@ class BillingManager {
             currency: 'CAD',
             sentDate: new Date(),
             paidDate: receipt.status === 'paid' ? new Date() : null,
-            metadata: {
-              originalReceipt: receipt
-            }
+            metadata: undefined
           }
         });
         
@@ -798,7 +796,7 @@ class BillingManager {
               id: document.id,
               receiptNumber: receiptData.receiptNumber || `REC-${document.id.slice(-6).toUpperCase()}`,
               clientId: document.clientId,
-              client: document.client,
+              client: document.client as any,
               conversationId: receiptData.conversationId || null,
               items: receiptData.items || [],
               subtotal: receiptData.subtotal || 0,
@@ -891,13 +889,7 @@ class BillingManager {
         id: updatedDoc.id,
         receiptNumber: updatedReceiptData.receiptNumber || `REC-${updatedDoc.id.slice(-6).toUpperCase()}`,
         clientId: updatedDoc.clientId,
-        client: {
-          id: updatedDoc.client.participantId,
-          name: updatedDoc.client.name,
-          email: updatedDoc.client.email || undefined,
-          phone: updatedDoc.client.phone || undefined,
-          company: updatedDoc.client.company || undefined
-        },
+        client: updatedDoc.client as any,
         items: updatedReceiptData.items || [],
         subtotal: updatedReceiptData.subtotal || 0,
         taxAmount: updatedReceiptData.taxAmount || 0,
@@ -929,6 +921,9 @@ class BillingManager {
       console.error('Failed to update receipt:', error);
       return null;
     }
+
+    // Client-side fallback
+    return null;
   }
 
   getInvoiceById(invoiceId: string): Invoice | null {
@@ -1180,8 +1175,18 @@ Cancellation policy: 24 hours notice required.`
     ) || (client as any).contractType === 'seasonal';
   }
 
-  private getSeasonalServicePatterns(season: string, clientServices: string[], isSeasonalService: boolean) {
-    const patterns: any = {};
+  private getSeasonalServicePatterns(season: string, clientServices: string[], isSeasonalService: boolean): Record<string, {
+    triggers: string[];
+    completion: string[];
+    defaultAmount: number;
+    contractType: string;
+  }> {
+    const patterns: Record<string, {
+      triggers: string[];
+      completion: string[];
+      defaultAmount: number;
+      contractType: string;
+    }> = {};
 
     // Base completion patterns
     const baseCompletionPatterns = [

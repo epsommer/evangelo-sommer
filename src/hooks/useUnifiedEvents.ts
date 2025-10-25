@@ -91,7 +91,7 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
             console.log('🔥 useUnifiedEvents.loadEvents - Setting events:', result.events.length)
 
             // Debug individual event data
-            result.events.forEach((event, index) => {
+            result.events.forEach((event: any, index: number) => {
               console.log(`🔍 EVENT ${index + 1} RAW DATA:`, {
                 title: event.title,
                 startDateTime: event.startDateTime,
@@ -112,7 +112,7 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
           }
         }
       } catch (apiError) {
-        if (apiError.name === 'AbortError') {
+        if (apiError instanceof Error && apiError.name === 'AbortError') {
           console.error('❌ API call was aborted due to timeout')
         } else {
           console.error('❌ API load failed:', apiError)

@@ -5,6 +5,19 @@ import { useState, useCallback, useRef } from "react";
 import { Message } from "../../types/client";
 import * as XLSX from 'xlsx';
 
+// Extended Message type for file import with additional metadata
+interface ImportedMessage extends Message {
+  metadata?: Message['metadata'] & {
+    originalType?: string;
+    importMethod?: string;
+    originalLine?: string;
+    originalDate?: string;
+    reconstructed?: boolean;
+    lineNumber?: number;
+    sender?: string;
+  };
+}
+
 interface FileImportEngineProps {
   onMessagesImported: (messages: Message[]) => void;
   onError: (error: string | null) => void;
@@ -12,7 +25,7 @@ interface FileImportEngineProps {
 
 interface ParseResult {
   success: boolean;
-  messages: Message[];
+  messages: ImportedMessage[];
   errors: string[];
   method: string;
 }
@@ -36,7 +49,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // Excel File Parser (Handles XLSX/XLS files)
   function parseExcelFile(content: string, file?: File): Promise<ParseResult> {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {
@@ -154,7 +167,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // Enhanced CSV Tab-Separated Parser for SMS exports
   function parseCSVTabSeparated(content: string, file?: File): ParseResult {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {
@@ -329,7 +342,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // CSV Comma-Separated Parser
   function parseCSVCommaSeparated(content: string, file?: File): ParseResult {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {
@@ -388,7 +401,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // Text Pattern Matching Parser
   function parseTextPatterns(content: string, file?: File): ParseResult {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {
@@ -468,7 +481,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // Line-by-Line Text Parser
   function parseTextLines(content: string, file?: File): ParseResult {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {
@@ -513,7 +526,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // JSON Structure Parser
   function parseJSONStructure(content: string, file?: File): ParseResult {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {
@@ -557,7 +570,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
   // Fallback Content Parser - extracts any meaningful text as messages
   function parseFallbackContent(content: string, file?: File): ParseResult {
-    const messages: Message[] = [];
+    const messages: ImportedMessage[] = [];
     const errors: string[] = [];
 
     try {

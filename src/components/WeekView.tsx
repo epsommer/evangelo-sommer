@@ -81,6 +81,7 @@ const WeekView: React.FC<WeekViewProps> = ({
     events: unifiedEvents,
     createEvent,
     updateEvent,
+    deleteEvent,
     getEventsForDate
   } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger })
 
@@ -351,7 +352,8 @@ Rescheduled: ${data.reason}`.trim() :
     })
 
     const tasksForSlot = tasks.filter(task => {
-      const taskDate = new Date(task.startTime || task.date)
+      if (!task.startTime) return false
+      const taskDate = new Date(task.startTime)
       const taskHour = taskDate.getHours()
       return isSameDay(taskDate, date) && taskHour === hour
     })
@@ -482,7 +484,7 @@ Rescheduled: ${data.reason}`.trim() :
                     date={format(day, 'yyyy-MM-dd')}
                     hour={hour}
                     isOccupied={events.length > 0}
-                    events={events.filter(event => unifiedEvents.find(e => e.id === event.id))}
+                    events={events.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]}
                     onTimeSlotClick={handleTimeSlotClick}
                     className={`p-1 md:p-2 border-r border-hud-border min-h-[60px] md:min-h-[80px] transition-colors ${
                       isCurrentDay ? 'bg-tactical-gold-dark/30 border-l-2 border-tactical-gold' : 'bg-hud-background-secondary hover:bg-tactical-gold-light'
@@ -517,16 +519,16 @@ Rescheduled: ${data.reason}`.trim() :
                                 const unifiedEvent = unifiedEvents.find(ue => ue.id === event.id)
                                 if (unifiedEvent) {
                                   handleShowEventDetails(unifiedEvent)
-                                } else {
-                                  onTaskClick?.(event)
+                                } else if ('service' in event || 'startTime' in event) {
+                                  onTaskClick?.(event as DailyTask | ScheduledService)
                                 }
                               }}
                             >
                           <div className="flex items-center justify-between mb-1">
                             <div className="font-medium truncate text-xs flex-1 mr-1">
-                              {(event.title || event.service || 'Untitled').length > 10 
-                                ? (event.title || event.service || 'Untitled').substring(0, 10) + '...'
-                                : (event.title || event.service || 'Untitled')
+                              {(event.title || ('service' in event ? event.service : '') || 'Untitled').length > 10
+                                ? (event.title || ('service' in event ? event.service : '') || 'Untitled').substring(0, 10) + '...'
+                                : (event.title || ('service' in event ? event.service : '') || 'Untitled')
                               }
                             </div>
                             <div className="flex items-center space-x-1">
@@ -545,9 +547,9 @@ Rescheduled: ${data.reason}`.trim() :
                                     </button>
                                   }
                                   items={[
-                                    ...(onTaskEdit ? [{
+                                    ...(onTaskEdit && ('service' in event || 'startTime' in event) ? [{
                                       label: 'Edit',
-                                      onClick: () => onTaskEdit(event),
+                                      onClick: () => onTaskEdit(event as DailyTask | ScheduledService),
                                       icon: <Edit className="h-3 w-3" />
                                     }] : []),
                                     ...(onTaskStatusChange ? [{
@@ -568,12 +570,12 @@ Rescheduled: ${data.reason}`.trim() :
                             </div>
                           </div>
                           <div className="text-xs opacity-75 truncate hidden md:block">
-                            {event.clientName || 'No client'}
+                            {'clientName' in event ? event.clientName : 'No client'}
                           </div>
-                          {event.duration && (
+                          {'duration' in event && event.duration && (
                             <div className="text-xs opacity-60 flex items-center mt-1 hidden md:flex">
                               <Clock className="h-3 w-3 mr-1" />
-                              {event.duration}min
+                              {'duration' in event ? event.duration : 0}min
                             </div>
                           )}
                           </div>

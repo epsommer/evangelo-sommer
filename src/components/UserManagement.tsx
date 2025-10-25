@@ -265,14 +265,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
                         {user.twoFactorEnabled ? (
-                          <Shield className="h-4 w-4 text-green-600" title="2FA Enabled" />
+                          <div title="2FA Enabled"><Shield className="h-4 w-4 text-green-600" /></div>
                         ) : (
-                          <Shield className="h-4 w-4 text-gray-400" title="2FA Disabled" />
+                          <div title="2FA Disabled"><Shield className="h-4 w-4 text-gray-400" /></div>
                         )}
                         {user.emailVerified ? (
-                          <UserCheck className="h-4 w-4 text-tactical-gold" title="Email Verified" />
+                          <div title="Email Verified"><UserCheck className="h-4 w-4 text-tactical-gold" /></div>
                         ) : (
-                          <UserX className="h-4 w-4 text-red-600" title="Email Not Verified" />
+                          <div title="Email Not Verified"><UserX className="h-4 w-4 text-red-600" /></div>
                         )}
                         {user.failedLoginAttempts > 0 && (
                           <div className="flex items-center">

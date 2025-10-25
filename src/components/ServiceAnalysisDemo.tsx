@@ -112,10 +112,10 @@ const ServiceAnalysisDemo: React.FC<ServiceAnalysisDemoProps> = ({
           )}
         </Button>
 
-        {analysisResults?.analysisResults.recommendations.length > 0 && (
+        {analysisResults?.analysisResults.recommendations && analysisResults.analysisResults.recommendations.length > 0 && (
           <Button
             onClick={() => {
-              const servicesToAdd = analysisResults.analysisResults.recommendations
+              const servicesToAdd = analysisResults?.analysisResults.recommendations
                 .filter(r => r.recommendedAction === 'HIGH_CONFIDENCE_ADD')
                 .map(r => r.serviceType);
               if (servicesToAdd.length > 0) {

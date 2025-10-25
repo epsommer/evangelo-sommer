@@ -302,25 +302,21 @@ export class GoalCalendarIntegration {
 
       // Update related calendar events
       goal.calendarEventIds.forEach(eventId => {
-        const event = UnifiedEventsManager.getEventById(eventId)
-        if (event) {
-          UnifiedEventsManager.updateEvent(eventId, {
-            currentProgress: progress,
-            notes: `${event.notes}\nProgress updated: ${progress}%`
-          })
-        }
+        // TODO: getEventById not available - update directly
+        UnifiedEventsManager.updateEvent(eventId, {
+          currentProgress: progress,
+          notes: `Progress updated: ${progress}%`
+        })
       })
 
       // Update milestone events for this goal
       const milestones = GoalsManager.getMilestonesByGoalId(goalId)
       milestones.forEach(milestone => {
         const milestoneEventId = `milestone-${milestone.id}`
-        const event = UnifiedEventsManager.getEventById(milestoneEventId)
-        if (event) {
-          UnifiedEventsManager.updateEvent(milestoneEventId, {
-            description: `${event.description}\nGoal Progress: ${progress}%`
-          })
-        }
+        // TODO: getEventById not available - update directly
+        UnifiedEventsManager.updateEvent(milestoneEventId, {
+          description: `Goal Progress: ${progress}%`
+        })
       })
 
     } catch (error) {

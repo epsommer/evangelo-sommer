@@ -43,7 +43,7 @@ interface FormData {
     name: string
     startDate: string
     endDate: string
-    description: string
+    description?: string
   }
   progressTarget: number
   progressUnit: string
@@ -54,7 +54,7 @@ interface FormData {
   notes: string
   reminderSettings: {
     enabled: boolean
-    frequency: 'daily' | 'weekly' | 'monthly'
+    frequency: 'daily' | 'weekly' | 'monthly' | 'custom'
     time: string
     advanceNotice: number
   }
@@ -123,7 +123,12 @@ const GoalCreationModal: React.FC<GoalCreationModalProps> = ({
         status: editingGoal.status,
         startDate: format(new Date(editingGoal.startDate), 'yyyy-MM-dd'),
         endDate: format(new Date(editingGoal.endDate), 'yyyy-MM-dd'),
-        customTimeframe: editingGoal.customTimeframe,
+        customTimeframe: editingGoal.customTimeframe ? {
+          name: editingGoal.customTimeframe.name,
+          startDate: editingGoal.customTimeframe.startDate,
+          endDate: editingGoal.customTimeframe.endDate,
+          description: editingGoal.customTimeframe.description
+        } : undefined,
         progressTarget: editingGoal.progressTarget,
         progressUnit: editingGoal.progressUnit,
         currentValue: editingGoal.currentValue,

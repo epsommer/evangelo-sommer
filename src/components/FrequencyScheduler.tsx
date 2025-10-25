@@ -206,7 +206,7 @@ export default function FrequencyScheduler({
                   : rule.frequency === "bi-weekly"
                     ? rule.interval === 1
                       ? "bi-week (every 2 weeks)"
-                      : `bi-weeks (every ${rule.interval * 2} weeks)`
+                      : `bi-weeks (every ${(rule.interval || 1) * 2} weeks)`
                     : rule.frequency === "monthly"
                       ? rule.interval === 1
                         ? "month"

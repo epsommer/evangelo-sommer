@@ -4,6 +4,15 @@ import { useState } from "react";
 import MessageImporter from "../MessageImporter";
 import { Message } from "../../types/client";
 
+// Extended Message type for SMS processing with ConvoClean
+interface ExtendedMessage extends Message {
+  metadata?: Message['metadata'] & {
+    confidence?: number;
+    reconstructed?: boolean;
+    parseSuccess?: boolean;
+  };
+}
+
 interface ConversationUploadDemoProps {
   clientId?: string;
   clientName?: string;
@@ -15,7 +24,7 @@ export default function ConversationUploadDemo({
   clientName = "Mark Levy",
   userName = "Evan Sommer"
 }: ConversationUploadDemoProps) {
-  const [uploadedMessages, setUploadedMessages] = useState<Message[]>([]);
+  const [uploadedMessages, setUploadedMessages] = useState<ExtendedMessage[]>([]);
   const [uploadStats, setUploadStats] = useState<{
     totalMessages: number;
     averageConfidence: number;
@@ -23,7 +32,7 @@ export default function ConversationUploadDemo({
     processingTime: number;
   } | null>(null);
 
-  const handleMessagesDetected = (messages: Message[]) => {
+  const handleMessagesDetected = (messages: ExtendedMessage[]) => {
     console.log('✅ Messages detected from upload:', messages.length);
     setUploadedMessages(messages);
     

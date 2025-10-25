@@ -235,7 +235,9 @@ export default function ConversationEnhancedProcessor({
                     {Math.round(draft.confidence * 100)}%
                   </Badge>
                   {draft.requiresApproval && (
-                    <AlertCircle className="h-3 w-3 text-yellow-600" title="Requires approval" />
+                    <div title="Requires approval">
+                      <AlertCircle className="h-3 w-3 text-yellow-600" />
+                    </div>
                   )}
                 </div>
               </div>

@@ -41,10 +41,11 @@ interface MonthStats {
 interface YearViewProps {
   onMonthClick?: (date: Date) => void
   onDayClick?: (date: Date) => void
+  onEventCreate?: (date: Date) => void
   refreshTrigger?: number
 }
 
-const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, refreshTrigger }) => {
+const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCreate, refreshTrigger }) => {
   const { state, setSelectedDate, setCurrentView } = useViewManager()
   const { selectedDate } = state
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([])

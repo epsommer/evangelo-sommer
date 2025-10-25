@@ -46,7 +46,7 @@ export class ConflictResolutionClientService {
     const result = await isConflictResolved(conflictId)
 
     if (result.success) {
-      return result.data
+      return result.data || false
     } else {
       console.error('Failed to check conflict resolution:', result.error)
       return false

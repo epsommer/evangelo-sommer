@@ -1,10 +1,9 @@
 // Notification service for follow-up SMS and Email
 import nodemailer from 'nodemailer';
-import twilio from 'twilio';
+// import twilio from 'twilio'; // Optional dependency - install if needed
 import { PrismaClient } from '@prisma/client';
 import {
   FollowUpNotification,
-  NotificationTemplate,
   FollowUpNotificationType,
   NotificationChannel
 } from '@prisma/client';
@@ -39,7 +38,7 @@ export class NotificationService {
   private emailConfig: EmailConfig;
   private smsConfig: SMSConfig;
   private emailTransporter: nodemailer.Transporter;
-  private twilioClient: twilio.Twilio;
+  private twilioClient: any; // twilio.Twilio when dependency is installed
 
   constructor() {
     // Email configuration (using environment variables)
@@ -62,7 +61,7 @@ export class NotificationService {
     };
 
     // Initialize email transporter
-    this.emailTransporter = nodemailer.createTransporter({
+    this.emailTransporter = nodemailer.createTransport({
       host: this.emailConfig.host,
       port: this.emailConfig.port,
       secure: this.emailConfig.secure,
@@ -70,9 +69,10 @@ export class NotificationService {
     });
 
     // Initialize Twilio client
-    if (this.smsConfig.accountSid && this.smsConfig.authToken) {
-      this.twilioClient = twilio(this.smsConfig.accountSid, this.smsConfig.authToken);
-    }
+    // Uncomment when twilio is installed: npm install twilio
+    // if (this.smsConfig.accountSid && this.smsConfig.authToken) {
+    //   this.twilioClient = twilio(this.smsConfig.accountSid, this.smsConfig.authToken);
+    // }
   }
 
   // Send email notification
@@ -110,7 +110,7 @@ export class NotificationService {
       console.error('Email sending error:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
@@ -150,7 +150,7 @@ export class NotificationService {
       console.error('SMS sending error:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
@@ -238,14 +238,15 @@ export class NotificationService {
 
     } catch (error) {
       console.error('Notification processing error:', error);
-      
+
       // Update notification with error
+      const errorMessage = error instanceof Error ? error.message : String(error);
       try {
         await prisma.followUpNotification.update({
           where: { id: notificationId },
           data: {
             status: 'FAILED',
-            errorMessage: error.message,
+            errorMessage: errorMessage,
             retryCount: { increment: 1 }
           }
         });
@@ -253,7 +254,7 @@ export class NotificationService {
         console.error('Failed to update notification error:', updateError);
       }
 
-      return { success: false, error: error.message };
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -321,7 +322,7 @@ export class NotificationService {
       console.error('Batch notification processing error:', error);
       result.errors.push({
         id: 'batch-process',
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       });
     }
 
@@ -395,7 +396,7 @@ export class NotificationService {
 
             result.created++;
           } catch (error) {
-            result.errors.push(`Email notification error: ${error.message}`);
+            result.errors.push(`Email notification error: ${error instanceof Error ? error.message : String(error)}`);
           }
         }
 
@@ -422,13 +423,13 @@ export class NotificationService {
 
             result.created++;
           } catch (error) {
-            result.errors.push(`SMS notification error: ${error.message}`);
+            result.errors.push(`SMS notification error: ${error instanceof Error ? error.message : String(error)}`);
           }
         }
       }
 
     } catch (error) {
-      result.errors.push(`Scheduling error: ${error.message}`);
+      result.errors.push(`Scheduling error: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -568,8 +569,8 @@ Your Service Team`;
     sms: { configured: boolean; error?: string };
   }> {
     const result = {
-      email: { configured: false },
-      sms: { configured: false }
+      email: { configured: false as boolean, error: undefined as string | undefined },
+      sms: { configured: false as boolean, error: undefined as string | undefined }
     };
 
     // Test email configuration
@@ -581,7 +582,7 @@ Your Service Team`;
         result.email.error = 'Email credentials not configured';
       }
     } catch (error) {
-      result.email.error = error.message;
+      result.email.error = error instanceof Error ? error.message : String(error);
     }
 
     // Test SMS configuration
@@ -596,7 +597,7 @@ Your Service Team`;
         result.sms.error = 'SMS credentials not configured';
       }
     } catch (error) {
-      result.sms.error = error.message;
+      result.sms.error = error instanceof Error ? error.message : String(error);
     }
 
     return result;

@@ -297,17 +297,16 @@ const DailyPlanner: React.FC<DailyPlannerProps> = ({ date = createLocalDate(), o
       id: event.id,
       title: event.title,
       description: event.description || '',
-      date: format(eventDate, 'yyyy-MM-dd'),
       startTime: startTimeDate,
       endTime: endTimeDate,
-      duration: event.duration,
+      estimatedDuration: event.duration,
       priority: event.priority,
       status: 'pending' as const,
-      category: event.type,
       location: event.location || '',
-      client: event.clientName || ''
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
-    combinedTasks.push(eventAsTask)
+    combinedTasks.push(eventAsTask as any)
   }
   
   const sortedTasks = sortTasksByTime(combinedTasks)
@@ -962,17 +961,17 @@ Rescheduled: ${data.reason}`.trim() :
           
           if (participants.length > 0) {
             // Create the new event object with updated times
-            const newEvent = {
+            const newEvent: UnifiedEvent = {
               ...data.event,
-              startDateTime: newStart,
-              endDateTime: newEnd,
+              startDateTime: typeof newStart === 'string' ? newStart : newStart.toISOString(),
+              endDateTime: typeof newEnd === 'string' ? newEnd : newEnd.toISOString(),
               updatedAt: new Date().toISOString()
             }
-            
+
             // Send reschedule notifications via API
             const result = await ClientNotificationService.sendRescheduleNotification({
               originalEvent: data.event,
-              newEvent,
+              newEvent: newEvent as any,
               participants,
               reason: data.reason
             })
@@ -1158,7 +1157,7 @@ Resized: ${data.reason}`.trim() :
                 const startMinutes = startTime.getMinutes();
                 
                 // Calculate end time
-                const duration = task.duration || 60; // Default 1 hour if no duration
+                const duration = ('estimatedDuration' in task ? task.estimatedDuration : 60) || 60; // Default 1 hour if no duration
                 const endTime = new Date(startTime.getTime() + duration * 60000);
                 const endHour = endTime.getHours();
                 const endMinutes = endTime.getMinutes();
@@ -1194,15 +1193,17 @@ Resized: ${data.reason}`.trim() :
               }
               
               // Fallback for legacy string format (should not happen after fixes)
-              if (typeof startTime === 'string') {
-                const [hourStr, minuteStr = '0'] = startTime.split(':');
+              const startTimeStr = startTime as unknown as string;
+              if (typeof startTimeStr === 'string' && startTimeStr.includes(':')) {
+                const timeParts = startTimeStr.split(':');
+                const [hourStr, minuteStr = '0'] = timeParts;
                 const taskHour = parseInt(hourStr, 10);
                 const taskMinutes = parseInt(minuteStr, 10);
-                
+
                 if (isNaN(taskHour)) return false;
-                
+
                 // Calculate end hour for legacy format
-                const duration = task.duration || 60;
+                const duration = ('estimatedDuration' in task ? task.estimatedDuration : 60) || 60;
                 const totalMinutes = taskHour * 60 + taskMinutes + duration;
                 const endHour = Math.floor(totalMinutes / 60);
                 
@@ -1247,20 +1248,20 @@ Resized: ${data.reason}`.trim() :
               
               {/* Events for this hour - using continuous blocks */}
               <div className="col-span-10">
-                <DropZone 
-                  date={format(date, 'yyyy-MM-dd')}
-                  hour={hour}
-                  isOccupied={hourTasks.length > 0}
-                  events={hourTasks.filter(task => events.find(e => e.id === task.id))}
-                  onTimeSlotClick={(clickDate, clickHour) => {
-                    const timeString = `${clickHour.toString().padStart(2, '0')}:00`
-                    setSelectedTimeSlot(timeString)
-                    setEditingEvent(null)
-                    setShowEventModal(true)
-                  }}
-                  className="relative"
-                  style={{ height: `${pixelsPerHour}px` }}
-                >
+                <div style={{ height: `${pixelsPerHour}px` }}>
+                  <DropZone
+                    date={format(date, 'yyyy-MM-dd')}
+                    hour={hour}
+                    isOccupied={hourTasks.length > 0}
+                    events={hourTasks.filter(task => events.find(e => e.id === task.id)) as any}
+                    onTimeSlotClick={(clickDate, clickHour) => {
+                      const timeString = `${clickHour.toString().padStart(2, '0')}:00`
+                      setSelectedTimeSlot(timeString)
+                      setEditingEvent(null)
+                      setShowEventModal(true)
+                    }}
+                    className="relative"
+                  >
                   {/* Events for this hour - display continuous blocks only at start hour */}
                   {hourTasks.length > 0 ? (
                     <div className="space-y-2 overflow-visible">
@@ -1487,6 +1488,7 @@ Resized: ${data.reason}`.trim() :
                     </div>
                   ) : null}
                 </DropZone>
+                </div>
               </div>
             </div>
           )
@@ -1593,7 +1595,9 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ task, onEdit, onStatusChange, onV
       clientId: task.clientId,
       location: task.location,
       notes: task.notes,
-      status: task.status
+      status: task.status,
+      createdAt: task.createdAt instanceof Date ? task.createdAt.toISOString() : new Date().toISOString(),
+      updatedAt: task.updatedAt instanceof Date ? task.updatedAt.toISOString() : new Date().toISOString()
     }
   }
 

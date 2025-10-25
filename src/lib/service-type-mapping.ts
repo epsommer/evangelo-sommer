@@ -22,9 +22,14 @@ export const SERVICE_TYPE_TO_BUSINESS_ID: Record<ServiceType, string> = {
   DESIGN: 'woodgreen',
   INSTALLATION: 'woodgreen',
   
-  // White Knight Snow Removal Services  
+  // White Knight Snow Removal Services
   SNOW_REMOVAL: 'whiteknight',      // ← SNOW removal goes to whiteknight
-  
+  PREMIUM_SALTING: 'whiteknight',
+  CALCIUM_MAGNESIUM_MIX: 'whiteknight',
+  SNOW_PLOWING: 'whiteknight',
+  ICE_MANAGEMENT: 'whiteknight',
+  WINTER_MAINTENANCE: 'whiteknight',
+
   // Generic services (could apply to multiple businesses)
   EMERGENCY: 'woodgreen', // Default to woodgreen but could be context-dependent
   CONSULTATION: 'woodgreen' // Default to woodgreen but could be context-dependent
@@ -132,17 +137,17 @@ export class ServiceMapper {
     return explanations.join(' | ');
   }
 
-  private static getBusinessName(businessId: string): string {
+  static getBusinessName(businessId: string): string {
     const names = {
       'woodgreen': 'Woodgreen Landscaping',
       'whiteknight': 'White Knight Snow',
-      'pupawalk': 'Pupawalk Pet Services', 
+      'pupawalk': 'Pupawalk Pet Services',
       'creative': 'Creative Development'
     };
     return names[businessId as keyof typeof names] || businessId;
   }
 
-  private static getServiceDisplayName(serviceType: ServiceType): string {
+  static getServiceDisplayName(serviceType: ServiceType): string {
     return serviceType.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
 }

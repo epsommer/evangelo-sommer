@@ -49,7 +49,13 @@ export default function ConversationBillingPanel({
   useEffect(() => {
     // Analyze conversation for billing opportunities
     // TODO: Move to API endpoint
-    const suggestion = { shouldCreateBill: false, confidence: 'low', serviceType: null, suggestedAmount: null, reason: 'Billing analysis temporarily disabled' };
+    const suggestion: BillingSuggestion = {
+      type: 'none',
+      confidence: 'low',
+      serviceType: undefined,
+      suggestedAmount: undefined,
+      reason: 'Billing analysis temporarily disabled'
+    };
     setBillingSuggestion(suggestion);
     
     // Load existing billing documents for this conversation
@@ -160,9 +166,11 @@ export default function ConversationBillingPanel({
 
     setIsLoading(true);
     try {
-      const invoice = await billingManager.createInvoice(invoiceFormData as CreateInvoiceData);
+      // TODO: Replace with API call to /api/billing/invoices
+      console.log('Invoice creation temporarily disabled');
+      const invoice = { id: 'temp-' + Date.now(), ...invoiceFormData };
       console.log('Invoice created:', invoice);
-      
+
       // Refresh the existing documents
       loadExistingBillingDocuments();
       setShowInvoiceForm(false);
@@ -235,37 +243,17 @@ export default function ConversationBillingPanel({
   };
 
   const viewReceipt = async (receiptId: string) => {
-    const receipt = billingManager.getReceiptById(receiptId);
-    if (!receipt) {
-      alert('Receipt not found');
-      return;
-    }
-
-    try {
-      const pdfUrl = await PDFGenerator.generateReceiptPDF(receipt);
-      // Open in new window/tab
-      window.open(pdfUrl, '_blank');
-    } catch (error) {
-      console.error('Error generating receipt PDF:', error);
-      alert('Failed to generate receipt PDF');
-    }
+    // TODO: Replace with API call to /api/billing/receipts/:id
+    console.log('Receipt viewing temporarily disabled');
+    alert('Receipt viewing is temporarily disabled. Please use the API endpoint.');
+    return;
   };
 
   const viewInvoice = async (invoiceId: string) => {
-    const invoice = billingManager.getInvoiceById(invoiceId);
-    if (!invoice) {
-      alert('Invoice not found');
-      return;
-    }
-
-    try {
-      const pdfUrl = await PDFGenerator.generateInvoicePDF(invoice);
-      // Open in new window/tab
-      window.open(pdfUrl, '_blank');
-    } catch (error) {
-      console.error('Error generating invoice PDF:', error);
-      alert('Failed to generate invoice PDF');
-    }
+    // TODO: Replace with API call to /api/billing/invoices/:id
+    console.log('Invoice viewing temporarily disabled');
+    alert('Invoice viewing is temporarily disabled. Please use the API endpoint.');
+    return;
   };
 
   return (

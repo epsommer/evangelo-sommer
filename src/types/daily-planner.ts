@@ -68,25 +68,25 @@ export interface ServiceTypeConfig {
 
 export const SERVICE_TYPE_CONFIGS: ServiceTypeConfig[] = [
   {
-    id: 'landscaping',
+    id: 'woodgreen',
     name: 'Woodgreen Landscaping',
     color: 'service-landscaping',
     icon: 'Leaf'
   },
   {
-    id: 'snow_removal',
+    id: 'whiteknight',
     name: 'White Knight Snow Removal',
     color: 'service-snow-removal',
     icon: 'Snowflake'
   },
   {
-    id: 'pet_services',
+    id: 'pupawalk',
     name: 'Pup-a-Walk Pet Services',
     color: 'service-pet-services',
     icon: 'Heart'
   },
   {
-    id: 'creative_development',
+    id: 'creative',
     name: 'Creative Development',
     color: 'service-creative-development',
     icon: 'Palette'

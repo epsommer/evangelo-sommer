@@ -539,7 +539,14 @@ ${data.organizerEmail}
       const originalData = this.prepareTemplateData(originalAppointment, participant)
       const newData = this.prepareTemplateData(newAppointment, participant)
       const { html, text } = this.generateRescheduleEmail(originalData, newData, reason)
-      
+
+      if (!participant.email) {
+        return {
+          success: false,
+          error: 'Participant has no email address'
+        }
+      }
+
       const result = await this.sendEmail({
         to: participant.email,
         subject: `Appointment Rescheduled: ${newAppointment.title}`,

@@ -149,7 +149,7 @@ export class GoogleCalendarService {
 
     } catch (error) {
       // Handle token refresh
-      if (error.code === 401 && integration.refreshToken) {
+      if ((error as any)?.code === 401 && integration.refreshToken) {
         try {
           const newAccessToken = await this.refreshAccessToken(integration.refreshToken);
           
@@ -160,11 +160,11 @@ export class GoogleCalendarService {
           // Retry the operation
           return this.createFollowUpEvent(followUp, updatedIntegration);
         } catch (refreshError) {
-          throw new Error(`Failed to refresh token and create event: ${refreshError.message}`);
+          throw new Error(`Failed to refresh token and create event: ${((refreshError instanceof Error) ? refreshError.message : String(refreshError))}`);
         }
       }
       
-      throw new Error(`Failed to create calendar event: ${error.message}`);
+      throw new Error(`Failed to create calendar event: ${((error instanceof Error) ? error.message : String(error))}`);
     }
   }
 
@@ -219,13 +219,13 @@ export class GoogleCalendarService {
       });
 
     } catch (error) {
-      if (error.code === 401 && integration.refreshToken) {
+      if ((error as any)?.code === 401 && integration.refreshToken) {
         const newAccessToken = await this.refreshAccessToken(integration.refreshToken);
         const updatedIntegration = { ...integration, accessToken: newAccessToken };
         return this.updateFollowUpEvent(followUp, updatedIntegration);
       }
       
-      throw new Error(`Failed to update calendar event: ${error.message}`);
+      throw new Error(`Failed to update calendar event: ${((error instanceof Error) ? error.message : String(error))}`);
     }
   }
 
@@ -244,15 +244,15 @@ export class GoogleCalendarService {
       });
 
     } catch (error) {
-      if (error.code === 401 && integration.refreshToken) {
+      if ((error as any)?.code === 401 && integration.refreshToken) {
         const newAccessToken = await this.refreshAccessToken(integration.refreshToken);
         const updatedIntegration = { ...integration, accessToken: newAccessToken };
         return this.deleteFollowUpEvent(googleCalendarEventId, updatedIntegration);
       }
       
       // Don't throw error if event doesn't exist (already deleted)
-      if (error.code !== 404) {
-        throw new Error(`Failed to delete calendar event: ${error.message}`);
+      if ((error as any)?.code !== 404) {
+        throw new Error(`Failed to delete calendar event: ${((error instanceof Error) ? error.message : String(error))}`);
       }
     }
   }
@@ -323,7 +323,7 @@ export class GoogleCalendarService {
             const eventId = await this.createFollowUpEvent(followUp, integration);
             result.created++;
           } catch (error) {
-            result.errors.push(`Failed to create event for follow-up ${followUp.id}: ${error.message}`);
+            result.errors.push(`Failed to create event for follow-up ${followUp.id}: ${((error instanceof Error) ? error.message : String(error))}`);
           }
         } else {
           // Check if event still exists in calendar
@@ -336,7 +336,7 @@ export class GoogleCalendarService {
               await this.createFollowUpEvent(followUp, integration);
               result.created++;
             } catch (error) {
-              result.errors.push(`Failed to recreate missing event for follow-up ${followUp.id}: ${error.message}`);
+              result.errors.push(`Failed to recreate missing event for follow-up ${followUp.id}: ${((error instanceof Error) ? error.message : String(error))}`);
             }
           } else {
             // Update existing event
@@ -344,7 +344,7 @@ export class GoogleCalendarService {
               await this.updateFollowUpEvent(followUp, integration);
               result.updated++;
             } catch (error) {
-              result.errors.push(`Failed to update event for follow-up ${followUp.id}: ${error.message}`);
+              result.errors.push(`Failed to update event for follow-up ${followUp.id}: ${((error instanceof Error) ? error.message : String(error))}`);
             }
           }
         }
@@ -365,14 +365,14 @@ export class GoogleCalendarService {
               await this.deleteFollowUpEvent(event.id, integration);
               result.deleted++;
             } catch (error) {
-              result.errors.push(`Failed to delete orphaned event ${event.id}: ${error.message}`);
+              result.errors.push(`Failed to delete orphaned event ${event.id}: ${((error instanceof Error) ? error.message : String(error))}`);
             }
           }
         }
       }
 
     } catch (error) {
-      result.errors.push(`Sync failed: ${error.message}`);
+      result.errors.push(`Sync failed: ${((error instanceof Error) ? error.message : String(error))}`);
     }
 
     return result;
@@ -398,10 +398,10 @@ export class GoogleCalendarService {
       lines.push(followUp.notes);
     }
     
-    if (followUp.actionItems && followUp.actionItems.length > 0) {
+    if (followUp.actionItems && Array.isArray(followUp.actionItems) && followUp.actionItems.length > 0) {
       lines.push('');
       lines.push('Action Items:');
-      followUp.actionItems.forEach(item => lines.push(`• ${item}`));
+      (followUp.actionItems as string[]).forEach((item: string) => lines.push(`• ${item}`));
     }
     
     lines.push('');
@@ -493,7 +493,7 @@ export class GoogleCalendarService {
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: ((error instanceof Error) ? error.message : String(error))
       };
     }
   }

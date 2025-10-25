@@ -1,7 +1,7 @@
 // Enhanced Authentication with Security Features
 import NextAuth, { type NextAuthOptions, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { AuthenticationService } from '@/lib/auth/auth-security';
+import { AuthenticationService } from '@/lib/auth-security';
 import { JWT } from "next-auth/jwt";
 const authOptions: NextAuthOptions = {
   providers: [
@@ -108,23 +108,24 @@ const authOptions: NextAuthOptions = {
     updateAge: 5 * 60, // Update every 5 minutes
   },
   callbacks: {
-    async jwt({ token, user }): Promise<JWT | null> {
+    async jwt({ token, user }): Promise<JWT> {
       // Enhanced JWT with security features
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
-        token.role = (user as NextAuthUser & { role: string }).role;
+        token.role = (user as unknown as { role: string }).role;
         token.iat = Math.floor(Date.now() / 1000);
       }
-      
+
       // Token rotation - invalidate after 15 minutes
       const now = Math.floor(Date.now() / 1000);
       if (token.iat && now - (token.iat as number) > 15 * 60) {
         console.log('🔄 JWT token expired, forcing re-authentication');
-        return null;
+        // Instead of returning null, mark token as expired
+        token.expired = true;
       }
-      
+
       return token;
     },
     async session({ session, token }) {

@@ -186,7 +186,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                       <Label htmlFor="serviceType">Service Type *</Label>
                       <Select
                         value={formData.serviceType || ''}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, serviceType: value as ServiceType }))}
+                        onValueChange={(value: string) => setFormData(prev => ({ ...prev, serviceType: value as ServiceType }))}
                         disabled={isViewMode}
                       >
                         <SelectTrigger>
@@ -215,7 +215,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                       <Input
                         type="date"
                         value={formData.serviceDate || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, serviceDate: e.target.value }))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, serviceDate: e.target.value }))}
                         disabled={isViewMode}
                       />
                       {errors.serviceDate && <p className="text-red-500 text-sm mt-1">{errors.serviceDate}</p>}
@@ -227,7 +227,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                     <Input
                       placeholder="e.g., Front and back yard, Driveway and walkway"
                       value={formData.serviceArea || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, serviceArea: e.target.value }))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, serviceArea: e.target.value }))}
                       disabled={isViewMode}
                     />
                     {errors.serviceArea && <p className="text-red-500 text-sm mt-1">{errors.serviceArea}</p>}
@@ -237,7 +237,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                     <Label htmlFor="completionStatus">Completion Status</Label>
                     <Select
                       value={formData.completionStatus || 'SCHEDULED'}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, completionStatus: value as CompletionStatus }))}
+                      onValueChange={(value: string) => setFormData(prev => ({ ...prev, completionStatus: value as CompletionStatus }))}
                       disabled={isViewMode}
                     >
                       <SelectTrigger>
@@ -258,7 +258,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                     <Textarea
                       placeholder="Service notes, special instructions, or observations..."
                       value={formData.notes || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                       rows={3}
                       disabled={isViewMode}
                     />
@@ -283,7 +283,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                         step="0.01"
                         placeholder="0.00"
                         value={formData.amount || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                         disabled={isViewMode}
                       />
                       {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
@@ -293,7 +293,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                       <Label htmlFor="currency">Currency</Label>
                       <Select
                         value={formData.currency || 'CAD'}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+                        onValueChange={(value: string) => setFormData(prev => ({ ...prev, currency: value }))}
                         disabled={isViewMode}
                       >
                         <SelectTrigger>
@@ -315,7 +315,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                         step="0.01"
                         placeholder="Same as service amount"
                         value={formData.billingAmount || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, billingAmount: parseFloat(e.target.value) || 0 }))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, billingAmount: parseFloat(e.target.value) || 0 }))}
                         disabled={isViewMode}
                       />
                     </div>
@@ -325,7 +325,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                       <Input
                         type="date"
                         value={formData.billingDate || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, billingDate: e.target.value }))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, billingDate: e.target.value }))}
                         disabled={isViewMode}
                       />
                     </div>
@@ -335,7 +335,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                     <Label htmlFor="billingStatus">Billing Status</Label>
                     <Select
                       value={formData.billingStatus || 'PENDING'}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, billingStatus: value as BillingStatus }))}
+                      onValueChange={(value: string) => setFormData(prev => ({ ...prev, billingStatus: value as BillingStatus }))}
                       disabled={isViewMode}
                     >
                       <SelectTrigger>
@@ -369,7 +369,7 @@ const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                     <Label htmlFor="serviceLineId">Service Line</Label>
                     <Select
                       value={formData.serviceLineId || ''}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, serviceLineId: value }))}
+                      onValueChange={(value: string) => setFormData(prev => ({ ...prev, serviceLineId: value }))}
                       disabled={isViewMode}
                     >
                       <SelectTrigger>

@@ -402,9 +402,9 @@ function MessageEditRow({
               <p className="font-primary text-hud-text-primary">{message.content}</p>
               <div className="flex items-center space-x-4 text-xs text-medium-grey font-primary">
                 <span>{new Date(message.timestamp).toLocaleString()}</span>
-                {message.metadata?.importMethod && (
+                {'importMethod' in (message.metadata || {}) && message.metadata && (
                   <span className="px-2 py-0.5 bg-tactical-grey-200 text-tactical-grey-600 rounded uppercase tracking-wide">
-                    {message.metadata.importMethod}
+                    {(message.metadata as any).importMethod}
                   </span>
                 )}
               </div>

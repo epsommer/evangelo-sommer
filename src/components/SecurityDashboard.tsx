@@ -121,7 +121,7 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ userRole }) => {
               </div>
             </div>
             <div className="text-3xl font-bold text-hud-text-primary mb-1 font-primary">
-              {Object.values(securityStats?.loginAttemptsByEmail || {}).reduce((a, b) => a + b, 0)}
+              {Object.values(securityStats?.loginAttemptsByEmail || {}).reduce((a: number, b: unknown) => a + (typeof b === 'number' ? b : 0), 0)}
             </div>
             <div className="text-xs text-medium-grey uppercase tracking-wider font-primary">
               UNIQUE ATTEMPTS

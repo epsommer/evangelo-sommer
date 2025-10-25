@@ -324,8 +324,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
       
       return newData
     })
-    
-    if (errors[field]) {
+
+    if ((errors as any)[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }

@@ -35,7 +35,7 @@ const ServiceLineDebugger: React.FC<ServiceLineDebuggerProps> = ({ client, clien
 
     console.clear()
     console.log('🔍 DIAGNOSTIC: Starting Service Line Debug Analysis')
-    console.log('=' * 60)
+    console.log('='.repeat(60))
 
     // Full Client Data
     console.group('📋 1. Full Client Data Object')

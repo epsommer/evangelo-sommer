@@ -91,7 +91,7 @@ const EnhancedMissionObjectives: React.FC<MissionObjectivesProps> = ({
           position: obj.position ?? index
         }))
         // Sort by position
-        objectivesWithPositions.sort((a, b) => (a.position || 0) - (b.position || 0))
+        objectivesWithPositions.sort((a: MissionObjective, b: MissionObjective) => (a.position || 0) - (b.position || 0))
         setObjectives(objectivesWithPositions)
       } catch (error) {
         console.warn('Failed to parse stored objectives:', error)
@@ -454,7 +454,7 @@ const EnhancedMissionObjectives: React.FC<MissionObjectivesProps> = ({
       const sortedIncomplete = result.sortedObjectives.map((sortItem: any) => {
         const objective = incompleteObjectives.find(obj => obj.id === sortItem.id)
         return { ...objective, position: sortItem.newPosition }
-      }).sort((a, b) => (a.position || 0) - (b.position || 0))
+      }).sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
 
       setObjectives([...sortedIncomplete, ...completedObjectives])
 

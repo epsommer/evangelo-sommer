@@ -9,8 +9,9 @@ import { useUnifiedEvents } from '@/hooks/useUnifiedEvents';
 import DropdownMenu from '@/components/ui/DropdownMenu';
 
 // Safe date formatting utility
-const safeFormatDate = (dateValue: string | Date, formatStr: string, fallback: string = '--:--'): string => {
+const safeFormatDate = (dateValue: string | Date | undefined, formatStr: string, fallback: string = '--:--'): string => {
   try {
+    if (!dateValue) return fallback;
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
     return isNaN(date.getTime()) ? fallback : format(date, formatStr);
   } catch {
@@ -33,6 +34,10 @@ interface ScheduledService {
   priority: string;
   status: string;
   duration: number;
+  googleCalendarId?: string;
+  clientId?: string;
+  location?: string;
+  recurrence?: string;
 }
 
 interface ScheduleCalendarProps {
@@ -342,7 +347,9 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                           className={`text-xs p-1 border rounded cursor-pointer hover:shadow-sm transition-all group/event ${priorityColor}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setViewingSchedule(service);
+                            if ('service' in service && 'clientName' in service) {
+                              setViewingSchedule(service as ScheduledService);
+                            }
                             
                             // Also trigger the parent's onEventView if provided
                             if (onEventView) {

@@ -410,7 +410,15 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
       isTouch: true,
       touchStartTime: Date.now(),
       longPressTimer: setTimeout(() => {
-        handleDragStart(e)
+        // Start drag on long press
+        const dragOffset = { x: 0, y: 0 }
+        startDrag(event, dragOffset, { date: currentDate, hour: currentHour })
+        const dragData: DragData = {
+          event,
+          originalSlot: { date: currentDate, hour: currentHour },
+          dragOffset
+        }
+        onDragStart?.(dragData)
       }, 500) // 500ms long press to start drag
     }))
   }
@@ -421,13 +429,12 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
     }
 
     // If it was a quick tap and not a drag, handle as click
-    if (!dragState.isDragging && !dragState.hasMoved && Date.now() - touchState.touchStartTime < 300) {
+    if (!dragState.isDragging && Date.now() - touchState.touchStartTime < 300) {
       console.log('🎯 Touch tap triggered for:', event.title)
       onClick?.(event)
     } else {
       console.log('🎯 Touch tap suppressed - was drag or long press:', {
         isDragging: dragState.isDragging,
-        hasMoved: dragState.hasMoved,
         duration: Date.now() - touchState.touchStartTime
       })
     }
