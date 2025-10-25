@@ -179,25 +179,35 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
       'creative_development': 100,
       'consultation': 150
     }
-    
+
     let multiplier = 75 // default
     if ('serviceType' in event && event.serviceType) {
       multiplier = serviceMultipliers[event.serviceType as keyof typeof serviceMultipliers] || 75
     }
-    
+
     // Calculate duration in hours
-    const start = new Date('startDateTime' in event ? event.startDateTime : event.conflictingEvent.startDateTime)
-    const end = new Date('endDateTime' in event ? event.endDateTime : event.conflictingEvent.endDateTime)
+    // Type guard to check if event is ConflictDetail
+    const isConflictDetail = (e: UnifiedEvent | ConflictDetail): e is ConflictDetail => {
+      return 'conflictingEvent' in e
+    }
+
+    const startValue = 'startDateTime' in event ? event.startDateTime :
+      isConflictDetail(event) ? event.conflictingEvent.startDateTime : new Date()
+    const endValue = 'endDateTime' in event ? event.endDateTime :
+      isConflictDetail(event) ? event.conflictingEvent.endDateTime : new Date()
+
+    const start = new Date(startValue || new Date())
+    const end = new Date(endValue || new Date())
     const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
-    
+
     return multiplier * durationHours
   }
 
   const organizeConflictsByPriority = () => {
     return [...conflicts.conflicts].sort((a, b) => {
       // Sort by severity first, then by client priority, then by revenue impact
-      const severityOrder = { 'critical': 3, 'high': 2, 'medium': 1, 'low': 0 }
-      const severityDiff = (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0)
+      const severityOrder: Record<ConflictSeverity, number> = { 'critical': 3, 'error': 2, 'warning': 1 }
+      const severityDiff = (severityOrder[b.severity] ?? 0) - (severityOrder[a.severity] ?? 0)
       
       if (severityDiff !== 0) return severityDiff
       
@@ -457,11 +467,11 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
         // Find all conflicts that reference this event
         const conflictsForEvent = pendingDeleteAction.conflictIds
           .map(conflictId => conflicts?.conflicts.find(c => c.id === conflictId))
-          .filter(conflict => conflict && conflict.conflictingEvent.id === eventId)
+          .filter((conflict): conflict is ConflictDetail => !!conflict && conflict.conflictingEvent.id === eventId)
 
         if (conflictsForEvent.length === 0) continue
 
-        const firstConflict = conflictsForEvent[0]!
+        const firstConflict = conflictsForEvent[0]
         console.log(`🔥 Processing deletion ${index + 1}: eventId=${eventId}, conflicts=${conflictsForEvent.length}`)
         console.log(`🔥 Deleting event: ${firstConflict.conflictingEvent?.title} (ID: ${eventId})`)
 

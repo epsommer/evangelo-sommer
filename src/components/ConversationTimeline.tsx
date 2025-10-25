@@ -32,7 +32,13 @@ export function ConversationTimeline({
       // Only analyze client messages for billing opportunities
       if (message.role === 'client') {
         // TODO: Move to API endpoint
-        const suggestion = { shouldCreateBill: false, confidence: 'low', serviceType: null, suggestedAmount: null, reason: 'Billing analysis temporarily disabled' };
+        const suggestion: BillingSuggestion = {
+          type: 'none',
+          confidence: 'low',
+          serviceType: 'general',
+          suggestedAmount: 0,
+          reason: 'Billing analysis temporarily disabled'
+        };
         return {
           ...message,
           billingSuggestion: suggestion

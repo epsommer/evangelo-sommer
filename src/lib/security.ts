@@ -196,7 +196,7 @@ export function shouldLockAccount(email: string): boolean {
 
 // Permission checking
 export function hasPermission(userRole: UserRole, permission: string): boolean {
-  const rolePermissions = ROLE_PERMISSIONS[userRole] || []
+  const rolePermissions: readonly string[] = ROLE_PERMISSIONS[userRole] || []
   return rolePermissions.includes(permission)
 }
 

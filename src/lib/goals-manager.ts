@@ -457,7 +457,7 @@ export class GoalsManager {
       })
       .map(milestone => ({ ...milestone, type: 'milestone' as const }))
     
-    return [...upcomingGoals, ...upcomingMilestones]
+    return ([...upcomingGoals, ...upcomingMilestones] as (Goal | Milestone)[])
       .sort((a, b) => {
         const dateA = new Date('endDate' in a ? a.endDate : a.dueDate)
         const dateB = new Date('endDate' in b ? b.endDate : b.dueDate)

@@ -672,7 +672,7 @@ export function convertSMSToMessages(result: SMSProcessingResult): Message[] {
       reconstructed: smsMessage.metadata.reconstructed,
       originalSender: smsMessage.metadata.originalSender,
       originalType: smsMessage.metadata.originalType
-    }
+    } as any
   }));
 }
 
