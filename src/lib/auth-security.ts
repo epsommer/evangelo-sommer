@@ -1,12 +1,13 @@
 // Enhanced Authentication Security System
-import { 
-  checkRateLimit, 
-  recordLoginAttempt, 
-  logSecurityEvent, 
-  shouldLockAccount, 
-  getClientIp, 
+import bcrypt from 'bcrypt';
+import {
+  checkRateLimit,
+  recordLoginAttempt,
+  logSecurityEvent,
+  shouldLockAccount,
+  getClientIp,
   generateSecureToken,
-  SECURITY_CONFIG 
+  SECURITY_CONFIG
 } from './security'
 import { UserRole, SecurityEventType } from '@/types/security'
 
@@ -257,10 +258,15 @@ export class AuthenticationService {
     }
   }
 
-  // Password verification (simplified - use bcrypt in production)
+  // Password verification using bcrypt
   private static async verifyPassword(password: string, hash: string, salt: string): Promise<boolean> {
-    // This is a placeholder - in production, use bcrypt.compare()
-    return hash === 'secure-hash-placeholder' && password.length > 0
+    try {
+      // Use bcrypt to securely compare password with hash
+      return await bcrypt.compare(password, hash);
+    } catch (error) {
+      console.error('Password verification error:', error);
+      return false;
+    }
   }
 
   // Generate 2FA code

@@ -47,7 +47,8 @@ function getServiceSMTPConfig() {
       pass: process.env.SMTP_PASS_B64 ? Buffer.from(process.env.SMTP_PASS_B64, 'base64').toString() : ''
     },
     tls: {
-      rejectUnauthorized: false
+      rejectUnauthorized: true,
+      minVersion: 'TLSv1.2'
     }
   };
 }

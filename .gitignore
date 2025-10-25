@@ -118,3 +118,6 @@ dist
 
 # Markdown files
 *.md
+
+# Scripts with sensitive configuration
+get-refresh-token.js

@@ -1,6 +1,7 @@
 // Shared NextAuth configuration
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -28,26 +29,37 @@ export const authOptions: NextAuthOptions = {
         }
 
         const adminEmail = process.env.ADMIN_EMAIL || "admin@evangelosommer.com";
-        const adminPassword = process.env.ADMIN_PASSWORD;
+        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
         const inputEmail = credentials.email.toLowerCase().trim();
         const expectedEmail = adminEmail.toLowerCase().trim();
 
-        // PRODUCTION SAFETY: Require password in production
-        if (process.env.NODE_ENV === 'production') {
-          console.log("🔐 PRODUCTION MODE - Password required");
+        // Verify email first
+        if (inputEmail !== expectedEmail) {
+          console.log("❌ AUTH - Invalid email");
+          return null;
+        }
 
-          if (!adminPassword) {
-            console.log("❌ PRODUCTION ERROR - No ADMIN_PASSWORD configured");
-            return null;
-          }
+        // Always require password (removed development bypass for security)
+        if (!credentials.password) {
+          console.log("❌ AUTH - No password provided");
+          return null;
+        }
 
-          if (!credentials.password) {
-            console.log("❌ PRODUCTION ERROR - No password provided");
-            return null;
-          }
+        if (!adminPasswordHash) {
+          console.log("❌ AUTH ERROR - No ADMIN_PASSWORD_HASH configured");
+          console.log("💡 Run: node scripts/hash-password.js to generate a hash");
+          return null;
+        }
 
-          if (inputEmail === expectedEmail && credentials.password === adminPassword) {
-            console.log("✅ PRODUCTION AUTH - Success");
+        try {
+          // Use bcrypt to verify password
+          const isValidPassword = await bcrypt.compare(
+            credentials.password,
+            adminPasswordHash
+          );
+
+          if (isValidPassword) {
+            console.log("✅ AUTH - Success");
             return {
               id: "admin-001",
               email: adminEmail,
@@ -55,27 +67,12 @@ export const authOptions: NextAuthOptions = {
               role: "SUPER_ADMIN"
             };
           } else {
-            console.log("❌ PRODUCTION AUTH - Invalid credentials");
+            console.log("❌ AUTH - Invalid password");
             return null;
           }
-        }
-
-        // DEVELOPMENT MODE: Email-only for convenience (but still secure)
-        if (process.env.NODE_ENV === 'development') {
-          console.log("🔧 DEVELOPMENT MODE - Email-only auth enabled");
-
-          if (inputEmail === expectedEmail) {
-            console.log("✅ DEVELOPMENT AUTH - Success");
-            return {
-              id: "admin-001",
-              email: adminEmail,
-              name: "System Administrator (DEV)",
-              role: "SUPER_ADMIN"
-            };
-          } else {
-            console.log("❌ DEVELOPMENT AUTH - Wrong email");
-            return null;
-          }
+        } catch (error) {
+          console.error("❌ AUTH ERROR - Password verification failed:", error);
+          return null;
         }
 
         // FALLBACK: Default to secure mode
