@@ -1,0 +1,181 @@
+SECURITY AUDIT REPORT - evangelosommer.com
+Date: 2025-10-25
+Auditor: Evangelo Sommer
+
+================================================================================
+CRITICAL FIXES IMPLEMENTED
+================================================================================
+
+1. AUTHENTICATION MIDDLEWARE (src/middleware.ts)
+   - All API routes now require authentication
+   - JWT token validation on every request
+   - Role-based access control (SUPER_ADMIN required)
+   - Returns 401 for missing auth, 403 for insufficient permissions
+
+2. BCRYPT PASSWORD HASHING (src/lib/auth.ts, src/lib/auth-security.ts)
+   - Replaced plaintext password comparison with bcrypt
+   - Salt rounds: 12 (industry standard)
+   - Removed development authentication bypass
+   - Added password hashing utility: scripts/hash-password.js
+
+3. SECURE TLS CONFIGURATION
+   - Fixed email route TLS: rejectUnauthorized = true
+   - Minimum TLS version: 1.2
+   - Prevents man-in-the-middle attacks
+
+4. RATE LIMITING (src/middleware.ts)
+   - API routes: 100 requests per 15 minutes
+   - Login routes: 5 attempts per 15 minutes
+   - IP-based tracking
+   - Returns 429 Too Many Requests with Retry-After header
+
+5. SECURITY HEADERS (next.config.ts)
+   - Strict-Transport-Security: max-age=63072000
+   - X-Frame-Options: SAMEORIGIN
+   - X-Content-Type-Options: nosniff
+   - X-XSS-Protection: 1; mode=block
+   - Referrer-Policy: strict-origin-when-cross-origin
+   - Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+6. INPUT VALIDATION (src/lib/validation.ts)
+   - Zod schemas for API validation
+   - Email, phone, URL format validation
+   - Length limits on all text fields
+   - XSS prevention via strict validation
+
+7. CSRF PROTECTION (src/lib/csrf.ts)
+   - OAuth state parameter verification
+   - Signed state tokens with HMAC-SHA256
+   - Time-based expiry (10 minutes)
+   - Session binding for enhanced security
+
+8. ERROR MESSAGE SANITIZATION
+   - Production: Generic error messages only
+   - Development: Detailed errors for debugging
+   - Prevents information disclosure
+
+================================================================================
+KNOWN SECURITY ISSUES
+================================================================================
+
+✅ FIXED ISSUES:
+
+1. OAUTH TOKEN EXPOSURE IN URL - **FIXED**
+   Status: RESOLVED ✅
+   Implementation:
+     ✅ Created CalendarIntegration database table with encryption support
+     ✅ Implemented AES-256-GCM encryption for OAuth tokens (src/lib/encryption.ts)
+     ✅ Updated OAuth callback to store encrypted tokens in database
+     ✅ Only integration ID passed in URL (safe)
+     ✅ Created authenticated API endpoints for integration management:
+        - GET /api/calendar/integrations - List user's integrations
+        - GET /api/calendar/integrations/[id] - Get integration details
+        - DELETE /api/calendar/integrations/[id] - Revoke integration
+     ✅ Tokens NEVER sent to frontend - stay encrypted in database
+
+HIGH PRIORITY - FIX BEFORE PRODUCTION:
+
+1. DEPENDENCY VULNERABILITIES
+   Issue: 3 npm vulnerabilities detected
+   Details:
+     - quill <=1.3.7: XSS vulnerability (moderate)
+       Used by: react-quill
+       Fix: npm audit fix --force (breaking change)
+
+     - xlsx: Prototype Pollution (high)
+       No fix available
+       Impact: Potential RCE if user-uploaded Excel files are processed
+
+     - xlsx: ReDoS vulnerability (moderate)
+       No fix available
+       Impact: Denial of service via crafted Excel files
+
+   Recommendations:
+     - Update react-quill or find alternative editor
+     - Replace xlsx with safer alternative (e.g., exceljs)
+     - If xlsx required, implement strict file validation
+     - Run xlsx processing in isolated sandbox
+
+MEDIUM PRIORITY:
+
+2. INCOMPLETE INPUT VALIDATION
+   Location: src/app/api/clients/route.ts
+   Issue: Many client fields not validated by Zod schema
+   Impact: Fields like tags, metadata, billingInfo accept unvalidated input
+   Fix: Extend createClientSchema to include all fields
+
+3. IN-MEMORY RATE LIMITING
+   Location: src/middleware.ts
+   Issue: Rate limit store resets on server restart
+   Impact: Not suitable for distributed deployments
+   Fix: Use Redis or database-backed rate limiting in production
+
+4. IN-MEMORY CSRF STORAGE
+   Location: src/lib/csrf.ts
+   Issue: CSRF tokens stored in memory
+   Impact: Tokens lost on server restart, not suitable for multi-instance
+   Fix: Use Redis or encrypted database storage
+
+5. NO REQUEST LOGGING
+   Issue: No audit trail of API requests
+   Impact: Difficult to investigate security incidents
+   Fix: Implement secure logging (exclude PII)
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+BEFORE PRODUCTION DEPLOYMENT:
+
+[√] Generate password hash: node scripts/hash-password.js
+[√] Add ADMIN_PASSWORD_HASH to .env.local
+[√] Fix OAuth token handling (database storage with encryption)
+[ ] Add ADMIN_PASSWORD_HASH to Vercel environment variables
+[ ] Add CSRF_SECRET to environment variables
+[ ] Add ENCRYPTION_SECRET to environment variables (for OAuth token encryption)
+[ ] Run database migration in production: npx prisma migrate deploy
+[ ] Test authentication flow
+[ ] Test rate limiting (attempt 6+ logins)
+[ ] Test OAuth flow with encrypted token storage
+[ ] Verify security headers (curl -I your-domain.com)
+[ ] Address npm audit vulnerabilities
+[ ] Enable Redis for rate limiting (production)
+[ ] Enable Redis for CSRF storage (production)
+[ ] Set up monitoring and alerting
+[ ] Review all API routes have authentication
+[ ] Penetration testing
+[ ] Security code review
+
+VERCEL ENVIRONMENT VARIABLES REQUIRED:
+
+DATABASE_URL=<your-database-url>
+NEXTAUTH_URL=https://evangelosommer.com
+NEXTAUTH_SECRET=<generate-with: openssl rand -base64 32>
+ENCRYPTION_SECRET=<generate-with: openssl rand -base64 32>
+ADMIN_EMAIL=admin@evangelosommer.com
+ADMIN_PASSWORD_HASH=<generate-with: node scripts/hash-password.js>
+CSRF_SECRET=<generate-with: openssl rand -base64 32>
+
+GOOGLE_CLIENT_ID=<your-google-client-id>
+GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+GOOGLE_REDIRECT_URI=https://evangelosommer.com/api/auth/google/callback
+
+SMTP_HOST=<your-smtp-host>
+SMTP_PORT=587
+SMTP_USER=<your-smtp-user>
+SMTP_PASS_B64=<base64-encoded-password>
+SMTP_SECURE=true
+
+GMAIL_CLIENT_ID=<for-sending-emails>
+GMAIL_CLIENT_SECRET=<for-sending-emails>
+GMAIL_REFRESH_TOKEN=<for-sending-emails>
+
+================================================================================
+SECURITY CONTACT
+================================================================================
+
+For security issues, contact: admin@evangelosommer.com
+
+================================================================================
+END OF SECURITY AUDIT REPORT
+================================================================================

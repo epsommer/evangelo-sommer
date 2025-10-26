@@ -1,35 +1,30 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import SessionProviderWrapper from "../components/providers/SessionProviderWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Evangelo Sommer | Under Construction",
-  description: "Developed by @epsommer",
+  title: "COMMAND CENTER | MSCRMS (Multi-service Client Relationship Management Service)",
+  description: "Multi-service Client Relationship Management Service - Command Center",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/xmz8zog.css" />
+        <meta name="color-scheme" content="light dark" />
+      </head>
+      <body className="font-hud-ui antialiased">
+        <SessionProviderWrapper>{children}</SessionProviderWrapper>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
