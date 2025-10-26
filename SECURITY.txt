@@ -58,19 +58,24 @@ CRITICAL FIXES IMPLEMENTED
 KNOWN SECURITY ISSUES
 ================================================================================
 
+✅ FIXED ISSUES:
+
+1. OAUTH TOKEN EXPOSURE IN URL - **FIXED**
+   Status: RESOLVED ✅
+   Implementation:
+     ✅ Created CalendarIntegration database table with encryption support
+     ✅ Implemented AES-256-GCM encryption for OAuth tokens (src/lib/encryption.ts)
+     ✅ Updated OAuth callback to store encrypted tokens in database
+     ✅ Only integration ID passed in URL (safe)
+     ✅ Created authenticated API endpoints for integration management:
+        - GET /api/calendar/integrations - List user's integrations
+        - GET /api/calendar/integrations/[id] - Get integration details
+        - DELETE /api/calendar/integrations/[id] - Revoke integration
+     ✅ Tokens NEVER sent to frontend - stay encrypted in database
+
 HIGH PRIORITY - FIX BEFORE PRODUCTION:
 
-1. OAUTH TOKEN EXPOSURE IN URL
-   Location: src/app/api/auth/google/callback/route.ts:101-105
-   Issue: Access and refresh tokens passed via URL parameters
-   Impact: Tokens exposed in browser history, server logs, referrer headers
-   Fix Required:
-     - Create CalendarIntegration database table
-     - Encrypt tokens before storage
-     - Pass only integration ID in URL
-     - Frontend fetches via authenticated API
-
-2. DEPENDENCY VULNERABILITIES
+1. DEPENDENCY VULNERABILITIES
    Issue: 3 npm vulnerabilities detected
    Details:
      - quill <=1.3.7: XSS vulnerability (moderate)
@@ -93,25 +98,25 @@ HIGH PRIORITY - FIX BEFORE PRODUCTION:
 
 MEDIUM PRIORITY:
 
-3. INCOMPLETE INPUT VALIDATION
+2. INCOMPLETE INPUT VALIDATION
    Location: src/app/api/clients/route.ts
    Issue: Many client fields not validated by Zod schema
    Impact: Fields like tags, metadata, billingInfo accept unvalidated input
    Fix: Extend createClientSchema to include all fields
 
-4. IN-MEMORY RATE LIMITING
+3. IN-MEMORY RATE LIMITING
    Location: src/middleware.ts
    Issue: Rate limit store resets on server restart
    Impact: Not suitable for distributed deployments
    Fix: Use Redis or database-backed rate limiting in production
 
-5. IN-MEMORY CSRF STORAGE
+4. IN-MEMORY CSRF STORAGE
    Location: src/lib/csrf.ts
    Issue: CSRF tokens stored in memory
    Impact: Tokens lost on server restart, not suitable for multi-instance
    Fix: Use Redis or encrypted database storage
 
-6. NO REQUEST LOGGING
+5. NO REQUEST LOGGING
    Issue: No audit trail of API requests
    Impact: Difficult to investigate security incidents
    Fix: Implement secure logging (exclude PII)
@@ -124,12 +129,15 @@ BEFORE PRODUCTION DEPLOYMENT:
 
 [√] Generate password hash: node scripts/hash-password.js
 [√] Add ADMIN_PASSWORD_HASH to .env.local
+[√] Fix OAuth token handling (database storage with encryption)
 [ ] Add ADMIN_PASSWORD_HASH to Vercel environment variables
 [ ] Add CSRF_SECRET to environment variables
+[ ] Add ENCRYPTION_SECRET to environment variables (for OAuth token encryption)
+[ ] Run database migration in production: npx prisma migrate deploy
 [ ] Test authentication flow
 [ ] Test rate limiting (attempt 6+ logins)
+[ ] Test OAuth flow with encrypted token storage
 [ ] Verify security headers (curl -I your-domain.com)
-[ ] Fix OAuth token handling (database storage)
 [ ] Address npm audit vulnerabilities
 [ ] Enable Redis for rate limiting (production)
 [ ] Enable Redis for CSRF storage (production)
@@ -143,6 +151,7 @@ VERCEL ENVIRONMENT VARIABLES REQUIRED:
 DATABASE_URL=<your-database-url>
 NEXTAUTH_URL=https://evangelosommer.com
 NEXTAUTH_SECRET=<generate-with: openssl rand -base64 32>
+ENCRYPTION_SECRET=<generate-with: openssl rand -base64 32>
 ADMIN_EMAIL=admin@evangelosommer.com
 ADMIN_PASSWORD_HASH=<generate-with: node scripts/hash-password.js>
 CSRF_SECRET=<generate-with: openssl rand -base64 32>

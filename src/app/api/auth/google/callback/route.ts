@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { verifyOAuthState, validateCSRFToken } from '@/lib/csrf'
 import { getToken } from 'next-auth/jwt'
+import { encrypt } from '@/lib/encryption'
+import { getPrismaClient } from '@/lib/prisma'
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -79,34 +81,91 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // SECURITY TODO: Store tokens in encrypted database instead of URL parameters
-    // Current implementation exposes tokens in browser history and logs
-    // Required changes:
-    // 1. Create CalendarIntegration table in Prisma schema
-    // 2. Encrypt tokens before storing (use @/lib/encryption)
-    // 3. Pass only integration ID in URL
-    // 4. Frontend fetches integration details via authenticated API
-    //
-    // For now, passing in URL (INSECURE - FIX BEFORE PRODUCTION)
-    const integrationData = {
-      provider: 'google',
-      accountId: primaryCalendar.id,
-      calendarId: primaryCalendar.id,
-      calendarName: primaryCalendar.summary,
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null
+    // SECURE: Store encrypted tokens in database
+    if (!token?.sub) {
+      console.warn('OAuth callback: no authenticated user');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=not_authenticated`
+      )
     }
 
-    const params = new URLSearchParams({
-      success: 'true',
-      provider: 'google',
-      data: JSON.stringify(integrationData) // SECURITY RISK: Contains sensitive tokens
-    })
+    const prisma = getPrismaClient();
+    if (!prisma) {
+      console.error('OAuth callback: database not available');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=database_unavailable`
+      )
+    }
 
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL}/time-manager?${params.toString()}`
-    )
+    // Encrypt sensitive tokens before storage
+    const encryptedAccessToken = encrypt(tokens.access_token || '');
+    const encryptedRefreshToken = tokens.refresh_token ? encrypt(tokens.refresh_token) : null;
+
+    try {
+      // Find or create participant for the authenticated user
+      let participant = await prisma.participant.findFirst({
+        where: { email: token.email || undefined }
+      });
+
+      if (!participant) {
+        participant = await prisma.participant.create({
+          data: {
+            name: token.name || token.email || 'User',
+            email: token.email || undefined,
+            role: 'STAFF',
+          }
+        });
+      }
+
+      // Upsert calendar integration with encrypted tokens
+      const integration = await prisma.calendarIntegration.upsert({
+        where: {
+          participantId_provider: {
+            participantId: participant.id,
+            provider: 'GOOGLE'
+          }
+        },
+        update: {
+          externalId: primaryCalendar.id || '',
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+          calendarName: primaryCalendar.summary || null,
+          calendarEmail: primaryCalendar.id || null,
+          isActive: true,
+          lastSyncAt: new Date(),
+          lastSyncError: null,
+        },
+        create: {
+          participantId: participant.id,
+          provider: 'GOOGLE',
+          externalId: primaryCalendar.id || '',
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+          calendarName: primaryCalendar.summary || null,
+          calendarEmail: primaryCalendar.id || null,
+          isActive: true,
+          lastSyncAt: new Date(),
+        }
+      });
+
+      // Redirect with only integration ID (safe to pass in URL)
+      const params = new URLSearchParams({
+        success: 'true',
+        provider: 'google',
+        integrationId: integration.id
+      });
+
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?${params.toString()}`
+      );
+    } catch (error) {
+      console.error('Failed to store calendar integration:', error);
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL}/time-manager?error=storage_failed`
+      );
+    }
   } catch (error) {
     console.error('Google OAuth callback error:', error)
     return NextResponse.redirect(

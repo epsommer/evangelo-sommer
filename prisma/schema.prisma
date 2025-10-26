@@ -657,19 +657,30 @@ model CalendarIntegration {
   id            String @id @default(cuid())
   participantId String
   participant   Participant @relation(fields: [participantId], references: [id])
-  
+
   provider      CalendarProvider
-  externalId    String
-  accessToken   String
-  refreshToken  String?
-  
+  externalId    String  // Calendar ID or account ID
+
+  // Encrypted OAuth tokens (AES-256-GCM encrypted)
+  accessToken   String  // Encrypted access token
+  refreshToken  String?  // Encrypted refresh token
+  expiresAt     DateTime?  // Token expiration timestamp
+
+  // Calendar details
+  calendarName  String?  // Display name of the calendar
+  calendarEmail String?  // Email associated with calendar
+
+  // Integration status
   isActive      Boolean @default(true)
   lastSyncAt    DateTime?
-  
+  lastSyncError String?  // Last error message if sync failed
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@unique([participantId, provider])
+  @@index([participantId])
+  @@index([isActive])
 }
 
 // Enums
