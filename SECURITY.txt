@@ -227,9 +227,9 @@ HOW TO ACQUIRE ENVIRONMENT VARIABLES - COMPLETE GUIDE
    2. User Type: Select "External" → Click "Create"
    3. App Information:
       - App name: "Evangelo Sommer CRM"
-      - User support email: admin@evangelosommer.com
+      - User support email: support@evangelosommer.com
       - App logo: (optional)
-   4. Developer contact: admin@evangelosommer.com
+   4. Developer contact: support@evangelosommer.com
    5. Click "Save and Continue"
    6. Scopes: Click "Add or Remove Scopes"
       - Select: .../auth/calendar (View and edit events)
@@ -238,7 +238,7 @@ HOW TO ACQUIRE ENVIRONMENT VARIABLES - COMPLETE GUIDE
    7. Click "Update" → "Save and Continue"
    8. Test users (for development):
       - Click "Add Users"
-      - Add: admin@evangelosommer.com
+      - Add: support@evangelosommer.com
    9. Click "Save and Continue" → "Back to Dashboard"
 
    Step 4: Create OAuth 2.0 Client ID
@@ -367,7 +367,7 @@ HOW TO ACQUIRE ENVIRONMENT VARIABLES - COMPLETE GUIDE
    Step 4: Set Environment Variables
    SMTP_HOST=smtp.gmail.com
    SMTP_PORT=587
-   SMTP_USER=admin@evangelosommer.com
+   SMTP_USER=support@evangelosommer.com
    SMTP_PASS_B64=YWJjZGVmZ2hpamtsbW5vcA==
    SMTP_SECURE=true
 
@@ -407,8 +407,8 @@ HOW TO ACQUIRE ENVIRONMENT VARIABLES - COMPLETE GUIDE
 6. ADMIN EMAIL
    ============
 
-   Set this to your admin email address:
-   ADMIN_EMAIL=admin@evangelosommer.com
+   Set this to your support email address:
+   ADMIN_EMAIL=support@evangelosommer.com
 
    This email is used for:
    - Authentication login
@@ -440,7 +440,7 @@ ENCRYPTION_SECRET=<from section 1>
 CSRF_SECRET=<from section 1>
 
 # Authentication
-ADMIN_EMAIL=admin@evangelosommer.com
+ADMIN_EMAIL=support@evangelosommer.com
 ADMIN_PASSWORD_HASH=<from section 2>
 
 # Google OAuth (Calendar Integration)
@@ -500,14 +500,14 @@ NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="..."
 ENCRYPTION_SECRET="..."
 CSRF_SECRET="..."
-ADMIN_EMAIL="admin@evangelosommer.com"
+ADMIN_EMAIL="support@evangelosommer.com"
 ADMIN_PASSWORD_HASH="$2b$12$..."
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
 GOOGLE_REDIRECT_URI="http://localhost:3000/api/auth/google/callback"
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
-SMTP_USER="..."
+SMTP_USER="support@evangelosommer.com"
 SMTP_PASS_B64="..."
 SMTP_SECURE="true"
 
@@ -517,7 +517,7 @@ SMTP_SECURE="true"
 SECURITY CONTACT
 ================================================================================
 
-For security issues, contact: admin@evangelosommer.com
+For security issues, contact: support@evangelosommer.com
 
 ================================================================================
 END OF SECURITY AUDIT REPORT
