@@ -39,16 +39,16 @@ function getServiceSMTPConfig() {
   // Use the same SMTP configuration for all services for now
   // All authenticate with admin@evangelosommer.com but send from service-specific addresses
   return {
-    host: process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST || 'localhost',
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
-      user: process.env.SMTP_USER,
+      user: process.env.SMTP_USER || '',
       pass: process.env.SMTP_PASS_B64 ? Buffer.from(process.env.SMTP_PASS_B64, 'base64').toString() : ''
     },
     tls: {
       rejectUnauthorized: true,
-      minVersion: 'TLSv1.2'
+      minVersion: 'TLSv1.2' as const
     }
   };
 }

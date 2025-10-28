@@ -6,10 +6,10 @@ import { getPrismaClient } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { integrationId: string } }
+  { params }: { params: Promise<{ integrationId: string }> }
 ) {
   try {
-    const integrationId = params.integrationId;
+    const { integrationId } = await params;
 
     if (!integrationId) {
       return NextResponse.json(
@@ -86,10 +86,10 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { integrationId: string } }
+  { params }: { params: Promise<{ integrationId: string }> }
 ) {
   try {
-    const integrationId = params.integrationId;
+    const { integrationId } = await params;
 
     if (!integrationId) {
       return NextResponse.json(

@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const validatedData = validation.data;
+    const validatedData = validation.data!;
 
     // Convert status to uppercase for Prisma enum
     const statusMap: Record<string, ClientStatus> = {

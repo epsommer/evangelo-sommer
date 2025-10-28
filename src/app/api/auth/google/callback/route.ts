@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
           data: {
             name: token.name || token.email || 'User',
             email: token.email || undefined,
-            role: 'STAFF',
+            role: 'TEAM_MEMBER',
           }
         });
       }
