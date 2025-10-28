@@ -28,7 +28,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL || "admin@evangelosommer.com";
+        const adminEmail = process.env.ADMIN_EMAIL || "support@evangelosommer.com";
         const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
         const inputEmail = credentials.email.toLowerCase().trim();
         const expectedEmail = adminEmail.toLowerCase().trim();

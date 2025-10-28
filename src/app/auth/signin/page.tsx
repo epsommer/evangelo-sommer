@@ -24,7 +24,7 @@ export default function SignIn() {
       });
 
       if (result?.error) {
-        setError("Access denied. Only admin@evangelosommer.com is authorized.");
+        setError("Access denied. Only support@evangelosommer.com is authorized.");
       } else if (result?.ok) {
         const session = await getSession();
         if (session) {
