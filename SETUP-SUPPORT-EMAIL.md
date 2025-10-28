@@ -127,7 +127,7 @@ swaks \
   --server mail.evangelosommer.com:587 \
   --auth LOGIN \
   --auth-user support@evangelosommer.com \
-  --auth-password "49\$9#03N1x" \
+  --auth-password "NewPass123!" \
   --tls
 
 # If successful, you'll see: "250 2.0.0 Ok: queued as..."
