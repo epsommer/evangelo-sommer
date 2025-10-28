@@ -2,6 +2,9 @@
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -28,56 +31,54 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL || "support@evangelosommer.com";
-        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
         const inputEmail = credentials.email.toLowerCase().trim();
-        const expectedEmail = adminEmail.toLowerCase().trim();
+        console.log("📧 Input email:", inputEmail);
+        console.log("🔑 Password provided:", !!credentials.password);
 
-        // Verify email first
-        if (inputEmail !== expectedEmail) {
-          console.log("❌ AUTH - Invalid email");
-          return null;
-        }
-
-        // Always require password (removed development bypass for security)
+        // Always require password
         if (!credentials.password) {
           console.log("❌ AUTH - No password provided");
           return null;
         }
 
-        if (!adminPasswordHash) {
-          console.log("❌ AUTH ERROR - No ADMIN_PASSWORD_HASH configured");
-          console.log("💡 Run: node scripts/hash-password.js to generate a hash");
-          return null;
-        }
-
         try {
-          // Use bcrypt to verify password
+          // Check database for admin user
+          const adminUser = await prisma.adminUser.findUnique({
+            where: { email: inputEmail }
+          });
+
+          if (!adminUser) {
+            console.log("❌ AUTH - User not found in database");
+            return null;
+          }
+
+          if (!adminUser.isActive) {
+            console.log("❌ AUTH - User account is deactivated");
+            return null;
+          }
+
+          // Verify password against database hash
           const isValidPassword = await bcrypt.compare(
             credentials.password,
-            adminPasswordHash
+            adminUser.passwordHash
           );
 
           if (isValidPassword) {
             console.log("✅ AUTH - Success");
             return {
-              id: "admin-001",
-              email: adminEmail,
-              name: "System Administrator",
-              role: "SUPER_ADMIN"
+              id: adminUser.id,
+              email: adminUser.email,
+              name: adminUser.name,
+              role: adminUser.role
             };
           } else {
             console.log("❌ AUTH - Invalid password");
             return null;
           }
         } catch (error) {
-          console.error("❌ AUTH ERROR - Password verification failed:", error);
+          console.error("❌ AUTH ERROR - Database or password verification failed:", error);
           return null;
         }
-
-        // FALLBACK: Default to secure mode
-        console.log("❌ AUTH - Unknown environment, defaulting to secure mode");
-        return null;
       },
     }),
   ],
@@ -107,17 +108,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account, profile }) {
-      // Additional production security check
-      if (process.env.NODE_ENV === 'production') {
-        console.log("🔐 PRODUCTION SIGN-IN CHECK");
-
-        // Verify we have proper environment variables
-        if (!process.env.ADMIN_PASSWORD || !process.env.NEXTAUTH_SECRET) {
-          console.log("❌ PRODUCTION ERROR - Missing required environment variables");
-          return false;
-        }
-      }
-
+      // All authentication is handled in authorize callback
       return true;
     },
   },

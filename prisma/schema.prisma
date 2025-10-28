@@ -1148,3 +1148,39 @@ enum BillingDocumentStatus {
   EXPIRED
   CANCELLED
 }
+
+// Admin User Management
+model AdminUser {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String   @default("System Administrator")
+  role          String   @default("SUPER_ADMIN")
+  isActive      Boolean  @default(true)
+
+  // Password reset tokens
+  resetTokens   PasswordResetToken[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([isActive])
+}
+
+// Password Reset Tokens
+model PasswordResetToken {
+  id            String   @id @default(cuid())
+  token         String   @unique
+  userId        String
+  user          AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt     DateTime
+  usedAt        DateTime?
+
+  createdAt     DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
