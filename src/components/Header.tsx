@@ -145,7 +145,7 @@ const Header = () => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 bg-hud-overlay flex items-center justify-between px-8 border-b-4 border-tactical-gold transition-all duration-300 ${isScrolled ? 'h-14' : 'h-20'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 bg-white dark:bg-background bg-hud-overlay flex items-center justify-between px-8 border-b-4 border-tactical-gold transition-all duration-300 ${isScrolled ? 'h-14' : 'h-20'}`}>
       {/* Removed distracting tactical frame overlay */}
       
       <div className="flex items-center space-x-8 relative">
@@ -162,11 +162,11 @@ const Header = () => {
         
         <div className="chevron-separator"></div>
         
-        <div className="hud-metric bg-transparent border-none p-0">
-          <Activity className="w-5 h-5 text-tactical-amber animate-pulse" />
+        <div className={`hud-metric bg-transparent border-none p-0 transition-all duration-300 ${isScrolled ? 'scale-75' : 'scale-100'}`}>
+          <Activity className={`text-tactical-amber animate-pulse transition-all duration-300 ${isScrolled ? 'w-4 h-4' : 'w-5 h-5'}`} />
           <div>
-            <div className="text-tactical-amber text-xs font-tactical">SYSTEM_ID</div>
-            <div className="text-tactical-white font-tactical text-sm">MSCRMS_V2.1</div>
+            <div className={`text-tactical-amber font-tactical transition-all duration-300 ${isScrolled ? 'text-[0.625rem]' : 'text-xs'}`}>SYSTEM_ID</div>
+            <div className={`text-tactical-white font-tactical transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'}`}>MSCRMS_V2.1</div>
           </div>
         </div>
       </div>
@@ -196,7 +196,7 @@ const Header = () => {
           </button>
 
           {showScheduleDropdown && (
-            <div className="modal-tactical absolute right-0 top-16 w-96 z-50 overflow-hidden">
+            <div className="modal-tactical absolute right-0 top-full mt-2 w-96 z-50 overflow-hidden">
               <div className="p-4 bg-hud-overlay border-b-2 border-tactical-gold relative">
                 <div className="corner-markers">
                   <h3 className="text-heading text-sm mb-0">
@@ -284,62 +284,60 @@ const Header = () => {
             </div>
           </button>
           
-          {/* Tactical Profile Dropdown */}
+          {/* Profile Dropdown */}
           {showProfileDropdown && (
-            <div 
-              className="modal-tactical absolute right-0 top-16 w-72 z-50"
+            <div
+              className="absolute right-0 top-full mt-2 w-72 z-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800"
               onClick={(e) => {
                 e.stopPropagation(); // Prevent click from bubbling up to overlay
               }}
             >
-              <div 
-                className="p-4 bg-hud-overlay border-b-2 border-tactical-gold"
+              <div
+                className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700"
               >
-                <div className="corner-markers">
-                  <h3 className="text-heading text-sm mb-2">
-                    OPERATOR CONTROL PANEL
-                  </h3>
-                  <div className="text-tactical-data text-xs font-tactical">
-                    CLEARANCE_LEVEL: ALPHA
-                  </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  Operator Control Panel
+                </h3>
+                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                  Clearance Level: Alpha
                 </div>
               </div>
-              <div 
-                className="p-3 space-y-2 bg-hud-background-primary/50 backdrop-blur-sm"
+              <div
+                className="p-2 space-y-1 bg-white dark:bg-gray-800"
               >
-                <button 
+                <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAccountSettings();
                   }}
-                  className="nav-tactical w-full flex items-center space-x-3 p-3"
+                  className="w-full flex items-center space-x-3 p-3 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
                   <User className="h-4 w-4 text-tactical-gold" />
-                  <span>ACCOUNT CONFIG</span>
+                  <span className="font-medium">Account Settings</span>
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePreferences();
                   }}
-                  className="nav-tactical w-full flex items-center space-x-3 p-3"
+                  className="w-full flex items-center space-x-3 p-3 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
                   <Settings className="h-4 w-4 text-tactical-gold" />
-                  <span>SYSTEM PREFERENCES</span>
+                  <span className="font-medium">System Preferences</span>
                 </button>
-                
-                <div className="divider my-3"></div>
-                
-                <button 
+
+                <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
+
+                <button
                   onClick={handleSignOut}
                   disabled={isSigningOut}
-                  className="nav-tactical w-full flex items-center space-x-3 p-3 border-tactical-red hover:border-tactical-red hover:bg-tactical-red/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center space-x-3 p-3 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <LogOut className="h-4 w-4 text-tactical-red" />
-                  <span className="text-tactical-red">
-                    {isSigningOut ? 'LOGOUT IN PROGRESS...' : 'TERMINATE SESSION'}
+                  <LogOut className="h-4 w-4" />
+                  <span className="font-medium">
+                    {isSigningOut ? 'Logging out...' : 'Sign Out'}
                   </span>
                 </button>
               </div>
