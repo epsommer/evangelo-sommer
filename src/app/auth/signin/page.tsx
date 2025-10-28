@@ -106,7 +106,7 @@ export default function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="relative block w-full px-4 py-3 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent transition-colors duration-200 bg-hud-background-secondary"
-              placeholder="support@evangelosommer.com"
+              placeholder="Enter your username/email"
             />
           </div>
 
