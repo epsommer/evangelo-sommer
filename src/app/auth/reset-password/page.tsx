@@ -27,27 +27,29 @@ function ResetPasswordForm() {
     setIsLoading(true);
     setError("");
 
+    // Directly read from the form to ensure autofill values are captured
+    const form = e.currentTarget as HTMLFormElement;
+    const newPassword = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const confirmedPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
+
     // Validation
-    if (password.length < 8) {
+    if (newPassword.length < 8) {
       setError("Password must be at least 8 characters long");
       setIsLoading(false);
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (newPassword !== confirmedPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch("/api/auth/password-reset/confirm", {
+      const response = await fetch("/api/auth/password-reset/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          newPassword: password
-        })
+        body: JSON.stringify({ token, password: newPassword })
       });
 
       const data = await response.json();

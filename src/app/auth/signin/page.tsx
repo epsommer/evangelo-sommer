@@ -19,6 +19,7 @@ export default function SignIn() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(`[Sign-In] Attempting to sign in user: ${email}`);
     setIsLoading(true);
     setError("");
     setResetMessage("");
@@ -31,12 +32,15 @@ export default function SignIn() {
       });
 
       if (result?.error) {
+        console.error("NextAuth Sign-in error:", result.error);
         setError("Access denied. Invalid email or password.");
       } else if (result?.ok) {
         const session = await getSession();
+        console.log("[Sign-In] Sign-in successful. Session object:", session);
         if (session) {
           router.push("/dashboard");
         } else {
+          console.warn("[Sign-In] Sign-in was OK, but getSession() returned nullish.");
           setError("Sign-in failed. Please try again.");
         }
       }
@@ -54,6 +58,7 @@ export default function SignIn() {
       return;
     }
 
+    console.log(`[Forgot Password] Requesting password reset for email: ${email}`);
     setIsSendingReset(true);
     setError("");
     setResetMessage("");
@@ -68,9 +73,11 @@ export default function SignIn() {
       const data = await response.json();
 
       if (response.ok) {
+        console.log("[Forgot Password] API call successful:", data.message);
         setResetMessage(data.message || "Password reset link has been sent to your email.");
         setShowForgotPassword(false);
       } else {
+        console.error("[Forgot Password] API call failed:", data.error);
         setError(data.error || "Failed to send reset email");
       }
     } catch (error) {

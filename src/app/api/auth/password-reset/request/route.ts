@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
+import crypto from 'crypto';
+import sgMail from '@sendgrid/mail';
+import { requestPasswordResetLimiter } from "@/lib/rate-limiter";
 
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Rate Limiting by IP
+    const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1"; // Use x-forwarded-for for Vercel
+    const { success } = await requestPasswordResetLimiter.limit(ip);
+
+    if (!success) {
+      console.warn(`[Rate Limit] Blocked password reset request from IP: ${ip}`);
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
+    // 2. Get email from request body
+    console.log("[API] Received password reset request.");
     const { email } = await request.json();
 
     if (!email) {
@@ -18,33 +33,25 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Find admin user
+    // 3. Find the user in the database
     const adminUser = await prisma.adminUser.findUnique({
       where: { email: normalizedEmail }
     });
 
-    // Always return success to prevent email enumeration
-    if (!adminUser) {
-      console.log("⚠️  Password reset requested for non-existent email:", normalizedEmail);
+    // For security, always return a generic success message to prevent email enumeration
+    if (!adminUser || !adminUser.isActive) {
+      console.warn(`[API] Password reset requested for non-existent or inactive email: ${normalizedEmail}. Sending generic success response.`);
       return NextResponse.json({
         success: true,
         message: "If an account exists with this email, you will receive a password reset link."
       });
     }
-
-    if (!adminUser.isActive) {
-      console.log("⚠️  Password reset requested for inactive account:", normalizedEmail);
-      return NextResponse.json({
-        success: true,
-        message: "If an account exists with this email, you will receive a password reset link."
-      });
-    }
-
-    // Generate secure token
+    console.log(`[API] Found active user: ${adminUser.id} for email: ${normalizedEmail}`);
+    // 4. Generate a secure token
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
-    // Store token in database
+    // 5. Store the token in the database
     await prisma.passwordResetToken.create({
       data: {
         token,
@@ -52,74 +59,35 @@ export async function POST(request: NextRequest) {
         expiresAt
       }
     });
+    console.log(`[API] Generated and stored new password reset token for user: ${adminUser.id}`);
 
-    // Send email
+    // 6. Send the email using SendGrid
     const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/auth/reset-password?token=${token}`;
 
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT || 465),
-        secure: process.env.EMAIL_SERVER_SECURE === "true",
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
-      });
-
-      await transporter.sendMail({
-        from: process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER,
-        to: adminUser.email,
-        subject: "Password Reset Request - Evangelo Sommer CRM",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #1a1a1a;">Password Reset Request</h2>
-            <p>You requested a password reset for your admin account.</p>
-            <p>Click the link below to reset your password:</p>
-            <p>
-              <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #C9A961; color: #1a1a1a; text-decoration: none; font-weight: bold;">
-                Reset Password
-              </a>
-            </p>
-            <p style="color: #666;">Or copy and paste this link into your browser:</p>
-            <p style="word-break: break-all; color: #666;">${resetUrl}</p>
-            <p style="color: #999; font-size: 12px; margin-top: 24px;">
-              This link will expire in 1 hour.<br>
-              If you didn't request this, please ignore this email.
-            </p>
-          </div>
-        `,
-        text: `
-Password Reset Request
-
-You requested a password reset for your admin account.
-
-Click the link below to reset your password:
-${resetUrl}
-
-This link will expire in 1 hour.
-If you didn't request this, please ignore this email.
-        `
-      });
-
-      console.log("✅ Password reset email sent to:", adminUser.email);
-    } catch (emailError) {
-      console.error("❌ Failed to send password reset email:", emailError);
-      return NextResponse.json(
-        { error: "Failed to send reset email. Please contact support." },
-        { status: 500 }
-      );
+    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
+      throw new Error("SendGrid API Key or From Email not configured.");
     }
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    await sgMail.send({
+      from: process.env.SENDGRID_FROM_EMAIL,
+      to: adminUser.email,
+      subject: "Password Reset Request - Evangelo Sommer CRM",
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetUrl}">Reset Password</a></p><p>This link will expire in 1 hour.</p>`,
+      text: `You requested a password reset. Copy and paste this link into your browser to reset your password: ${resetUrl}`
+    });
+
+    console.log("✅ Password reset email sent to:", adminUser.email);
 
     return NextResponse.json({
       success: true,
-      message: "Password reset link has been sent to your email."
+      message: "If an account exists with this email, you will receive a password reset link."
     });
 
   } catch (error) {
     console.error("❌ Password reset request error:", error);
     return NextResponse.json(
-      { error: "An error occurred. Please try again." },
+      { error: "An internal error occurred. Please try again later." },
       { status: 500 }
     );
   }
