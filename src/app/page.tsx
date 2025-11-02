@@ -1,23 +1,92 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
 export default function MaintenancePage() {
+  const [isDark, setIsDark] = useState(true);
+
+  // Load theme preference from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setIsDark(savedTheme === "dark");
+    }
+  }, []);
+
+  // Save theme preference
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center px-4">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDark
+        ? "bg-gradient-to-br from-gray-900 via-black to-gray-900"
+        : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
+    } flex items-center justify-center px-4 relative`}>
+
+      {/* Header Controls */}
+      <div className="absolute top-6 right-6 flex items-center space-x-4">
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className={`p-2 rounded-lg transition-colors duration-200 ${
+            isDark
+              ? "bg-gray-800 text-gray-300 hover:text-tactical-gold"
+              : "bg-gray-200 text-gray-700 hover:text-tactical-gold"
+          }`}
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Login Link */}
+        <Link
+          href="/auth/signin"
+          className={`px-4 py-2 rounded-lg font-space-grotesk font-medium transition-colors duration-200 ${
+            isDark
+              ? "bg-tactical-gold text-black hover:bg-gold-dark"
+              : "bg-tactical-gold text-black hover:bg-yellow-600"
+          }`}
+        >
+          Login
+        </Link>
+      </div>
+
       <div className="max-w-2xl w-full text-center space-y-8">
         {/* Logo */}
         <div className="flex justify-center">
           <div className="h-24 w-24 bg-tactical-gold flex items-center justify-center">
-            <span className="text-4xl font-bold text-hud-text-primary font-space-grotesk">ES</span>
+            <span className="text-4xl font-bold text-black font-space-grotesk">ES</span>
           </div>
         </div>
 
         {/* Heading */}
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white font-space-grotesk uppercase tracking-wide">
+          <h1 className={`text-4xl md:text-6xl font-bold font-space-grotesk uppercase tracking-wide ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}>
             Under Development
           </h1>
-          <p className="text-lg md:text-xl text-gray-300 font-space-grotesk">
+          <p className={`text-lg md:text-xl font-space-grotesk ${
+            isDark ? "text-gray-300" : "text-gray-700"
+          }`}>
             Evangelo Sommer Portfolio
           </p>
-          <p className="text-base text-gray-400 font-space-grotesk">
+          <p className={`text-base font-space-grotesk ${
+            isDark ? "text-gray-400" : "text-gray-600"
+          }`}>
             Something immersive is coming soon...
           </p>
         </div>
@@ -27,12 +96,18 @@ export default function MaintenancePage() {
 
         {/* Contact Information */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-white font-space-grotesk uppercase tracking-wide">
+          <h2 className={`text-xl font-bold font-space-grotesk uppercase tracking-wide ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}>
             Get In Touch
           </h2>
           <a
             href="mailto:hi@evangelosommer.com"
-            className="inline-block text-tactical-gold hover:text-gold-dark transition-colors duration-200 font-space-grotesk"
+            className={`inline-block transition-colors duration-200 font-space-grotesk ${
+              isDark
+                ? "text-tactical-gold hover:text-gold-dark"
+                : "text-yellow-600 hover:text-yellow-700"
+            }`}
           >
             hi@evangelosommer.com
           </a>
@@ -44,7 +119,11 @@ export default function MaintenancePage() {
             href="https://linkedin.com/in/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-tactical-gold transition-colors duration-200"
+            className={`transition-colors duration-200 ${
+              isDark
+                ? "text-gray-400 hover:text-tactical-gold"
+                : "text-gray-600 hover:text-yellow-600"
+            }`}
             aria-label="LinkedIn"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -55,7 +134,11 @@ export default function MaintenancePage() {
             href="https://github.com/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-tactical-gold transition-colors duration-200"
+            className={`transition-colors duration-200 ${
+              isDark
+                ? "text-gray-400 hover:text-tactical-gold"
+                : "text-gray-600 hover:text-yellow-600"
+            }`}
             aria-label="GitHub"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -66,7 +149,11 @@ export default function MaintenancePage() {
             href="https://twitter.com/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-tactical-gold transition-colors duration-200"
+            className={`transition-colors duration-200 ${
+              isDark
+                ? "text-gray-400 hover:text-tactical-gold"
+                : "text-gray-600 hover:text-yellow-600"
+            }`}
             aria-label="Twitter"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -76,8 +163,12 @@ export default function MaintenancePage() {
         </div>
 
         {/* Copyright Notice */}
-        <div className="pt-8 border-t border-gray-800">
-          <p className="text-sm text-gray-500 font-space-grotesk">
+        <div className={`pt-8 border-t ${
+          isDark ? "border-gray-800" : "border-gray-300"
+        }`}>
+          <p className={`text-sm font-space-grotesk ${
+            isDark ? "text-gray-500" : "text-gray-600"
+          }`}>
             &copy; {new Date().getFullYear()} Evangelo Sommer. All rights reserved.
           </p>
         </div>
