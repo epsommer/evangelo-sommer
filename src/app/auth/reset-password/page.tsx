@@ -127,6 +127,7 @@ function ResetPasswordForm() {
                 className="relative block w-full px-4 py-3 pr-12 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent transition-colors duration-200 bg-hud-background-secondary"
                 placeholder="Enter new password (min 8 characters)"
                 disabled={!token || isLoading}
+                suppressHydrationWarning
               />
               <button
                 type="button"
@@ -151,6 +152,7 @@ function ResetPasswordForm() {
                 className="relative block w-full px-4 py-3 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent transition-colors duration-200 bg-hud-background-secondary"
                 placeholder="Confirm new password"
                 disabled={!token || isLoading}
+                suppressHydrationWarning
               />
             </div>
           </div>
