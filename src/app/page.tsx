@@ -31,10 +31,10 @@ export default function MaintenancePage() {
             Get In Touch
           </h2>
           <a
-            href="mailto:admin@evangelosommer.com"
+            href="mailto:hi@evangelosommer.com"
             className="inline-block text-tactical-gold hover:text-gold-dark transition-colors duration-200 font-space-grotesk"
           >
-            admin@evangelosommer.com
+            hi@evangelosommer.com
           </a>
         </div>
 
