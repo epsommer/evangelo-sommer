@@ -95,8 +95,8 @@ export default function MaintenancePage() {
               className="object-contain"
               style={{
                 filter: isDark
-                  ? 'brightness(0.4) sepia(0.2) hue-rotate(20deg) saturate(0.6)'
-                  : 'brightness(10) saturate(0)'
+                  ? 'brightness(0.35) sepia(0.3) hue-rotate(15deg) saturate(0.5)'
+                  : 'brightness(0) invert(1)'
               }}
             />
           </div>
