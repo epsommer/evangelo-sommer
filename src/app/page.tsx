@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function MaintenancePage() {
   const [isDark, setIsDark] = useState(true);
@@ -36,10 +37,10 @@ export default function MaintenancePage() {
         {/* Theme Toggle - Neomorphic Sliding Switch */}
         <button
           onClick={toggleTheme}
-          className={`relative w-16 h-8 rounded-full transition-all duration-300 focus:outline-none ${
+          className={`relative w-16 h-8 rounded-2xl transition-all duration-300 focus:outline-none ${
             isDark
-              ? "bg-gray-800 shadow-[inset_-2px_-2px_5px_rgba(255,255,255,0.05),inset_2px_2px_5px_rgba(0,0,0,0.5)]"
-              : "bg-gray-100 shadow-[inset_-2px_-2px_5px_rgba(255,255,255,0.8),inset_2px_2px_5px_rgba(0,0,0,0.1)]"
+              ? "bg-stone-800 shadow-[inset_-3px_-3px_6px_rgba(120,113,108,0.05),inset_3px_3px_6px_rgba(0,0,0,0.5)]"
+              : "bg-stone-100 shadow-[inset_-3px_-3px_6px_rgba(255,255,255,0.9),inset_3px_3px_6px_rgba(120,113,108,0.15)]"
           }`}
           aria-label="Toggle theme"
         >
@@ -47,18 +48,18 @@ export default function MaintenancePage() {
           <div
             className={`absolute top-1 left-1 w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center ${
               isDark
-                ? "translate-x-8 bg-gray-700 shadow-[-2px_-2px_5px_rgba(255,255,255,0.05),2px_2px_5px_rgba(0,0,0,0.5)]"
-                : "translate-x-0 bg-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(0,0,0,0.15)]"
+                ? "translate-x-8 bg-stone-700 shadow-[-3px_-3px_6px_rgba(120,113,108,0.05),3px_3px_6px_rgba(0,0,0,0.5)]"
+                : "translate-x-0 bg-white shadow-[-3px_-3px_6px_rgba(255,255,255,1),3px_3px_6px_rgba(120,113,108,0.2)]"
             } ${isToggling ? "scale-95" : "scale-100"}`}
           >
             {/* Icon inside the sliding circle */}
             <div className={`transition-all duration-200 ${isToggling ? "rotate-180 scale-75" : "rotate-0 scale-100"}`}>
               {isDark ? (
-                <svg className="w-3.5 h-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3.5 h-3.5 text-stone-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                 </svg>
               ) : (
-                <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
                 </svg>
               )}
@@ -69,10 +70,10 @@ export default function MaintenancePage() {
         {/* Login Link - Neomorphic Button */}
         <Link
           href="/auth/signin"
-          className={`px-5 py-2.5 rounded-xl font-space-grotesk font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
+          className={`px-6 py-3 rounded-2xl font-space-grotesk font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
             isDark
-              ? "bg-gray-800 text-gray-300 shadow-[-4px_-4px_8px_rgba(255,255,255,0.05),4px_4px_8px_rgba(0,0,0,0.5)] hover:shadow-[-2px_-2px_6px_rgba(255,255,255,0.07),2px_2px_6px_rgba(0,0,0,0.6)]"
-              : "bg-gray-100 text-gray-700 shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(0,0,0,0.1)] hover:shadow-[-2px_-2px_6px_rgba(255,255,255,1),2px_2px_6px_rgba(0,0,0,0.15)]"
+              ? "bg-stone-800 text-stone-300 shadow-[-5px_-5px_10px_rgba(120,113,108,0.03),5px_5px_10px_rgba(0,0,0,0.4)] hover:shadow-[-3px_-3px_8px_rgba(120,113,108,0.05),3px_3px_8px_rgba(0,0,0,0.5)]"
+              : "bg-stone-100 text-stone-700 shadow-[-5px_-5px_10px_rgba(255,255,255,1),5px_5px_10px_rgba(120,113,108,0.15)] hover:shadow-[-3px_-3px_8px_rgba(255,255,255,1),3px_3px_8px_rgba(120,113,108,0.2)]"
           }`}
         >
           Login
@@ -82,14 +83,24 @@ export default function MaintenancePage() {
       <div className="max-w-2xl w-full text-center space-y-8">
         {/* Logo - Neomorphic ES Monogram */}
         <div className="flex justify-center">
-          <div className={`h-24 w-24 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+          <div className={`relative h-32 w-32 rounded-3xl flex items-center justify-center transition-all duration-300 p-6 ${
             isDark
-              ? "bg-gray-800 shadow-[-6px_-6px_12px_rgba(255,255,255,0.03),6px_6px_12px_rgba(0,0,0,0.6)]"
-              : "bg-gray-100 shadow-[-6px_-6px_12px_rgba(255,255,255,1),6px_6px_12px_rgba(0,0,0,0.1)]"
+              ? "bg-stone-800 shadow-[-8px_-8px_16px_rgba(120,113,108,0.03),8px_8px_16px_rgba(0,0,0,0.4)]"
+              : "bg-stone-100 shadow-[-8px_-8px_16px_rgba(255,255,255,1),8px_8px_16px_rgba(120,113,108,0.15)]"
           }`}>
-            <span className={`text-4xl font-bold font-space-grotesk ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}>ES</span>
+            <div className={`relative w-full h-full ${
+              isDark
+                ? "drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                : "drop-shadow-[0_2px_4px_rgba(120,113,108,0.2)]"
+            }`}>
+              <Image
+                src="/EvangeloSommer-ES-Monogram.svg"
+                alt="ES Monogram"
+                fill
+                className="object-contain"
+                style={{ filter: isDark ? 'brightness(0.85) contrast(1.1)' : 'brightness(0.7) contrast(1.1)' }}
+              />
+            </div>
           </div>
         </div>
 
