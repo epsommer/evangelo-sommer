@@ -85,7 +85,7 @@ export default function MaintenancePage() {
         <div className="flex justify-center">
           <div className={`relative h-32 w-32 transition-all duration-300 ${
             isDark
-              ? "drop-shadow-[-8px_-8px_12px_rgba(120,113,108,0.02)] drop-shadow-[8px_8px_16px_rgba(0,0,0,0.6)]"
+              ? "drop-shadow-[-6px_-6px_10px_rgba(168,162,158,0.08)] drop-shadow-[6px_6px_12px_rgba(168,162,158,0.12)]"
               : "drop-shadow-[-8px_-8px_12px_rgba(255,255,255,1)] drop-shadow-[8px_8px_16px_rgba(120,113,108,0.25)]"
           }`}>
             <Image
@@ -93,7 +93,11 @@ export default function MaintenancePage() {
               alt="ES Monogram"
               fill
               className="object-contain"
-              style={{ filter: isDark ? 'brightness(0.85) contrast(1.1)' : 'brightness(0.7) contrast(1.1)' }}
+              style={{
+                filter: isDark
+                  ? 'brightness(0.4) sepia(0.2) hue-rotate(20deg) saturate(0.6)'
+                  : 'brightness(10) saturate(0)'
+              }}
             />
           </div>
         </div>
