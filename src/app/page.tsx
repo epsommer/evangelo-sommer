@@ -85,7 +85,7 @@ export default function MaintenancePage() {
         {/* Heading */}
         <div className="space-y-4">
           <h1 className={`text-4xl md:text-6xl font-bold font-space-grotesk uppercase tracking-wide ${
-            isDark ? "text-gray-50" : "text-gray-900"
+            isDark ? "!text-gray-50" : "!text-gray-900"
           }`}>
             Under Development
           </h1>
@@ -107,7 +107,7 @@ export default function MaintenancePage() {
         {/* Contact Information */}
         <div className="space-y-4">
           <h2 className={`text-xl font-bold font-space-grotesk uppercase tracking-wide ${
-            isDark ? "text-gray-50" : "text-gray-900"
+            isDark ? "!text-gray-50" : "!text-gray-900"
           }`}>
             Get In Touch
           </h2>
@@ -115,8 +115,8 @@ export default function MaintenancePage() {
             href="mailto:hi@evangelosommer.com"
             className={`inline-block transition-colors duration-200 font-space-grotesk ${
               isDark
-                ? "text-gray-100 hover:text-tactical-gold"
-                : "text-yellow-600 hover:text-yellow-700"
+                ? "!text-gray-100 hover:!text-tactical-gold"
+                : "!text-yellow-600 hover:!text-yellow-700"
             }`}
           >
             hi@evangelosommer.com
