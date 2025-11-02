@@ -83,24 +83,18 @@ export default function MaintenancePage() {
       <div className="max-w-2xl w-full text-center space-y-8">
         {/* Logo - Neomorphic ES Monogram */}
         <div className="flex justify-center">
-          <div className={`relative h-32 w-32 rounded-3xl flex items-center justify-center transition-all duration-300 p-6 ${
+          <div className={`relative h-32 w-32 transition-all duration-300 ${
             isDark
-              ? "bg-stone-800 shadow-[-8px_-8px_16px_rgba(120,113,108,0.03),8px_8px_16px_rgba(0,0,0,0.4)]"
-              : "bg-stone-100 shadow-[-8px_-8px_16px_rgba(255,255,255,1),8px_8px_16px_rgba(120,113,108,0.15)]"
+              ? "drop-shadow-[-8px_-8px_12px_rgba(120,113,108,0.02)] drop-shadow-[8px_8px_16px_rgba(0,0,0,0.6)]"
+              : "drop-shadow-[-8px_-8px_12px_rgba(255,255,255,1)] drop-shadow-[8px_8px_16px_rgba(120,113,108,0.25)]"
           }`}>
-            <div className={`relative w-full h-full ${
-              isDark
-                ? "drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
-                : "drop-shadow-[0_2px_4px_rgba(120,113,108,0.2)]"
-            }`}>
-              <Image
-                src="/EvangeloSommer-ES-Monogram.svg"
-                alt="ES Monogram"
-                fill
-                className="object-contain"
-                style={{ filter: isDark ? 'brightness(0.85) contrast(1.1)' : 'brightness(0.7) contrast(1.1)' }}
-              />
-            </div>
+            <Image
+              src="/EvangeloSommer-ES-Monogram.svg"
+              alt="ES Monogram"
+              fill
+              className="object-contain"
+              style={{ filter: isDark ? 'brightness(0.85) contrast(1.1)' : 'brightness(0.7) contrast(1.1)' }}
+            />
           </div>
         </div>
 
