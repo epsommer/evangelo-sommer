@@ -5,6 +5,7 @@ import Link from "next/link";
 
 export default function MaintenancePage() {
   const [isDark, setIsDark] = useState(true);
+  const [isToggling, setIsToggling] = useState(false);
 
   // Load theme preference from localStorage
   useEffect(() => {
@@ -16,9 +17,11 @@ export default function MaintenancePage() {
 
   // Save theme preference
   const toggleTheme = () => {
+    setIsToggling(true);
     const newTheme = !isDark;
     setIsDark(newTheme);
     localStorage.setItem("theme", newTheme ? "dark" : "light");
+    setTimeout(() => setIsToggling(false), 300);
   };
 
   return (
@@ -30,44 +33,46 @@ export default function MaintenancePage() {
 
       {/* Header Controls */}
       <div className="absolute top-6 right-6 flex items-center space-x-4">
-        {/* Theme Toggle - Sliding Switch */}
+        {/* Theme Toggle - Neomorphic Sliding Switch */}
         <button
           onClick={toggleTheme}
-          className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-tactical-gold focus:ring-offset-2 ${
+          className={`relative w-16 h-8 rounded-full transition-all duration-300 focus:outline-none ${
             isDark
-              ? "bg-gray-700"
-              : "bg-yellow-400"
+              ? "bg-gray-800 shadow-[inset_-2px_-2px_5px_rgba(255,255,255,0.05),inset_2px_2px_5px_rgba(0,0,0,0.5)]"
+              : "bg-gray-100 shadow-[inset_-2px_-2px_5px_rgba(255,255,255,0.8),inset_2px_2px_5px_rgba(0,0,0,0.1)]"
           }`}
           aria-label="Toggle theme"
         >
-          {/* Sliding circle */}
+          {/* Sliding circle with neomorphic effect */}
           <div
-            className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full transition-transform duration-300 flex items-center justify-center ${
+            className={`absolute top-1 left-1 w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center ${
               isDark
-                ? "translate-x-7 bg-gray-900"
-                : "translate-x-0 bg-white"
-            }`}
+                ? "translate-x-8 bg-gray-700 shadow-[-2px_-2px_5px_rgba(255,255,255,0.05),2px_2px_5px_rgba(0,0,0,0.5)]"
+                : "translate-x-0 bg-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(0,0,0,0.15)]"
+            } ${isToggling ? "scale-95" : "scale-100"}`}
           >
             {/* Icon inside the sliding circle */}
-            {isDark ? (
-              <svg className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-              </svg>
-            ) : (
-              <svg className="w-3.5 h-3.5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
-              </svg>
-            )}
+            <div className={`transition-all duration-200 ${isToggling ? "rotate-180 scale-75" : "rotate-0 scale-100"}`}>
+              {isDark ? (
+                <svg className="w-3.5 h-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+                </svg>
+              )}
+            </div>
           </div>
         </button>
 
-        {/* Login Link */}
+        {/* Login Link - Neomorphic Button */}
         <Link
           href="/auth/signin"
-          className={`px-4 py-2 rounded-lg font-space-grotesk font-medium transition-colors duration-200 ${
+          className={`px-5 py-2.5 rounded-xl font-space-grotesk font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
             isDark
-              ? "bg-tactical-gold text-black hover:bg-gold-dark"
-              : "bg-tactical-gold text-black hover:bg-yellow-600"
+              ? "bg-gray-800 text-gray-300 shadow-[-4px_-4px_8px_rgba(255,255,255,0.05),4px_4px_8px_rgba(0,0,0,0.5)] hover:shadow-[-2px_-2px_6px_rgba(255,255,255,0.07),2px_2px_6px_rgba(0,0,0,0.6)]"
+              : "bg-gray-100 text-gray-700 shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(0,0,0,0.1)] hover:shadow-[-2px_-2px_6px_rgba(255,255,255,1),2px_2px_6px_rgba(0,0,0,0.15)]"
           }`}
         >
           Login
@@ -75,10 +80,16 @@ export default function MaintenancePage() {
       </div>
 
       <div className="max-w-2xl w-full text-center space-y-8">
-        {/* Logo */}
+        {/* Logo - Neomorphic ES Monogram */}
         <div className="flex justify-center">
-          <div className="h-24 w-24 bg-tactical-gold flex items-center justify-center">
-            <span className="text-4xl font-bold text-black font-space-grotesk">ES</span>
+          <div className={`h-24 w-24 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            isDark
+              ? "bg-gray-800 shadow-[-6px_-6px_12px_rgba(255,255,255,0.03),6px_6px_12px_rgba(0,0,0,0.6)]"
+              : "bg-gray-100 shadow-[-6px_-6px_12px_rgba(255,255,255,1),6px_6px_12px_rgba(0,0,0,0.1)]"
+          }`}>
+            <span className={`text-4xl font-bold font-space-grotesk ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}>ES</span>
           </div>
         </div>
 
