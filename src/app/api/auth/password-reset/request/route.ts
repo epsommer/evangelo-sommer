@@ -74,7 +74,13 @@ export async function POST(request: NextRequest) {
       to: adminUser.email,
       subject: "Password Reset Request - Evangelo Sommer CRM",
       html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetUrl}">Reset Password</a></p><p>This link will expire in 1 hour.</p>`,
-      text: `You requested a password reset. Copy and paste this link into your browser to reset your password: ${resetUrl}`
+      text: `You requested a password reset. Copy and paste this link into your browser to reset your password: ${resetUrl}`,
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+          enableText: false
+        }
+      }
     });
 
     console.log("✅ Password reset email sent to:", adminUser.email);
