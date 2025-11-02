@@ -638,6 +638,19 @@ p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
   border-radius: 0 !important;
 }
 
+/* Neomorphic design exceptions - allow rounded corners */
+.neomorphic-rounded {
+  border-radius: 0.5rem !important;
+}
+
+.neomorphic-rounded-lg {
+  border-radius: 1rem !important;
+}
+
+.neomorphic-rounded-full {
+  border-radius: 50% !important;
+}
+
 /* Typography Styles */
 .text-heading {
   font-family: var(--font-display);                  /* Halogen */
