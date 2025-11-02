@@ -6,8 +6,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: "COMMAND CENTER | MSCRMS (Multi-service Client Relationship Management Service)",
-  description: "Multi-service Client Relationship Management Service - Command Center",
+  title: "Evangelo Sommer | Portfolio",
+  description: "Portfolio and professional showcase of Evangelo Sommer",
 };
 
 export default function RootLayout({
