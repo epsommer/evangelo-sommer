@@ -111,7 +111,7 @@ function ResetPasswordForm() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} suppressHydrationWarning>
           <div className="space-y-4">
             <div className="relative">
               <label htmlFor="password" className="block text-sm font-medium text-hud-text-primary font-space-grotesk mb-2">
