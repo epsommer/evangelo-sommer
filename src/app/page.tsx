@@ -27,7 +27,7 @@ export default function MaintenancePage() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark
-        ? "bg-gradient-to-br from-gray-900 via-black to-gray-900"
+        ? "bg-gradient-to-br from-stone-900 via-neutral-900 to-stone-900"
         : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
     } flex items-center justify-center px-4 relative`}>
 
