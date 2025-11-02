@@ -1,10 +1,11 @@
 // src/app/auth/signin/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import "@/app/neomorphic.css";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -15,7 +16,26 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const router = useRouter();
+
+  // Load theme preference from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setIsDark(savedTheme === "dark");
+    }
+  }, []);
+
+  // Save theme preference
+  const toggleTheme = () => {
+    setIsToggling(true);
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
+    setTimeout(() => setIsToggling(false), 300);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,17 +109,73 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-hud-background-secondary py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <div className="mx-auto h-16 w-16 bg-tactical-gold flex items-center justify-center">
-            <span className="text-2xl font-bold text-hud-text-primary font-space-grotesk">ES</span>
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
+      style={{
+        backgroundColor: isDark ? "#1c1917" : "#EBECF0",
+        transition: "background-color 300ms ease-in-out"
+      }}
+    >
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 flex items-center">
+        <label className={`neomorphic-toggle ${isDark ? 'dark-mode' : ''}`}>
+          <input
+            type="checkbox"
+            className="neomorphic-toggle__input"
+            checked={isDark}
+            onChange={toggleTheme}
+          />
+          <div className="neomorphic-toggle__indicator">
+            <svg
+              className="w-3.5 h-3.5"
+              style={{ color: "#FFA500" }}
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+            </svg>
+            <svg
+              className="w-3.5 h-3.5"
+              style={{ color: "#8992A5" }}
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
           </div>
-          <h2 className="mt-6 text-center text-2xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
-            COMMAND CENTER | MSCRMS
+        </label>
+      </div>
+
+      <div className={`max-w-md w-full space-y-8 ${isDark ? 'dark-mode' : ''}`}>
+        <div>
+          <div className={`mx-auto neomorphic-logo ${isDark ? 'dark-mode' : ''}`}>
+            <span
+              className="text-2xl font-bold font-space-grotesk"
+              style={{
+                color: isDark ? '#D4AF37' : '#D4AF37',
+                transition: 'color 300ms ease-in-out'
+              }}
+            >
+              ES
+            </span>
+          </div>
+          <h2
+            className="mt-6 text-center text-2xl font-bold font-space-grotesk uppercase tracking-wide"
+            style={{
+              color: isDark ? '#d1d5db' : '#6C7587',
+              transition: 'color 300ms ease-in-out'
+            }}
+          >
+            Sign In
           </h2>
-          <p className="mt-2 text-center text-sm text-medium-grey font-space-grotesk">
-            Multi-Service Client Relationship Management
+          <p
+            className="mt-2 text-center text-sm font-space-grotesk"
+            style={{
+              color: isDark ? '#9ca3af' : '#8992A5',
+              transition: 'color 300ms ease-in-out'
+            }}
+          >
+            Access your account
           </p>
         </div>
 
@@ -112,8 +188,8 @@ export default function SignIn() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="relative block w-full px-4 py-3 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent transition-colors duration-200 bg-hud-background-secondary"
-              placeholder="Enter your username/email"
+              className={`neomorphic-input ${isDark ? 'dark-mode' : ''}`}
+              placeholder="Email address"
             />
           </div>
 
@@ -125,13 +201,20 @@ export default function SignIn() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="relative block w-full px-4 py-3 pr-12 border-2 border-hud-border text-hud-text-primary font-space-grotesk focus:outline-none focus:border-hud-border-accent transition-colors duration-200 bg-hud-background-secondary"
-              placeholder="Enter your password"
+              className={`neomorphic-input ${isDark ? 'dark-mode' : ''}`}
+              placeholder="Password"
+              style={{ paddingRight: '60px' }}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-medium-grey hover:text-hud-text-primary transition-colors duration-200 font-space-grotesk text-xs uppercase tracking-wide"
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-xs uppercase tracking-wide font-space-grotesk"
+              style={{
+                color: isDark ? '#9ca3af' : '#8992A5',
+                transition: 'color 200ms ease-in-out'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = isDark ? '#d1d5db' : '#6C7587'}
+              onMouseLeave={(e) => e.currentTarget.style.color = isDark ? '#9ca3af' : '#8992A5'}
             >
               {showPassword ? "HIDE" : "SHOW"}
             </button>
@@ -141,24 +224,40 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={isLoading || !email.trim() || !password.trim()}
-              className="group relative w-full flex justify-center py-3 px-4 border-2 border-transparent text-sm font-bold font-space-grotesk uppercase tracking-wide text-hud-text-primary bg-tactical-gold hover:bg-tactical-gold-dark focus:outline-none transition-colors duration-200 disabled:bg-light-grey disabled:cursor-not-allowed disabled:text-medium-grey"
+              className={`neomorphic-submit ${isDark ? 'dark-mode' : ''}`}
             >
               {isLoading ? (
-                <div className="animate-spin h-4 w-4 border-b-2 border-dark-grey"></div>
+                <div className="animate-spin h-4 w-4 border-b-2" style={{ borderColor: isDark ? '#d1d5db' : '#6C7587' }}></div>
               ) : (
-                "Access System"
+                "Sign In"
               )}
             </button>
           </div>
 
           {error && (
-            <div className="mt-4 p-4 bg-red-50 border-2 border-red-500 text-red-700">
+            <div
+              className="mt-4 p-4 rounded-lg"
+              style={{
+                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(254, 226, 226, 1)',
+                border: '2px solid #EF4444',
+                color: isDark ? '#FCA5A5' : '#991B1B',
+                transition: 'all 300ms ease-in-out'
+              }}
+            >
               <p className="text-sm font-space-grotesk">{error}</p>
             </div>
           )}
 
           {resetMessage && (
-            <div className="mt-4 p-4 bg-green-50 border-2 border-green-500 text-green-700">
+            <div
+              className="mt-4 p-4 rounded-lg"
+              style={{
+                backgroundColor: isDark ? 'rgba(34, 197, 94, 0.1)' : 'rgba(220, 252, 231, 1)',
+                border: '2px solid #22C55E',
+                color: isDark ? '#86EFAC' : '#166534',
+                transition: 'all 300ms ease-in-out'
+              }}
+            >
               <p className="text-sm font-space-grotesk">{resetMessage}</p>
             </div>
           )}
@@ -168,7 +267,11 @@ export default function SignIn() {
               type="button"
               onClick={handleForgotPassword}
               disabled={isSendingReset || !email.trim()}
-              className="text-sm text-gold hover:text-gold-dark font-space-grotesk uppercase tracking-wide underline disabled:text-medium-grey disabled:cursor-not-allowed"
+              className="text-sm font-space-grotesk uppercase tracking-wide underline disabled:cursor-not-allowed"
+              style={{
+                color: isSendingReset || !email.trim() ? (isDark ? '#6b7280' : '#9ca3af') : '#D4AF37',
+                transition: 'color 200ms ease-in-out'
+              }}
             >
               {isSendingReset ? "Sending..." : "Forgot Password?"}
             </button>
@@ -176,7 +279,14 @@ export default function SignIn() {
         </form>
 
         <div className="text-center mt-6">
-          <Link href="/" className="text-sm text-gold hover:text-gold-dark font-space-grotesk uppercase tracking-wide">
+          <Link
+            href="/"
+            className="text-sm font-space-grotesk uppercase tracking-wide"
+            style={{
+              color: '#D4AF37',
+              transition: 'color 200ms ease-in-out'
+            }}
+          >
             ← Back to Homepage
           </Link>
         </div>

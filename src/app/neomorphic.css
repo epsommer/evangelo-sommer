@@ -68,6 +68,7 @@
               -4px -4px 4px 0px var(--neomorphic-light-shadow) inset;
   transition: box-shadow 300ms ease-in-out;
   cursor: pointer;
+  display: block;
 }
 
 .neomorphic-toggle__input {
@@ -93,4 +94,85 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 8px;
+}
+
+/* Neomorphic Input Fields */
+.neomorphic-input {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--neomorphic-text);
+  padding: 16px 20px;
+  width: 100%;
+  position: relative;
+  border: 3px solid transparent;
+  border-radius: 12px !important;
+  outline: none;
+  background-color: var(--neomorphic-bg);
+  box-shadow: inset 4px 4px 8px 0px var(--neomorphic-dark-shadow),
+              inset -4px -4px 8px 0px var(--neomorphic-light-shadow);
+  transition: all 250ms ease-in-out, box-shadow 300ms ease-in-out;
+}
+
+.neomorphic-input::placeholder {
+  color: var(--neomorphic-icon);
+  opacity: 0.7;
+}
+
+.neomorphic-input:focus {
+  box-shadow: inset 2px 2px 4px 0px var(--neomorphic-dark-shadow),
+              inset -2px -2px 4px 0px var(--neomorphic-light-shadow);
+  border-color: var(--neomorphic-accent);
+}
+
+/* Neomorphic Submit Button */
+.neomorphic-submit {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--neomorphic-text);
+  padding: 16px 32px;
+  width: 100%;
+  position: relative;
+  border: 3px solid transparent;
+  border-radius: 12px !important;
+  outline: none;
+  background-color: var(--neomorphic-bg);
+  box-shadow: 8px 8px 12px -2px var(--neomorphic-dark-shadow),
+              -6px -6px 12px -1px var(--neomorphic-light-shadow);
+  transition: all 250ms ease-in-out, box-shadow 300ms ease-in-out;
+  cursor: pointer;
+}
+
+.neomorphic-submit:hover:not(:disabled) {
+  box-shadow: 6px 6px 10px -2px var(--neomorphic-dark-shadow),
+              -4px -4px 10px -1px var(--neomorphic-light-shadow);
+}
+
+.neomorphic-submit:active:not(:disabled) {
+  box-shadow: inset 4px 4px 8px 0px var(--neomorphic-dark-shadow),
+              inset -4px -4px 8px 0px var(--neomorphic-light-shadow);
+}
+
+.neomorphic-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Neomorphic Logo Container */
+.neomorphic-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px !important;
+  background: var(--neomorphic-bg);
+  box-shadow: 8px 8px 16px 0px var(--neomorphic-dark-shadow),
+              -8px -8px 16px 0px var(--neomorphic-light-shadow);
+  transition: box-shadow 300ms ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
