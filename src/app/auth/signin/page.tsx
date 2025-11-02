@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import "@/app/neomorphic.css";
 
 export default function SignIn() {
@@ -149,15 +150,19 @@ export default function SignIn() {
       <div className={`max-w-md w-full space-y-8 ${isDark ? 'dark-mode' : ''}`}>
         <div>
           <div className={`mx-auto neomorphic-logo ${isDark ? 'dark-mode' : ''}`}>
-            <span
-              className="text-2xl font-bold font-space-grotesk"
-              style={{
-                color: isDark ? '#D4AF37' : '#D4AF37',
-                transition: 'color 300ms ease-in-out'
-              }}
-            >
-              ES
-            </span>
+            <div className="relative w-12 h-12">
+              <Image
+                src="/EvangeloSommer-ES-Monogram.svg"
+                alt="ES Monogram"
+                fill
+                className="object-contain"
+                style={{
+                  filter: isDark
+                    ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
+                    : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
+                }}
+              />
+            </div>
           </div>
           <h2
             className="mt-6 text-center text-2xl font-bold font-space-grotesk uppercase tracking-wide"
