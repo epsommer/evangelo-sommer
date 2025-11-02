@@ -1,6 +1,6 @@
 // src/lib/crm-integration.ts
 import { Anthropic } from "@anthropic-ai/sdk";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import {
   CRMIntegrationRequest,
   CRMIntegrationOutput,
@@ -375,16 +375,31 @@ export class CRMIntegrationService {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: "array" });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet) as Record<
-            string,
-            unknown
-          >[];
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          if (!arrayBuffer) {
+            throw new Error("Failed to read file into ArrayBuffer.");
+          }
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+          const worksheet = workbook.worksheets[0];
+          if (!worksheet) {
+            throw new Error("No worksheet found in the Excel file.");
+          }
 
+          const jsonData: Record<string, unknown>[] = [];
+          const headers = (worksheet.getRow(1).values as string[]).slice(1); // Get headers from the first row
+          worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+            if (rowNumber > 1) { // Skip header row
+              const rowData: Record<string, unknown> = {};
+              row.eachCell((cell, colNumber) => {
+                rowData[headers[colNumber - 1]] = cell.value;
+              });
+              jsonData.push(rowData);
+            }
+          });
+          
           const conversationData =
             this.convertExcelDataToConversationFormat(jsonData);
           resolve(conversationData);

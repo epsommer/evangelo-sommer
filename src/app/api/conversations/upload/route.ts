@@ -5,7 +5,7 @@ import { getPrismaClient, isPrismaAvailable } from '@/lib/prisma';
 import { SMSProcessor, RawSMSRow, convertSMSToMessages } from '@/lib/conversation/sms-processor';
 import { dataRecoveryEngine } from '@/lib/conversation/data-recovery';
 import { textCleaner } from '@/lib/conversation/text-cleaner';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 const prisma = getPrismaClient();
 const isDatabaseAvailable = isPrismaAvailable();
@@ -244,15 +244,25 @@ async function parseFileToRows(file: File): Promise<Record<string, any>[]> {
     return parseCSVToRows(text);
   } else {
     // Handle Excel files
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
-    
-    // Convert to JSON with headers
-    return XLSX.utils.sheet_to_json(worksheet, {
-      defval: '',
-      raw: false
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      return [];
+    }
+
+    const jsonData: Record<string, any>[] = [];
+    const headers = (worksheet.getRow(1).values as string[]).slice(1); // Get headers from the first row
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (rowNumber > 1) { // Skip header row
+        const rowData: Record<string, any> = {};
+        row.eachCell((cell, colNumber) => {
+          rowData[headers[colNumber - 1]] = cell.value;
+        });
+        jsonData.push(rowData);
+      }
     });
+    return jsonData;
   }
 }
 

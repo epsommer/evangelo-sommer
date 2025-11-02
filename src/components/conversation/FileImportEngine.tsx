@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Message } from "../../types/client";
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 // Extended Message type for file import with additional metadata
 interface ImportedMessage extends Message {
@@ -61,7 +61,7 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
 
       return new Promise<ParseResult>((resolve) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           try {
             const data = e.target?.result;
             if (!data) {
@@ -74,10 +74,11 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
               return;
             }
 
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(data as ArrayBuffer);
+            const worksheet = workbook.worksheets[0];
+            const jsonData: any[][] = [];
+            worksheet.eachRow((row: ExcelJS.Row) => jsonData.push(row.values as any[]));
 
             console.log('📊 Excel data parsed:', jsonData.length, 'rows');
             console.log('📋 First few rows:', jsonData.slice(0, 3));

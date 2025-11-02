@@ -1,5 +1,5 @@
-// src/lib/excel-import.ts
-import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+
 import {
   MessageRow,
   UserInfo,
@@ -21,49 +21,50 @@ export const parseExcelFile = async (file: File): Promise<ExcelParseResult> => {
     console.log("File name:", file.name);
     console.log("File size:", file.size);
     console.log("File type:", file.type);
-
+    
     const arrayBuffer = await file.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { 
-      type: "buffer",  // Changed from "array" to "buffer" for ArrayBuffer input
-      cellDates: false,  // Keep as text for custom parsing
-      cellNF: true,
-      raw: false
-    });
-
-    console.log("Workbook sheet names:", workbook.SheetNames);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
 
     // Get the first worksheet
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new Error("No worksheets found in the Excel file.");
+    }
+    console.log("Worksheet name:", worksheet.name);
 
-    console.log("Worksheet range:", worksheet["!ref"]);
+    const rawArrayData: unknown[][] = [];
+    worksheet.eachRow((row) => {
+      const rowValues: unknown[] = [];
+      // Note: row.values is 1-indexed in exceljs
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        rowValues[colNumber - 1] = cell.value;
+      });
+      rawArrayData.push(rowValues);
+    });
 
     // Try multiple parsing methods
     console.log("\n--- METHOD 1: Raw array parsing ---");
-    const rawArrayData = XLSX.utils.sheet_to_json(worksheet, {
-      header: 1,
-      defval: "",
-      raw: false,
-    });
     console.log("Raw array data (first 10 rows):", rawArrayData.slice(0, 10));
 
     console.log("\n--- METHOD 2: Object parsing with auto headers ---");
-    const objectData = XLSX.utils.sheet_to_json(worksheet, {
-      defval: "",
-      raw: false,
+    const headersFromFirstRow = rawArrayData[0] as string[];
+    const objectData = rawArrayData.slice(1).map(row => {
+      const obj: Record<string, unknown> = {};
+      headersFromFirstRow.forEach((header, index) => {
+        obj[header] = row[index];
+      });
+      return obj;
     });
     console.log("Object data (first 5 rows):", objectData.slice(0, 5));
 
     console.log("\n--- METHOD 3: Manual cell inspection ---");
-    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:Z100");
-    for (let R = range.s.r; R <= Math.min(range.e.r, 10); ++R) {
+    for (let R = 0; R < Math.min(worksheet.rowCount, 10); R++) {
+      const row = worksheet.getRow(R + 1);
       const rowData: Record<string, unknown> = {};
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const cellAddress = XLSX.utils.encode_cell({ c: C, r: R });
-        const cell = worksheet[cellAddress];
-        const columnLetter = XLSX.utils.encode_col(C);
-        rowData[columnLetter] = cell ? cell.v : undefined;
-      }
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        rowData[cell.address.replace(/\d+/, '')] = cell.value;
+      });
       console.log(`Row ${R + 1}:`, rowData);
     }
 
@@ -218,23 +219,21 @@ export const parseExcelFile = async (file: File): Promise<ExcelParseResult> => {
 /**
  * Analyze Excel structure to understand data layout and patterns
  */
-export const analyzeExcelStructure = (worksheet: XLSX.WorkSheet) => {
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || '');
+export const analyzeExcelStructure = (worksheet: ExcelJS.Worksheet) => {
   console.group('📊 Excel Structure Analysis');
-  console.log(`Range: ${worksheet['!ref']} (${range.e.r + 1} rows, ${range.e.c + 1} columns)`);
+  console.log(`Dimensions: ${worksheet.rowCount} rows, ${worksheet.columnCount} columns`);
   
   // Analyze first 20 rows to understand structure
-  for (let R = 0; R <= Math.min(19, range.e.r); R++) {
-    const rowData: Record<string, any> = {};
-    for (let C = 0; C <= range.e.c; C++) {
-      const cellAddress = XLSX.utils.encode_cell({c: C, r: R});
-      const cell = worksheet[cellAddress];
-      rowData[`Col${C}`] = cell ? {
-        raw: cell.v,
-        formatted: cell.w,
-        type: cell.t
+  for (let R = 1; R <= Math.min(20, worksheet.rowCount); R++) {
+    const row = worksheet.getRow(R);
+    const rowData: Record<string, unknown> = {};
+    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      rowData[`Col${colNumber}`] = cell.value ? {
+        raw: cell.value,
+        formatted: cell.text,
+        type: cell.type
       } : null;
-    }
+    });
     console.log(`Row ${R}:`, rowData);
   }
   
@@ -245,23 +244,22 @@ export const analyzeExcelStructure = (worksheet: XLSX.WorkSheet) => {
     contentPatterns: [] as Array<{row: number, col: number, value: string}>
   };
   
-  for (let R = 0; R <= range.e.r; R++) {
-    for (let C = 0; C <= range.e.c; C++) {
-      const cellAddress = XLSX.utils.encode_cell({c: C, r: R});
-      const cell = worksheet[cellAddress];
-      if (cell?.w) {
+  worksheet.eachRow((row: ExcelJS.Row, rowNumber: number) => {
+    row.eachCell({ includeEmpty: true }, (cell: ExcelJS.Cell, colNumber: number) => {
+      const cellText = cell.text;
+      if (cellText) {
         // Check for date patterns
-        if (cell.w.match(/\d{1,2}:\d{2}:\d{2}|Eastern|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday/)) {
-          patterns.datePatterns.push({row: R, col: C, value: cell.w});
+        if (cellText.match(/\d{1,2}:\d{2}:\d{2}|Eastern|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday/)) {
+          patterns.datePatterns.push({row: rowNumber, col: colNumber, value: cellText});
         }
         // Check for sender patterns  
-        if (cell.w.match(/Mark|Evan|\+\d{11}/)) {
-          patterns.senderPatterns.push({row: R, col: C, value: cell.w});
+        if (cellText.match(/Mark|Evan|\+\d{11}/)) {
+          patterns.senderPatterns.push({row: rowNumber, col: colNumber, value: cellText});
         }
       }
-    }
-  }
-  
+    });
+  });
+
   console.log('Detected Patterns:', patterns);
   console.groupEnd();
   
@@ -272,16 +270,15 @@ export const analyzeExcelStructure = (worksheet: XLSX.WorkSheet) => {
  * Multi-Pattern Excel parser for variable structure SMS exports
  * Handles inconsistent row/cell structures by treating each message as a variable-length block
  */
-export const parseVariableStructureSMS = (worksheet: XLSX.WorkSheet): Message[] => {
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || '');
+export const parseVariableStructureSMS = (worksheet: ExcelJS.Worksheet): Message[] => {
   const messages: Message[] = [];
   let i = 1; // Skip header row
   
   console.log('🔄 Starting variable structure SMS parsing...');
-  console.log(`Processing ${range.e.r + 1} rows, ${range.e.c + 1} columns`);
+  console.log(`Processing ${worksheet.rowCount} rows, ${worksheet.columnCount} columns`);
   
-  while (i <= range.e.r) {
-    const messageData = extractMessageBlock(worksheet, range, i);
+  while (i <= worksheet.rowCount) {
+    const messageData = extractMessageBlock(worksheet, i);
     
     if (messageData.message) {
       messages.push({
@@ -309,7 +306,7 @@ export const parseVariableStructureSMS = (worksheet: XLSX.WorkSheet): Message[] 
 /**
  * Extract a complete message block from variable row structure
  */
-function extractMessageBlock(worksheet: XLSX.WorkSheet, range: any, startRow: number) {
+function extractMessageBlock(worksheet: ExcelJS.Worksheet, startRow: number) {
   let currentRow = startRow;
   let messageType = '';
   let dateComponents: string[] = [];
@@ -318,8 +315,8 @@ function extractMessageBlock(worksheet: XLSX.WorkSheet, range: any, startRow: nu
   let foundComplete = false;
   
   // Look ahead up to 10 rows to find complete message block
-  for (let offset = 0; offset < 10 && (currentRow + offset) <= range.e.r; offset++) {
-    const rowData = getRowData(worksheet, range, currentRow + offset);
+  for (let offset = 0; offset < 10 && (currentRow + offset) <= worksheet.rowCount; offset++) {
+    const rowData = getRowData(worksheet, currentRow + offset);
     
     // Check if this row starts a new message block (but not on first iteration)
     if (offset > 0 && isNewMessageStart(rowData)) {
@@ -360,13 +357,12 @@ function extractMessageBlock(worksheet: XLSX.WorkSheet, range: any, startRow: nu
 /**
  * Get row data as array of non-empty strings
  */
-function getRowData(worksheet: XLSX.WorkSheet, range: any, row: number): string[] {
+function getRowData(worksheet: ExcelJS.Worksheet, rowNumber: number): string[] {
   const data: string[] = [];
-  for (let C = 0; C <= range.e.c; C++) {
-    const cellAddress = XLSX.utils.encode_cell({c: C, r: row});
-    const cell = worksheet[cellAddress];
-    data.push(cell ? (cell.w || cell.v || '').toString().trim() : '');
-  }
+  const row = worksheet.getRow(rowNumber);
+  row.eachCell({ includeEmpty: true }, (cell) => {
+    data.push(cell.text?.trim() || '');
+  });
   return data.filter(Boolean); // Remove empty cells
 }
 
