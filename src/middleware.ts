@@ -84,11 +84,6 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const ip = getClientIp(request);
 
-  // Block homepage - redirect to login since it's under development
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/auth/signin', request.url));
-  }
-
   // Apply rate limiting to all API routes
   const rateLimit = checkRateLimit(ip, pathname);
 
