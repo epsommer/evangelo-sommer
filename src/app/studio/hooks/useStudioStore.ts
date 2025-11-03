@@ -12,15 +12,18 @@ export interface SceneObject {
 interface StudioStore {
   objects: SceneObject[];
   selectedObject: string | null;
+  transformMode: 'translate' | 'rotate' | 'scale';
   addObject: (type: SceneObject['type']) => void;
   updateObject: (id: string, updates: Partial<SceneObject>) => void;
   deleteObject: (id: string) => void;
   clearScene: () => void;
+  setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => void;
 }
 
 export const useStudioStore = create<StudioStore>((set) => ({
   objects: [],
   selectedObject: null,
+  transformMode: 'translate',
 
   addObject: (type) => {
     const newObject: SceneObject = {
@@ -54,5 +57,9 @@ export const useStudioStore = create<StudioStore>((set) => ({
 
   clearScene: () => {
     set({ objects: [], selectedObject: null });
+  },
+
+  setTransformMode: (mode) => {
+    set({ transformMode: mode });
   },
 }));

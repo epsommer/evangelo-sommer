@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Toolbar from "./components/Toolbar";
 import PropertiesPanel from "./components/PropertiesPanel";
+import { useStudioStore } from "./hooks/useStudioStore";
 import "@/app/neomorphic.css";
 
 // Dynamically import ThreeScene with SSR disabled (Three.js doesn't work on server)
@@ -22,6 +23,8 @@ export default function StudioPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
+  const transformMode = useStudioStore((state) => state.transformMode);
+  const setTransformMode = useStudioStore((state) => state.setTransformMode);
 
   // Load theme preference
   useEffect(() => {
@@ -83,6 +86,37 @@ export default function StudioPage() {
           >
             3D Studio
           </h1>
+        </div>
+
+        {/* Transform Mode Selector */}
+        <div className="flex items-center gap-2">
+          <span
+            className="text-sm font-space-grotesk mr-2"
+            style={{ color: isDark ? '#9ca3af' : '#8992A5' }}
+          >
+            Gizmo:
+          </span>
+          {['translate', 'rotate', 'scale'].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setTransformMode(mode as 'translate' | 'rotate' | 'scale')}
+              className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                fontSize: '12px',
+                textTransform: 'capitalize',
+                backgroundColor: transformMode === mode
+                  ? (isDark ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)')
+                  : undefined,
+                color: transformMode === mode
+                  ? '#D4AF37'
+                  : (isDark ? '#d1d5db' : '#6C7587'),
+              }}
+            >
+              {mode}
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center gap-4">
