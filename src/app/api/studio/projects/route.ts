@@ -17,6 +17,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: 'Database unavailable' },
+        { status: 503 }
+      );
+    }
+
     const projects = await prisma.studioProject.findMany({
       where: {
         userId: token.sub,
@@ -66,6 +73,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Project name is required' },
         { status: 400 }
+      );
+    }
+
+    if (!prisma) {
+      return NextResponse.json(
+        { error: 'Database unavailable' },
+        { status: 503 }
       );
     }
 

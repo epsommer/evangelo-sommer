@@ -641,7 +641,7 @@ Rescheduled: ${data.reason}`.trim() :
       </Card>
       
       {/* Drag Visual Feedback */}
-      <DragVisualFeedback containerRef={containerRef} />
+      <DragVisualFeedback containerRef={containerRef as React.RefObject<HTMLElement>} />
       
       {/* Event Creation Modal */}
       {enableEventCreation && (

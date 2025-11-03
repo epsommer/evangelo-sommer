@@ -1508,7 +1508,7 @@ Resized: ${data.reason}`.trim() :
     </div>
     
     {/* Drag Visual Feedback */}
-    <DragVisualFeedback containerRef={containerRef} />
+    <DragVisualFeedback containerRef={containerRef as React.RefObject<HTMLElement>} />
     
     {/* Event Creation Modal */}
     <EventCreationModal
