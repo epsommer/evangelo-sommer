@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import "@/app/neomorphic.css";
-import { Palette, Box, Users, Edit, Eye } from "lucide-react";
+import { Palette, Box, Users, Edit, Eye, Grid3x3, List } from "lucide-react";
 
 interface StudioProject {
   id: string;
@@ -22,6 +22,7 @@ export default function SelectPage() {
   const [isDark, setIsDark] = useState(false);
   const [studioProjects, setStudioProjects] = useState<StudioProject[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [projectsViewMode, setProjectsViewMode] = useState<'grid' | 'list'>('grid');
 
   // Load theme preference
   useEffect(() => {
@@ -282,14 +283,72 @@ export default function SelectPage() {
         {/* Studio Projects Explorer - Responsive */}
         {studioProjects.length > 0 && (
           <div className="mt-8 sm:mt-12">
-            <h2
-              className="text-xl sm:text-2xl font-bold font-space-grotesk uppercase mb-4 sm:mb-6 text-center px-4"
-              style={{ color: isDark ? "#d1d5db" : "#6C7587" }}
-            >
-              Your Studio Scenes
-            </h2>
+            <div className="flex items-center justify-between mb-4 sm:mb-6 px-4">
+              <h2
+                className="text-xl sm:text-2xl font-bold font-space-grotesk uppercase"
+                style={{ color: isDark ? "#d1d5db" : "#6C7587" }}
+              >
+                Your Studio Scenes
+              </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* View Mode Toggle */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setProjectsViewMode('grid')}
+                  className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+                  style={{
+                    height: '36px',
+                    width: '36px',
+                    padding: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: projectsViewMode === 'grid'
+                      ? (isDark ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)')
+                      : undefined,
+                  }}
+                  title="Grid View"
+                >
+                  <Grid3x3
+                    className="w-4 h-4"
+                    style={{
+                      color: projectsViewMode === 'grid'
+                        ? '#D4AF37'
+                        : (isDark ? '#d1d5db' : '#6C7587')
+                    }}
+                  />
+                </button>
+                <button
+                  onClick={() => setProjectsViewMode('list')}
+                  className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+                  style={{
+                    height: '36px',
+                    width: '36px',
+                    padding: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: projectsViewMode === 'list'
+                      ? (isDark ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.15)')
+                      : undefined,
+                  }}
+                  title="List View"
+                >
+                  <List
+                    className="w-4 h-4"
+                    style={{
+                      color: projectsViewMode === 'list'
+                        ? '#D4AF37'
+                        : (isDark ? '#d1d5db' : '#6C7587')
+                    }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Grid View */}
+            {projectsViewMode === 'grid' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {studioProjects.map((project) => (
                 <div
                   key={project.id}
@@ -366,7 +425,96 @@ export default function SelectPage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
+
+            {/* List View - Compact for mobile */}
+            {projectsViewMode === 'list' && (
+              <div className="space-y-3">
+                {studioProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    className={`neomorphic-card ${isDark ? "dark-mode" : ""}`}
+                    style={{
+                      padding: '1rem',
+                      transition: "all 300ms ease-in-out",
+                    }}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      {/* Thumbnail - smaller in list view */}
+                      <div
+                        className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center cursor-pointer touch-manipulation"
+                        style={{
+                          backgroundColor: isDark ? "#2e2b29" : "#d1d9e6",
+                          borderRadius: "8px",
+                        }}
+                        onClick={() => handleExploreProject(project.id)}
+                      >
+                        <Box className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: "#D4AF37" }} />
+                      </div>
+
+                      {/* Project details */}
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className="text-sm sm:text-base font-bold font-space-grotesk truncate"
+                          style={{ color: isDark ? "#d1d5db" : "#6C7587" }}
+                        >
+                          {project.name}
+                        </h3>
+                        {project.description && (
+                          <p
+                            className="text-xs sm:text-sm font-space-grotesk line-clamp-1 mt-0.5"
+                            style={{ color: isDark ? "#9ca3af" : "#8992A5" }}
+                          >
+                            {project.description}
+                          </p>
+                        )}
+                        <p
+                          className="text-xs font-space-grotesk mt-1"
+                          style={{ color: isDark ? "#6b7280" : "#8992A5" }}
+                        >
+                          Updated {new Date(project.updatedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      {/* Action buttons - compact */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditProject(project.id)}
+                          className={`neomorphic-button ${isDark ? "dark-mode" : ""} touch-manipulation`}
+                          style={{
+                            height: "36px",
+                            width: "36px",
+                            padding: "0",
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" style={{ color: isDark ? '#d1d5db' : '#6C7587' }} />
+                        </button>
+                        <button
+                          onClick={() => handleExploreProject(project.id)}
+                          className={`neomorphic-button ${isDark ? "dark-mode" : ""} touch-manipulation`}
+                          style={{
+                            height: "36px",
+                            width: "36px",
+                            padding: "0",
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          title="Explore"
+                        >
+                          <Eye className="w-4 h-4" style={{ color: isDark ? '#d1d5db' : '#6C7587' }} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -389,7 +537,7 @@ export default function SelectPage() {
         {/* Sign Out Link - Responsive */}
         <div className="text-center mt-8 sm:mt-12 pb-4">
           <button
-            onClick={() => router.push("/api/auth/signout")}
+            onClick={() => router.push("/auth/signout")}
             className="text-xs sm:text-sm font-space-grotesk uppercase tracking-wide underline touch-manipulation min-h-[44px] inline-flex items-center justify-center"
             style={{
               color: isDark ? "#9ca3af" : "#8992A5",
