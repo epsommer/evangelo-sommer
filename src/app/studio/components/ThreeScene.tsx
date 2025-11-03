@@ -13,7 +13,7 @@ interface ThreeSceneProps {
 interface SceneObjectProps {
   obj: SceneObjectType;
   isSelected: boolean;
-  transformMode: 'translate' | 'rotate' | 'scale';
+  transformMode: 'select' | 'translate' | 'rotate' | 'scale';
   onSelect: (id: string) => void;
   onUpdate: (id: string, updates: Partial<SceneObjectType>) => void;
 }
@@ -93,7 +93,7 @@ function SceneObject({ obj, isSelected, transformMode, onSelect, onUpdate }: Sce
         />
       </mesh>
 
-      {isSelected && meshRef.current && (
+      {isSelected && meshRef.current && transformMode !== 'select' && (
         <TransformControls
           object={meshRef.current}
           mode={transformMode}

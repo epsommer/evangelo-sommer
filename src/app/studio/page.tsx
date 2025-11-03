@@ -94,12 +94,12 @@ export default function StudioPage() {
             className="text-sm font-space-grotesk mr-2"
             style={{ color: isDark ? '#9ca3af' : '#8992A5' }}
           >
-            Gizmo:
+            Mode:
           </span>
-          {['translate', 'rotate', 'scale'].map((mode) => (
+          {['select', 'translate', 'rotate', 'scale'].map((mode) => (
             <button
               key={mode}
-              onClick={() => setTransformMode(mode as 'translate' | 'rotate' | 'scale')}
+              onClick={() => setTransformMode(mode as 'select' | 'translate' | 'rotate' | 'scale')}
               className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
               style={{
                 height: '36px',
