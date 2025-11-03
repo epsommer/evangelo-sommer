@@ -22,6 +22,13 @@ const protectedApiRoutes = [
   '/api/follow-ups',
   '/api/time-entries',
   '/api/calendar',
+  '/api/studio',
+];
+
+// Protected page routes (redirects to signin instead of JSON response)
+const protectedPageRoutes = [
+  '/studio',
+  '/dashboard',
 ];
 
 // Routes that are public (authentication, health checks, etc.)
@@ -110,8 +117,13 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // Check if this is a protected page route
+  const isProtectedPageRoute = protectedPageRoutes.some(route =>
+    pathname.startsWith(route)
+  );
+
   // Check if this is a protected API route
-  const isProtectedRoute = protectedApiRoutes.some(route =>
+  const isProtectedApiRoute = protectedApiRoutes.some(route =>
     pathname.startsWith(route)
   );
 
@@ -120,7 +132,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  if (!isProtectedRoute || isPublicRoute) {
+  if ((!isProtectedApiRoute && !isProtectedPageRoute) || isPublicRoute) {
     // Add rate limit headers even for public routes
     const response = NextResponse.next();
     response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
@@ -134,28 +146,42 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // If no token, return 401 Unauthorized
+  // If no token, handle based on route type
   if (!token) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Unauthorized - Authentication required',
-        code: 'AUTH_REQUIRED'
-      },
-      { status: 401 }
-    );
+    if (isProtectedPageRoute) {
+      // Redirect to signin for page routes
+      const signInUrl = new URL('/auth/signin', request.url);
+      signInUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(signInUrl);
+    } else {
+      // Return JSON for API routes
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - Authentication required',
+          code: 'AUTH_REQUIRED'
+        },
+        { status: 401 }
+      );
+    }
   }
 
   // Verify user has required role (all routes require SUPER_ADMIN for now)
   if (token.role !== 'SUPER_ADMIN') {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Forbidden - Insufficient permissions',
-        code: 'INSUFFICIENT_PERMISSIONS'
-      },
-      { status: 403 }
-    );
+    if (isProtectedPageRoute) {
+      // Redirect to home for insufficient permissions on page routes
+      return NextResponse.redirect(new URL('/', request.url));
+    } else {
+      // Return JSON for API routes
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Forbidden - Insufficient permissions',
+          code: 'INSUFFICIENT_PERMISSIONS'
+        },
+        { status: 403 }
+      );
+    }
   }
 
   // Add user info to headers for API routes to access
