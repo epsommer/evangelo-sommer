@@ -3,11 +3,105 @@
 import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport, TransformControls } from "@react-three/drei";
-import { useStudioStore } from "../hooks/useStudioStore";
+import { useStudioStore, SceneObject as SceneObjectType } from "../hooks/useStudioStore";
 import * as THREE from "three";
 
 interface ThreeSceneProps {
   isDark: boolean;
+}
+
+interface SceneObjectProps {
+  obj: SceneObjectType;
+  isSelected: boolean;
+  transformMode: 'translate' | 'rotate' | 'scale';
+  onSelect: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<SceneObjectType>) => void;
+}
+
+function SceneObject({ obj, isSelected, transformMode, onSelect, onUpdate }: SceneObjectProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  const handleTransform = () => {
+    if (meshRef.current && isSelected) {
+      const newPosition: [number, number, number] = [
+        meshRef.current.position.x,
+        meshRef.current.position.y,
+        meshRef.current.position.z
+      ];
+      const newRotation: [number, number, number] = [
+        meshRef.current.rotation.x,
+        meshRef.current.rotation.y,
+        meshRef.current.rotation.z
+      ];
+      const newScale: [number, number, number] = [
+        meshRef.current.scale.x,
+        meshRef.current.scale.y,
+        meshRef.current.scale.z
+      ];
+
+      onUpdate(obj.id, {
+        position: newPosition,
+        rotation: newRotation,
+        scale: newScale
+      });
+    }
+  };
+
+  let geometry;
+  switch (obj.type) {
+    case 'cube':
+      geometry = <boxGeometry args={[1, 1, 1]} />;
+      break;
+    case 'sphere':
+      geometry = <sphereGeometry args={[0.5, 32, 32]} />;
+      break;
+    case 'cylinder':
+      geometry = <cylinderGeometry args={[0.5, 0.5, 1, 32]} />;
+      break;
+    default:
+      return null;
+  }
+
+  return (
+    <group>
+      <mesh
+        ref={meshRef}
+        position={obj.position}
+        rotation={obj.rotation}
+        scale={obj.scale}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(obj.id);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          if (!isSelected) {
+            document.body.style.cursor = 'pointer';
+          }
+        }}
+        onPointerOut={() => {
+          if (!isSelected) {
+            document.body.style.cursor = 'default';
+          }
+        }}
+      >
+        {geometry}
+        <meshStandardMaterial
+          color={obj.color || '#D4AF37'}
+          emissive={isSelected ? '#D4AF37' : '#000000'}
+          emissiveIntensity={isSelected ? 0.3 : 0}
+        />
+      </mesh>
+
+      {isSelected && meshRef.current && (
+        <TransformControls
+          object={meshRef.current}
+          mode={transformMode}
+          onObjectChange={handleTransform}
+        />
+      )}
+    </group>
+  );
 }
 
 function Scene() {
@@ -16,9 +110,6 @@ function Scene() {
   const transformMode = useStudioStore((state) => state.transformMode);
   const updateObject = useStudioStore((state) => state.updateObject);
   const setSelected = (id: string) => useStudioStore.setState({ selectedObject: id });
-  const transformControlsRef = useRef<any>(null);
-
-  const selectedObj = objects.find(obj => obj.id === selectedObject);
 
   return (
     <>
@@ -42,92 +133,16 @@ function Scene() {
       />
 
       {/* Render Objects */}
-      {objects.map((obj) => {
-        const isSelected = selectedObject === obj.id;
-        const meshRef = useRef<THREE.Mesh>(null);
-
-        const handleTransform = () => {
-          if (meshRef.current && isSelected) {
-            const newPosition: [number, number, number] = [
-              meshRef.current.position.x,
-              meshRef.current.position.y,
-              meshRef.current.position.z
-            ];
-            const newRotation: [number, number, number] = [
-              meshRef.current.rotation.x,
-              meshRef.current.rotation.y,
-              meshRef.current.rotation.z
-            ];
-            const newScale: [number, number, number] = [
-              meshRef.current.scale.x,
-              meshRef.current.scale.y,
-              meshRef.current.scale.z
-            ];
-
-            updateObject(obj.id, {
-              position: newPosition,
-              rotation: newRotation,
-              scale: newScale
-            });
-          }
-        };
-
-        let geometry;
-        switch (obj.type) {
-          case 'cube':
-            geometry = <boxGeometry args={[1, 1, 1]} />;
-            break;
-          case 'sphere':
-            geometry = <sphereGeometry args={[0.5, 32, 32]} />;
-            break;
-          case 'cylinder':
-            geometry = <cylinderGeometry args={[0.5, 0.5, 1, 32]} />;
-            break;
-          default:
-            return null;
-        }
-
-        return (
-          <group key={obj.id}>
-            <mesh
-              ref={meshRef}
-              position={obj.position}
-              rotation={obj.rotation}
-              scale={obj.scale}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelected(obj.id);
-              }}
-              onPointerOver={(e) => {
-                e.stopPropagation();
-                if (!isSelected) {
-                  document.body.style.cursor = 'pointer';
-                }
-              }}
-              onPointerOut={() => {
-                if (!isSelected) {
-                  document.body.style.cursor = 'default';
-                }
-              }}
-            >
-              {geometry}
-              <meshStandardMaterial
-                color={obj.color || '#D4AF37'}
-                emissive={isSelected ? '#D4AF37' : '#000000'}
-                emissiveIntensity={isSelected ? 0.3 : 0}
-              />
-            </mesh>
-
-            {isSelected && meshRef.current && (
-              <TransformControls
-                object={meshRef.current}
-                mode={transformMode}
-                onObjectChange={handleTransform}
-              />
-            )}
-          </group>
-        );
-      })}
+      {objects.map((obj) => (
+        <SceneObject
+          key={obj.id}
+          obj={obj}
+          isSelected={selectedObject === obj.id}
+          transformMode={transformMode}
+          onSelect={setSelected}
+          onUpdate={updateObject}
+        />
+      ))}
     </>
   );
 }
