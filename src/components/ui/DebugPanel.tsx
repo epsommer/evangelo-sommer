@@ -80,8 +80,8 @@ export default function DebugPanel({
         minWidth: "300px",
         padding: "1.5rem",
         backgroundColor: "rgba(28, 25, 23, 0.95)",
-        border: "2px solid #D4AF37",
-        borderRadius: "12px",
+        border: "1px solid #9ca3af",
+        borderRadius: "16px",
         backdropFilter: "blur(8px)",
       }}
     >

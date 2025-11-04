@@ -224,20 +224,22 @@ export default function ThreeScene() {
         📍 {getRoomDisplayName(currentRoom)}
       </div>
 
-      <div
-        className="fixed bottom-4 left-4 z-40 bg-black bg-opacity-90 text-white p-4 rounded-lg shadow-lg"
-        style={{ zIndex: 100 }}
-      >
-        <p className="font-bold">🎮 Enhanced Controls</p>
-        <p className="text-sm">WASD/Arrows: Move • SPACE: Jump</p>
-        <p className="text-sm">Q/E: Rotate Left/Right • Mouse: Look</p>
-        <p className="text-xs text-gray-300">ESC: Debug • TAB: Settings</p>
-        {collisionInfo.isColliding && (
-          <p className="text-xs text-red-400 mt-1">
+      {/* Collision Warning */}
+      {collisionInfo.isColliding && (
+        <div
+          className="fixed bottom-4 left-4 z-40 text-white p-3"
+          style={{
+            zIndex: 100,
+            backgroundColor: "rgba(220, 38, 38, 0.9)",
+            borderRadius: "8px",
+            border: "1px solid #ef4444",
+          }}
+        >
+          <p className="text-sm font-bold">
             🚧 {collisionInfo.wallType}
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Edge Rotation Indicators */}
       {/* Left indicator */}
