@@ -74,7 +74,7 @@ export default function DebugPanel({
 
   return (
     <div
-      className="fixed top-4 right-4 z-50 dark-mode font-mono text-sm"
+      className="gallery-ui fixed top-4 right-4 z-50 dark-mode font-mono text-sm"
       style={{
         zIndex: 200,
         minWidth: "300px",

@@ -210,7 +210,7 @@ export default function ThreeScene() {
     <>
       {/* Main Gallery UI */}
       <div
-        className="fixed top-4 left-4 z-40 bg-tactical-gold text-white px-4 py-2 rounded-lg shadow-lg"
+        className="gallery-ui fixed top-4 left-4 z-40 bg-tactical-gold text-white px-4 py-2 rounded-lg shadow-lg"
         style={{ zIndex: 100 }}
       >
         🏛️ {sceneReady ? "SIMPLE MUSEUM" : "Loading..."}
@@ -218,7 +218,7 @@ export default function ThreeScene() {
 
       {/* Room Indicator */}
       <div
-        className="fixed top-20 left-4 z-40 bg-purple-600 text-white px-3 py-1 rounded-lg text-sm shadow-lg"
+        className="gallery-ui fixed top-20 left-4 z-40 bg-purple-600 text-white px-3 py-1 rounded-lg text-sm shadow-lg"
         style={{ zIndex: 100 }}
       >
         📍 {getRoomDisplayName(currentRoom)}
@@ -227,7 +227,7 @@ export default function ThreeScene() {
       {/* Collision Warning */}
       {collisionInfo.isColliding && (
         <div
-          className="fixed bottom-4 left-4 z-40 text-white p-3"
+          className="gallery-ui fixed bottom-4 left-4 z-40 text-white p-3"
           style={{
             zIndex: 100,
             backgroundColor: "rgba(220, 38, 38, 0.9)",
@@ -235,7 +235,7 @@ export default function ThreeScene() {
             border: "1px solid #ef4444",
           }}
         >
-          <p className="text-sm font-bold">
+          <p style={{ fontSize: "0.875rem", fontWeight: "bold" }}>
             🚧 {collisionInfo.wallType}
           </p>
         </div>

@@ -621,8 +621,8 @@ p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
   box-shadow: none;
 }
 
-/* Force square corners on all elements EXCEPT neomorphic design */
-*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]) {
+/* Force square corners on all elements EXCEPT neomorphic design and gallery UI */
+*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not(.gallery-ui):not(.gallery-ui *) {
   border-radius: 0 !important;
 }
 
