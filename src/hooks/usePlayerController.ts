@@ -11,6 +11,7 @@ export class PlayerController {
   private camera: THREE.PerspectiveCamera;
   private moveSpeed: number;
   private jumpHeight: number;
+  private paused: boolean = false;
   private onPositionUpdate: (
     position: THREE.Vector3,
     rotation: THREE.Euler,
@@ -214,6 +215,9 @@ export class PlayerController {
   }
 
   update() {
+    // Skip update if paused
+    if (this.paused) return;
+
     const rotationSpeed = 0.03;
 
     // Calculate edge rotation
@@ -295,6 +299,20 @@ export class PlayerController {
 
   setEdgeRotationSpeed(speed: number) {
     this.edgeRotation.maxSpeed = speed;
+  }
+
+  setPaused(paused: boolean) {
+    this.paused = paused;
+    // Reset all keys when pausing to prevent stuck movement
+    if (paused) {
+      this.keys.forward = false;
+      this.keys.backward = false;
+      this.keys.left = false;
+      this.keys.right = false;
+      this.keys.jump = false;
+      this.keys.rotateLeft = false;
+      this.keys.rotateRight = false;
+    }
   }
 
   dispose() {

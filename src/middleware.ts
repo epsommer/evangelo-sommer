@@ -29,6 +29,8 @@ const protectedApiRoutes = [
 const protectedPageRoutes = [
   '/studio',
   '/dashboard',
+  '/select',
+  '/gallery',
 ];
 
 // Routes that are public (authentication, health checks, etc.)

@@ -206,6 +206,13 @@ export default function ThreeScene() {
     }
   }, [jumpHeight, sceneReady]);
 
+  // Pause player controls when settings menu is open
+  useEffect(() => {
+    if (playerControllerRef.current && sceneReady) {
+      playerControllerRef.current.setPaused(showSettings);
+    }
+  }, [showSettings, sceneReady]);
+
   return (
     <>
       {/* Main Gallery UI */}

@@ -14,6 +14,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
   const pathname = usePathname()
   const [conversationCount, setConversationCount] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const getCurrentPage = () => {
     if (pathname === '/dashboard') return 'dashboard'
@@ -80,17 +81,41 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
     router.push('/dashboard')
   }
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen)
+  }
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false)
+  }
+
+  // Close mobile menu when pathname changes
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
+
   return (
     <div className="min-h-screen bg-hud-background-primary relative">
-      <Header />
-      <Sidebar 
+      <Header onMobileMenuToggle={toggleMobileMenu} />
+
+      {/* Backdrop overlay for mobile */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={closeMobileMenu}
+        />
+      )}
+
+      <Sidebar
         activeTab={currentPage}
         setActiveTab={handleTabChange}
         conversationCount={conversationCount}
         onTitleClick={handleTitleClick}
         onCollapseChange={setSidebarCollapsed}
+        mobileMenuOpen={mobileMenuOpen}
+        onMobileMenuClose={closeMobileMenu}
       />
-      <main className={`pt-20 bg-hud-background-primary min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} relative z-10`}>
+      <main className={`pt-20 bg-hud-background-primary min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10`}>
         {children}
       </main>
     </div>

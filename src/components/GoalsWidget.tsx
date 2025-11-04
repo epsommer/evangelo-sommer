@@ -1,11 +1,8 @@
 "use client"
 
 import React from 'react'
-import { Target, TrendingUp, Clock, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Target, Clock, AlertTriangle, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { useGoals } from '@/hooks/useGoals'
 import { format } from 'date-fns'
 
@@ -25,16 +22,16 @@ const GoalsWidget: React.FC<GoalsWidgetProps> = ({ onViewAll }) => {
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-2 border-hud-border widget-terminated-corners">
-        <CardContent className="p-6">
+      <div className="neo-card flex flex-col w-full h-full">
+        <div className="p-6 flex-grow flex items-center justify-center">
           <div className="flex items-center justify-center h-32">
             <div className="text-center">
-              <div className="w-6 h-6 border-2 border-hud-border-accent border-t-transparent animate-spin mx-auto mb-2"></div>
-              <p className="text-xs text-medium-grey font-primary uppercase tracking-wide">Loading...</p>
+              <div className="w-6 h-6 border-2 border-foreground/20 border-t-transparent animate-spin mx-auto mb-2 rounded-full"></div>
+              <p className="text-xs text-muted-foreground">Loading...</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
@@ -54,61 +51,61 @@ const GoalsWidget: React.FC<GoalsWidgetProps> = ({ onViewAll }) => {
     switch (priority) {
       case 'urgent': return 'text-red-600'
       case 'high': return 'text-orange-500'
-      case 'medium': return 'text-gold'
-      case 'low': return 'text-medium-grey'
-      default: return 'text-medium-grey'
+      case 'medium': return 'text-blue-500'
+      case 'low': return 'text-gray-400'
+      default: return 'text-gray-400'
     }
   }
 
   return (
-    <Card className="bg-white border-2 border-hud-border widget-terminated-corners">
-      <CardHeader className="bg-hud-background-secondary border-b border-hud-border p-6">
+    <div className="neo-card flex flex-col w-full h-full">
+      <div className="p-6 border-b border-border flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <Target className="h-5 w-5 text-gold" />
-          <h3 className="text-lg font-bold text-hud-text-primary uppercase tracking-wide font-primary">
-            GOALS
+          <Target className="h-5 w-5 text-foreground" />
+          <h3 className="text-lg font-bold text-foreground">
+            Goals
           </h3>
         </div>
-      </CardHeader>
-      
-      <CardContent className="p-6">
+      </div>
+
+      <div className="p-6 flex-grow flex flex-col overflow-auto">
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600 font-primary">
+            <div className="text-2xl font-bold text-green-600">
               {statistics.byStatus.completed || 0}
             </div>
-            <div className="text-xs uppercase text-medium-grey font-primary tracking-wide">
-              COMPLETED
+            <div className="text-xs text-muted-foreground">
+              Completed
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-tactical-gold font-primary">
+            <div className="text-2xl font-bold text-blue-600">
               {activeGoals.length}
             </div>
-            <div className="text-xs uppercase text-medium-grey font-primary tracking-wide">
-              ACTIVE
+            <div className="text-xs text-muted-foreground">
+              Active
             </div>
           </div>
           <div className="text-center">
-            <div className={`text-2xl font-bold font-primary ${overdue.length > 0 ? 'text-red-600' : 'text-medium-grey'}`}>
+            <div className={`text-2xl font-bold ${overdue.length > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
               {overdue.length}
             </div>
-            <div className="text-xs uppercase text-medium-grey font-primary tracking-wide">
-              OVERDUE
+            <div className="text-xs text-muted-foreground">
+              Overdue
             </div>
           </div>
         </div>
         
         {/* Progress Overview */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm font-medium text-medium-grey mb-2 font-primary">
-            <span className="uppercase tracking-wide">OVERALL PROGRESS</span>
+          <div className="flex justify-between text-sm font-medium text-muted-foreground mb-2">
+            <span>Overall Progress</span>
             <span>{Math.round(statistics.averageProgress)}%</span>
           </div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
+          <div className="w-full h-2 bg-background rounded-full overflow-hidden shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
               style={{ width: `${statistics.averageProgress}%` }}
             ></div>
           </div>
@@ -116,45 +113,49 @@ const GoalsWidget: React.FC<GoalsWidgetProps> = ({ onViewAll }) => {
 
         {/* Active Goals */}
         <div className="space-y-3">
-          <h4 className="text-sm font-bold text-medium-grey uppercase tracking-wider mb-3 font-primary">
-            ACTIVE GOALS
+          <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+            Active Goals
           </h4>
-          
+
           {topGoals.length === 0 ? (
             <div className="text-center py-6">
-              <Target className="h-8 w-8 mx-auto mb-2 text-gold opacity-50" />
-              <p className="text-sm text-medium-grey font-primary mb-2">
+              <Target className="h-8 w-8 mx-auto mb-2 text-orange-500 opacity-50" />
+              <p className="text-sm text-muted-foreground mb-2">
                 No active goals
               </p>
-              <Button 
-                size="sm"
-                className="bg-tactical-gold text-hud-text-primary px-4 py-1 font-bold uppercase tracking-wide hover:bg-tactical-gold-light font-primary text-xs"
+              <button
+                className="neo-button text-xs px-4 py-2"
                 onClick={onViewAll}
               >
-                CREATE GOAL
-              </Button>
+                Create Goal
+              </button>
             </div>
           ) : (
             topGoals.map(goal => (
-              <div key={goal.id} className="p-3 bg-hud-background-secondary hover:bg-light-grey transition-colors">
+              <div key={goal.id} className="neo-card p-3 cursor-pointer">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-hud-text-primary font-primary text-sm truncate">
+                    <div className="font-medium text-foreground text-sm truncate">
                       {goal.title}
                     </div>
-                    <div className="flex items-center space-x-2 text-xs text-medium-grey font-primary mt-1">
+                    <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
                       <Clock className="h-3 w-3" />
                       <span>Due {format(new Date(goal.endDate), 'MMM d')}</span>
-                      <span className={`uppercase font-bold ${getPriorityColor(goal.priority)}`}>
+                      <span className={`font-semibold ${getPriorityColor(goal.priority)}`}>
                         {goal.priority}
                       </span>
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-gold font-primary">
+                  <div className="text-sm font-bold text-blue-600">
                     {goal.progress}%
                   </div>
                 </div>
-                <Progress value={goal.progress} className="h-1" />
+                <div className="w-full h-1 bg-background rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600"
+                    style={{ width: `${goal.progress}%` }}
+                  ></div>
+                </div>
               </div>
             ))
           )}
@@ -162,30 +163,30 @@ const GoalsWidget: React.FC<GoalsWidgetProps> = ({ onViewAll }) => {
 
         {/* Upcoming Deadlines Alert */}
         {upcoming.length > 0 && (
-          <div className="mt-6 pt-4 border-t border-hud-border">
+          <div className="mt-6 pt-4 border-t border-border">
             <div className="flex items-center space-x-2 text-sm">
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              <span className="font-medium text-hud-text-primary font-primary">
+              <span className="font-medium text-foreground">
                 {upcoming.length} deadline{upcoming.length > 1 ? 's' : ''} this week
               </span>
             </div>
           </div>
         )}
-        
+
         {/* Navigate to full view */}
-        <div className="flex justify-center pt-4 border-t border-hud-border mt-4">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="p-2 text-tactical-grey-500 hover:text-tactical-gold transition-colors"
-            onClick={onViewAll}
-            title="View All Goals"
-          >
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        {onViewAll && (
+          <div className="flex justify-center pt-4 border-t border-border mt-4">
+            <button
+              className="neo-button text-xs px-3 py-1"
+              onClick={onViewAll}
+              title="View All Goals"
+            >
+              View All <ArrowRight className="h-3 w-3 ml-1" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

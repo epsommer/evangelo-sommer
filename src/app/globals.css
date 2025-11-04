@@ -1,94 +1,72 @@
-/* Futuristic Military HUD Design System - Adobe Fonts Integration */
+/* Neomorphic Design System */
 @import "tailwindcss";
 
 :root {
-  /* Updated color tokens to gold/white/warm-gray/brown military aesthetic */
-  --background: oklch(0.12 0.015 45); /* Dark warm brown-gray background */
-  --foreground: oklch(0.95 0.01 45); /* Warm white text */
-  --card: oklch(0.15 0.02 45); /* Slightly lighter card background */
-  --card-foreground: oklch(0.95 0.01 45); /* Card text */
-  --popover: oklch(0.1 0.015 45); /* Darker popover */
-  --popover-foreground: oklch(0.9 0.01 45); /* Popover text */
-  --primary: oklch(0.75 0.12 80); /* Warm gold accent */
-  --primary-foreground: oklch(0.05 0.015 45); /* Dark text on primary */
-  --secondary: oklch(0.85 0.015 45); /* Light warm gray secondary */
-  --secondary-foreground: oklch(0.15 0.015 45); /* Dark text on secondary */
-  --muted: oklch(0.2 0.015 45); /* Muted elements */
-  --muted-foreground: oklch(0.6 0.015 45); /* Muted text */
-  --accent: oklch(0.75 0.12 80); /* Gold accent color */
-  --accent-foreground: oklch(0.05 0.015 45); /* Accent text */
-  --destructive: oklch(0.6 0.15 25); /* Orange-red for alerts */
-  --destructive-foreground: oklch(0.95 0.01 45); /* Light text on destructive */
-  --border: oklch(0.25 0.02 45); /* Subtle warm borders */
-  --input: oklch(0.18 0.015 45); /* Input background */
-  --ring: oklch(0.75 0.12 80); /* Focus ring */
-  --chart-1: oklch(0.7 0.12 80); /* Chart colors */
-  --chart-2: oklch(0.6 0.15 25);
-  --chart-3: oklch(0.5 0.08 45);
-  --chart-4: oklch(0.75 0.12 80);
-  --chart-5: oklch(0.3 0.015 45);
-  --radius: 0.25rem; /* Sharper corners for military feel */
-  --sidebar: oklch(0.1 0.015 45);
-  --sidebar-foreground: oklch(0.9 0.01 45);
-  --sidebar-primary: oklch(0.15 0.015 45);
-  --sidebar-primary-foreground: oklch(0.95 0.01 45);
-  --sidebar-accent: oklch(0.75 0.12 80);
-  --sidebar-accent-foreground: oklch(0.05 0.015 45);
-  --sidebar-border: oklch(0.25 0.02 45);
-  --sidebar-ring: oklch(0.75 0.12 80);
+  /* Neomorphic color tokens - Light Mode */
+  --background: 220 13% 92%; /* Light gray background (neomorphic-bg) */
+  --foreground: 220 13% 17%; /* Dark text */
+  --card: 220 13% 92%; /* Card background */
+  --card-foreground: 220 13% 17%; /* Card text */
+  --popover: 220 13% 92%; /* Popover background */
+  --popover-foreground: 220 13% 17%; /* Popover text */
+  --primary: 45 69% 52%; /* Accent color (gold) */
+  --primary-foreground: 220 13% 17%; /* Text on primary */
+  --secondary: 220 13% 87%; /* Secondary background */
+  --secondary-foreground: 220 13% 17%; /* Secondary text */
+  --muted: 220 13% 87%; /* Muted background */
+  --muted-foreground: 220 9% 43%; /* Muted text */
+  --accent: 45 69% 52%; /* Accent color */
+  --accent-foreground: 220 13% 17%; /* Accent text */
+  --destructive: 0 84% 60%; /* Destructive color */
+  --destructive-foreground: 0 0% 98%; /* Text on destructive */
+  --border: 220 13% 83%; /* Border color */
+  --input: 220 13% 92%; /* Input background */
+  --ring: 45 69% 52%; /* Focus ring */
+  --chart-1: 45 69% 52%;
+  --chart-2: 0 84% 60%;
+  --chart-3: 220 9% 43%;
+  --chart-4: 45 69% 52%;
+  --chart-5: 220 13% 87%;
+  --radius: 0.75rem; /* Rounded corners for neomorphic design */
+  --sidebar: 220 13% 92%;
+  --sidebar-foreground: 220 13% 17%;
+  --sidebar-primary: 220 13% 87%;
+  --sidebar-primary-foreground: 220 13% 17%;
+  --sidebar-accent: 45 69% 52%;
+  --sidebar-accent-foreground: 220 13% 17%;
+  --sidebar-border: 220 13% 83%;
+  --sidebar-ring: 45 69% 52%;
 
-  /* Tactical HUD Color Palette - Brand Guidelines Exact */
-  /* Primary Colors */
-  --tactical-white: #FFFFFF;
-  --tactical-gold: #D4AF37;
-  --tactical-gold-light: #E6C866;
-  --tactical-gold-dark: #B8941F;
-  --tactical-gold-muted: #F4E4A6;
-  --tactical-brown: #8B4513;
-  --tactical-brown-light: #A0522D;
-  --tactical-brown-dark: #654321;
-  --tactical-brown-warm: #CD853F;
-  
-  /* Warm Grey Scale - 9-step system (NO BLUE TINTS) */
-  --tactical-grey-900: #1C1917;  /* Warm dark brown-grey */
-  --tactical-grey-800: #292524;  /* Stone-800 */
-  --tactical-grey-700: #44403C;  /* Stone-700 */
-  --tactical-grey-600: #57534E;  /* Stone-600 */
-  --tactical-grey-500: #78716C;  /* Stone-500 */
-  --tactical-grey-400: #A8A29E;  /* Stone-400 */
-  --tactical-grey-300: #D6D3D1;  /* Stone-300 */
-  --tactical-grey-200: #E7E5E4;  /* Stone-200 */
-  --tactical-grey-100: #F5F5F4;  /* Stone-100 */
-  
-  /* Semantic Colors - Pure Warm Gold Scheme (NO BLUE) */
+  /* Legacy color support - mapped to neomorphic equivalents */
+  --tactical-white: hsl(var(--background));
+  --tactical-gold: hsl(var(--accent));
+  --tactical-gold-light: hsl(var(--accent));
+  --tactical-gold-dark: hsl(var(--accent));
+  --tactical-gold-muted: hsl(var(--accent));
+
+  /* Grey scale mapped to neomorphic */
+  --tactical-grey-900: hsl(var(--foreground));
+  --tactical-grey-800: hsl(var(--foreground));
+  --tactical-grey-700: hsl(var(--foreground));
+  --tactical-grey-600: hsl(var(--muted-foreground));
+  --tactical-grey-500: hsl(var(--muted-foreground));
+  --tactical-grey-400: hsl(var(--muted-foreground));
+  --tactical-grey-300: hsl(var(--border));
+  --tactical-grey-200: hsl(var(--muted));
+  --tactical-grey-100: hsl(var(--background));
+
+  /* Semantic colors */
   --tactical-success: #10B981;
   --tactical-warning: #F59E0B;
   --tactical-error: #EF4444;
-  --tactical-info: var(--tactical-gold);        /* Gold for all informational states */
-  
-  /* Tactical Accents - Warm Gold Palette Only */
-  --radar-green: #00FF41;
-  --alert-red: #FF0000;
-  --system-amber: #FFB000;
-  --system-gold: var(--tactical-gold);
-  --status-amber: #FFC947;
-  
-  /* HUD Specific Colors - Light Mode */
-  --hud-accent-primary: var(--tactical-gold);
-  --hud-accent-secondary: var(--tactical-gold-light);
-  --hud-background-primary: var(--tactical-white);
-  --hud-background-secondary: var(--tactical-grey-100);
-  --hud-background-overlay: rgba(28, 25, 23, 0.95);
-  --hud-text-primary: var(--tactical-grey-800);
-  --hud-text-secondary: var(--tactical-grey-600);
-  --hud-text-inverted: var(--tactical-white);
-  --hud-border: var(--tactical-grey-300);
-  --hud-border-accent: var(--tactical-gold);
-  
-  /* Glow Effects */
-  --hud-glow-primary: 0 0 10px rgba(212, 175, 55, 0.3);
-  --hud-glow-secondary: 0 0 8px rgba(255, 176, 0, 0.2);
-  --hud-shadow-tactical: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  /* HUD colors mapped to neomorphic */
+  --hud-background-primary: hsl(var(--background));
+  --hud-background-secondary: hsl(var(--muted));
+  --hud-text-primary: hsl(var(--foreground));
+  --hud-text-secondary: hsl(var(--muted-foreground));
+  --hud-border: hsl(var(--border));
+  --hud-border-accent: hsl(var(--accent));
   
   /* Data Visualization Color Spectrum */
   --data-red-severe: #8B0000;      /* Dark Red - severe decrease */
@@ -105,41 +83,19 @@
   --data-crimson: #DC143C;         /* Bright Crimson - most excellent */
 
   /* Legacy Support */
-  --gold: var(--tactical-gold);
-  --gold-light: #F4E8C1;
-  --gold-dark: #B8941F;
-  --dark-grey: var(--tactical-grey-800);
-  --medium-grey: var(--tactical-grey-600);
-  --light-grey: var(--tactical-grey-200);
-  --off-white: var(--tactical-grey-100);
-  --bg-primary: var(--hud-background-primary);
-  --bg-secondary: var(--hud-background-secondary);
-  --bg-dark: var(--tactical-grey-800);
-  --text-primary: var(--hud-text-primary);
-  --text-secondary: var(--hud-text-secondary);
-  --text-light: var(--hud-text-inverted);
-  
-  /* Tailwind CSS Variables - Light Mode */
-  --background: 0 0% 100%;
-  --foreground: 216 13% 17%;
-  --card: 0 0% 100%;
-  --card-foreground: 216 13% 17%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 216 13% 17%;
-  --primary: 45 69% 52%;
-  --primary-foreground: 216 13% 17%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 216 13% 17%;
-  --muted: 0 0% 96%;
-  --muted-foreground: 220 9% 43%;
-  --accent: 45 69% 52%;
-  --accent-foreground: 216 13% 17%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 220 13% 83%;
-  --input: 220 13% 83%;
-  --ring: 45 69% 52%;
-  --radius: 0rem; /* NO ROUNDED CORNERS - TACTICAL ANGLES ONLY */
+  --gold: hsl(var(--accent));
+  --gold-light: hsl(var(--accent));
+  --gold-dark: hsl(var(--accent));
+  --dark-grey: hsl(var(--foreground));
+  --medium-grey: hsl(var(--muted-foreground));
+  --light-grey: hsl(var(--muted));
+  --off-white: hsl(var(--background));
+  --bg-primary: hsl(var(--background));
+  --bg-secondary: hsl(var(--muted));
+  --bg-dark: hsl(var(--foreground));
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-light: hsl(var(--background));
   
   /* Adobe Fonts Typography System - Brand Guidelines Integration */
   /* Primary Typefaces from Adobe Fonts */
@@ -222,65 +178,61 @@
 }
 
 .dark {
-  /* Dark mode uses warm gold/brown/stone tokens for consistent military aesthetic */
-  --background: oklch(0.08 0.015 45);
-  --foreground: oklch(0.95 0.01 45);
-  --card: oklch(0.12 0.02 45);
-  --card-foreground: oklch(0.95 0.01 45);
-  --popover: oklch(0.05 0.015 45);
-  --popover-foreground: oklch(0.9 0.01 45);
-  --primary: oklch(0.8 0.12 80);
-  --primary-foreground: oklch(0.05 0.015 45);
-  --secondary: oklch(0.2 0.02 45);
-  --secondary-foreground: oklch(0.95 0.01 45);
-  --muted: oklch(0.15 0.015 45);
-  --muted-foreground: oklch(0.6 0.015 45);
-  --accent: oklch(0.8 0.12 80);
-  --accent-foreground: oklch(0.05 0.015 45);
-  --destructive: oklch(0.55 0.15 25);
-  --destructive-foreground: oklch(0.95 0.01 45);
-  --border: oklch(0.2 0.02 45);
-  --input: oklch(0.15 0.015 45);
-  --ring: oklch(0.8 0.12 80);
-  --chart-1: oklch(0.7 0.12 80);
-  --chart-2: oklch(0.6 0.15 25);
-  --chart-3: oklch(0.5 0.08 45);
-  --chart-4: oklch(0.8 0.12 80);
-  --chart-5: oklch(0.2 0.015 45);
-  --sidebar: oklch(0.05 0.015 45);
-  --sidebar-foreground: oklch(0.9 0.01 45);
-  --sidebar-primary: oklch(0.7 0.12 80);
-  --sidebar-primary-foreground: oklch(0.05 0.015 45);
-  --sidebar-accent: oklch(0.2 0.02 45);
-  --sidebar-accent-foreground: oklch(0.95 0.01 45);
-  --sidebar-border: oklch(0.2 0.02 45);
-  --sidebar-ring: oklch(0.8 0.12 80);
+  /* Neomorphic Dark Mode */
+  --background: 28 25 23; /* Dark warm background (stone-900) */
+  --foreground: 250 250 249; /* Light text (stone-50) */
+  --card: 41 37 36; /* Card background (stone-800) */
+  --card-foreground: 250 250 249; /* Card text */
+  --popover: 28 25 23; /* Popover background */
+  --popover-foreground: 250 250 249; /* Popover text */
+  --primary: 45 69% 52%; /* Accent color (gold) */
+  --primary-foreground: 28 25 23; /* Text on primary */
+  --secondary: 68 64 60; /* Secondary background (stone-700) */
+  --secondary-foreground: 250 250 249; /* Secondary text */
+  --muted: 68 64 60; /* Muted background (stone-700) */
+  --muted-foreground: 214 211 209; /* Muted text (stone-300) */
+  --accent: 45 69% 52%; /* Accent color */
+  --accent-foreground: 28 25 23; /* Accent text */
+  --destructive: 0 84% 60%; /* Destructive color */
+  --destructive-foreground: 250 250 249; /* Text on destructive */
+  --border: 68 64 60; /* Border color (stone-700) */
+  --input: 41 37 36; /* Input background (stone-800) */
+  --ring: 45 69% 52%; /* Focus ring */
+  --chart-1: 45 69% 52%;
+  --chart-2: 0 84% 60%;
+  --chart-3: 214 211 209;
+  --chart-4: 45 69% 52%;
+  --chart-5: 68 64 60;
+  --sidebar: 28 25 23;
+  --sidebar-foreground: 250 250 249;
+  --sidebar-primary: 68 64 60;
+  --sidebar-primary-foreground: 250 250 249;
+  --sidebar-accent: 45 69% 52%;
+  --sidebar-accent-foreground: 28 25 23;
+  --sidebar-border: 68 64 60;
+  --sidebar-ring: 45 69% 52%;
+
+  /* Legacy Support - Dark Mode mapped to neomorphic */
+  --hud-background-primary: hsl(var(--background));
+  --hud-background-secondary: hsl(var(--muted));
+  --hud-text-primary: hsl(var(--foreground));
+  --hud-text-secondary: hsl(var(--muted-foreground));
+  --hud-border: hsl(var(--border));
+  --hud-border-accent: hsl(var(--accent));
+  --bg-primary: hsl(var(--background));
+  --bg-secondary: hsl(var(--muted));
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
 }
 
-/* Dark Mode - Military Command Center Aesthetic */
+/* Alias for dark mode */
 [data-theme="dark"] {
-  /* HUD Colors - Dark Mode */
-  --hud-background-primary: var(--tactical-grey-900);
-  --hud-background-secondary: var(--tactical-grey-800);
-  --hud-background-overlay: rgba(28, 25, 23, 0.95);
-  --hud-text-primary: var(--tactical-white);
-  --hud-text-secondary: var(--tactical-grey-300);
-  --hud-text-inverted: var(--tactical-grey-900);
-  --hud-border: var(--tactical-grey-700);
-  --hud-border-accent: var(--tactical-gold);
-  
-  /* Enhanced Glow Effects for Dark Mode */
-  --hud-glow-primary: 0 0 15px rgba(212, 175, 55, 0.5);
-  --hud-glow-secondary: 0 0 12px rgba(255, 176, 0, 0.3);
-  --hud-shadow-tactical: 0 4px 20px rgba(0, 0, 0, 0.4);
-  
-  /* Legacy Support - Dark Mode */
-  --bg-primary: var(--hud-background-primary);
-  --bg-secondary: var(--hud-background-secondary);
-  --bg-dark: var(--tactical-grey-900);
-  --text-primary: var(--hud-text-primary);
-  --text-secondary: var(--hud-text-secondary);
-  --text-light: var(--hud-text-primary);
+  --hud-background-primary: hsl(var(--background));
+  --hud-background-secondary: hsl(var(--muted));
+  --hud-text-primary: hsl(var(--foreground));
+  --hud-text-secondary: hsl(var(--muted-foreground));
+  --hud-border: hsl(var(--border));
+  --hud-border-accent: hsl(var(--accent));
 }
 
 /* Enhanced Base Styling with Typography */
@@ -294,8 +246,8 @@ html {
 }
 
 body {
-  background-color: var(--hud-background-primary);
-  color: var(--hud-text-primary);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-family: var(--font-body);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -622,19 +574,19 @@ p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
 }
 
 /* Force square corners on all elements EXCEPT neomorphic design and gallery UI */
-*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not(.gallery-ui):not(.gallery-ui *) {
+*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *) {
   border-radius: 0 !important;
 }
 
 /* Override Tailwind rounded classes (except neomorphic) */
-.rounded:not([class*="neomorphic"]),
-.rounded-sm:not([class*="neomorphic"]),
-.rounded-md:not([class*="neomorphic"]),
-.rounded-lg:not([class*="neomorphic"]),
-.rounded-xl:not([class*="neomorphic"]),
-.rounded-2xl:not([class*="neomorphic"]),
-.rounded-3xl:not([class*="neomorphic"]),
-.rounded-full:not([class*="neomorphic"]) {
+.rounded:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-sm:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-md:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-lg:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-xl:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-2xl:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-3xl:not([class*="neomorphic"]):not([class*="neo-"]),
+.rounded-full:not([class*="neomorphic"]):not([class*="neo-"]) {
   border-radius: 0 !important;
 }
 
@@ -694,9 +646,9 @@ p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
 }
 
 /* Form Elements */
-input,
-select,
-textarea {
+input:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
+select:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui select):not(.gallery-ui *),
+textarea:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
   color: var(--text-primary);
   background: var(--bg-primary);
   border: 2px solid var(--light-grey);
@@ -704,16 +656,16 @@ textarea {
   font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
 
-input:focus,
-select:focus,
-textarea:focus {
+input:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
+select:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui select):not(.gallery-ui *),
+textarea:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
   border-color: var(--gold);
   outline: none;
   box-shadow: none;
 }
 
-input::placeholder,
-textarea::placeholder {
+input::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
+textarea::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
   color: var(--text-secondary);
   font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
@@ -855,13 +807,13 @@ label {
 .border-data-violet { border-color: var(--data-violet); }
 .border-data-pink { border-color: var(--data-pink); }
 
-/* Remove all shadows */
-.shadow,
-.shadow-sm,
-.shadow-md,
-.shadow-lg,
-.shadow-xl,
-.shadow-2xl {
+/* Remove all shadows EXCEPT neomorphic elements */
+.shadow:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.shadow-sm:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.shadow-md:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.shadow-lg:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.shadow-xl:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.shadow-2xl:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *) {
   box-shadow: none !important;
 }
 
@@ -895,15 +847,15 @@ label {
   transition: all 0.2s ease;
 }
 
-/* Ensure no rounded corners anywhere (except neomorphic design) */
-button:not([class*="neomorphic"]),
-input:not([class*="neomorphic"]):not(.neomorphic-input),
-select:not([class*="neomorphic"]),
-textarea:not([class*="neomorphic"]):not(.neomorphic-input),
-.card:not([class*="neomorphic"]):not(.neomorphic-card),
-.modal:not([class*="neomorphic"]),
-.dropdown:not([class*="neomorphic"]),
-.tooltip:not([class*="neomorphic"]) {
+/* Ensure no rounded corners anywhere (except neomorphic design and gallery UI) */
+button:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *),
+input:not([class*="neomorphic"]):not([class*="neo-"]):not(.neomorphic-input):not(.gallery-ui input):not(.gallery-ui *),
+select:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui select):not(.gallery-ui *),
+textarea:not([class*="neomorphic"]):not([class*="neo-"]):not(.neomorphic-input):not(.gallery-ui textarea):not(.gallery-ui *),
+.card:not([class*="neomorphic"]):not([class*="neo-"]):not(.neomorphic-card):not(.gallery-ui):not(.gallery-ui *),
+.modal:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.dropdown:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+.tooltip:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *) {
   border-radius: 0 !important;
 }
 
@@ -1190,41 +1142,41 @@ button:disabled,
 }
 
 /* Enhanced Form Elements Dark Mode */
-[data-theme="dark"] input,
-[data-theme="dark"] select,
-[data-theme="dark"] textarea {
+[data-theme="dark"] input:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
+[data-theme="dark"] select:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui select):not(.gallery-ui *),
+[data-theme="dark"] textarea:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
   background-color: var(--hud-background-secondary) !important;
   color: var(--hud-text-primary) !important;
   border-color: var(--hud-border) !important;
 }
 
-[data-theme="dark"] input:focus,
-[data-theme="dark"] select:focus,
-[data-theme="dark"] textarea:focus {
+[data-theme="dark"] input:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
+[data-theme="dark"] select:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui select):not(.gallery-ui *),
+[data-theme="dark"] textarea:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
   border-color: var(--tactical-gold) !important;
   box-shadow: var(--hud-glow-primary) !important;
 }
 
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder {
+[data-theme="dark"] input::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
+[data-theme="dark"] textarea::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
   color: var(--hud-text-secondary) !important;
 }
 
 /* Enhanced Button Dark Mode */
-[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button) {
+[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *) {
   background-color: var(--tactical-gold) !important;
   color: var(--tactical-grey-900) !important;
   border-color: var(--tactical-gold) !important;
 }
 
-[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button) {
+[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *) {
   background-color: var(--tactical-amber) !important;
   box-shadow: var(--hud-glow-secondary) !important;
 }
 
 /* Enhanced Modal and Dropdown Dark Mode */
-[data-theme="dark"] .shadow-lg,
-[data-theme="dark"] .shadow-md {
+[data-theme="dark"] .shadow-lg:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *),
+[data-theme="dark"] .shadow-md:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *) {
   box-shadow: var(--hud-shadow-tactical) !important;
 }
 

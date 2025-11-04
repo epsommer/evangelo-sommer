@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import "@/app/neomorphic.css";
 
 interface SettingsPanelProps {
@@ -11,6 +13,7 @@ export default function SettingsPanel({
   isVisible,
   onToggle,
 }: SettingsPanelProps) {
+  const router = useRouter();
   const [musicVolume, setMusicVolume] = useState(75);
   const [sfxVolume, setSfxVolume] = useState(85);
   const [musicTrack, setMusicTrack] = useState("ambient-gallery");
@@ -37,7 +40,6 @@ export default function SettingsPanel({
     };
     localStorage.setItem("gallery-settings", JSON.stringify(settings));
     console.log("⚙️ Settings saved:", settings);
-    onToggle();
   };
 
   const handleReset = () => {
@@ -45,6 +47,14 @@ export default function SettingsPanel({
     setSfxVolume(85);
     setMusicTrack("ambient-gallery");
     setAudioEnabled(true);
+  };
+
+  const handleReturnToSelect = () => {
+    router.push("/select");
+  };
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/auth/signin" });
   };
 
   if (!isVisible) return null;
@@ -229,8 +239,8 @@ export default function SettingsPanel({
           </select>
         </div>
 
-        {/* Buttons */}
-        <div className="flex space-x-3">
+        {/* Settings Buttons */}
+        <div className="flex space-x-3 mb-4">
           <button
             onClick={handleSave}
             className={`neomorphic-submit ${isDark ? 'dark-mode' : ''}`}
@@ -240,7 +250,7 @@ export default function SettingsPanel({
               fontSize: "14px",
             }}
           >
-            💾 Save & Close
+            💾 Save
           </button>
           <button
             onClick={handleReset}
@@ -252,6 +262,35 @@ export default function SettingsPanel({
             }}
           >
             🔄 Reset
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: "1px", backgroundColor: "#3f3f46", marginBottom: "1rem" }} />
+
+        {/* Navigation Buttons */}
+        <div className="flex space-x-3">
+          <button
+            onClick={handleReturnToSelect}
+            className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+            style={{
+              flex: 1,
+              height: "48px",
+              fontSize: "14px",
+            }}
+          >
+            🏠 Select Page
+          </button>
+          <button
+            onClick={handleSignOut}
+            className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+            style={{
+              flex: 1,
+              height: "48px",
+              fontSize: "14px",
+            }}
+          >
+            🚪 Sign Out
           </button>
         </div>
 

@@ -11,6 +11,8 @@ interface SidebarProps {
   conversationCount?: number
   onTitleClick?: () => void
   onCollapseChange?: (collapsed: boolean) => void
+  mobileMenuOpen?: boolean
+  onMobileMenuClose?: () => void
 }
 
 const navigationItems = [
@@ -29,11 +31,37 @@ const serviceLines = [
   { id: "creative", name: "Creative Development", color: "service-creative-development", icon: Palette, path: "/services/creative" },
 ]
 
-const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, onTitleClick, onCollapseChange }: SidebarProps) => {
+const Sidebar = ({
+  activeTab = "clients",
+  setActiveTab,
+  conversationCount = 0,
+  onTitleClick,
+  onCollapseChange,
+  mobileMenuOpen = false,
+  onMobileMenuClose
+}: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab?.(tab)
+    onMobileMenuClose?.() // Close mobile menu when tab is selected
+  }
+
   return (
-    <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-hud-background-secondary border-r-2 border-hud-border fixed left-0 top-20 bottom-0 transition-all duration-300 sidebar z-40 overflow-y-auto`}>
+    <aside className={`
+      ${isCollapsed ? 'w-16' : 'w-64'}
+      neo-sidebar
+      fixed
+      left-0
+      top-20
+      bottom-0
+      transition-all
+      duration-300
+      z-40
+      overflow-y-auto
+      ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+      lg:translate-x-0
+    `}>
       
       
       <nav className={`${isCollapsed ? 'px-2 py-6' : 'p-6'}`}>
@@ -43,12 +71,12 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
             return (
               <button
                 key={item.id}
-                className={`nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium uppercase tracking-wide text-sm font-primary transition-all duration-200 ${
-                  activeTab === item.id 
-                    ? 'text-tactical-gold font-semibold border-l-4 border-tactical-gold' 
-                    : 'text-tactical-grey-600 hover:bg-tactical-grey-100 hover:text-tactical-grey-800'
+                className={`neo-nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium text-sm transition-all duration-200 rounded-lg ${
+                  activeTab === item.id
+                    ? 'neo-nav-button-active'
+                    : ''
                 }`}
-                onClick={() => setActiveTab?.(item.id)}
+                onClick={() => handleTabChange(item.id)}
                 title={isCollapsed ? item.label : undefined}
               >
                 <IconComponent className="h-4 w-4" />
@@ -70,12 +98,12 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
         {/* Service Lines Section */}
         <div className={isCollapsed ? 'mt-4' : 'mt-8'}>
           {!isCollapsed && (
-            <h3 className="text-xs uppercase tracking-wider font-bold text-tactical-grey-600 mb-4 font-primary">
-              SERVICE LINES
+            <h3 className="text-xs font-semibold text-muted-foreground mb-4">
+              Service Lines
             </h3>
           )}
           {isCollapsed && (
-            <div className="w-full h-px bg-tactical-grey-300 mb-4"></div>
+            <div className="w-full h-px bg-border mb-4"></div>
           )}
           <div className="space-y-1">
             {serviceLines.map(service => {
@@ -83,8 +111,8 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
               return (
                 <button
                   key={service.id}
-                  className={`nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium uppercase tracking-wide text-sm font-primary transition-all duration-200 text-tactical-grey-600 hover:bg-tactical-grey-100 hover:text-tactical-grey-800`}
-                  onClick={() => setActiveTab?.(service.id)}
+                  className={`neo-nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium text-sm transition-all duration-200 rounded-lg`}
+                  onClick={() => handleTabChange(service.id)}
                   title={isCollapsed ? service.name : undefined}
                 >
                   <div className={`w-3 h-3 ${service.color} ${isCollapsed ? 'mx-auto' : ''}`}></div>
@@ -100,15 +128,15 @@ const Sidebar = ({ activeTab = "clients", setActiveTab, conversationCount = 0, o
           </div>
         </div>
         
-        {/* Toggle Button - At bottom of sidebar */}
-        <div className="mt-6 pt-4 border-t border-tactical-grey-300 flex justify-center">
+        {/* Toggle Button - At bottom of sidebar - Desktop only */}
+        <div className="mt-6 pt-4 border-t border-border flex justify-center">
           <button
             onClick={() => {
               const newState = !isCollapsed
               setIsCollapsed(newState)
               onCollapseChange?.(newState)
             }}
-            className="w-6 h-6 flex items-center justify-center text-tactical-grey-600 hover:text-tactical-gold transition-all duration-200 font-hud-ui"
+            className="neo-button-sm w-8 h-8 hidden lg:flex items-center justify-center transition-all duration-200"
             title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

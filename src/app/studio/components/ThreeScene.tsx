@@ -39,6 +39,12 @@ function SceneObject({ obj, isSelected, transformMode, onSelect, onUpdate }: Sce
         meshRef.current.scale.z
       ];
 
+      console.log(`[Studio Debug] Transform update for object "${obj.id}":`, {
+        position: newPosition,
+        rotation: newRotation,
+        scale: newScale
+      });
+
       onUpdate(obj.id, {
         position: newPosition,
         rotation: newRotation,
@@ -71,16 +77,35 @@ function SceneObject({ obj, isSelected, transformMode, onSelect, onUpdate }: Sce
         scale={obj.scale}
         onClick={(e) => {
           e.stopPropagation();
+          console.log(`[Studio Debug] Object clicked in SELECT mode:`, {
+            objectId: obj.id,
+            objectType: obj.type,
+            position: obj.position,
+            rotation: obj.rotation,
+            scale: obj.scale,
+            color: obj.color,
+            wasSelected: isSelected,
+            currentMode: transformMode
+          });
           onSelect(obj.id);
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
           if (!isSelected) {
+            console.log(`[Studio Debug] Hovering over object:`, {
+              objectId: obj.id,
+              objectType: obj.type,
+              currentMode: transformMode
+            });
             document.body.style.cursor = 'pointer';
           }
         }}
         onPointerOut={() => {
           if (!isSelected) {
+            console.log(`[Studio Debug] Pointer left object:`, {
+              objectId: obj.id,
+              objectType: obj.type
+            });
             document.body.style.cursor = 'default';
           }
         }}
@@ -109,7 +134,17 @@ function Scene() {
   const selectedObject = useStudioStore((state) => state.selectedObject);
   const transformMode = useStudioStore((state) => state.transformMode);
   const updateObject = useStudioStore((state) => state.updateObject);
-  const setSelected = (id: string) => useStudioStore.setState({ selectedObject: id });
+  const setSelected = (id: string) => {
+    const obj = objects.find(o => o.id === id);
+    console.log(`[Studio Debug] Object selected:`, {
+      objectId: id,
+      objectType: obj?.type,
+      previousSelection: selectedObject,
+      currentMode: transformMode,
+      totalObjectsInScene: objects.length
+    });
+    useStudioStore.setState({ selectedObject: id });
+  };
 
   return (
     <>
@@ -148,9 +183,19 @@ function Scene() {
 }
 
 export default function ThreeScene({ isDark }: ThreeSceneProps) {
-  const handleCanvasClick = () => {
-    // Deselect when clicking on empty canvas
-    useStudioStore.setState({ selectedObject: null });
+  const handleCanvasClick = (e: any) => {
+    // Only deselect if we clicked on the background (not on an object)
+    // In R3F, if we click an object, e.eventObject will be the mesh
+    // If we click empty space, e.eventObject will be undefined or the scene
+    if (!e.eventObject || e.eventObject.type === 'Scene') {
+      const currentSelection = useStudioStore.getState().selectedObject;
+      if (currentSelection) {
+        console.log(`[Studio Debug] Deselecting object (clicked empty canvas):`, {
+          previousSelection: currentSelection
+        });
+        useStudioStore.setState({ selectedObject: null });
+      }
+    }
   };
 
   return (
@@ -160,7 +205,7 @@ export default function ThreeScene({ isDark }: ThreeSceneProps) {
         style={{
           background: isDark ? '#1c1917' : '#EBECF0',
         }}
-        onClick={handleCanvasClick}
+        onPointerMissed={handleCanvasClick}
       >
         <Scene />
 
