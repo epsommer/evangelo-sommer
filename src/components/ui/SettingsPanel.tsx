@@ -74,8 +74,8 @@ export default function SettingsPanel({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <h2 style={{ color: "#D4AF37", fontSize: "1.5rem", fontWeight: "bold", fontFamily: "var(--font-space-grotesk)", textTransform: "uppercase" }}>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold font-space-grotesk uppercase" style={{ color: "#D4AF37" }}>
             ⏸️ Paused
           </h2>
           <button
@@ -120,10 +120,10 @@ export default function SettingsPanel({
               }}
             >
               <div>
-                <p style={{ color: "#D4AF37", fontSize: "0.875rem", fontWeight: "bold", fontFamily: "var(--font-space-grotesk)", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                <p className="font-bold font-space-grotesk uppercase text-sm mb-2" style={{ color: "#D4AF37" }}>
                   Movement
                 </p>
-                <div style={{ color: "#d1d5db", fontSize: "0.875rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <div className="text-sm space-y-1" style={{ color: "#d1d5db" }}>
                   <p>• WASD / Arrow Keys: Move</p>
                   <p>• SPACE: Jump</p>
                   <p>• Q / E: Rotate Left/Right</p>
@@ -131,20 +131,20 @@ export default function SettingsPanel({
               </div>
 
               <div>
-                <p style={{ color: "#D4AF37", fontSize: "0.875rem", fontWeight: "bold", fontFamily: "var(--font-space-grotesk)", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                <p className="font-bold font-space-grotesk uppercase text-sm mb-2" style={{ color: "#D4AF37" }}>
                   Camera
                 </p>
-                <div style={{ color: "#d1d5db", fontSize: "0.875rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <div className="text-sm space-y-1" style={{ color: "#d1d5db" }}>
                   <p>• Mouse: Look Around</p>
                   <p>• Move cursor to screen edges for rotation</p>
                 </div>
               </div>
 
               <div>
-                <p style={{ color: "#D4AF37", fontSize: "0.875rem", fontWeight: "bold", fontFamily: "var(--font-space-grotesk)", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                <p className="font-bold font-space-grotesk uppercase text-sm mb-2" style={{ color: "#D4AF37" }}>
                   Menu
                 </p>
-                <div style={{ color: "#d1d5db", fontSize: "0.875rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <div className="text-sm space-y-1" style={{ color: "#d1d5db" }}>
                   <p>• TAB: Open/Close Pause Menu</p>
                   <p>• ESC: Debug Panel</p>
                 </div>
@@ -158,14 +158,15 @@ export default function SettingsPanel({
 
         {/* Audio Enable/Disable */}
         <div className="mb-6">
-          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
+          <label className="flex items-center space-x-3 cursor-pointer">
             <input
               type="checkbox"
               checked={audioEnabled}
               onChange={(e) => setAudioEnabled(e.target.checked)}
-              style={{ accentColor: "#D4AF37", width: "1.25rem", height: "1.25rem" }}
+              className="w-5 h-5"
+              style={{ accentColor: "#D4AF37" }}
             />
-            <span style={{ color: "#d1d5db", fontSize: "1.125rem", fontFamily: "var(--font-space-grotesk)" }}>
+            <span className="text-lg font-space-grotesk" style={{ color: "#d1d5db" }}>
               🔊 Enable Audio
             </span>
           </label>
@@ -173,7 +174,7 @@ export default function SettingsPanel({
 
         {/* Music Volume */}
         <div className="mb-6">
-          <label style={{ color: "#9ca3af", fontSize: "0.875rem", textTransform: "uppercase", display: "block", marginBottom: "0.5rem", fontFamily: "var(--font-space-grotesk)" }}>
+          <label className="block text-sm font-space-grotesk uppercase mb-2" style={{ color: "#9ca3af" }}>
             🎵 Music Volume: {musicVolume}%
           </label>
           <input
@@ -183,13 +184,14 @@ export default function SettingsPanel({
             value={musicVolume}
             onChange={(e) => setMusicVolume(Number(e.target.value))}
             disabled={!audioEnabled}
-            style={{ accentColor: "#D4AF37", width: "100%" }}
+            className="w-full"
+            style={{ accentColor: "#D4AF37" }}
           />
         </div>
 
         {/* SFX Volume */}
         <div className="mb-6">
-          <label style={{ color: "#9ca3af", fontSize: "0.875rem", textTransform: "uppercase", display: "block", marginBottom: "0.5rem", fontFamily: "var(--font-space-grotesk)" }}>
+          <label className="block text-sm font-space-grotesk uppercase mb-2" style={{ color: "#9ca3af" }}>
             🔉 Sound Effects Volume: {sfxVolume}%
           </label>
           <input
@@ -199,13 +201,14 @@ export default function SettingsPanel({
             value={sfxVolume}
             onChange={(e) => setSfxVolume(Number(e.target.value))}
             disabled={!audioEnabled}
-            style={{ accentColor: "#D4AF37", width: "100%" }}
+            className="w-full"
+            style={{ accentColor: "#D4AF37" }}
           />
         </div>
 
         {/* Music Track Selection */}
         <div className="mb-6">
-          <label style={{ color: "#9ca3af", fontSize: "0.875rem", textTransform: "uppercase", display: "block", marginBottom: "0.5rem", fontFamily: "var(--font-space-grotesk)" }}>
+          <label className="block text-sm font-space-grotesk uppercase mb-2" style={{ color: "#9ca3af" }}>
             🎼 Background Music
           </label>
           <select
@@ -227,23 +230,23 @@ export default function SettingsPanel({
         </div>
 
         {/* Buttons */}
-        <div style={{ display: "flex", gap: "0.75rem", flexDirection: "column" }}>
+        <div className="flex space-x-3">
           <button
             onClick={handleSave}
             className={`neomorphic-submit ${isDark ? 'dark-mode' : ''}`}
             style={{
-              width: "100%",
+              flex: 1,
               height: "48px",
               fontSize: "14px",
             }}
           >
-            💾 Save
+            💾 Save & Close
           </button>
           <button
             onClick={handleReset}
             className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
             style={{
-              width: "100%",
+              flex: 1,
               height: "48px",
               fontSize: "14px",
             }}
@@ -252,7 +255,7 @@ export default function SettingsPanel({
           </button>
         </div>
 
-        <div style={{ marginTop: "1rem", fontSize: "0.75rem", textAlign: "center", fontFamily: "var(--font-space-grotesk)", color: "#6b7280" }}>
+        <div className="mt-4 text-xs text-center font-space-grotesk" style={{ color: "#6b7280" }}>
           Press TAB to resume • ESC for debug panel
         </div>
       </div>

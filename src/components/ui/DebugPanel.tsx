@@ -85,8 +85,8 @@ export default function DebugPanel({
         backdropFilter: "blur(8px)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ color: "#D4AF37", fontSize: "1.125rem", fontWeight: "bold", fontFamily: "var(--font-space-grotesk)", textTransform: "uppercase" }}>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold font-space-grotesk uppercase" style={{ color: "#D4AF37" }}>
           🛠️ Debug Panel
         </h3>
         <button
@@ -106,7 +106,7 @@ export default function DebugPanel({
         </button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      <div className="space-y-3">
         {/* Performance Stats */}
         <div style={{ borderBottom: "1px solid #3f3f46", paddingBottom: "0.5rem" }}>
           <p style={{ color: "#22C55E" }}>FPS: {fps}</p>
@@ -131,9 +131,9 @@ export default function DebugPanel({
         </div>
 
         {/* Movement Controls */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", paddingTop: "0.5rem" }}>
+        <div className="space-y-3 pt-2">
           <div>
-            <label style={{ color: "#9ca3af", fontSize: "0.75rem", textTransform: "uppercase", display: "block", fontFamily: "var(--font-space-grotesk)" }}>
+            <label className="text-xs font-space-grotesk uppercase" style={{ color: "#9ca3af" }}>
               Move Speed: {moveSpeed.toFixed(2)}
             </label>
             <input
@@ -143,16 +143,15 @@ export default function DebugPanel({
               step="0.01"
               value={moveSpeed}
               onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
+              className="w-full mt-2"
               style={{
                 accentColor: "#D4AF37",
-                width: "100%",
-                marginTop: "0.5rem",
               }}
             />
           </div>
 
           <div>
-            <label style={{ color: "#9ca3af", fontSize: "0.75rem", textTransform: "uppercase", display: "block", fontFamily: "var(--font-space-grotesk)" }}>
+            <label className="text-xs font-space-grotesk uppercase" style={{ color: "#9ca3af" }}>
               Jump Height: {jumpHeight.toFixed(2)}
             </label>
             <input
@@ -162,10 +161,9 @@ export default function DebugPanel({
               step="0.05"
               value={jumpHeight}
               onChange={(e) => onJumpHeightChange(parseFloat(e.target.value))}
+              className="w-full mt-2"
               style={{
                 accentColor: "#D4AF37",
-                width: "100%",
-                marginTop: "0.5rem",
               }}
             />
           </div>
