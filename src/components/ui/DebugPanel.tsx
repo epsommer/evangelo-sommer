@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import "@/app/neomorphic.css";
 
 interface DebugPanelProps {
   camera: {
@@ -24,6 +25,7 @@ export default function DebugPanel({
 }: DebugPanelProps) {
   const [fps, setFps] = useState(0);
   const [frameTime, setFrameTime] = useState(0);
+  const isDark = true; // Always dark mode for 3D gallery
 
   // Use refs to avoid re-render loops
   const frameCountRef = useRef(0);
@@ -72,47 +74,66 @@ export default function DebugPanel({
 
   return (
     <div
-      className="fixed top-4 right-4 z-50 bg-black bg-opacity-90 text-white p-4 rounded-lg shadow-lg font-mono text-sm"
-      style={{ zIndex: 200, minWidth: "300px" }}
+      className="fixed top-4 right-4 z-50 dark-mode font-mono text-sm"
+      style={{
+        zIndex: 200,
+        minWidth: "300px",
+        padding: "1.5rem",
+        backgroundColor: "rgba(28, 25, 23, 0.95)",
+        border: "2px solid #D4AF37",
+        borderRadius: "12px",
+        backdropFilter: "blur(8px)",
+      }}
     >
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-lg font-bold">🛠️ Debug Panel</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold font-space-grotesk uppercase" style={{ color: "#D4AF37" }}>
+          🛠️ Debug Panel
+        </h3>
         <button
           onClick={onToggle}
-          className="text-gray-400 hover:text-white transition-colors"
+          className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+          style={{
+            height: "32px",
+            width: "32px",
+            padding: "0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "16px",
+          }}
         >
           ✕
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {/* Performance Stats */}
-        <div className="border-b border-gray-700 pb-2">
-          <p className="text-green-400">FPS: {fps}</p>
-          <p className="text-yellow-400">
+        <div style={{ borderBottom: "1px solid #3f3f46", paddingBottom: "0.5rem" }}>
+          <p style={{ color: "#22C55E" }}>FPS: {fps}</p>
+          <p style={{ color: "#FBBF24" }}>
             Frame Time: {frameTime.toFixed(2)}ms
           </p>
         </div>
 
         {/* Camera Info */}
-        <div className="border-b border-gray-700 pb-2">
-          <p className="text-tactical-gold-400 font-semibold">Camera Position:</p>
-          <p>X: {camera.position.x.toFixed(2)}</p>
-          <p>Y: {camera.position.y.toFixed(2)}</p>
-          <p>Z: {camera.position.z.toFixed(2)}</p>
+        <div style={{ borderBottom: "1px solid #3f3f46", paddingBottom: "0.5rem" }}>
+          <p style={{ color: "#D4AF37", fontWeight: 600 }}>Camera Position:</p>
+          <p style={{ color: "#d1d5db" }}>X: {camera.position.x.toFixed(2)}</p>
+          <p style={{ color: "#d1d5db" }}>Y: {camera.position.y.toFixed(2)}</p>
+          <p style={{ color: "#d1d5db" }}>Z: {camera.position.z.toFixed(2)}</p>
         </div>
 
-        <div className="border-b border-gray-700 pb-2">
-          <p className="text-purple-400 font-semibold">Camera Rotation:</p>
-          <p>X: {((camera.rotation.x * 180) / Math.PI).toFixed(1)}°</p>
-          <p>Y: {((camera.rotation.y * 180) / Math.PI).toFixed(1)}°</p>
-          <p>Z: {((camera.rotation.z * 180) / Math.PI).toFixed(1)}°</p>
+        <div style={{ borderBottom: "1px solid #3f3f46", paddingBottom: "0.5rem" }}>
+          <p style={{ color: "#A78BFA", fontWeight: 600 }}>Camera Rotation:</p>
+          <p style={{ color: "#d1d5db" }}>X: {((camera.rotation.x * 180) / Math.PI).toFixed(1)}°</p>
+          <p style={{ color: "#d1d5db" }}>Y: {((camera.rotation.y * 180) / Math.PI).toFixed(1)}°</p>
+          <p style={{ color: "#d1d5db" }}>Z: {((camera.rotation.z * 180) / Math.PI).toFixed(1)}°</p>
         </div>
 
         {/* Movement Controls */}
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           <div>
-            <label className="text-gray-300 text-xs">
+            <label className="text-xs font-space-grotesk uppercase" style={{ color: "#9ca3af" }}>
               Move Speed: {moveSpeed.toFixed(2)}
             </label>
             <input
@@ -122,12 +143,15 @@ export default function DebugPanel({
               step="0.01"
               value={moveSpeed}
               onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-              className="w-full mt-1"
+              className="w-full mt-2"
+              style={{
+                accentColor: "#D4AF37",
+              }}
             />
           </div>
 
           <div>
-            <label className="text-gray-300 text-xs">
+            <label className="text-xs font-space-grotesk uppercase" style={{ color: "#9ca3af" }}>
               Jump Height: {jumpHeight.toFixed(2)}
             </label>
             <input
@@ -137,7 +161,10 @@ export default function DebugPanel({
               step="0.05"
               value={jumpHeight}
               onChange={(e) => onJumpHeightChange(parseFloat(e.target.value))}
-              className="w-full mt-1"
+              className="w-full mt-2"
+              style={{
+                accentColor: "#D4AF37",
+              }}
             />
           </div>
         </div>

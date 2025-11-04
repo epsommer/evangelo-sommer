@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import "@/app/neomorphic.css";
 
 interface SettingsPanelProps {
   isVisible: boolean;
@@ -14,6 +15,7 @@ export default function SettingsPanel({
   const [sfxVolume, setSfxVolume] = useState(85);
   const [musicTrack, setMusicTrack] = useState("ambient-gallery");
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const isDark = true; // Always dark mode for 3D gallery
 
   const musicTracks = [
     { id: "ambient-gallery", name: "Ambient Gallery" },
@@ -47,14 +49,44 @@ export default function SettingsPanel({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center">
-      <div className="bg-gray-900 text-white p-8 rounded-xl border border-gray-600 w-96 max-w-90vw">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.75)",
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={onToggle}
+    >
+      <div
+        className="dark-mode"
+        style={{
+          width: "384px",
+          maxWidth: "90vw",
+          padding: "2rem",
+          backgroundColor: "rgba(28, 25, 23, 0.95)",
+          border: "2px solid #D4AF37",
+          borderRadius: "12px",
+          backdropFilter: "blur(8px)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-tactical-gold-400">⚙️ Settings</h2>
+          <h2 className="text-2xl font-bold font-space-grotesk uppercase" style={{ color: "#D4AF37" }}>
+            ⚙️ Settings
+          </h2>
           <button
             onClick={onToggle}
-            className="text-gray-400 hover:text-red-400 text-xl"
+            className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+            style={{
+              height: "36px",
+              width: "36px",
+              padding: "0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "18px",
+            }}
           >
             ✕
           </button>
@@ -62,20 +94,23 @@ export default function SettingsPanel({
 
         {/* Audio Enable/Disable */}
         <div className="mb-6">
-          <label className="flex items-center space-x-3">
+          <label className="flex items-center space-x-3 cursor-pointer">
             <input
               type="checkbox"
               checked={audioEnabled}
               onChange={(e) => setAudioEnabled(e.target.checked)}
-              className="w-5 h-5 text-tactical-gold"
+              className="w-5 h-5"
+              style={{ accentColor: "#D4AF37" }}
             />
-            <span className="text-lg">🔊 Enable Audio</span>
+            <span className="text-lg font-space-grotesk" style={{ color: "#d1d5db" }}>
+              🔊 Enable Audio
+            </span>
           </label>
         </div>
 
         {/* Music Volume */}
         <div className="mb-6">
-          <label className="block text-sm text-gray-300 mb-2">
+          <label className="block text-sm font-space-grotesk uppercase mb-2" style={{ color: "#9ca3af" }}>
             🎵 Music Volume: {musicVolume}%
           </label>
           <input
@@ -85,13 +120,14 @@ export default function SettingsPanel({
             value={musicVolume}
             onChange={(e) => setMusicVolume(Number(e.target.value))}
             disabled={!audioEnabled}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+            className="w-full"
+            style={{ accentColor: "#D4AF37" }}
           />
         </div>
 
         {/* SFX Volume */}
         <div className="mb-6">
-          <label className="block text-sm text-gray-300 mb-2">
+          <label className="block text-sm font-space-grotesk uppercase mb-2" style={{ color: "#9ca3af" }}>
             🔉 Sound Effects Volume: {sfxVolume}%
           </label>
           <input
@@ -101,20 +137,25 @@ export default function SettingsPanel({
             value={sfxVolume}
             onChange={(e) => setSfxVolume(Number(e.target.value))}
             disabled={!audioEnabled}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+            className="w-full"
+            style={{ accentColor: "#D4AF37" }}
           />
         </div>
 
         {/* Music Track Selection */}
         <div className="mb-6">
-          <label className="block text-sm text-gray-300 mb-2">
+          <label className="block text-sm font-space-grotesk uppercase mb-2" style={{ color: "#9ca3af" }}>
             🎼 Background Music
           </label>
           <select
             value={musicTrack}
             onChange={(e) => setMusicTrack(e.target.value)}
             disabled={!audioEnabled}
-            className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
+            className={`neomorphic-input ${isDark ? 'dark-mode' : ''}`}
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+            }}
           >
             {musicTracks.map((track) => (
               <option key={track.id} value={track.id}>
@@ -128,19 +169,29 @@ export default function SettingsPanel({
         <div className="flex space-x-3">
           <button
             onClick={handleSave}
-            className="flex-1 bg-tactical-gold hover:bg-tactical-gold-dark text-white py-2 px-4 rounded-lg transition-colors"
+            className={`neomorphic-submit ${isDark ? 'dark-mode' : ''}`}
+            style={{
+              flex: 1,
+              height: "48px",
+              fontSize: "14px",
+            }}
           >
             💾 Save & Close
           </button>
           <button
             onClick={handleReset}
-            className="flex-1 bg-gray-600 hover:bg-tactical-grey-700 text-white py-2 px-4 rounded-lg transition-colors"
+            className={`neomorphic-button ${isDark ? 'dark-mode' : ''}`}
+            style={{
+              flex: 1,
+              height: "48px",
+              fontSize: "14px",
+            }}
           >
             🔄 Reset
           </button>
         </div>
 
-        <div className="mt-4 text-xs text-gray-400 text-center">
+        <div className="mt-4 text-xs text-center font-space-grotesk" style={{ color: "#6b7280" }}>
           Press TAB to open/close • ESC for debug panel
         </div>
       </div>
