@@ -621,33 +621,36 @@ p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
   box-shadow: none;
 }
 
-/* Force square corners on all elements */
-* {
+/* Force square corners on all elements EXCEPT neomorphic design */
+*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]) {
   border-radius: 0 !important;
 }
 
-/* Override Tailwind rounded classes */
-.rounded,
-.rounded-sm,
-.rounded-md,
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl,
-.rounded-3xl,
-.rounded-full {
+/* Override Tailwind rounded classes (except neomorphic) */
+.rounded:not([class*="neomorphic"]),
+.rounded-sm:not([class*="neomorphic"]),
+.rounded-md:not([class*="neomorphic"]),
+.rounded-lg:not([class*="neomorphic"]),
+.rounded-xl:not([class*="neomorphic"]),
+.rounded-2xl:not([class*="neomorphic"]),
+.rounded-3xl:not([class*="neomorphic"]),
+.rounded-full:not([class*="neomorphic"]) {
   border-radius: 0 !important;
 }
 
 /* Neomorphic design exceptions - allow rounded corners */
-.neomorphic-rounded {
+.neomorphic-rounded,
+[class*="neomorphic"] .neomorphic-rounded {
   border-radius: 0.5rem !important;
 }
 
-.neomorphic-rounded-lg {
+.neomorphic-rounded-lg,
+[class*="neomorphic"] .neomorphic-rounded-lg {
   border-radius: 1rem !important;
 }
 
-.neomorphic-rounded-full {
+.neomorphic-rounded-full,
+[class*="neomorphic"] .neomorphic-rounded-full {
   border-radius: 50% !important;
 }
 
@@ -892,15 +895,15 @@ label {
   transition: all 0.2s ease;
 }
 
-/* Ensure no rounded corners anywhere */
-button,
-input,
-select,
-textarea,
-.card,
-.modal,
-.dropdown,
-.tooltip {
+/* Ensure no rounded corners anywhere (except neomorphic design) */
+button:not([class*="neomorphic"]),
+input:not([class*="neomorphic"]):not(.neomorphic-input),
+select:not([class*="neomorphic"]),
+textarea:not([class*="neomorphic"]):not(.neomorphic-input),
+.card:not([class*="neomorphic"]):not(.neomorphic-card),
+.modal:not([class*="neomorphic"]),
+.dropdown:not([class*="neomorphic"]),
+.tooltip:not([class*="neomorphic"]) {
   border-radius: 0 !important;
 }
 

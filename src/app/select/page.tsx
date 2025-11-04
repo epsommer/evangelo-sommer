@@ -139,8 +139,9 @@ export default function SelectPage() {
         transition: "background-color 300ms ease-in-out",
       }}
     >
-      {/* Theme Toggle - Responsive */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+      {/* Top Right Controls */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex items-center gap-3">
+        {/* Theme Toggle */}
         <label className={`neomorphic-toggle ${isDark ? "dark-mode" : ""}`}>
           <input
             type="checkbox"
@@ -167,6 +168,22 @@ export default function SelectPage() {
             </svg>
           </div>
         </label>
+
+        {/* Sign Out Button */}
+        <button
+          onClick={() => router.push("/auth/signout")}
+          className={`neomorphic-button ${isDark ? "dark-mode" : ""}`}
+          style={{
+            height: "40px",
+            padding: "0 16px",
+            fontSize: "13px",
+            fontFamily: "var(--font-space-grotesk)",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+          }}
+        >
+          Sign Out
+        </button>
       </div>
 
       <div className="max-w-6xl w-full space-y-8 sm:space-y-12">
@@ -219,12 +236,14 @@ export default function SelectPage() {
                 style={{
                   padding: "1.5rem",
                   textAlign: "center",
-                  transition: "all 300ms ease-in-out",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
                 }}
               >
-                <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col flex-1">
                   {/* Icon */}
-                  <div className="flex justify-center">
+                  <div className="flex justify-center mb-3 sm:mb-4">
                     <div
                       className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
                       style={{
@@ -243,7 +262,7 @@ export default function SelectPage() {
 
                   {/* Title */}
                   <h3
-                    className="text-lg sm:text-xl font-bold font-space-grotesk uppercase tracking-wide px-2"
+                    className="text-lg sm:text-xl font-bold font-space-grotesk uppercase tracking-wide px-2 mb-3 sm:mb-4"
                     style={{ color: isDark ? "#d1d5db" : "#6C7587" }}
                   >
                     {selection.title}
@@ -251,14 +270,14 @@ export default function SelectPage() {
 
                   {/* Description */}
                   <p
-                    className="text-xs sm:text-sm font-space-grotesk px-2"
+                    className="text-xs sm:text-sm font-space-grotesk px-2 flex-1"
                     style={{ color: isDark ? "#9ca3af" : "#8992A5" }}
                   >
                     {selection.description}
                   </p>
 
                   {/* Arrow indicator */}
-                  <div className="flex justify-center pt-1 sm:pt-2">
+                  <div className="flex justify-center pt-3 sm:pt-4">
                     <svg
                       className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:translate-x-1"
                       style={{ color: selection.color }}
@@ -355,7 +374,10 @@ export default function SelectPage() {
                   className={`neomorphic-card ${isDark ? "dark-mode" : ""}`}
                   style={{
                     padding: "1.25rem",
-                    transition: "all 300ms ease-in-out",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    cursor: "default",
                   }}
                 >
                   {/* Thumbnail placeholder */}
@@ -390,7 +412,7 @@ export default function SelectPage() {
 
                   {/* Last updated */}
                   <p
-                    className="text-xs font-space-grotesk mb-3 sm:mb-4"
+                    className="text-xs font-space-grotesk mb-3 sm:mb-4 flex-1"
                     style={{ color: isDark ? "#6b7280" : "#8992A5" }}
                   >
                     Updated {new Date(project.updatedAt).toLocaleDateString()}
@@ -437,7 +459,7 @@ export default function SelectPage() {
                     className={`neomorphic-card ${isDark ? "dark-mode" : ""}`}
                     style={{
                       padding: '1rem',
-                      transition: "all 300ms ease-in-out",
+                      cursor: "default",
                     }}
                   >
                     <div className="flex items-center gap-3 sm:gap-4">
@@ -534,25 +556,6 @@ export default function SelectPage() {
           </div>
         )}
 
-        {/* Sign Out Link - Responsive */}
-        <div className="text-center mt-8 sm:mt-12 pb-4">
-          <button
-            onClick={() => router.push("/auth/signout")}
-            className="text-xs sm:text-sm font-space-grotesk uppercase tracking-wide underline touch-manipulation min-h-[44px] inline-flex items-center justify-center"
-            style={{
-              color: isDark ? "#9ca3af" : "#8992A5",
-              transition: "color 200ms ease-in-out",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = isDark ? "#d1d5db" : "#6C7587")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = isDark ? "#9ca3af" : "#8992A5")
-            }
-          >
-            Sign Out
-          </button>
-        </div>
       </div>
     </div>
   );
