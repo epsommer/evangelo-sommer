@@ -59,7 +59,7 @@ export default function SignIn() {
         const session = await getSession();
         console.log("[Sign-In] Sign-in successful. Session object:", session);
         if (session) {
-          router.push("/dashboard");
+          router.push("/select");
         } else {
           console.warn("[Sign-In] Sign-in was OK, but getSession() returned nullish.");
           setError("Sign-in failed. Please try again.");
