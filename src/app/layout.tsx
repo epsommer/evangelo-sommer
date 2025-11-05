@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="neomorphic-window" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="https://use.typekit.net/xmz8zog.css" />
         <meta name="color-scheme" content="light dark" />
@@ -52,7 +52,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-hud-ui antialiased">
+      <body className="font-hud-ui antialiased" suppressHydrationWarning>
         <SessionProviderWrapper>{children}</SessionProviderWrapper>
         <SpeedInsights />
         <Analytics />
