@@ -114,26 +114,29 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="neo-container w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-dark-grey text-white p-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold font-primary uppercase tracking-wide">
-            Account Settings
-          </h2>
+        <div className="neo-container-inner p-6 flex items-center justify-between border-b border-border">
+          <div className="flex items-center space-x-3">
+            <User className="h-6 w-6 text-foreground" />
+            <h2 className="text-xl font-bold font-primary uppercase tracking-wide text-foreground">
+              Account Settings
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-gold transition-colors"
+            className="neo-button-circle w-10 h-10 flex items-center justify-center transition-all duration-300 hover:scale-110"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5 text-foreground" />
           </button>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar Tabs */}
-          <div className="w-64 bg-hud-background-secondary border-r border-hud-border">
+          <div className="w-64 bg-background border-r border-border">
             <div className="p-4">
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {[
                   { id: 'profile', label: 'Profile Information', icon: User },
                   { id: 'security', label: 'Security & Privacy', icon: Shield },
@@ -144,10 +147,10 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm font-primary uppercase tracking-wide transition-colors ${
+                      className={`w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm font-primary uppercase tracking-wide transition-all duration-300 rounded-xl ${
                         activeTab === tab.id
-                          ? 'bg-tactical-gold text-hud-text-primary'
-                          : 'text-medium-grey hover:bg-light-grey hover:text-hud-text-primary'
+                          ? 'neo-button-active text-foreground'
+                          : 'neo-button text-foreground/70 hover:text-foreground'
                       }`}
                     >
                       <IconComponent className="h-4 w-4" />
@@ -163,7 +166,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
           <div className="flex-1 p-6 overflow-y-auto">
             {activeTab === 'profile' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Profile Information
                 </h3>
                 
@@ -173,12 +176,12 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       Full Name
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-medium-grey" />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                       <input
                         type="text"
                         value={settings.profile.name}
                         onChange={(e) => updateProfile('name', e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full pl-10 pr-4"
                         placeholder="Enter full name"
                       />
                     </div>
@@ -189,12 +192,12 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-medium-grey" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                       <input
                         type="email"
                         value={settings.profile.email}
                         onChange={(e) => updateProfile('email', e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full pl-10 pr-4"
                         placeholder="Enter email address"
                       />
                     </div>
@@ -205,12 +208,12 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       Phone Number
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-medium-grey" />
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                       <input
                         type="tel"
                         value={settings.profile.phone}
                         onChange={(e) => updateProfile('phone', e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full pl-10 pr-4"
                         placeholder="Enter phone number"
                       />
                     </div>
@@ -221,12 +224,12 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       Company
                     </label>
                     <div className="relative">
-                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-medium-grey" />
+                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                       <input
                         type="text"
                         value={settings.profile.company}
                         onChange={(e) => updateProfile('company', e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full pl-10 pr-4"
                         placeholder="Enter company name"
                       />
                     </div>
@@ -240,7 +243,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       type="text"
                       value={settings.profile.title}
                       onChange={(e) => updateProfile('title', e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                      className="neomorphic-input w-full"
                       placeholder="Enter job title"
                     />
                   </div>
@@ -250,12 +253,12 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       Location
                     </label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-medium-grey" />
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                       <input
                         type="text"
                         value={settings.profile.location}
                         onChange={(e) => updateProfile('location', e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full pl-10 pr-4"
                         placeholder="Enter location"
                       />
                     </div>
@@ -271,8 +274,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                 </h3>
 
                 {/* Password Change */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Change Password
                   </h4>
                   
@@ -282,12 +285,12 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         Current Password
                       </label>
                       <div className="relative">
-                        <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-medium-grey" />
+                        <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                         <input
                           type={showPasswords ? "text" : "password"}
                           value={settings.security.currentPassword || ''}
                           onChange={(e) => updateSecurity('currentPassword', e.target.value)}
-                          className="w-full pl-10 pr-12 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                          className="neomorphic-input w-full pl-10 pr-12"
                           placeholder="Enter current password"
                         />
                         <button
@@ -308,7 +311,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         type={showPasswords ? "text" : "password"}
                         value={settings.security.newPassword || ''}
                         onChange={(e) => updateSecurity('newPassword', e.target.value)}
-                        className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full"
                         placeholder="Enter new password"
                       />
                     </div>
@@ -321,7 +324,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         type={showPasswords ? "text" : "password"}
                         value={settings.security.confirmPassword || ''}
                         onChange={(e) => updateSecurity('confirmPassword', e.target.value)}
-                        className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full"
                         placeholder="Confirm new password"
                       />
                     </div>
@@ -329,8 +332,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                 </div>
 
                 {/* Security Options */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Security Options
                   </h4>
                   
@@ -384,8 +387,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Appearance */}
-                  <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                       Appearance
                     </h4>
                     
@@ -396,18 +399,20 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       <select
                         value={settings.preferences.theme}
                         onChange={(e) => updatePreferences('theme', e.target.value)}
-                        className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full"
                       >
                         <option value="light">Light</option>
-                        <option value="dark">Dark</option>
+                        <option value="dark">Dark (Mocha)</option>
+                        <option value="overkast">Overkast</option>
+                        <option value="true-night">True Night</option>
                         <option value="system">System</option>
                       </select>
                     </div>
                   </div>
 
                   {/* Localization */}
-                  <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                       Localization
                     </h4>
                     
@@ -419,7 +424,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         <select
                           value={settings.preferences.language}
                           onChange={(e) => updatePreferences('language', e.target.value)}
-                          className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                          className="neomorphic-input w-full"
                         >
                           <option value="en">English</option>
                           <option value="fr">Français</option>
@@ -434,7 +439,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         <select
                           value={settings.preferences.timezone}
                           onChange={(e) => updatePreferences('timezone', e.target.value)}
-                          className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                          className="neomorphic-input w-full"
                         >
                           <option value="America/Toronto">Eastern Time</option>
                           <option value="America/New_York">Eastern Time (US)</option>
@@ -448,8 +453,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                 </div>
 
                 {/* Notifications */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Notification Preferences
                   </h4>
                   
@@ -518,25 +523,24 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="bg-hud-background-secondary border-t border-hud-border p-6 flex items-center justify-between">
-          <div className="text-sm text-medium-grey font-primary">
+        <div className="neo-container-inner border-t border-border p-6 flex items-center justify-between">
+          <div className="text-sm text-foreground/60 font-primary">
             Changes will be saved to your profile and applied immediately.
           </div>
           <div className="flex items-center space-x-3">
-            <Button
-              variant="outline"
+            <button
               onClick={onClose}
-              className="px-6 py-2 font-bold uppercase tracking-wide border-medium-grey text-medium-grey hover:bg-medium-grey hover:text-white font-primary"
+              className="neo-button px-6 py-2 font-bold uppercase tracking-wide font-primary transition-all duration-300"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleSave}
-              className="bg-tactical-gold text-hud-text-primary px-6 py-2 font-bold uppercase tracking-wide hover:bg-tactical-gold-dark font-primary"
+              className="neo-button-active px-6 py-2 font-bold uppercase tracking-wide font-primary transition-all duration-300 flex items-center gap-2"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4" />
               Save Changes
-            </Button>
+            </button>
           </div>
         </div>
       </div>

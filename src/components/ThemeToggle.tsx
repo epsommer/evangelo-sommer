@@ -10,12 +10,14 @@ export function ThemeToggle() {
     // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       setIsDarkMode(true);
+      document.documentElement.classList.add('dark', 'dark-mode');
       document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       setIsDarkMode(false);
+      document.documentElement.classList.remove('dark', 'dark-mode');
       document.documentElement.setAttribute('data-theme', 'light');
     }
   }, []);
@@ -25,36 +27,33 @@ export function ThemeToggle() {
     setIsDarkMode(!isDarkMode);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
+
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark', 'dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark', 'dark-mode');
+    }
   };
 
   return (
     <button
       onClick={toggleTheme}
-      className="theme-toggle relative flex items-center gap-2 px-3 py-2 text-sm tk-ff-utility-web-pro"
+      className="neo-button relative flex items-center gap-2 px-4 py-2 text-sm transition-all duration-300 hover:scale-105"
       aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
     >
-      <div className="relative flex items-center gap-2">
+      <div className="relative flex items-center gap-2 text-foreground">
         {isDarkMode ? (
           <>
             <Moon className="w-4 h-4" />
-            <span className="hud-command text-xs">NIGHT OPS</span>
+            <span className="font-medium text-xs tracking-wide">NIGHT OPS</span>
           </>
         ) : (
           <>
             <Sun className="w-4 h-4" />
-            <span className="hud-command text-xs">DAYLIGHT OPS</span>
+            <span className="font-medium text-xs tracking-wide">DAYLIGHT OPS</span>
           </>
         )}
       </div>
-      
-      {/* Tactical HUD indicator */}
-      <div className="absolute -top-1 -right-1 w-2 h-2 bg-tactical-gold opacity-75 animate-pulse"></div>
-      
-      {/* Corner markers */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-tactical-gold opacity-50"></div>
-      <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-tactical-gold opacity-50"></div>
-      <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-tactical-gold opacity-50"></div>
-      <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-tactical-gold opacity-50"></div>
     </button>
   );
 }
@@ -67,12 +66,14 @@ export function TacticalThemeToggle() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       setIsDarkMode(true);
+      document.documentElement.classList.add('dark', 'dark-mode');
       document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       setIsDarkMode(false);
+      document.documentElement.classList.remove('dark', 'dark-mode');
       document.documentElement.setAttribute('data-theme', 'light');
     }
   }, []);
@@ -82,72 +83,61 @@ export function TacticalThemeToggle() {
     setIsDarkMode(!isDarkMode);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
+
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark', 'dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark', 'dark-mode');
+    }
   };
 
   return (
-    <div className="tactical-frame relative p-4 max-w-sm">
-      <div className="flex items-center justify-between mb-3">
-        <div className="hud-label text-xs">
-          MISSION DISPLAY
+    <div className="neo-container relative p-6 max-w-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-xs font-medium text-foreground/70 tracking-wider uppercase">
+          Display Mode
         </div>
-        <div className="status-operational w-2 h-2 rounded-full bg-tactical-success animate-pulse"></div>
+        <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></div>
       </div>
-      
-      <div className="tactical-grid grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => {
             if (isDarkMode) toggleTheme();
           }}
           className={`
-            btn-tactical text-xs py-3 px-4 relative overflow-hidden
-            ${!isDarkMode ? 'bg-tactical-gold text-tactical-grey-900' : 'bg-transparent text-hud-text-secondary border-hud-border'}
+            neo-button text-xs py-4 px-4 relative overflow-hidden transition-all duration-300
+            ${!isDarkMode ? 'neo-button-active' : ''}
           `}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <Sun className="w-5 h-5 mx-auto mb-1" />
-          <div className="hud-command text-xs">DAYLIGHT OPS</div>
-          {!isDarkMode && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
-          )}
+          <Sun className="w-5 h-5 mx-auto mb-2 text-foreground" />
+          <div className="font-medium text-xs tracking-wide text-foreground">DAYLIGHT OPS</div>
         </button>
-        
+
         <button
           onClick={() => {
             if (!isDarkMode) toggleTheme();
           }}
           className={`
-            btn-tactical text-xs py-3 px-4 relative overflow-hidden
-            ${isDarkMode ? 'bg-tactical-gold text-tactical-gray-900' : 'bg-transparent text-hud-text-secondary border-hud-border'}
+            neo-button text-xs py-4 px-4 relative overflow-hidden transition-all duration-300
+            ${isDarkMode ? 'neo-button-active' : ''}
           `}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <Moon className="w-5 h-5 mx-auto mb-1" />
-          <div className="hud-command text-xs">NIGHT OPS</div>
-          {isDarkMode && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
-          )}
+          <Moon className="w-5 h-5 mx-auto mb-2 text-foreground" />
+          <div className="font-medium text-xs tracking-wide text-foreground">NIGHT OPS</div>
         </button>
       </div>
-      
-      <div className="mt-4 flex items-center gap-2">
-        <span className="hud-label text-xs">MISSION STATUS:</span>
-        <span className="hud-value text-xs status-active">
-          {isDarkMode ? 'NIGHT OPS ENGAGED' : 'DAYLIGHT OPS ACTIVE'}
+
+      <div className="mt-4 flex items-center gap-2 text-foreground/60">
+        <span className="text-xs font-medium tracking-wider uppercase">Status:</span>
+        <span className="text-xs font-medium text-foreground">
+          {isDarkMode ? 'Night Ops Engaged' : 'Daylight Ops Active'}
         </span>
       </div>
-      
-      {/* Schematic overlay when hovered */}
-      {isHovered && (
-        <div className="schematic-overlay absolute inset-0 pointer-events-none">
-          <div className="absolute top-2 right-2 w-16 h-16 border border-tactical-gold opacity-30">
-            <div className="absolute inset-1 border border-tactical-gold opacity-50">
-              <div className="absolute inset-1 bg-tactical-gold opacity-10"></div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

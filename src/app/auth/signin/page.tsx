@@ -184,8 +184,8 @@ export default function SignIn() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} suppressHydrationWarning>
+          <div suppressHydrationWarning>
             <input
               id="email"
               name="email"
@@ -195,10 +195,11 @@ export default function SignIn() {
               onChange={(e) => setEmail(e.target.value)}
               className={`neomorphic-input ${isDark ? 'dark-mode' : ''}`}
               placeholder="Email address"
+              suppressHydrationWarning
             />
           </div>
 
-          <div className="relative">
+          <div className="relative" suppressHydrationWarning>
             <input
               id="password"
               name="password"
@@ -209,6 +210,7 @@ export default function SignIn() {
               className={`neomorphic-input ${isDark ? 'dark-mode' : ''}`}
               placeholder="Password"
               style={{ paddingRight: '60px' }}
+              suppressHydrationWarning
             />
             <button
               type="button"

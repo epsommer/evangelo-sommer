@@ -16,12 +16,34 @@ import { useGoals } from '@/hooks/useGoals'
 import { Client } from '@/types/client'
 import { getDataColor, getGrowthColor, getCompletionColor, getSimulatedHistoricalData } from '@/lib/data-colors'
 
+interface AnalyticsMetrics {
+  revenue: {
+    total: number;
+    previous: number;
+    pipeline: number;
+    growth: number;
+  };
+  clients: {
+    total: number;
+    active: number;
+    prospects: number;
+    previous: number;
+    growth: number;
+  };
+  growth: {
+    rate: number;
+    revenueGrowth: number;
+    clientGrowth: number;
+  };
+}
+
 const Dashboard = () => {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [allClients, setAllClients] = useState<Client[]>([])
+  const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null)
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true)
   const services = getAllServices()
-  const { statistics, getGoalsByStatus } = useGoals()
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -30,14 +52,19 @@ const Dashboard = () => {
   }, [status, router])
 
   useEffect(() => {
-    const fetchClients = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/clients?limit=100')
-        if (response.ok) {
-          const data = await response.json()
+        // Fetch clients and metrics in parallel
+        const [clientsResponse, metricsResponse] = await Promise.all([
+          fetch('/api/clients?limit=100'),
+          fetch('/api/analytics/metrics'),
+        ])
+
+        // Handle clients data
+        if (clientsResponse.ok) {
+          const data = await clientsResponse.json()
           console.log('📥 Dashboard fetched clients:', data)
-          
-          // Handle the API response structure
+
           if (data.success && Array.isArray(data.data)) {
             setAllClients(data.data)
           } else if (Array.isArray(data)) {
@@ -50,13 +77,27 @@ const Dashboard = () => {
           console.error('Failed to fetch clients for dashboard')
           setAllClients([])
         }
+
+        // Handle metrics data
+        if (metricsResponse.ok) {
+          const metricsData = await metricsResponse.json()
+          console.log('📊 Dashboard fetched metrics:', metricsData)
+
+          if (metricsData.success) {
+            setMetrics(metricsData.data)
+          }
+        } else {
+          console.error('Failed to fetch metrics for dashboard')
+        }
       } catch (error) {
-        console.error('Error fetching clients:', error)
+        console.error('Error fetching dashboard data:', error)
         setAllClients([])
+      } finally {
+        setIsLoadingMetrics(false)
       }
     }
 
-    fetchClients()
+    fetchData()
   }, [])
 
   if (status === "loading") {
@@ -76,24 +117,23 @@ const Dashboard = () => {
     return null
   }
 
-  const totalClients = allClients.length
-  const activeClients = allClients.filter((c) => c.status === "active").length
-  const prospects = allClients.filter((c) => c.status === "prospect").length
-  const totalRevenue = allClients.reduce((sum, client) => sum + (client.budget || 0), 0)
+  // Use metrics data if available, otherwise fallback to client data
+  const totalRevenue = metrics?.revenue.total || 0
+  const pipelineValue = metrics?.revenue.pipeline || 0
+  const activeClients = metrics?.clients.active || allClients.filter((c) => c.status === "active").length
+  const totalClients = metrics?.clients.total || allClients.length
+  const prospects = metrics?.clients.prospects || allClients.filter((c) => c.status === "prospect").length
+  const growthRate = metrics?.growth.rate || 0
 
   const recentClients = allClients
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 5)
 
-  // Get historical data for comparison (in production, this would come from your database)
-  const historicalData = getSimulatedHistoricalData()
-
   // Calculate data-driven colors based on performance
-  const revenueColor = getDataColor(totalRevenue, historicalData.previousMonthRevenue)
-  const clientsColor = getDataColor(totalClients, historicalData.previousMonthClients)
-  const prospectsColor = getDataColor(prospects, historicalData.previousMonthProspects)
-  const goalsColor = getCompletionColor(getGoalsByStatus('in-progress').length, statistics.total)
-  const growthColor = getGrowthColor(18.2) // 18.2% growth rate
+  const revenueColor = getDataColor(totalRevenue, metrics?.revenue.previous || 0)
+  const clientsColor = getDataColor(activeClients, metrics?.clients.previous || 0)
+  const prospectsColor = getDataColor(prospects, metrics?.clients.previous || 0)
+  const growthColor = getGrowthColor(growthRate)
 
   return (
     <CRMLayout>
@@ -108,8 +148,9 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* KPI Cards - 4 Primary Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Revenue */}
           <div className="neo-card p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-muted-foreground">
@@ -119,14 +160,21 @@ const Dashboard = () => {
                 <DollarSign className="h-4 w-4" />
               </div>
             </div>
-            <div className={`text-3xl font-bold ${revenueColor.class} mb-1`} title={revenueColor.description}>
-              ${totalRevenue.toLocaleString()}
-            </div>
+            {isLoadingMetrics ? (
+              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                ---
+              </div>
+            ) : (
+              <div className={`text-3xl font-bold ${revenueColor.class} mb-1`} title={revenueColor.description}>
+                ${totalRevenue.toLocaleString()}
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">
-              Pipeline Value
+              ${pipelineValue.toLocaleString()} Pipeline
             </div>
           </div>
 
+          {/* Active Clients */}
           <div className="neo-card p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-muted-foreground">
@@ -136,14 +184,21 @@ const Dashboard = () => {
                 <Users className="h-4 w-4" />
               </div>
             </div>
-            <div className={`text-3xl font-bold ${clientsColor.class} mb-1`} title={clientsColor.description}>
-              {activeClients}
-            </div>
+            {isLoadingMetrics ? (
+              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                ---
+              </div>
+            ) : (
+              <div className={`text-3xl font-bold ${clientsColor.class} mb-1`} title={clientsColor.description}>
+                {activeClients}
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">
               of {totalClients} total
             </div>
           </div>
 
+          {/* Prospects */}
           <div className="neo-card p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-muted-foreground">
@@ -153,31 +208,21 @@ const Dashboard = () => {
                 <CheckCircle className="h-4 w-4" />
               </div>
             </div>
-            <div className={`text-3xl font-bold ${prospectsColor.class} mb-1`} title={prospectsColor.description}>
-              {prospects}
-            </div>
+            {isLoadingMetrics ? (
+              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                ---
+              </div>
+            ) : (
+              <div className={`text-3xl font-bold ${prospectsColor.class} mb-1`} title={prospectsColor.description}>
+                {prospects}
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">
               Potential Clients
             </div>
           </div>
 
-          <div className="neo-card p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-muted-foreground">
-                Active Goals
-              </span>
-              <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
-                <Target className="h-4 w-4" />
-              </div>
-            </div>
-            <div className={`text-3xl font-bold ${goalsColor.class} mb-1`} title={goalsColor.description}>
-              {getGoalsByStatus('in-progress').length}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              of {statistics.total} total
-            </div>
-          </div>
-
+          {/* Growth Rate */}
           <div className="neo-card p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-muted-foreground">
@@ -187,9 +232,15 @@ const Dashboard = () => {
                 <TrendingUp className="h-4 w-4" />
               </div>
             </div>
-            <div className={`text-3xl font-bold ${growthColor.class} mb-1`} title={growthColor.description}>
-              +18.2%
-            </div>
+            {isLoadingMetrics ? (
+              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                ---
+              </div>
+            ) : (
+              <div className={`text-3xl font-bold ${growthColor.class} mb-1`} title={growthColor.description}>
+                {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">
               Year Over Year
             </div>

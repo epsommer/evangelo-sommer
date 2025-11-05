@@ -95,7 +95,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
   }, [pathname])
 
   return (
-    <div className="min-h-screen bg-hud-background-primary relative">
+    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
       <Header onMobileMenuToggle={toggleMobileMenu} />
 
       {/* Backdrop overlay for mobile */}
@@ -115,7 +115,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
         mobileMenuOpen={mobileMenuOpen}
         onMobileMenuClose={closeMobileMenu}
       />
-      <main className={`pt-20 bg-hud-background-primary min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10`}>
+      <main className={`pt-20 min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10`} style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
         {children}
       </main>
     </div>

@@ -5,6 +5,7 @@ import { X, Settings, Bell, Eye, Globe, Clock, Save, Palette, Monitor, Calendar,
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import CalendarIntegrationManager from './CalendarIntegrationManager'
+import { TacticalThemeToggle } from './ThemeToggle'
 
 interface PreferencesModalProps {
   isOpen: boolean
@@ -182,16 +183,40 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
       localStorage.setItem('system-preferences', JSON.stringify(preferences))
       onSave(preferences)
       onClose()
-      
+
       // Apply theme immediately
-      if (preferences.display.theme === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else if (preferences.display.theme === 'light') {
-        document.documentElement.classList.remove('dark')
-      } else {
+      const themeMap: Record<string, string> = {
+        'light': '',
+        'dark': 'dark-mode',
+        'overkast': 'overkast-mode',
+        'true-night': 'true-night-mode'
+      }
+
+      // Remove all theme classes
+      document.documentElement.classList.remove('dark', 'dark-mode', 'overkast-mode', 'true-night-mode')
+
+      if (preferences.display.theme === 'auto') {
         // Auto theme - check system preference
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        document.documentElement.classList.toggle('dark', isDark)
+        if (isDark) {
+          document.documentElement.classList.add('dark', 'dark-mode')
+          document.documentElement.setAttribute('data-theme', 'dark')
+          localStorage.setItem('theme', 'dark')
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light')
+          localStorage.setItem('theme', 'light')
+        }
+      } else {
+        // Apply selected theme
+        const themeClass = themeMap[preferences.display.theme]
+        if (themeClass) {
+          document.documentElement.classList.add(themeClass)
+          if (preferences.display.theme === 'dark' || preferences.display.theme === 'true-night') {
+            document.documentElement.classList.add('dark')
+          }
+        }
+        document.documentElement.setAttribute('data-theme', preferences.display.theme)
+        localStorage.setItem('theme', preferences.display.theme)
       }
     } catch (error) {
       console.error('Error saving preferences:', error)
@@ -260,29 +285,29 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="neo-container w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-dark-grey text-white p-6 flex items-center justify-between">
+        <div className="neo-container-inner p-6 flex items-center justify-between border-b border-border">
           <div className="flex items-center space-x-3">
-            <Settings className="h-6 w-6" />
-            <h2 className="text-xl font-bold font-primary uppercase tracking-wide">
+            <Settings className="h-6 w-6 text-foreground" />
+            <h2 className="text-xl font-bold font-primary uppercase tracking-wide text-foreground">
               System Preferences
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-gold transition-colors"
+            className="neo-button-circle w-10 h-10 flex items-center justify-center transition-all duration-300 hover:scale-110"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5 text-foreground" />
           </button>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar Tabs */}
-          <div className="w-64 bg-hud-background-secondary border-r border-hud-border">
+          <div className="w-64 bg-background border-r border-border">
             <div className="p-4">
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {[
                   { id: 'display', label: 'Display & Theme', icon: Palette },
                   { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -296,10 +321,10 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm font-primary uppercase tracking-wide transition-colors ${
+                      className={`w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm font-primary uppercase tracking-wide transition-all duration-300 rounded-xl ${
                         activeTab === tab.id
-                          ? 'bg-tactical-gold text-hud-text-primary'
-                          : 'text-medium-grey hover:bg-light-grey hover:text-hud-text-primary'
+                          ? 'neo-button-active text-foreground'
+                          : 'neo-button text-foreground/70 hover:text-foreground'
                       }`}
                     >
                       <IconComponent className="h-4 w-4" />
@@ -315,13 +340,18 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
           <div className="flex-1 p-6 overflow-y-auto">
             {activeTab === 'display' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Display & Theme
                 </h3>
-                
+
+                {/* Theme Switcher */}
+                <div className="flex justify-center">
+                  <TacticalThemeToggle />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                       Appearance
                     </h4>
                     
@@ -333,10 +363,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         <select
                           value={preferences.display.theme}
                           onChange={(e) => updateDisplay('theme', e.target.value)}
-                          className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                          className="neomorphic-input w-full"
                         >
-                          <option value="light">Light Theme</option>
-                          <option value="dark">Dark Theme</option>
+                          <option value="light">Light</option>
+                          <option value="dark">Dark (Mocha)</option>
+                          <option value="overkast">Overkast</option>
+                          <option value="true-night">True Night</option>
                           <option value="auto">Auto (System)</option>
                         </select>
                       </div>
@@ -359,8 +391,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                       Layout
                     </h4>
                     
@@ -372,7 +404,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         <select
                           value={preferences.display.defaultView}
                           onChange={(e) => updateDisplay('defaultView', e.target.value)}
-                          className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                          className="neomorphic-input w-full"
                         >
                           <option value="grid">Grid View</option>
                           <option value="list">List View</option>
@@ -403,13 +435,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
             {activeTab === 'notifications' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Notification Settings
                 </h3>
 
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
+                <div className="neo-container p-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide">
                       Master Control
                     </h4>
                     <div className="flex items-center space-x-2">
@@ -456,8 +488,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 </div>
 
                 {/* Quiet Hours */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Quiet Hours
                   </h4>
                   
@@ -494,7 +526,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                               ...preferences.notifications.quietHours,
                               start: e.target.value
                             })}
-                            className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                            className="neomorphic-input w-full"
                           />
                         </div>
                         <div>
@@ -508,7 +540,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                               ...preferences.notifications.quietHours,
                               end: e.target.value
                             })}
-                            className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                            className="neomorphic-input w-full"
                           />
                         </div>
                       </div>
@@ -520,13 +552,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
             {activeTab === 'workflow' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Workflow Settings
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                       General Workflow
                     </h4>
                     
@@ -581,8 +613,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                       Defaults
                     </h4>
                     
@@ -594,7 +626,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         <select
                           value={preferences.workflow.defaultClientStatus}
                           onChange={(e) => updateWorkflow('defaultClientStatus', e.target.value)}
-                          className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                          className="neomorphic-input w-full"
                         >
                           <option value="prospect">Prospect</option>
                           <option value="active">Active</option>
@@ -624,12 +656,12 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
             {activeTab === 'performance' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Performance Settings
                 </h3>
 
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Performance Options
                   </h4>
                   
@@ -673,13 +705,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
             {activeTab === 'conversations' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Conversation Settings
                 </h3>
 
                 {/* Language & Parsing Settings */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Language & Parsing
                   </h4>
                   
@@ -691,7 +723,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                       <select
                         value={preferences.conversations.parsingLanguage}
                         onChange={(e) => updateConversations('parsingLanguage', e.target.value)}
-                        className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary"
+                        className="neomorphic-input w-full"
                       >
                         <option value="auto">Auto-Detect</option>
                         <option value="en">English</option>
@@ -719,8 +751,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 </div>
 
                 {/* Auto-Draft Settings */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
-                  <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+                <div className="neo-container p-4">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
                     Auto-Draft Settings
                   </h4>
                   
@@ -749,7 +781,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         value={preferences.conversations.autoDraftConfidenceThreshold}
                         onChange={(e) => updateConversations('autoDraftConfidenceThreshold', e.target.value)}
                         disabled={!preferences.conversations.enableAutoDraft}
-                        className="w-full px-4 py-2 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50"
+                        className="neomorphic-input w-full disabled:opacity-50"
                       >
                         <option value="low">Low - More suggestions</option>
                         <option value="medium">Medium - Balanced</option>
@@ -790,9 +822,9 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 </div>
 
                 {/* Keyword Triggers */}
-                <div className="bg-hud-background-secondary p-4 border border-hud-border">
+                <div className="neo-container p-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide">
                       Keyword Triggers
                     </h4>
                     <Button
@@ -885,7 +917,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
             {activeTab === 'integrations' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
                   Calendar & Service Integrations
                 </h3>
                 
@@ -904,25 +936,24 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="bg-hud-background-secondary border-t border-hud-border p-6 flex items-center justify-between">
-          <div className="text-sm text-medium-grey font-primary">
+        <div className="neo-container-inner border-t border-border p-6 flex items-center justify-between">
+          <div className="text-sm text-foreground/60 font-primary">
             Preferences are saved locally and will persist across sessions.
           </div>
           <div className="flex items-center space-x-3">
-            <Button
-              variant="outline"
+            <button
               onClick={onClose}
-              className="px-6 py-2 font-bold uppercase tracking-wide border-medium-grey text-medium-grey hover:bg-medium-grey hover:text-white font-primary"
+              className="neo-button px-6 py-2 font-bold uppercase tracking-wide font-primary transition-all duration-300"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleSave}
-              className="bg-tactical-gold text-hud-text-primary px-6 py-2 font-bold uppercase tracking-wide hover:bg-tactical-gold-dark font-primary"
+              className="neo-button-active px-6 py-2 font-bold uppercase tracking-wide font-primary transition-all duration-300 flex items-center gap-2"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4" />
               Save Preferences
-            </Button>
+            </button>
           </div>
         </div>
       </div>

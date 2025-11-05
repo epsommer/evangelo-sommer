@@ -11,12 +11,37 @@
   --neomorphic-bright: #E6C866;
 }
 
+/* Dark Mode - Mocha Theme (warm dark) */
 .dark-mode {
   --neomorphic-bg: #1c1917;
   --neomorphic-text: #d1d5db;
   --neomorphic-icon: #9ca3af;
   --neomorphic-dark-shadow: #0a0908;
   --neomorphic-light-shadow: #2e2b29;
+  --neomorphic-accent: #D4AF37;
+  --neomorphic-bright: #E6C866;
+}
+
+/* Overkast Theme - Monochrome Grey with Gold Accents */
+:root.overkast-mode,
+.overkast-mode {
+  --neomorphic-bg: #B8B8B8;
+  --neomorphic-text: #3A3A3A;
+  --neomorphic-icon: #5A5A5A;
+  --neomorphic-dark-shadow: #9A9A9A;
+  --neomorphic-light-shadow: #D6D6D6;
+  --neomorphic-accent: #D4AF37;
+  --neomorphic-bright: #E6C866;
+}
+
+/* True Night Theme - Deep Dark with Warm Text */
+:root.true-night-mode,
+.true-night-mode {
+  --neomorphic-bg: #262624;
+  --neomorphic-text: #C2C0B6;
+  --neomorphic-icon: #8B8A82;
+  --neomorphic-dark-shadow: #1F1E1D;
+  --neomorphic-light-shadow: #2D2C2A;
   --neomorphic-accent: #D4AF37;
   --neomorphic-bright: #E6C866;
 }
@@ -209,6 +234,10 @@
   box-shadow: 0 2px 8px 0px var(--neomorphic-dark-shadow);
 }
 
+.neo-container-inner {
+  background: transparent;
+}
+
 /* Buttons */
 .neo-button {
   font-family: 'Montserrat', sans-serif;
@@ -237,6 +266,32 @@
 .neo-button:active {
   box-shadow: inset 2px 2px 4px 0px var(--neomorphic-dark-shadow),
               inset -2px -2px 4px 0px var(--neomorphic-light-shadow);
+}
+
+.neo-button-active {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--neomorphic-bg);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 12px !important;
+  outline: none;
+  background: linear-gradient(135deg, var(--neomorphic-accent), var(--neomorphic-bright));
+  box-shadow: 4px 4px 8px -1px var(--neomorphic-dark-shadow),
+              -3px -3px 8px -1px var(--neomorphic-light-shadow),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: all 200ms ease-in-out;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.neo-button-active:hover {
+  box-shadow: 6px 6px 12px -1px var(--neomorphic-dark-shadow),
+              -4px -4px 10px -1px var(--neomorphic-light-shadow),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 .neo-button-sm {

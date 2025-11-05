@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import AccountSettingsModal, { AccountSettings } from "@/components/AccountSettingsModal"
 import PreferencesModal, { SystemPreferences } from "@/components/PreferencesModal"
-import { ThemeToggle } from "./ThemeToggle"
 
 interface ScheduledService {
   id: string;
@@ -165,7 +164,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
         >
           <Heart className={`text-pink-500 dark:text-pink-400 group-hover:scale-110 transition-all duration-300 ${isScrolled ? 'w-5 h-5 md:w-6 md:h-6' : 'w-6 h-6 md:w-8 md:h-8'}`} />
           <div className="hidden sm:block">
-            <div className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>Betty</div>
+            <div className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>Becky</div>
           </div>
         </button>
 
@@ -177,8 +176,6 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
         </div>
       </div>
       <div className="flex items-center space-x-2 md:space-x-6 relative z-10">
-        <ThemeToggle />
-
         <button className="neo-button hidden md:flex items-center px-4 py-2">
           <Search className="h-4 w-4 mr-2" />
           <span className="text-sm">Search</span>
