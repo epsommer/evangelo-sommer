@@ -15,7 +15,8 @@ interface PreferencesModalProps {
 
 export interface SystemPreferences {
   display: {
-    theme: 'light' | 'dark' | 'auto'
+    colorTheme: 'light' | 'mocha' | 'overkast' | 'true-night' | 'auto'
+    windowTheme: 'neomorphic' | 'tactical'
     compactMode: boolean
     showSidebar: boolean
     defaultView: 'grid' | 'list' | 'table'
@@ -79,7 +80,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
   const [activeTab, setActiveTab] = useState<'display' | 'notifications' | 'workflow' | 'performance' | 'conversations' | 'integrations'>('display')
   const [preferences, setPreferences] = useState<SystemPreferences>({
     display: {
-      theme: 'auto',
+      colorTheme: 'auto',
+      windowTheme: 'neomorphic',
       compactMode: false,
       showSidebar: true,
       defaultView: 'grid'
@@ -184,40 +186,53 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
       onSave(preferences)
       onClose()
 
-      // Apply theme immediately
-      const themeMap: Record<string, string> = {
+      // Apply themes immediately
+      const colorThemeMap: Record<string, string> = {
         'light': '',
-        'dark': 'dark-mode',
+        'mocha': 'mocha-mode',
         'overkast': 'overkast-mode',
         'true-night': 'true-night-mode'
       }
 
-      // Remove all theme classes
-      document.documentElement.classList.remove('dark', 'dark-mode', 'overkast-mode', 'true-night-mode')
+      const windowThemeMap: Record<string, string> = {
+        'neomorphic': 'neomorphic-window',
+        'tactical': 'tactical-window'
+      }
 
-      if (preferences.display.theme === 'auto') {
+      // Remove all color theme classes
+      document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode')
+      // Remove all window theme classes
+      document.documentElement.classList.remove('neomorphic-window', 'tactical-window')
+
+      // Apply color theme
+      let appliedColorTheme = preferences.display.colorTheme
+      if (preferences.display.colorTheme === 'auto') {
         // Auto theme - check system preference
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        if (isDark) {
-          document.documentElement.classList.add('dark', 'dark-mode')
-          document.documentElement.setAttribute('data-theme', 'dark')
-          localStorage.setItem('theme', 'dark')
-        } else {
-          document.documentElement.setAttribute('data-theme', 'light')
-          localStorage.setItem('theme', 'light')
-        }
-      } else {
-        // Apply selected theme
-        const themeClass = themeMap[preferences.display.theme]
-        if (themeClass) {
-          document.documentElement.classList.add(themeClass)
-          if (preferences.display.theme === 'dark' || preferences.display.theme === 'true-night') {
-            document.documentElement.classList.add('dark')
-          }
-        }
-        document.documentElement.setAttribute('data-theme', preferences.display.theme)
-        localStorage.setItem('theme', preferences.display.theme)
+        appliedColorTheme = isDark ? 'mocha' : 'light'
       }
+
+      const colorThemeClass = colorThemeMap[appliedColorTheme]
+      if (colorThemeClass) {
+        document.documentElement.classList.add(colorThemeClass)
+      }
+
+      // Add dark class for dark color themes
+      if (appliedColorTheme === 'mocha' || appliedColorTheme === 'true-night') {
+        document.documentElement.classList.add('dark')
+      }
+
+      // Apply window theme
+      const windowThemeClass = windowThemeMap[preferences.display.windowTheme]
+      if (windowThemeClass) {
+        document.documentElement.classList.add(windowThemeClass)
+      }
+
+      // Save to localStorage
+      document.documentElement.setAttribute('data-color-theme', appliedColorTheme)
+      document.documentElement.setAttribute('data-window-theme', preferences.display.windowTheme)
+      localStorage.setItem('color-theme', appliedColorTheme)
+      localStorage.setItem('window-theme', preferences.display.windowTheme)
     } catch (error) {
       console.error('Error saving preferences:', error)
     }
@@ -344,32 +359,87 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                   Display & Theme
                 </h3>
 
-                {/* Theme Switcher */}
-                <div className="flex justify-center">
-                  <TacticalThemeToggle />
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Color Theme */}
                   <div className="neo-container p-4">
                     <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Appearance
+                      Color Theme
                     </h4>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                          Theme
+                          Color Palette
                         </label>
                         <select
-                          value={preferences.display.theme}
-                          onChange={(e) => updateDisplay('theme', e.target.value)}
+                          value={preferences.display.colorTheme}
+                          onChange={(e) => updateDisplay('colorTheme', e.target.value)}
                           className="neomorphic-input w-full"
                         >
                           <option value="light">Light</option>
-                          <option value="dark">Dark (Mocha)</option>
-                          <option value="overkast">Overkast</option>
-                          <option value="true-night">True Night</option>
+                          <option value="mocha">Mocha (Warm Dark)</option>
+                          <option value="overkast">Overkast (Grey)</option>
+                          <option value="true-night">True Night (Deep Dark)</option>
                           <option value="auto">Auto (System)</option>
+                        </select>
+                      </div>
+
+                      <div className="text-xs text-medium-grey font-primary space-y-1">
+                        <p><strong>Light:</strong> Clean white background</p>
+                        <p><strong>Mocha:</strong> Warm brown-grey tones</p>
+                        <p><strong>Overkast:</strong> Monochrome grey with gold</p>
+                        <p><strong>True Night:</strong> Deep black with warm text</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Window Theme */}
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
+                      Window Theme
+                    </h4>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                          Interface Style
+                        </label>
+                        <select
+                          value={preferences.display.windowTheme}
+                          onChange={(e) => updateDisplay('windowTheme', e.target.value)}
+                          className="neomorphic-input w-full"
+                        >
+                          <option value="neomorphic">Neomorphic (Soft, Rounded)</option>
+                          <option value="tactical">Tactical (Sharp, Angular)</option>
+                        </select>
+                      </div>
+
+                      <div className="text-xs text-medium-grey font-primary space-y-1">
+                        <p><strong>Neomorphic:</strong> Soft shadows, rounded corners, subtle depth</p>
+                        <p><strong>Tactical:</strong> Sharp edges, flat surfaces, military-inspired</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Layout Options */}
+                  <div className="neo-container p-4">
+                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
+                      Layout
+                    </h4>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                          Default View
+                        </label>
+                        <select
+                          value={preferences.display.defaultView}
+                          onChange={(e) => updateDisplay('defaultView', e.target.value)}
+                          className="neomorphic-input w-full"
+                        >
+                          <option value="grid">Grid View</option>
+                          <option value="list">List View</option>
+                          <option value="table">Table View</option>
                         </select>
                       </div>
 
@@ -391,27 +461,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Sidebar Options */}
                   <div className="neo-container p-4">
                     <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Layout
+                      Sidebar
                     </h4>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                          Default View
-                        </label>
-                        <select
-                          value={preferences.display.defaultView}
-                          onChange={(e) => updateDisplay('defaultView', e.target.value)}
-                          className="neomorphic-input w-full"
-                        >
-                          <option value="grid">Grid View</option>
-                          <option value="list">List View</option>
-                          <option value="table">Table View</option>
-                        </select>
-                      </div>
 
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium text-hud-text-primary font-primary">Show Sidebar</div>

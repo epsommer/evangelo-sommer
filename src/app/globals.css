@@ -177,8 +177,10 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-.dark {
-  /* Neomorphic Dark Mode - Mocha Theme */
+/* Mocha Theme - Warm Dark (default dark mode) */
+.dark,
+.mocha-mode {
+  /* Mocha Color Theme */
   --background: 28 25 23; /* Dark warm background (stone-900) */
   --foreground: 250 250 249; /* Light text (stone-50) */
   --card: 41 37 36; /* Card background (stone-800) */
@@ -1445,4 +1447,54 @@ body.modal-open .border-hud-border {
 
 .highlight-flash {
   animation: highlightFlash 2s ease-in-out;
+}
+
+/* ============================================
+   WINDOW THEMES - Interface Styling Systems
+   ============================================ */
+
+/* Neomorphic Window Theme - Soft, rounded, shadowed interface */
+.neomorphic-window {
+  --window-border-radius: 12px;
+  --window-shadow-depth: soft;
+}
+
+/* Apply neomorphic styling to all interface elements */
+.neomorphic-window .neo-container,
+.neomorphic-window .neo-card,
+.neomorphic-window .neo-button,
+.neomorphic-window .neo-button-circle,
+.neomorphic-window .neo-button-active,
+.neomorphic-window .neomorphic-input,
+.neomorphic-window button,
+.neomorphic-window input,
+.neomorphic-window select,
+.neomorphic-window textarea {
+  border-radius: var(--window-border-radius) !important;
+}
+
+/* Tactical Window Theme - Sharp, angular, flat interface */
+.tactical-window {
+  --window-border-radius: 0px;
+  --window-shadow-depth: flat;
+}
+
+/* Apply tactical styling (square corners, flat shadows) to all interface elements */
+.tactical-window .neo-container,
+.tactical-window .neo-card,
+.tactical-window .neo-button,
+.tactical-window .neo-button-circle,
+.tactical-window .neo-button-active,
+.tactical-window .neomorphic-input,
+.tactical-window button,
+.tactical-window input,
+.tactical-window select,
+.tactical-window textarea {
+  border-radius: 0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.tactical-window .neo-button:hover,
+.tactical-window .neo-button-active:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
 }

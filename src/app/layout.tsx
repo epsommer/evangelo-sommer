@@ -20,6 +20,37 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://use.typekit.net/xmz8zog.css" />
         <meta name="color-scheme" content="light dark" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const colorTheme = localStorage.getItem('color-theme') || 'light';
+                  const windowTheme = localStorage.getItem('window-theme') || 'neomorphic';
+
+                  // Apply color theme
+                  const root = document.documentElement;
+                  root.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+
+                  if (colorTheme === 'mocha') {
+                    root.classList.add('dark', 'mocha-mode');
+                  } else if (colorTheme === 'overkast') {
+                    root.classList.add('overkast-mode');
+                  } else if (colorTheme === 'true-night') {
+                    root.classList.add('dark', 'true-night-mode');
+                  }
+
+                  // Apply window theme
+                  root.classList.remove('neomorphic-window', 'tactical-window');
+                  root.classList.add(windowTheme + '-window');
+
+                  root.setAttribute('data-color-theme', colorTheme);
+                  root.setAttribute('data-window-theme', windowTheme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="font-hud-ui antialiased">
         <SessionProviderWrapper>{children}</SessionProviderWrapper>

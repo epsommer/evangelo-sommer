@@ -7,32 +7,50 @@ export function ThemeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check for saved theme preference or default to light mode
-    const savedTheme = localStorage.getItem('theme');
+    // Check for saved color theme preference or default to light mode
+    const savedColorTheme = localStorage.getItem('color-theme');
+    const savedWindowTheme = localStorage.getItem('window-theme') || 'neomorphic';
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark', 'dark-mode');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark', 'dark-mode');
-      document.documentElement.setAttribute('data-theme', 'light');
+    // Apply color theme
+    const colorTheme = savedColorTheme || (prefersDark ? 'mocha' : 'light');
+    const isDark = colorTheme === 'mocha' || colorTheme === 'true-night';
+    setIsDarkMode(isDark);
+
+    // Remove all color theme classes
+    document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+
+    // Apply color theme class
+    if (colorTheme === 'mocha') {
+      document.documentElement.classList.add('dark', 'mocha-mode');
+    } else if (colorTheme === 'overkast') {
+      document.documentElement.classList.add('overkast-mode');
+    } else if (colorTheme === 'true-night') {
+      document.documentElement.classList.add('dark', 'true-night-mode');
     }
+
+    // Apply window theme
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window');
+    document.documentElement.classList.add(`${savedWindowTheme}-window`);
+
+    document.documentElement.setAttribute('data-color-theme', colorTheme);
+    document.documentElement.setAttribute('data-window-theme', savedWindowTheme);
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = isDarkMode ? 'light' : 'dark';
+    const newColorTheme = isDarkMode ? 'light' : 'mocha';
     setIsDarkMode(!isDarkMode);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
 
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark', 'dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark', 'dark-mode');
+    // Remove all color theme classes
+    document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+
+    // Apply new color theme
+    if (newColorTheme === 'mocha') {
+      document.documentElement.classList.add('dark', 'mocha-mode');
     }
+
+    document.documentElement.setAttribute('data-color-theme', newColorTheme);
+    localStorage.setItem('color-theme', newColorTheme);
   };
 
   return (
@@ -64,31 +82,45 @@ export function TacticalThemeToggle() {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
+    const savedColorTheme = localStorage.getItem('color-theme');
+    const savedWindowTheme = localStorage.getItem('window-theme') || 'neomorphic';
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark', 'dark-mode');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark', 'dark-mode');
-      document.documentElement.setAttribute('data-theme', 'light');
+    const colorTheme = savedColorTheme || (prefersDark ? 'mocha' : 'light');
+    const isDark = colorTheme === 'mocha' || colorTheme === 'true-night';
+    setIsDarkMode(isDark);
+
+    document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+
+    if (colorTheme === 'mocha') {
+      document.documentElement.classList.add('dark', 'mocha-mode');
+    } else if (colorTheme === 'overkast') {
+      document.documentElement.classList.add('overkast-mode');
+    } else if (colorTheme === 'true-night') {
+      document.documentElement.classList.add('dark', 'true-night-mode');
     }
+
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window');
+    document.documentElement.classList.add(`${savedWindowTheme}-window`);
+
+    document.documentElement.setAttribute('data-color-theme', colorTheme);
+    document.documentElement.setAttribute('data-window-theme', savedWindowTheme);
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = isDarkMode ? 'light' : 'dark';
+    const newColorTheme = isDarkMode ? 'light' : 'mocha';
     setIsDarkMode(!isDarkMode);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
 
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark', 'dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark', 'dark-mode');
+    // Remove all color theme classes
+    document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+
+    // Apply new color theme
+    if (newColorTheme === 'mocha') {
+      document.documentElement.classList.add('dark', 'mocha-mode');
     }
+
+    document.documentElement.setAttribute('data-color-theme', newColorTheme);
+    localStorage.setItem('color-theme', newColorTheme);
   };
 
   return (
