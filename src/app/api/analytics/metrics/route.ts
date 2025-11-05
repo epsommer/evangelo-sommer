@@ -94,8 +94,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate client metrics
     const totalClients = allClients.length;
-    const activeClients = allClients.filter(c => c.status === 'active').length;
-    const prospects = allClients.filter(c => c.status === 'prospect').length;
+    const activeClients = allClients.filter(c => c.status === 'ACTIVE').length;
+    const prospects = allClients.filter(c => c.status === 'PROSPECT').length;
 
     // Calculate growth rate
     const revenueGrowth = previousRevenue > 0
