@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Receipt, DollarSign, TrendingUp, Clock, FileText, Search, Filter, Download, Plus, ArrowLeft, Eye, Edit, Trash2, Archive, Mail, CheckCircle, XCircle, Send } from "lucide-react";
 import Link from "next/link";
-import { Button } from "../../components/ui/button";
 import CRMLayout from "../../components/CRMLayout";
 import ReceiptDetailsModal from "../../components/ReceiptDetailsModal";
 import CreateReceiptModal from "../../components/CreateReceiptModal";
@@ -109,18 +108,18 @@ function BillingMetricsCard({
   className?: string; 
 }) {
   return (
-    <div className={`p-6 border-2 ${className}`}>
+    <div className={`p-6 border ${className}`}>
       <div className="flex items-center justify-between mb-4">
         {icon}
-        <span className="text-xs font-primary uppercase tracking-wide text-hud-text-secondary">
+        <span className="text-xs font-primary uppercase tracking-wide text-muted-foreground">
           {title}
         </span>
       </div>
-      <div className="text-2xl font-bold text-hud-text-primary font-primary mb-1">
+      <div className="text-2xl font-bold text-foreground font-primary mb-1">
         {value}
       </div>
       {trend && (
-        <div className="text-xs text-hud-text-secondary font-primary">
+        <div className="text-xs text-muted-foreground font-primary">
           {trend}
         </div>
       )}
@@ -138,7 +137,7 @@ function BillingOverviewCards({ analytics }: { analytics: BillingAnalytics }) {
         title="Total Revenue"
         value={formatCurrency(analytics.totalRevenue)}
         trend="+12.5% from last month"
-        className="bg-hud-background-primary border-green-200"
+        className="bg-background border-green-200"
       />
       
       <BillingMetricsCard
@@ -146,23 +145,23 @@ function BillingOverviewCards({ analytics }: { analytics: BillingAnalytics }) {
         title="Pending Invoices"
         value={analytics.pendingInvoices.toString()}
         trend={formatCurrency(analytics.pendingAmount)}
-        className="bg-hud-background-primary border-orange-200"
+        className="bg-background border-orange-200"
       />
       
       <BillingMetricsCard
-        icon={<Receipt className="w-6 h-6 text-gold" />}
+        icon={<Receipt className="w-6 h-6 text-accent" />}
         title="Total Receipts"
         value={analytics.totalReceipts.toString()}
         trend="This month"
-        className="bg-hud-background-primary border-hud-border-accent"
+        className="bg-background border-border-accent"
       />
       
       <BillingMetricsCard
-        icon={<TrendingUp className="w-6 h-6 text-tactical-gold" />}
+        icon={<TrendingUp className="w-6 h-6 text-accent" />}
         title="This Month"
         value={formatCurrency(analytics.currentMonthRevenue)}
         trend="vs last month"
-        className="bg-hud-background-primary border-tactical-gold"
+        className="bg-background border-accent"
       />
     </div>
   );
@@ -178,22 +177,22 @@ function FilteringControls({
   return (
     <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
       <div className="flex items-center space-x-2">
-        <Search className="w-4 h-4 text-hud-text-secondary" />
+        <Search className="w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search transactions..."
           value={filters.searchTerm}
           onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
-          className="px-3 py-2 border border-hud-border focus:border-hud-border-accent focus:ring-1 focus:ring-gold font-primary text-sm"
+          className="px-3 py-2 border border-border focus:border-border-accent focus:ring-1 focus:ring-gold font-primary text-sm"
         />
       </div>
       
       <div className="flex items-center space-x-2">
-        <Filter className="w-4 h-4 text-hud-text-secondary" />
+        <Filter className="w-4 h-4 text-muted-foreground" />
         <select
           value={filters.transactionType}
           onChange={(e) => onFiltersChange({ transactionType: e.target.value as any })}
-          className="px-3 py-2 border border-hud-border focus:border-hud-border-accent focus:ring-1 focus:ring-gold font-primary text-sm"
+          className="px-3 py-2 border border-border focus:border-border-accent focus:ring-1 focus:ring-gold font-primary text-sm"
         >
           <option value="all">All Types</option>
           <option value="receipts">Receipts</option>
@@ -224,9 +223,9 @@ function TransactionRow({
 
   const getRowStyle = () => {
     if (transaction.status === 'sent' && !transaction.isDuplicate) {
-      return "border-b border-hud-border bg-hud-background-secondary opacity-75"; // Grey out sent receipts
+      return "border-b border-border bg-card opacity-75"; // Grey out sent receipts
     }
-    return "border-b border-hud-border hover:bg-hud-background-secondary transition-colors";
+    return "border-b border-border hover:bg-card transition-colors";
   };
 
   const getSentStatus = () => {
@@ -267,32 +266,32 @@ function TransactionRow({
 
   return (
     <tr className={getRowStyle()}>
-      <td className="px-4 py-3 text-sm text-hud-text-primary font-primary">
+      <td className="px-4 py-3 text-sm text-foreground font-primary">
         {new Date(transaction.date).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'numeric', 
           day: 'numeric'
         })}
       </td>
-      <td className="px-4 py-3 text-sm text-hud-text-primary font-primary">
+      <td className="px-4 py-3 text-sm text-foreground font-primary">
         {transaction.clientName}
       </td>
-      <td className="px-4 py-3 text-sm text-hud-text-primary font-primary">
+      <td className="px-4 py-3 text-sm text-foreground font-primary">
         <div className="flex items-center space-x-2">
           {transaction.type === 'receipt' ? (
-            <Receipt className="w-4 h-4 text-gold" />
+            <Receipt className="w-4 h-4 text-accent" />
           ) : (
-            <FileText className="w-4 h-4 text-tactical-gold" />
+            <FileText className="w-4 h-4 text-accent" />
           )}
           <span className="uppercase tracking-wide">
             {transaction.type}
           </span>
         </div>
-        <div className="text-xs text-hud-text-secondary">
+        <div className="text-xs text-muted-foreground">
           {transaction.receiptNumber || transaction.invoiceNumber}
         </div>
       </td>
-      <td className="px-4 py-3 text-sm font-bold text-hud-text-primary font-primary">
+      <td className="px-4 py-3 text-sm font-bold text-foreground font-primary">
         {formatCurrency(transaction.amount)}
       </td>
       <td className="px-4 py-3">
@@ -305,7 +304,7 @@ function TransactionRow({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewClick?.(transaction)}
-            className="p-1 text-hud-text-secondary hover:text-hud-text-primary transition-colors"
+            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -313,7 +312,7 @@ function TransactionRow({
           {transaction.conversationId && (
             <Link
               href={`/conversations/${transaction.conversationId}`}
-              className="p-1 text-gold hover:text-gold-dark transition-colors"
+              className="p-1 text-accent hover:text-accent-dark transition-colors"
               title="View Conversation"
             >
               💬
@@ -323,7 +322,7 @@ function TransactionRow({
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => onEditClick?.(transaction)}
-                className="p-1 text-tactical-gold hover:text-tactical-gold-dark transition-colors"
+                className="p-1 text-accent hover:text-accent-dark transition-colors"
                 title="Edit Receipt"
               >
                 <Edit className="w-4 h-4" />
@@ -362,7 +361,7 @@ function TransactionRow({
             </div>
           ) : transaction.emailSentAt || transaction.status === 'sent' ? (
             <div className="flex items-center space-x-2">
-              <span className="text-xs text-tactical-grey-500 bg-hud-background-secondary px-2 py-1 rounded" title="Receipt has already been sent. Editing is locked.">
+              <span className="text-xs text-tactical-grey-500 bg-card px-2 py-1 rounded" title="Receipt has already been sent. Editing is locked.">
                 🔒 Sent
               </span>
               <button
@@ -416,48 +415,48 @@ function TransactionsTable({
   onViewAllClick?: () => void;
 }) {
   return (
-    <div className="bg-hud-background-primary border-2 border-hud-border">
-      <div className="p-4 border-b border-hud-border bg-hud-background-secondary">
+    <div className="bg-background border border-border">
+      <div className="p-4 border-b border-border bg-card">
         <div className="flex items-center justify-between">
-          <h2 className="font-primary font-bold text-hud-text-primary uppercase tracking-wide">
+          <h2 className="font-primary font-bold text-foreground uppercase tracking-wide">
             Recent Transactions
           </h2>
           {showViewAll && (
             <Button
               onClick={onViewAllClick}
-              variant="outline"
-              size="sm"
-              className="text-gold border-hud-border-accent hover:bg-tactical-gold hover:text-hud-text-primary"
+              
+              
+              className="text-accent border-border-accent hover:bg-accent hover:text-foreground"
             >
               View All History
-            </Button>
+            </button>
           )}
         </div>
       </div>
       
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-hud-background-secondary">
-            <tr className="border-b border-hud-border">
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+          <thead className="bg-card">
+            <tr className="border-b border-border">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Date
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Client
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Type
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Amount
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Sent
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Paid
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-hud-text-primary text-xs tracking-wide">
+              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Actions
               </th>
             </tr>
@@ -465,13 +464,13 @@ function TransactionsTable({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-hud-text-secondary">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Loading transactions...
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-hud-text-secondary">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   No transactions found
                 </td>
               </tr>
@@ -928,36 +927,35 @@ export default function ServicesBillingPage() {
     <CRMLayout>
       <div className="p-6 space-y-6">
         {/* Page Header */}
-        <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
+        <div className="neo-container p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
+              <h1 className="text-3xl font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
                 SERVICES & BILLING
               </h1>
-              <p className="text-hud-text-secondary font-primary uppercase tracking-wider text-sm">
+              <p className="text-muted-foreground font-primary uppercase tracking-wider text-sm">
                 Manage all receipts and transactions across clients
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <Button 
-                  variant="outline" 
-                  size="sm"
+                <button
+                  className="neo-button font-primary flex items-center gap-2"
                   onClick={() => setShowHeaderExportMenu(!showHeaderExportMenu)}
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download className="w-4 h-4" />
                   Export Data
-                </Button>
+                </button>
                 
                 {showHeaderExportMenu && (
-                  <div className="absolute right-0 top-full mt-1 bg-hud-background-primary border-2 border-hud-border shadow-lg z-10 min-w-[150px]">
+                  <div className="absolute right-0 top-full mt-1 bg-background border border-border shadow-lg z-10 min-w-[150px]">
                     <button
                       onClick={() => {
                         exportToCSV();
                         setShowHeaderExportMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm font-primary hover:bg-hud-background-secondary transition-colors"
+                      className="w-full text-left px-4 py-2 text-sm font-primary hover:bg-card transition-colors"
                     >
                       📊 Export as CSV
                     </button>
@@ -966,7 +964,7 @@ export default function ServicesBillingPage() {
                         exportToPDF();
                         setShowHeaderExportMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm font-primary hover:bg-hud-background-secondary transition-colors border-t border-hud-border"
+                      className="w-full text-left px-4 py-2 text-sm font-primary hover:bg-card transition-colors border-t border-border"
                     >
                       📄 Export as PDF
                     </button>
@@ -975,21 +973,20 @@ export default function ServicesBillingPage() {
                         exportAllDataToCSV();
                         setShowHeaderExportMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm font-primary hover:bg-hud-background-secondary transition-colors border-t border-hud-border"
+                      className="w-full text-left px-4 py-2 text-sm font-primary hover:bg-card transition-colors border-t border-border"
                     >
                       📈 Export All Data (CSV)
                     </button>
                   </div>
                 )}
               </div>
-              <Button 
-                size="sm" 
-                className="bg-tactical-gold hover:bg-tactical-gold-dark text-hud-text-primary"
+              <button
+                className="neo-button-active font-primary flex items-center gap-2"
                 onClick={() => setShowCreateModal(true)}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4" />
                 Create Receipt
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -1022,21 +1019,21 @@ export default function ServicesBillingPage() {
           <div className="text-center mt-4">
             <Button
               onClick={() => setShowAllTransactions(false)}
-              variant="outline"
-              className="text-gold border-hud-border-accent hover:bg-tactical-gold hover:text-hud-text-primary"
+              
+              className="text-accent border-border-accent hover:bg-accent hover:text-foreground"
             >
               Show Recent Only
-            </Button>
+            </button>
           </div>
         )}
         
         {filteredTransactions.length === 0 && !isLoading && (
-          <div className="text-center py-12 bg-hud-background-primary border-2 border-hud-border mt-4">
+          <div className="text-center py-12 bg-background border border-border mt-4">
             <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-xl font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
+            <h3 className="text-xl font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
               No Transactions Found
             </h3>
-            <p className="text-hud-text-secondary font-primary">
+            <p className="text-muted-foreground font-primary">
               {filters.searchTerm || filters.transactionType !== 'all'
                 ? 'Try adjusting your filters to see more results.'
                 : 'Create your first receipt or invoice to get started.'
