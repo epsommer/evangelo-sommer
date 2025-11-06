@@ -6,9 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Search, Filter, MessageSquare, Phone, Mail, Calendar, Users, Plus, Clock, Tag, User, MapPin } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import CRMLayout from '@/components/CRMLayout'
 import { clientManager } from '@/lib/client-config'
 import { Client, Conversation, Message } from '@/types/client'
@@ -114,7 +112,7 @@ function ConversationsPageContent() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      active: 'bg-tactical-gold text-hud-text-primary',
+      active: 'bg-accent text-foreground',
       resolved: 'bg-green-600 text-white',
       archived: 'bg-medium-grey text-white',
       pending: 'bg-yellow-600 text-white'
@@ -124,8 +122,8 @@ function ConversationsPageContent() {
 
   const getPriorityColor = (priority: string) => {
     const colors = {
-      low: 'bg-light-grey text-hud-text-secondary',
-      medium: 'bg-tactical-gold text-hud-text-primary',
+      low: 'bg-muted text-muted-foreground',
+      medium: 'bg-accent text-foreground',
       high: 'bg-dark-grey text-white',
       urgent: 'bg-red-600 text-white'
     }
@@ -168,7 +166,7 @@ function ConversationsPageContent() {
     return (
       <CRMLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hud-border-accent"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border-accent"></div>
         </div>
       </CRMLayout>
     )
@@ -191,98 +189,96 @@ function ConversationsPageContent() {
     <CRMLayout>
       <div className="p-6">
         {/* Page Header */}
-        <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent mb-6">
+        <div className="neo-container p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-hud-text-primary uppercase tracking-wide font-primary mb-2">
+              <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
                 {filteredClient ? `${filteredClient.name.toUpperCase()} CONVERSATIONS` : 'ALL CONVERSATIONS'}
               </h1>
-              <p className="text-hud-text-secondary font-primary">
-                {filteredClient 
+              <p className="text-muted-foreground font-primary">
+                {filteredClient
                   ? `VIEW AND MANAGE CONVERSATIONS FOR ${filteredClient.name.toUpperCase()}`
                   : 'VIEW AND MANAGE ALL CLIENT COMMUNICATIONS'
                 }
               </p>
               {filteredClient && (
                 <div className="mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={() => {
                       setFilterClient('all')
                       router.push('/conversations')
                     }}
-                    className="text-gold hover:text-gold-dark text-sm font-primary uppercase tracking-wide"
+                    className="neo-button text-accent hover:text-accent/80 text-sm font-primary uppercase tracking-wide"
                   >
                     ← VIEW ALL CONVERSATIONS
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
-            <Button 
-              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-sm uppercase tracking-wide"
+            <button
+              className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2"
               onClick={() => router.push('/conversations/create')}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               NEW CONVERSATION
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
-            <div className="text-2xl font-bold text-hud-text-primary font-primary">
+          <div className="neo-card p-4">
+            <div className="text-2xl font-bold text-foreground font-primary">
               {stats.total}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               TOTAL CONVERSATIONS
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
-            <div className="text-2xl font-bold text-gold font-primary">
+          </div>
+          <div className="neo-card p-4">
+            <div className="text-2xl font-bold text-accent font-primary">
               {stats.active}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               ACTIVE
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
+          </div>
+          <div className="neo-card p-4">
             <div className="text-2xl font-bold text-yellow-600 font-primary">
               {stats.pending}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               PENDING
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
+          </div>
+          <div className="neo-card p-4">
             <div className="text-2xl font-bold text-red-600 font-primary">
               {stats.unread}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               UNREAD
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Search and Filters */}
-        <Card className="p-6 mb-6 bg-hud-background-primary border-2 border-hud-border">
+        <div className="neo-container p-6 mb-6">
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-hud-text-secondary" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="SEARCH CONVERSATIONS, CLIENTS, OR MESSAGE CONTENT..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary placeholder-medium-grey font-primary text-sm uppercase tracking-wide"
+                  className="neomorphic-input w-full pl-10 font-primary text-sm uppercase tracking-wide"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
               >
                 <option value="all">ALL STATUS</option>
                 <option value="active">ACTIVE</option>
@@ -296,7 +292,7 @@ function ConversationsPageContent() {
               <select
                 value={filterClient}
                 onChange={(e) => setFilterClient(e.target.value)}
-                className="px-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
               >
                 <option value="all">ALL CLIENTS</option>
                 {(clients || []).map(client => (
@@ -308,7 +304,7 @@ function ConversationsPageContent() {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
               >
                 <option value="all">ALL PRIORITIES</option>
                 <option value="urgent">URGENT</option>
@@ -319,7 +315,7 @@ function ConversationsPageContent() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
               >
                 <option value="updated">SORT BY UPDATED</option>
                 <option value="created">SORT BY CREATED</option>
@@ -328,38 +324,37 @@ function ConversationsPageContent() {
               </select>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Conversations List */}
         {conversations.length === 0 ? (
-          <Card className="p-8 text-center bg-hud-background-primary border-2 border-hud-border">
-            <MessageSquare className="mx-auto h-12 w-12 text-light-grey mb-4" />
-            <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
+          <div className="neo-container p-8 text-center">
+            <MessageSquare className="mx-auto h-12 w-12 text-muted mb-4" />
+            <h3 className="text-lg font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
               NO CONVERSATIONS FOUND
             </h3>
-            <p className="text-hud-text-secondary mb-4 font-primary">
+            <p className="text-muted-foreground mb-4 font-primary">
               {searchQuery || filterStatus !== 'all' || filterClient !== 'all' || filterPriority !== 'all'
                 ? 'TRY ADJUSTING YOUR SEARCH TERMS OR FILTERS.'
                 : 'START BY ADDING CLIENTS AND CREATING CONVERSATIONS.'}
             </p>
-            <div className="space-x-4">
-              <Button
-                className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-sm uppercase tracking-wide"
+            <div className="flex gap-4 justify-center">
+              <button
+                className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2"
                 onClick={() => router.push('/conversations/create')}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4" />
                 CREATE CONVERSATION
-              </Button>
-              <Button
-                variant="outline"
-                className="border-2 border-medium-grey text-hud-text-secondary hover:border-dark-grey hover:text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+              </button>
+              <button
+                className="neo-button font-primary text-sm uppercase tracking-wide flex items-center gap-2"
                 onClick={() => router.push('/clients')}
               >
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="h-4 w-4" />
                 MANAGE CLIENTS
-              </Button>
+              </button>
             </div>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-4">
             {conversations.map(conversation => {
@@ -373,13 +368,13 @@ function ConversationsPageContent() {
                   href={`/conversations/${conversation.id}`}
                   className="block"
                 >
-                  <Card className="p-6 bg-hud-background-primary border-2 border-hud-border hover:bg-hud-background-secondary transition-colors cursor-pointer">
+                  <div className="neo-container p-6 hover:bg-card transition-colors cursor-pointer">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-3">
                           <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4 text-hud-text-secondary" />
-                            <span className="font-bold text-hud-text-primary font-primary">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-bold text-foreground font-primary">
                               {client?.name?.toUpperCase() || 'UNKNOWN CLIENT'}
                             </span>
                           </div>
@@ -396,7 +391,7 @@ function ConversationsPageContent() {
                           )}
                         </div>
                         
-                        <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-primary">
+                        <h3 className="text-lg font-bold text-foreground mb-2 font-primary">
                           {(conversation.title || 'UNTITLED CONVERSATION').toUpperCase()}
                         </h3>
                         
@@ -404,17 +399,17 @@ function ConversationsPageContent() {
                           <div className="mb-3">
                             <div className="flex items-center space-x-2 mb-1">
                               {getMessageTypeIcon(lastMessage.type)}
-                              <span className="text-xs text-hud-text-secondary font-primary uppercase">
+                              <span className="text-xs text-muted-foreground font-primary uppercase">
                                 LAST MESSAGE FROM {(lastMessage.role === 'client' || lastMessage.role === 'CLIENT') ? client?.name?.toUpperCase() || 'CLIENT' : 'YOU'}
                               </span>
                             </div>
-                            <p className="text-sm text-hud-text-secondary font-primary line-clamp-2">
+                            <p className="text-sm text-muted-foreground font-primary line-clamp-2">
                               {lastMessage.content}
                             </p>
                           </div>
                         )}
                         
-                        <div className="flex items-center justify-between text-xs text-hud-text-secondary font-primary">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-primary">
                           <div className="flex items-center space-x-4">
                             <span className="flex items-center space-x-1">
                               <MessageSquare className="h-3 w-3" />
@@ -437,13 +432,13 @@ function ConversationsPageContent() {
                               {conversation.tags.slice(0, 2).map((tag, index) => (
                                 <Badge 
                                   key={index}
-                                  className="bg-light-grey text-hud-text-secondary text-xs font-bold uppercase"
+                                  className="bg-muted text-muted-foreground text-xs font-bold uppercase"
                                 >
                                   {tag}
                                 </Badge>
                               ))}
                               {conversation.tags.length > 2 && (
-                                <Badge className="bg-light-grey text-hud-text-secondary text-xs font-bold uppercase">
+                                <Badge className="bg-muted text-muted-foreground text-xs font-bold uppercase">
                                   +{conversation.tags.length - 2} MORE
                                 </Badge>
                               )}
@@ -452,7 +447,7 @@ function ConversationsPageContent() {
                         </div>
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 </Link>
               )
             })}
@@ -468,7 +463,7 @@ export default function ConversationsPage() {
     <Suspense fallback={
       <CRMLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hud-border-accent"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border-accent"></div>
         </div>
       </CRMLayout>
     }>
