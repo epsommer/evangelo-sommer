@@ -5,9 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Search, Filter, Plus, Users, Mail, Phone, MapPin, DollarSign, Tag, Edit2, Trash2, UserPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import CRMLayout from '@/components/CRMLayout'
 import { getAllServices } from '@/lib/service-config'
 import { getServiceInfo } from '@/lib/service-constants'
@@ -173,7 +171,7 @@ export default function ClientsPage() {
     return (
       <CRMLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hud-border-accent"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border-accent"></div>
         </div>
       </CRMLayout>
     )
@@ -186,11 +184,11 @@ export default function ClientsPage() {
   const getStatusColor = (status: string) => {
     const colors = {
       active: 'bg-green-600 text-white',
-      prospect: 'bg-tactical-gold text-hud-text-primary',
+      prospect: 'bg-accent text-foreground',
       completed: 'bg-purple-600 text-white',
       inactive: 'bg-medium-grey text-white',
     }
-    return colors[status as keyof typeof colors] || 'bg-light-grey text-hud-text-secondary'
+    return colors[status as keyof typeof colors] || 'bg-muted text-muted-foreground'
   }
 
   const getServiceName = (serviceId: string) => {
@@ -234,121 +232,121 @@ export default function ClientsPage() {
     <CRMLayout>
       <div className="p-6">
         {/* Page Header */}
-        <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent mb-6">
+        <div className="neo-container p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-hud-text-primary uppercase tracking-wide font-primary mb-2">
+              <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
                 CLIENT MANAGEMENT
               </h1>
-              <p className="text-hud-text-secondary font-primary">
+              <p className="text-muted-foreground font-primary">
                 MANAGE YOUR CLIENT RELATIONSHIPS AND COMMUNICATIONS
               </p>
             </div>
-            <Button 
-              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-sm uppercase tracking-wide"
+            <button
+              className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2"
               onClick={() => router.push('/clients/new')}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               ADD CLIENT
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
-            <div className="text-2xl font-bold text-hud-text-primary font-primary">
+          <div className="neo-card p-4">
+            <div className="text-2xl font-bold text-foreground font-primary">
               {stats.total}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               TOTAL CLIENTS
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
+          </div>
+          <div className="neo-card p-4">
             <div className="text-2xl font-bold text-green-600 font-primary">
               {stats.active}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               ACTIVE
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
-            <div className="text-2xl font-bold text-gold font-primary">
+          </div>
+          <div className="neo-card p-4">
+            <div className="text-2xl font-bold text-accent font-primary">
               {stats.withEmail}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               WITH EMAIL
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
+          </div>
+          <div className="neo-card p-4">
             <div className="text-2xl font-bold text-purple-600 font-primary">
               {stats.automationEnabled}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               AUTO-ENABLED
             </div>
-          </Card>
-          <Card className="p-4 bg-hud-background-primary border-2 border-hud-border">
+          </div>
+          <div className="neo-card p-4">
             <div className="text-2xl font-bold text-orange-600 font-primary">
               {stats.incomplete}
             </div>
-            <div className="text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               INCOMPLETE
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Batch Actions Bar */}
         {selectedClients.size > 0 && (
-          <Card className="p-4 mb-6 bg-tactical-gold-muted border-2 border-tactical-gold">
+          <div className="neo-container p-4 mb-6 bg-accent/10 border-accent">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <span className="text-sm font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                <span className="text-sm font-bold text-foreground font-primary uppercase tracking-wide">
                   {selectedClients.size} CLIENT(S) SELECTED
                 </span>
-                <Button
+                <button
                   onClick={handleBatchDelete}
-                  className="bg-red-600 text-white hover:bg-red-700 font-primary text-sm uppercase tracking-wide"
+                  className="neo-button bg-red-600 text-white hover:bg-red-700 font-primary text-sm uppercase tracking-wide"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   DELETE SELECTED
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleBatchSignup}
-                  className="bg-green-600 text-white hover:bg-green-700 font-primary text-sm uppercase tracking-wide"
+                  className="neo-button bg-green-600 text-white hover:bg-green-700 font-primary text-sm uppercase tracking-wide"
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
                   SIGN UP FOR SERVICE
-                </Button>
+                </button>
               </div>
-              <Button
+              <button
                 onClick={() => setSelectedClients(new Set())}
-                className="bg-hud-background-secondary text-hud-text-secondary hover:bg-hud-background-primary font-primary text-sm uppercase tracking-wide"
+                className="neo-button text-muted-foreground font-primary text-sm uppercase tracking-wide"
               >
                 CLEAR SELECTION
-              </Button>
+              </button>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Search and Filters */}
-        <Card className="p-6 mb-6 bg-hud-background-primary border-2 border-hud-border">
+        <div className="neo-container p-6 mb-6">
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-hud-text-secondary" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="SEARCH CLIENTS BY NAME, EMAIL, COMPANY, OR PHONE..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary placeholder-medium-grey font-primary text-sm uppercase tracking-wide"
+                  className="neomorphic-input w-full pl-10 font-primary text-sm uppercase tracking-wide"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
               >
                 <option value="all">ALL STATUS</option>
                 <option value="active">ACTIVE</option>
@@ -359,7 +357,7 @@ export default function ClientsPage() {
               <select
                 value={filterService}
                 onChange={(e) => setFilterService(e.target.value)}
-                className="px-4 py-2 border-2 border-hud-border bg-hud-background-primary text-hud-text-primary font-primary text-sm uppercase tracking-wide"
+                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
               >
                 <option value="all">ALL SERVICES</option>
                 {services.map((service) => (
@@ -376,9 +374,9 @@ export default function ClientsPage() {
                   type="checkbox"
                   checked={showIncompleteOnly}
                   onChange={(e) => setShowIncompleteOnly(e.target.checked)}
-                  className="border-2 border-hud-border text-gold focus:ring-gold"
+                  className="border border-border text-accent focus:ring-accent"
                 />
-                <span className="ml-2 text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+                <span className="ml-2 text-sm text-muted-foreground font-primary uppercase tracking-wide">
                   SHOW ONLY CLIENTS WITH INCOMPLETE PROFILES
                 </span>
               </label>
@@ -388,43 +386,43 @@ export default function ClientsPage() {
                     type="checkbox"
                     checked={selectedClients.size === clients.length && clients.length > 0}
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="border-2 border-hud-border text-gold focus:ring-gold"
+                    className="border border-border text-accent focus:ring-accent"
                   />
-                  <span className="ml-2 text-sm text-hud-text-secondary font-primary uppercase tracking-wide">
+                  <span className="ml-2 text-sm text-muted-foreground font-primary uppercase tracking-wide">
                     SELECT ALL
                   </span>
                 </label>
               )}
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Clients Grid */}
         {clients.length === 0 ? (
-          <Card className="p-8 text-center bg-hud-background-primary border-2 border-hud-border">
-            <Users className="mx-auto h-12 w-12 text-light-grey mb-4" />
-            <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
+          <div className="neo-container p-8 text-center">
+            <Users className="mx-auto h-12 w-12 text-muted mb-4" />
+            <h3 className="text-lg font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
               NO CLIENTS FOUND
             </h3>
-            <p className="text-hud-text-secondary mb-4 font-primary">
+            <p className="text-muted-foreground mb-4 font-primary">
               {searchQuery || showIncompleteOnly
                 ? 'TRY ADJUSTING YOUR SEARCH TERMS OR FILTERS.'
                 : 'GET STARTED BY ADDING YOUR FIRST CLIENT.'}
             </p>
-            <Button
-              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-sm uppercase tracking-wide"
+            <button
+              className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2 mx-auto"
               onClick={() => router.push('/clients/new')}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               ADD FIRST CLIENT
-            </Button>
-          </Card>
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {clients.map((client) => (
-              <Card
+              <div
                 key={client.id}
-                className={`p-6 bg-hud-background-primary border-2 ${selectedClients.has(client.id) ? 'border-tactical-gold' : 'border-hud-border'} hover:bg-hud-background-secondary transition-colors border-l-4 border-l-${getServiceColor(client.serviceId)} relative`}
+                className={`neo-card p-6 ${selectedClients.has(client.id) ? 'ring-2 ring-accent' : ''} hover:bg-card/80 transition-colors border-l-4 border-l-${getServiceColor(client.serviceId)} relative`}
               >
                 {/* Checkbox for selection */}
                 <div className="absolute top-4 right-4 flex items-center space-x-2">
@@ -435,7 +433,7 @@ export default function ClientsPage() {
                       e.stopPropagation()
                       handleSelectClient(client.id, e.target.checked)
                     }}
-                    className="border-2 border-hud-border text-tactical-gold focus:ring-tactical-gold"
+                    className="border border-border text-accent focus:ring-tactical-gold"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -446,15 +444,15 @@ export default function ClientsPage() {
                 >
                   <div className="flex items-start justify-between mb-4 pr-8">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-hud-text-primary font-primary">
+                      <h3 className="text-lg font-bold text-foreground font-primary">
                         {client.name.toUpperCase()}
                       </h3>
                       {client.company && (
-                        <p className="text-sm text-hud-text-secondary font-primary">
+                        <p className="text-sm text-muted-foreground font-primary">
                           {client.company.toUpperCase()}
                         </p>
                       )}
-                      <p className="text-xs text-hud-text-secondary mt-1 font-primary uppercase tracking-wide">
+                      <p className="text-xs text-muted-foreground mt-1 font-primary uppercase tracking-wide">
                         {getServiceName(client.serviceId)}
                       </p>
                     </div>
@@ -474,8 +472,8 @@ export default function ClientsPage() {
                     {client.email ? (
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <Mail className="h-4 w-4 text-hud-text-secondary" />
-                          <p className="text-sm text-hud-text-secondary font-primary">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground font-primary">
                             {client.email}
                           </p>
                         </div>
@@ -487,8 +485,8 @@ export default function ClientsPage() {
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-light-grey" />
-                        <p className="text-sm text-light-grey font-primary">
+                        <Mail className="h-4 w-4 text-muted" />
+                        <p className="text-sm text-muted font-primary">
                           NO EMAIL
                         </p>
                       </div>
@@ -496,15 +494,15 @@ export default function ClientsPage() {
 
                     {client.phone ? (
                       <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4 text-hud-text-secondary" />
-                        <p className="text-sm text-hud-text-secondary font-primary">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground font-primary">
                           {client.phone}
                         </p>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4 text-light-grey" />
-                        <p className="text-sm text-light-grey font-primary">
+                        <Phone className="h-4 w-4 text-muted" />
+                        <p className="text-sm text-muted font-primary">
                           NO PHONE
                         </p>
                       </div>
@@ -512,8 +510,8 @@ export default function ClientsPage() {
 
                     {client.budget && (
                       <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-hud-text-secondary" />
-                        <p className="text-sm text-hud-text-secondary font-primary">
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground font-primary">
                           ${client.budget.toLocaleString()}
                         </p>
                       </div>
@@ -521,8 +519,8 @@ export default function ClientsPage() {
 
                     {client.address?.city && client.address?.state && (
                       <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-hud-text-secondary" />
-                        <p className="text-sm text-hud-text-secondary font-primary">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground font-primary">
                           {client.address.city.toUpperCase()}, {client.address.state.toUpperCase()}
                         </p>
                       </div>
@@ -537,7 +535,7 @@ export default function ClientsPage() {
                       </Badge>
                     )}
                     {client.phone && client.phone.length >= 10 && (
-                      <Badge className="bg-tactical-gold-muted text-tactical-brown-dark text-xs font-bold uppercase">
+                      <Badge className="bg-accent/10 text-tactical-brown-dark text-xs font-bold uppercase">
                         SMS ✓
                       </Badge>
                     )}
@@ -554,13 +552,13 @@ export default function ClientsPage() {
                       {client.tags.slice(0, 3).map((tag, index) => (
                         <Badge
                           key={index}
-                          className="bg-light-grey text-hud-text-secondary text-xs font-bold uppercase"
+                          className="bg-muted text-muted-foreground text-xs font-bold uppercase"
                         >
                           {tag}
                         </Badge>
                       ))}
                       {client.tags.length > 3 && (
-                        <Badge className="bg-light-grey text-hud-text-secondary text-xs font-bold uppercase">
+                        <Badge className="bg-muted text-muted-foreground text-xs font-bold uppercase">
                           +{client.tags.length - 3} MORE
                         </Badge>
                       )}
@@ -569,7 +567,7 @@ export default function ClientsPage() {
 
                   {/* Missing Information Alert */}
                   {isIncompleteProfile(client) && (
-                    <div className="mt-3 p-2 bg-orange-50 border-2 border-orange-200 text-xs text-orange-700 font-primary uppercase tracking-wide">
+                    <div className="mt-3 p-2 bg-orange-50 border border-orange-200 text-xs text-orange-700 font-primary uppercase tracking-wide">
                       MISSING:{' '}
                       {[
                         !client.email && 'EMAIL',
@@ -585,42 +583,42 @@ export default function ClientsPage() {
                     </div>
                   )}
 
-                    <div className="mt-4 text-xs text-hud-text-secondary font-primary uppercase tracking-wide">
+                    <div className="mt-4 text-xs text-muted-foreground font-primary uppercase tracking-wide">
                       UPDATED: {new Date(client.updatedAt).toLocaleDateString()}
                     </div>
                   </Link>
 
                   {/* Action Buttons */}
-                  <div className="mt-4 flex items-center space-x-2 pt-4 border-t border-hud-border">
-                    <Button
+                  <div className="mt-4 flex items-center space-x-2 pt-4 border-t border-border">
+                    <button
                       onClick={(e) => {
                         e.stopPropagation()
                         handleEditClient(client)
                       }}
-                      className="flex-1 bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-xs uppercase tracking-wide"
+                      className="neo-button-active flex-1 font-primary text-xs uppercase tracking-wide flex items-center justify-center gap-1"
                     >
-                      <Edit2 className="h-3 w-3 mr-1" />
+                      <Edit2 className="h-3 w-3" />
                       EDIT
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDeleteClient(client.id)
                       }}
                       disabled={deletingClient === client.id}
-                      className="flex-1 bg-red-600 text-white hover:bg-red-700 font-primary text-xs uppercase tracking-wide disabled:opacity-50"
+                      className="neo-button flex-1 bg-red-600 text-white hover:bg-red-700 font-primary text-xs uppercase tracking-wide disabled:opacity-50 flex items-center justify-center gap-1"
                     >
                       {deletingClient === client.id ? (
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
                       ) : (
                         <>
-                          <Trash2 className="h-3 w-3 mr-1" />
+                          <Trash2 className="h-3 w-3" />
                           DELETE
                         </>
                       )}
-                    </Button>
+                    </button>
                   </div>
-                </Card>
+                </div>
             ))}
           </div>
         )}
