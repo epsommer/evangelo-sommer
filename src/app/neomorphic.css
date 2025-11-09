@@ -12,7 +12,6 @@
 }
 
 /* Mocha Theme - Warm Dark (warm brown-grey tones) */
-.dark,
 .mocha-mode {
   --neomorphic-bg: #1c1917;
   --neomorphic-text: #fafaf9;
@@ -35,14 +34,14 @@
   --neomorphic-bright: #E6C866;
 }
 
-/* True Night Theme - Deep Dark with Warm Text */
+/* True Night Theme - Pure Neutral Dark */
 :root.true-night-mode,
 .true-night-mode {
-  --neomorphic-bg: #262624;
-  --neomorphic-text: #C2C0B6;
-  --neomorphic-icon: #8B8A82;
-  --neomorphic-dark-shadow: #1F1E1D;
-  --neomorphic-light-shadow: #2D2C2A;
+  --neomorphic-bg: #1a1a1a;
+  --neomorphic-text: #f2f2f2;
+  --neomorphic-icon: #a6a6a6;
+  --neomorphic-dark-shadow: #0d0d0d;
+  --neomorphic-light-shadow: #242424;
   --neomorphic-accent: #D4AF37;
   --neomorphic-bright: #E6C866;
 }
@@ -95,6 +94,13 @@
   transition: box-shadow 300ms ease-in-out;
   cursor: pointer;
   display: block;
+  border: none;
+  outline: none;
+}
+
+.neomorphic-toggle:focus {
+  outline: none;
+  border: none;
 }
 
 .neomorphic-toggle__input {

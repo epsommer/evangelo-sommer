@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
+import "./neomorphic.css";
 import SessionProviderWrapper from "../components/providers/SessionProviderWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -25,7 +26,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const colorTheme = localStorage.getItem('color-theme') || 'light';
+                  let colorTheme = localStorage.getItem('color-theme') || 'light';
                   const windowTheme = localStorage.getItem('window-theme') || 'neomorphic';
 
                   // Apply color theme
@@ -33,11 +34,16 @@ export default function RootLayout({
                   root.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
 
                   if (colorTheme === 'mocha') {
-                    root.classList.add('dark', 'mocha-mode');
+                    root.classList.add('mocha-mode');
+                    root.setAttribute('data-theme', 'dark');
                   } else if (colorTheme === 'overkast') {
                     root.classList.add('overkast-mode');
+                    root.removeAttribute('data-theme');
                   } else if (colorTheme === 'true-night') {
-                    root.classList.add('dark', 'true-night-mode');
+                    root.classList.add('true-night-mode');
+                    root.setAttribute('data-theme', 'dark');
+                  } else {
+                    root.removeAttribute('data-theme');
                   }
 
                   // Apply window theme

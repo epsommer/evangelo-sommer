@@ -217,11 +217,6 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         document.documentElement.classList.add(colorThemeClass)
       }
 
-      // Add dark class for dark color themes
-      if (appliedColorTheme === 'mocha' || appliedColorTheme === 'true-night') {
-        document.documentElement.classList.add('dark')
-      }
-
       // Apply window theme
       const windowThemeClass = windowThemeMap[preferences.display.windowTheme]
       if (windowThemeClass) {

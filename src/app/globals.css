@@ -178,7 +178,6 @@
 }
 
 /* Mocha Theme - Warm Dark (default dark mode) */
-.dark,
 .mocha-mode {
   /* Mocha Color Theme */
   --background: 28 25 23; /* Dark warm background (stone-900) */
@@ -213,6 +212,12 @@
   --sidebar-accent-foreground: 28 25 23;
   --sidebar-border: 68 64 60;
   --sidebar-ring: 45 69% 52%;
+
+  /* Tactical colors for dark mode */
+  --tactical-grey-900: hsl(28 25 23); /* Match mocha background */
+  --tactical-grey-800: hsl(41 37 36); /* Slightly lighter */
+  --tactical-grey-700: hsl(68 64 60);
+  --tactical-grey-600: hsl(214 211 209);
 
   /* Legacy Support - Dark Mode mapped to neomorphic */
   --hud-background-primary: hsl(var(--background));
@@ -264,29 +269,35 @@
   --text-secondary: hsl(var(--muted-foreground));
 }
 
-/* True Night Theme */
+/* True Night Theme - Pure Neutral Dark */
 .true-night-mode {
-  --background: 0 0% 15%; /* #262624 */
-  --foreground: 40 9% 76%; /* #C2C0B6 */
-  --card: 0 0% 12%; /* #1F1E1D */
-  --card-foreground: 40 9% 76%;
-  --popover: 0 0% 15%;
-  --popover-foreground: 40 9% 76%;
+  --background: 0 0% 10%; /* Pure dark gray #1a1a1a */
+  --foreground: 0 0% 95%; /* Pure light gray #f2f2f2 */
+  --card: 0 0% 14%; /* Card background #242424 */
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
   --primary: 45 69% 52%; /* Gold */
-  --primary-foreground: 0 0% 15%;
-  --secondary: 0 0% 12%;
-  --secondary-foreground: 40 9% 76%;
-  --muted: 0 0% 12%;
-  --muted-foreground: 40 6% 54%; /* #8B8A82 */
+  --primary-foreground: 0 0% 10%;
+  --secondary: 0 0% 18%; /* #2e2e2e */
+  --secondary-foreground: 0 0% 95%;
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 65%; /* #a6a6a6 */
   --accent: 45 69% 52%;
-  --accent-foreground: 0 0% 15%;
+  --accent-foreground: 0 0% 10%;
   --destructive: 0 84% 60%;
-  --destructive-foreground: 40 9% 76%;
-  --border: 0 0% 12%;
-  --input: 0 0% 12%;
+  --destructive-foreground: 0 0% 95%;
+  --border: 0 0% 20%; /* #333333 */
+  --input: 0 0% 14%;
   --ring: 45 69% 52%;
-  --sidebar: 0 0% 15%;
-  --sidebar-foreground: 40 9% 76%;
+  --sidebar: 0 0% 10%;
+  --sidebar-foreground: 0 0% 95%;
+
+  /* Tactical colors for true-night mode */
+  --tactical-grey-900: hsl(0 0% 10%); /* Match true-night background */
+  --tactical-grey-800: hsl(0 0% 14%); /* Slightly lighter */
+  --tactical-grey-700: hsl(0 0% 18%);
+  --tactical-grey-600: hsl(0 0% 65%);
 
   /* HUD variables for True Night */
   --hud-background-primary: hsl(var(--background));

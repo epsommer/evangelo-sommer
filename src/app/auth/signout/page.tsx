@@ -13,18 +13,23 @@ export default function SignOutPage() {
   // Load theme preference
   useEffect(() => {
     const updateTheme = () => {
-      const theme = localStorage.getItem('color-theme') || 'light';
-      const isDarkTheme = theme === 'mocha' || theme === 'true-night';
+      let theme = localStorage.getItem('color-theme') || 'light';
+      // Convert mocha to true-night
+      if (theme === 'mocha') {
+        theme = 'true-night';
+        localStorage.setItem('color-theme', 'true-night');
+      }
+      const isDarkTheme = theme === 'true-night';
       setIsDark(isDarkTheme);
 
       // Apply theme classes
       document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
       if (theme === 'mocha') {
-        document.documentElement.classList.add('dark', 'mocha-mode');
+        document.documentElement.classList.add('mocha-mode');
       } else if (theme === 'overkast') {
         document.documentElement.classList.add('overkast-mode');
       } else if (theme === 'true-night') {
-        document.documentElement.classList.add('dark', 'true-night-mode');
+        document.documentElement.classList.add('true-night-mode');
       }
     };
 
