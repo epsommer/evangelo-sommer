@@ -34,7 +34,7 @@ model Participant {
   participantAppointments AppointmentParticipant[]
   calendarIntegrations CalendarIntegration[]
   communications Communication[]
-  clientRecord   ClientRecord?
+  clientRecords  ClientRecord[] // One participant can have multiple client records
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -275,8 +275,8 @@ model Household {
 model ClientRecord {
   id            String @id @default(cuid())
 
-  // Link to participant
-  participantId String @unique
+  // Link to participant (one participant can have multiple client records)
+  participantId String
   participant   Participant @relation(fields: [participantId], references: [id])
 
   // Household relationship

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, Activity, Shield, Target, AlertTriangle, Settings, Database } from 'lucide-react';
 import { ThemeToggle, TacticalThemeToggle } from './ThemeToggle';
+import { SlidingThemeToggle } from './SlidingThemeToggle';
 
 export default function TacticalHUDShowcase() {
   const [activeTab, setActiveTab] = useState('components');
@@ -16,7 +17,7 @@ export default function TacticalHUDShowcase() {
   ];
 
   return (
-    <div className="min-h-screen bg-hud-primary text-hud-primary p-8 font-primary">
+    <div className="min-h-screen bg-background text-foreground p-8 font-primary transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
@@ -31,7 +32,7 @@ export default function TacticalHUDShowcase() {
             <div className="flex items-center gap-4">
               <div className="status-online"></div>
               <span className="text-tactical-data">SYSTEM ONLINE</span>
-              <ThemeToggle />
+              <SlidingThemeToggle dayNightOnly={true} />
             </div>
           </div>
           

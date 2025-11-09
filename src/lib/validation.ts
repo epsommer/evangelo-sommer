@@ -10,6 +10,24 @@ const phoneSchema = z.string()
 const urlSchema = z.string().url('Invalid URL format').optional().or(z.literal(''));
 const dateSchema = z.string().datetime().optional().or(z.literal(''));
 
+// Address sub-schema
+const addressSchema = z.object({
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zip: z.string().optional(),
+  country: z.string().optional(),
+}).optional();
+
+// Contact preferences sub-schema
+const contactPreferencesSchema = z.object({
+  preferredMethod: z.string().optional(),
+  canReceiveEmails: z.boolean().optional(),
+  canReceiveTexts: z.boolean().optional(),
+  autoInvoicing: z.boolean().optional(),
+  autoReceipts: z.boolean().optional(),
+}).optional();
+
 // Client validation schemas
 export const createClientSchema = z.object({
   name: z.string()
@@ -19,11 +37,25 @@ export const createClientSchema = z.object({
   email: emailSchema,
   phone: phoneSchema,
   company: z.string().max(255, 'Company name must be less than 255 characters').optional(),
-  address: z.string().max(500, 'Address must be less than 500 characters').optional(),
+  address: addressSchema,
+  serviceId: z.string().optional(),
   services: z.array(z.string()).optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'PENDING']).optional(),
+  serviceTypes: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+  status: z.enum(['active', 'inactive', 'prospect', 'completed', 'ACTIVE', 'INACTIVE', 'PENDING', 'PROSPECT', 'COMPLETED']).optional(),
   notes: z.string().max(2000, 'Notes must be less than 2000 characters').optional(),
-});
+  projectType: z.string().optional(),
+  budget: z.number().optional(),
+  timeline: z.string().optional(),
+  contactPreferences: contactPreferencesSchema,
+  metadata: z.record(z.any()).optional(),
+  personalInfo: z.record(z.any()).optional(),
+  serviceProfile: z.record(z.any()).optional(),
+  billingInfo: z.record(z.any()).optional(),
+  relationshipData: z.record(z.any()).optional(),
+  seasonalContract: z.boolean().optional(),
+  recurringService: z.string().optional(),
+}).passthrough(); // Allow extra fields like id, createdAt, updatedAt, household, etc.
 
 export const updateClientSchema = z.object({
   name: z.string()

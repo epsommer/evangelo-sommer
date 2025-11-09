@@ -527,6 +527,35 @@ export default function ClientsPage() {
                     )}
                   </div>
 
+                  {/* Household Information */}
+                  {(client as any).household && (
+                    <div className="mt-4 pt-4 border-t border-border/30">
+                      <div className="flex items-start space-x-2 mb-2">
+                        <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-foreground font-primary uppercase">
+                            {(client as any).household.name}
+                          </p>
+                          {(client as any).relationshipRole && (
+                            <p className="text-xs text-muted-foreground font-primary">
+                              {(client as any).relationshipRole}
+                            </p>
+                          )}
+                        </div>
+                        {(client as any).isPrimaryContact && (
+                          <Badge className="bg-accent/20 text-accent text-xs font-bold uppercase">
+                            PRIMARY
+                          </Badge>
+                        )}
+                      </div>
+                      {(client as any).household.memberCount && (client as any).household.memberCount > 1 && (
+                        <div className="text-xs text-muted-foreground font-primary pl-6">
+                          {(client as any).household.memberCount - 1} other member{(client as any).household.memberCount > 2 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Contact Capabilities */}
                   <div className="mt-3 flex flex-wrap gap-1">
                     {client.email && client.email.includes('@') && (
