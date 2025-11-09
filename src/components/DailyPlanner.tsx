@@ -1080,53 +1080,49 @@ Resized: ${data.reason}`.trim() :
     <MouseEventDebugger />
     <div ref={containerRef} className="space-y-6">
       {/* Planner Header */}
-      <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent">
-        <div className="flex items-center justify-between">
-          <div>
-            {/* Date display removed - now handled by TimeManagerNavigation */}
-          </div>
-          
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gold font-primary">
+            <div className="neo-card p-4">
+              <div className="text-2xl font-bold text-accent font-primary">
                 {stats.completedTasks}
               </div>
-              <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
                 COMPLETED
               </div>
             </div>
-            
-            <div className="text-center">
-              <div className="text-2xl font-bold text-hud-text-primary font-primary">
+
+            <div className="neo-card p-4">
+              <div className="text-2xl font-bold text-foreground font-primary">
                 {stats.totalTasks}
               </div>
-              <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
                 TOTAL TASKS
               </div>
             </div>
-            
-            <Button 
-              className="bg-tactical-gold text-hud-text-primary px-6 py-3 font-bold uppercase tracking-wide hover:bg-tactical-gold-light"
-              onClick={() => {
-                setSelectedTimeSlot('09:00') // Reset to default time
-                setEditingEvent(null)
-                setShowEventModal(true)
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              ADD EVENT
-            </Button>
           </div>
+
+          <button
+            className="neo-button-active px-6 py-3 font-bold uppercase tracking-wide font-primary text-sm flex items-center gap-2"
+            onClick={() => {
+              setSelectedTimeSlot('09:00') // Reset to default time
+              setEditingEvent(null)
+              setShowEventModal(true)
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            ADD EVENT
+          </button>
         </div>
-        
+
         {/* Progress Bar */}
-        <div className="mt-6">
-          <div className="flex justify-between text-sm font-medium text-medium-grey mb-2 font-primary">
+        <div className="neo-card p-4">
+          <div className="flex justify-between text-sm font-medium text-muted-foreground mb-2 font-primary">
             <span className="uppercase tracking-wide">DAILY PROGRESS</span>
-            <span>{Math.round(stats.completionRate)}%</span>
+            <span className="text-foreground font-bold">{Math.round(stats.completionRate)}%</span>
           </div>
           <div className="progress-bar">
-            <div 
+            <div
               className="progress-fill"
               style={{ width: `${stats.completionRate}%` }}
             ></div>
@@ -1220,14 +1216,14 @@ Resized: ${data.reason}`.trim() :
           });
           
           return (
-            <div 
-              key={hour} 
+            <div
+              key={hour}
               ref={(el) => { timeSlotRefs.current[hour] = el; }}
-              className={`col-span-12 grid grid-cols-12 gap-6 mb-3 group overflow-visible ${isCurrentHour ? 'bg-tactical-gold-light/30 border-l-4 border-hud-border-accent' : ''}`}>
+              className={`col-span-12 grid grid-cols-12 gap-6 mb-3 group overflow-visible ${isCurrentHour ? 'bg-accent/10 border-l-4 border-accent' : ''}`}>
               {/* Time Column */}
               <div className="col-span-2">
-                <div 
-                  className={`text-right cursor-pointer group-hover:bg-tactical-gold-light transition-colors p-2 rounded ${isCurrentHour ? 'bg-tactical-gold text-hud-text-primary' : ''}`}
+                <div
+                  className={`text-right cursor-pointer neo-button transition-colors p-2 rounded ${isCurrentHour ? 'neo-button-active' : ''}`}
                   onClick={() => {
                     const timeString = `${hour.toString().padStart(2, '0')}:00`
                     setSelectedTimeSlot(timeString)
@@ -1236,11 +1232,11 @@ Resized: ${data.reason}`.trim() :
                   }}
                   title="Click to create event at this time"
                 >
-                  <div className={`text-sm font-bold font-primary group-hover:text-hud-text-primary ${isCurrentHour ? 'text-hud-text-primary' : 'text-medium-grey'}`}>
+                  <div className={`text-sm font-bold font-primary ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
                     {hour.toString().padStart(2, '0')}:00
                     {isCurrentHour && <span className="ml-1 text-xs">●</span>}
                   </div>
-                  <div className={`text-xs font-primary group-hover:text-hud-text-primary ${isCurrentHour ? 'text-hud-text-primary' : 'text-medium-grey'}`}>
+                  <div className={`text-xs font-primary ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
                     {displayHour} {period}
                   </div>
                 </div>

@@ -20,7 +20,7 @@ export default function SignIn() {
   const router = useRouter();
 
   // Load theme preference from localStorage
-  useEffect(() => {    
+  useEffect(() => {
     const updateTheme = () => {
       const theme = localStorage.getItem('color-theme') || 'light';
       setIsDark(theme === 'mocha' || theme === 'true-night');
@@ -53,11 +53,11 @@ export default function SignIn() {
   const toggleTheme = () => {
     const currentTheme = localStorage.getItem('color-theme') || 'light';
     const newTheme = (currentTheme === 'light' || currentTheme === 'overkast') ? 'true-night' : 'light';
-    
+
     // Update the data-color-theme attribute on the html element
     document.documentElement.setAttribute('data-color-theme', newTheme);
     localStorage.setItem('color-theme', newTheme);
-    
+
     // This event will be picked up by the useEffect listener to update the state
     window.dispatchEvent(new Event('storage'));
   };

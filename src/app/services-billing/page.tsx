@@ -424,12 +424,10 @@ function TransactionsTable({
           {showViewAll && (
             <Button
               onClick={onViewAllClick}
-              
-              
               className="text-accent border-border-accent hover:bg-accent hover:text-foreground"
             >
               View All History
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -1019,11 +1017,10 @@ export default function ServicesBillingPage() {
           <div className="text-center mt-4">
             <Button
               onClick={() => setShowAllTransactions(false)}
-              
               className="text-accent border-border-accent hover:bg-accent hover:text-foreground"
             >
               Show Recent Only
-            </button>
+            </Button>
           </div>
         )}
         

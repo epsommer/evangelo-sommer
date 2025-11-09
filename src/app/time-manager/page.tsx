@@ -601,12 +601,31 @@ const TimeManagerContent = () => {
 
   return (
     <CRMLayout>
-      <div>
-        <TimeManagerNavigation showTitle={true} />
-        <div className="p-6">
+      <div className="p-6 space-y-6">
+        {/* Page Header */}
+        <div className="neo-container p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
+                TIME MANAGER
+              </h1>
+              <p className="text-muted-foreground font-primary">
+                ORGANIZE YOUR SCHEDULE AND MANAGE YOUR TIME EFFECTIVELY
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="neo-card">
+          <TimeManagerNavigation showTitle={false} />
+        </div>
+
+        {/* Main Content */}
+        <div className="neo-card">
           {renderCurrentView()}
         </div>
-        
+
         {/* Global Event Creation Modal */}
         <EventCreationModal
           isOpen={showEventModal}
@@ -619,7 +638,7 @@ const TimeManagerContent = () => {
           initialTime={modalInitialTime}
           editingEvent={editingEvent || undefined}
         />
-        
+
         {/* Event Details Modal */}
         <EventDetailsModal
           event={selectedEvent}
@@ -655,10 +674,12 @@ const TimeManagerPage = () => {
   return (
     <Suspense fallback={
       <CRMLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-hud-border-accent border-t-transparent mx-auto mb-4"></div>
-            <p className="text-medium-grey font-primary uppercase tracking-wide">Loading Time Manager...</p>
+        <div className="p-6">
+          <div className="neo-card flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent border-t-transparent mx-auto mb-4"></div>
+              <p className="text-muted-foreground font-primary uppercase tracking-wide">Loading Time Manager...</p>
+            </div>
           </div>
         </div>
       </CRMLayout>

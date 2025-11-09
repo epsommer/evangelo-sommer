@@ -108,7 +108,7 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
     const currentMonth = selectedDate.getMonth()
 
     return (
-      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-hud-background-primary border-2 border-tactical-gold rounded-lg shadow-xl z-50 p-4 w-80">
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 neo-card p-4 w-80 z-50">
         {/* Mini calendar header */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -117,22 +117,22 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
               prevMonth.setMonth(prevMonth.getMonth() - 1)
               setSelectedDate(prevMonth)
             }}
-            className="p-1 text-tactical-grey-600 hover:text-tactical-gold"
+            className="p-1 text-muted-foreground hover:text-accent transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          
-          <div className="text-sm font-semibold text-hud-text-primary">
+
+          <div className="text-sm font-semibold text-foreground font-primary uppercase tracking-wide">
             {format(selectedDate, 'MMMM yyyy')}
           </div>
-          
+
           <button
             onClick={() => {
               const nextMonth = new Date(selectedDate)
               nextMonth.setMonth(nextMonth.getMonth() + 1)
               setSelectedDate(nextMonth)
             }}
-            className="p-1 text-tactical-grey-600 hover:text-tactical-gold"
+            className="p-1 text-muted-foreground hover:text-accent transition-colors"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -141,7 +141,7 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
         {/* Days of week header */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-            <div key={day} className="text-xs text-tactical-grey-600 text-center py-1 font-semibold">
+            <div key={day} className="text-xs text-muted-foreground text-center py-1 font-semibold font-primary uppercase">
               {day}
             </div>
           ))}
@@ -159,11 +159,11 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
                 key={index}
                 onClick={() => handleDateClick(date)}
                 className={`
-                  text-xs p-1 rounded transition-colors
-                  ${!isCurrentMonth ? 'text-tactical-grey-400' : 'text-hud-text-primary'}
-                  ${isToday ? 'bg-tactical-gold text-tactical-grey-900 font-semibold' : ''}
-                  ${isSelected && !isToday ? 'bg-tactical-gold-light text-tactical-grey-900' : ''}
-                  ${isCurrentMonth && !isToday && !isSelected ? 'hover:bg-tactical-grey-200' : ''}
+                  text-xs p-1 rounded transition-colors font-primary
+                  ${!isCurrentMonth ? 'text-muted' : 'text-foreground'}
+                  ${isToday ? 'bg-accent text-accent-foreground font-semibold' : ''}
+                  ${isSelected && !isToday ? 'neo-button-active' : ''}
+                  ${isCurrentMonth && !isToday && !isSelected ? 'hover:bg-card' : ''}
                 `}
               >
                 {date.getDate()}
@@ -175,16 +175,16 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
         {/* Today button */}
         <button
           onClick={handleTodayClick}
-          className="w-full py-2 px-4 bg-tactical-gold text-tactical-grey-900 rounded font-semibold text-sm hover:bg-tactical-amber transition-colors"
+          className="w-full neo-button-active font-primary text-sm uppercase tracking-wide"
         >
-          Go to Today
+          GO TO TODAY
         </button>
       </div>
     )
   }
 
   const ViewDropdown = () => (
-    <div className="absolute top-full right-0 mt-2 w-48 bg-hud-background-primary border-2 border-tactical-gold rounded-lg shadow-xl z-50 overflow-hidden">
+    <div className="absolute top-full right-0 mt-2 w-48 neo-card overflow-hidden z-50">
       {Object.entries(VIEW_CONFIGS).map(([viewKey, config]) => {
         const view = viewKey as TimeManagerView
         const Icon = config.icon
@@ -197,10 +197,10 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
               setCurrentView(view)
               setShowViewDropdown(false)
             }}
-            className={`w-full px-4 py-3 text-left flex items-center space-x-3 transition-colors ${
+            className={`w-full px-4 py-3 text-left flex items-center space-x-3 transition-colors font-primary uppercase tracking-wide text-sm ${
               isActive
-                ? 'bg-tactical-gold text-tactical-grey-900'
-                : 'text-hud-text-primary hover:bg-tactical-grey-200'
+                ? 'bg-accent text-accent-foreground font-bold'
+                : 'text-foreground hover:bg-card'
             }`}
           >
             <Icon className="h-4 w-4" />
@@ -212,58 +212,55 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
   )
 
   return (
-    <div className="bg-hud-background-secondary border-b-2 border-tactical-gold">
-      <div className="px-6 py-4">
-        {showTitle && (
-          <h1 className="text-2xl font-black text-hud-text-primary uppercase tracking-wide font-primary mb-4">
-            Time Manager
-          </h1>
-        )}
+    <div className="p-6">
+      {showTitle && (
+        <h1 className="text-2xl font-black text-foreground uppercase tracking-wide font-primary mb-4">
+          TIME MANAGER
+        </h1>
+      )}
 
-        <div className="flex items-center justify-between">
-          {/* Left: Navigation Controls */}
-          <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between">
+        {/* Left: Navigation Controls */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => navigateDate('previous')}
+            className="neo-button p-2 transition-colors"
+            title="Previous"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          {/* Date Display with Calendar Popup */}
+          <div className="relative" ref={calendarRef}>
             <button
-              onClick={() => navigateDate('previous')}
-              className="p-2 text-tactical-grey-600 hover:text-tactical-gold hover:bg-tactical-grey-200 rounded transition-colors border border-transparent hover:border-tactical-gold"
-              title="Previous"
+              onClick={() => setShowMiniCalendar(!showMiniCalendar)}
+              className="neo-button px-4 py-2 text-lg font-semibold text-foreground font-primary uppercase tracking-wide"
             >
-              <ChevronLeft className="h-5 w-5" />
+              {getDateDisplay()}
             </button>
-
-            {/* Date Display with Calendar Popup */}
-            <div className="relative" ref={calendarRef}>
-              <button
-                onClick={() => setShowMiniCalendar(!showMiniCalendar)}
-                className="px-4 py-2 text-lg font-semibold text-hud-text-primary hover:text-tactical-gold transition-colors font-primary border-2 border-transparent hover:border-tactical-gold rounded-lg"
-              >
-                {getDateDisplay()}
-              </button>
-              {showMiniCalendar && <MiniCalendar />}
-            </div>
-
-            <button
-              onClick={() => navigateDate('next')}
-              className="p-2 text-tactical-grey-600 hover:text-tactical-gold hover:bg-tactical-grey-200 rounded transition-colors border border-transparent hover:border-tactical-gold"
-              title="Next"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
+            {showMiniCalendar && <MiniCalendar />}
           </div>
 
-          {/* Right: View Selector */}
-          <div className="relative" ref={viewDropdownRef}>
-            <Button
-              variant="outline"
-              onClick={() => setShowViewDropdown(!showViewDropdown)}
-              className="border-tactical-gold text-tactical-gold hover:bg-tactical-gold hover:text-tactical-grey-900 px-4 py-2 flex items-center space-x-2"
-            >
-              {React.createElement(VIEW_CONFIGS[currentView].icon, { className: "h-4 w-4" })}
-              <span>{VIEW_CONFIGS[currentView].label}</span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${showViewDropdown ? 'rotate-180' : ''}`} />
-            </Button>
-            {showViewDropdown && <ViewDropdown />}
-          </div>
+          <button
+            onClick={() => navigateDate('next')}
+            className="neo-button p-2 transition-colors"
+            title="Next"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Right: View Selector */}
+        <div className="relative" ref={viewDropdownRef}>
+          <button
+            onClick={() => setShowViewDropdown(!showViewDropdown)}
+            className="neo-button-active px-4 py-2 flex items-center space-x-2 font-primary uppercase tracking-wide text-sm"
+          >
+            {React.createElement(VIEW_CONFIGS[currentView].icon, { className: "h-4 w-4" })}
+            <span>{VIEW_CONFIGS[currentView].label}</span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${showViewDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          {showViewDropdown && <ViewDropdown />}
         </div>
       </div>
     </div>

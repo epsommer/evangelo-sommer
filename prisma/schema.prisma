@@ -241,14 +241,55 @@ model Event {
   @@index([parentEventId])
 }
 
+// Household/Account model - Represents shared entity for families/households
+model Household {
+  id            String @id @default(cuid())
+  name          String // e.g., "John and Jane Doe Household"
+  accountType   HouseholdType @default(PERSONAL)
+
+  // Primary address (shared by all household members)
+  address       Json? // Address object
+
+  // Primary contact relationship
+  primaryContactId String?
+  primaryContact   ClientRecord? @relation("PrimaryContact", fields: [primaryContactId], references: [id], onDelete: SetNull)
+
+  // Household-level information
+  notes         String?
+  tags          Json? // String[] - shared tags for the household
+
+  // Household members
+  members       ClientRecord[] @relation("HouseholdMembers")
+
+  // Billing preferences at household level
+  billingPreferences Json? // Shared billing settings
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([primaryContactId])
+  @@index([accountType])
+}
+
 // Enhanced Client Record (extends existing Client interface)
 model ClientRecord {
   id            String @id @default(cuid())
-  
+
   // Link to participant
   participantId String @unique
   participant   Participant @relation(fields: [participantId], references: [id])
-  
+
+  // Household relationship
+  householdId   String?
+  household     Household? @relation("HouseholdMembers", fields: [householdId], references: [id], onDelete: SetNull)
+
+  // Role within household
+  isPrimaryContact Boolean @default(false)
+  relationshipRole String? // "Primary Client", "Spouse", "Partner", "Son", "Daughter", "Family Member"
+
+  // This client as primary contact of households
+  primaryContactOf Household[] @relation("PrimaryContact")
+
   // Basic info (from existing Client interface)
   name          String
   email         String?
@@ -256,9 +297,9 @@ model ClientRecord {
   company       String?
   serviceId     String
   status        ClientStatus @default(ACTIVE)
-  tags          Json? // String[] - stored as JSON array
+  tags          Json? // String[] - stored as JSON array (individual tags)
   notes         String?
-  
+
   // Service details
   projectType   String?
   serviceTypes  Json? // String[] - stored as JSON array
@@ -266,22 +307,22 @@ model ClientRecord {
   timeline      String?
   seasonalContract Boolean @default(false)
   recurringService RecurringServiceType?
-  
-  // Location
+
+  // Location (individual address, may differ from household address)
   address       Json? // Address object
-  
+
   // Service metadata
   metadata      Json? // Service-specific metadata
-  
+
   // Contact preferences
   contactPreferences Json? // ContactPreferences object
-  
+
   // CRM Integration data
   personalInfo     Json? // PersonalInfo object
   serviceProfile   Json? // ServiceProfile object
   billingInfo      Json? // BillingInfo object
   relationshipData Json? // RelationshipData object
-  
+
   // Relationships
   serviceHistory   ServiceRecord[]
   serviceContracts ClientServiceContract[]
@@ -295,9 +336,11 @@ model ClientRecord {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([serviceId])
   @@index([status])
+  @@index([householdId])
+  @@index([isPrimaryContact])
 }
 
 // Enhanced Service History
@@ -812,6 +855,13 @@ enum ClientStatus {
   INACTIVE
   PROSPECT
   COMPLETED
+}
+
+enum HouseholdType {
+  PERSONAL
+  FAMILY
+  BUSINESS
+  ORGANIZATION
 }
 
 enum RecurringServiceType {

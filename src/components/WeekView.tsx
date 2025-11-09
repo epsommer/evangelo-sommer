@@ -406,40 +406,40 @@ Rescheduled: ${data.reason}`.trim() :
     <DragDropProvider onEventDrop={handleEventDrop} onEventResize={handleEventResize}>
     <div ref={containerRef} className="space-y-6">
       {/* Week Header */}
-      <Card>
-        <CardContent className="p-0">
+      <div className="neo-card">
+        <div className="p-0">
           {/* Day Headers */}
-          <div className="grid grid-cols-8 gap-0 border-b">
+          <div className="grid grid-cols-8 gap-0 border-b border-border">
             {/* Time column header */}
-            <div className="p-2 md:p-4 bg-hud-background-secondary border-r border-hud-border">
-              <span className="text-xs md:text-sm font-bold text-hud-text-primary uppercase tracking-wide font-primary">
-                Time
+            <div className="p-2 md:p-4 bg-card border-r border-border">
+              <span className="text-xs md:text-sm font-bold text-foreground uppercase tracking-wide font-primary">
+                TIME
               </span>
             </div>
-            
+
             {/* Day headers */}
             {weekDays.map(day => {
               const isCurrentDay = isToday(day)
               const dayOfMonth = format(day, 'd')
               const dayName = format(day, 'EEE')
-              
+
               return (
-                <div 
-                  key={day.toISOString()} 
-                  className={`p-2 md:p-4 border-r border-hud-border text-center ${
-                    isCurrentDay ? 'bg-tactical-gold-dark border-2 border-tactical-gold' : 'bg-hud-background-secondary'
+                <div
+                  key={day.toISOString()}
+                  className={`p-2 md:p-4 border-r border-border text-center ${
+                    isCurrentDay ? 'bg-accent text-accent-foreground' : 'bg-card'
                   }`}
                 >
                   <div className="space-y-1">
                     <div className={`text-xs font-bold uppercase tracking-wide font-primary ${
-                      isCurrentDay ? 'text-hud-text-inverted' : 'text-hud-text-primary'
+                      isCurrentDay ? 'text-accent-foreground' : 'text-foreground'
                     }`}>
                       {dayName}
                     </div>
-                    <div className={`text-sm md:text-lg font-bold ${
-                      isCurrentDay 
-                        ? 'bg-tactical-gold text-hud-text-primary rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center mx-auto' 
-                        : 'text-hud-text-primary'
+                    <div className={`text-sm md:text-lg font-bold font-primary ${
+                      isCurrentDay
+                        ? 'bg-accent-foreground text-accent rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center mx-auto'
+                        : 'text-foreground'
                     }`}>
                       {dayOfMonth}
                     </div>
@@ -454,20 +454,20 @@ Rescheduled: ${data.reason}`.trim() :
             // Check if this is the current hour
             const now = new Date()
             const isCurrentHour = now.getHours() === hour
-            
+
             return (
-            <div 
-              key={hour} 
+            <div
+              key={hour}
               ref={(el) => { timeSlotRefs.current[hour] = el; }}
-              className={`grid grid-cols-8 gap-0 border-b min-h-[60px] md:min-h-[80px] ${isCurrentHour ? 'bg-tactical-gold-light/20 border-l-4 border-hud-border-accent' : ''}`}>
+              className={`grid grid-cols-8 gap-0 border-b border-border min-h-[60px] md:min-h-[80px] ${isCurrentHour ? 'bg-accent/10 border-l-4 border-accent' : ''}`}>
               {/* Time Label */}
-              <div className={`p-2 md:p-3 border-r border-hud-border flex items-start ${isCurrentHour ? 'bg-tactical-gold text-hud-text-primary' : 'bg-hud-background-secondary hover:bg-tactical-gold-light'}`}>
+              <div className={`p-2 md:p-3 border-r border-border flex items-start transition-colors ${isCurrentHour ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-card/80'}`}>
                 <div className="text-center w-full">
-                  <div className={`text-xs md:text-sm font-bold font-primary ${isCurrentHour ? 'text-hud-text-primary' : 'text-medium-grey'}`}>
+                  <div className={`text-xs md:text-sm font-bold font-primary ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
                     {hour.toString().padStart(2, '0')}:00
                     {isCurrentHour && <span className="ml-1 text-xs">●</span>}
                   </div>
-                  <div className={`text-xs font-primary hidden md:block ${isCurrentHour ? 'text-hud-text-primary' : 'text-medium-grey'}`}>
+                  <div className={`text-xs font-primary hidden md:block ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
                     {formatTimeSlot(hour).split(' ')[1]}
                   </div>
                 </div>
@@ -477,7 +477,7 @@ Rescheduled: ${data.reason}`.trim() :
               {weekDays.map(day => {
                 const events = getEventsForSlot(day, hour)
                 const isCurrentDay = isToday(day)
-                
+
                 return (
                   <DropZone
                     key={`${day.toISOString()}-${hour}`}
@@ -486,8 +486,8 @@ Rescheduled: ${data.reason}`.trim() :
                     isOccupied={events.length > 0}
                     events={events.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]}
                     onTimeSlotClick={handleTimeSlotClick}
-                    className={`p-1 md:p-2 border-r border-hud-border min-h-[60px] md:min-h-[80px] transition-colors ${
-                      isCurrentDay ? 'bg-tactical-gold-dark/30 border-l-2 border-tactical-gold' : 'bg-hud-background-secondary hover:bg-tactical-gold-light'
+                    className={`p-1 md:p-2 border-r border-border min-h-[60px] md:min-h-[80px] transition-colors ${
+                      isCurrentDay ? 'bg-accent/20 border-l-2 border-accent' : 'bg-background hover:bg-card'
                     }`}
                     compact={true}
                   >
@@ -604,16 +604,15 @@ Rescheduled: ${data.reason}`.trim() :
             </div>
             )
           })}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Week Summary */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
-              Week Summary
-            </h3>
+      <div className="neo-card p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-foreground font-primary uppercase tracking-wide">
+            WEEK SUMMARY
+          </h3>
             <div className="flex items-center space-x-4">
               {weekDays.map(day => {
                 const dayEvents = scheduledServices.filter(service => {
@@ -623,12 +622,12 @@ Rescheduled: ${data.reason}`.trim() :
                 
                 return (
                   <div key={day.toISOString()} className="text-center">
-                    <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
                       {format(day, 'EEE')}
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`mt-1 ${dayEvents.length > 0 ? 'bg-tactical-gold text-hud-text-primary' : 'bg-hud-background-secondary text-medium-grey border-hud-border'}`}
+                    <Badge
+                      variant="outline"
+                      className={`mt-1 ${dayEvents.length > 0 ? 'bg-accent text-accent-foreground' : 'bg-card text-muted-foreground border-border'}`}
                     >
                       {dayEvents.length}
                     </Badge>
@@ -637,9 +636,8 @@ Rescheduled: ${data.reason}`.trim() :
               })}
             </div>
           </div>
-        </CardContent>
-      </Card>
-      
+        </div>
+
       {/* Drag Visual Feedback */}
       <DragVisualFeedback containerRef={containerRef as React.RefObject<HTMLElement>} />
       

@@ -15,7 +15,6 @@ import {
   getWeek
 } from 'date-fns'
 import { Calendar, TrendingUp, Clock, Users } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useViewManager } from '@/contexts/ViewManagerContext'
 import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
@@ -166,52 +165,50 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
   return (
     <div className="space-y-6">
       {/* Year Statistics */}
-      <Card>
-        <CardHeader className="bg-hud-background-secondary border-b border-hud-border-accent">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-6 w-6 text-gold" />
-              <h2 className="text-2xl font-bold text-hud-text-primary font-primary uppercase tracking-wide">
-                {currentYear} Overview
-              </h2>
+      <div className="neo-card p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Calendar className="h-6 w-6 text-accent" />
+            <h2 className="text-2xl font-bold text-foreground font-primary uppercase tracking-wide">
+              {currentYear} OVERVIEW
+            </h2>
+          </div>
+          <div className="flex items-center space-x-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-accent font-primary">
+                {yearStats.totalEvents}
+              </div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
+                TOTAL EVENTS
+              </div>
             </div>
-            <div className="flex items-center space-x-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold font-primary">
-                  {yearStats.totalEvents}
-                </div>
-                <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
-                  Total Events
-                </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-foreground font-primary">
+                {yearStats.completionRate}%
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-hud-text-primary font-primary">
-                  {yearStats.completionRate}%
-                </div>
-                <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
-                  Completed
-                </div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
+                COMPLETED
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold font-primary">
-                  {yearStats.totalHours}h
-                </div>
-                <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
-                  Total Hours
-                </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-accent font-primary">
+                {yearStats.totalHours}h
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-hud-text-primary font-primary">
-                  {yearStats.uniqueClients}
-                </div>
-                <div className="text-xs uppercase tracking-wider text-medium-grey font-primary">
-                  Clients
-                </div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
+                TOTAL HOURS
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-foreground font-primary">
+                {yearStats.uniqueClients}
+              </div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
+                CLIENTS
               </div>
             </div>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Monthly Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -223,31 +220,31 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
           })
 
           return (
-            <Card 
+            <div
               key={month.toISOString()}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="neo-card cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => handleMonthClick(month)}
             >
-              <CardHeader className="pb-3">
+              <div className="p-4 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide">
                     {format(month, 'MMMM')}
                   </h3>
-                  <Badge 
-                    variant="outline" 
-                    className={monthStats.totalEvents > 0 ? 'bg-tactical-gold text-hud-text-primary' : 'bg-hud-background-secondary text-medium-grey'}
+                  <Badge
+                    variant="outline"
+                    className={monthStats.totalEvents > 0 ? 'bg-accent text-accent-foreground' : 'bg-card text-muted-foreground border-border'}
                   >
                     {monthStats.totalEvents}
                   </Badge>
                 </div>
-              </CardHeader>
+              </div>
 
-              <CardContent className="pt-0">
+              <div className="p-4 pt-0">
                 {/* Mini Calendar Grid */}
                 <div className="grid grid-cols-7 gap-1 mb-4">
                   {/* Day headers */}
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                    <div key={index} className="text-xs text-center text-medium-grey font-bold py-1">
+                    <div key={index} className="text-xs text-center text-muted-foreground font-bold py-1 font-primary uppercase">
                       {day}
                     </div>
                   ))}
@@ -269,14 +266,14 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
                       <div
                         key={cellDate.toISOString()}
                         className={`
-                          aspect-square text-xs rounded cursor-pointer transition-colors flex items-center justify-center relative
-                          ${!isCurrentMonth 
-                            ? 'text-gray-300' 
-                            : isCurrentDay 
-                            ? 'bg-tactical-gold text-hud-text-primary font-bold' 
+                          aspect-square text-xs rounded cursor-pointer transition-colors flex items-center justify-center relative font-primary
+                          ${!isCurrentMonth
+                            ? 'text-muted'
+                            : isCurrentDay
+                            ? 'bg-accent text-accent-foreground font-bold'
                             : dayEvents.length > 0
                             ? getEventDensityColor(dayEvents.length) + ' text-white'
-                            : 'hover:bg-tactical-grey-200'
+                            : 'hover:bg-card'
                           }
                         `}
                         onClick={(e) => {
@@ -289,7 +286,7 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
                       >
                         {cellDate.getDate()}
                         {dayEvents.length > 0 && (
-                          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-tactical-gold rounded-full"></div>
+                          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-accent rounded-full"></div>
                         )}
                       </div>
                     )
@@ -297,42 +294,42 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
                 </div>
 
                 {/* Month Statistics */}
-                <div className="space-y-2 text-xs">
+                <div className="space-y-2 text-xs font-primary">
                   <div className="flex items-center justify-between">
-                    <span className="text-medium-grey">Events:</span>
-                    <span className="font-medium text-hud-text-primary">{monthStats.totalEvents}</span>
+                    <span className="text-muted-foreground uppercase tracking-wide">Events:</span>
+                    <span className="font-medium text-foreground">{monthStats.totalEvents}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-medium-grey">Hours:</span>
-                    <span className="font-medium text-hud-text-primary">{monthStats.totalHours}h</span>
+                    <span className="text-muted-foreground uppercase tracking-wide">Hours:</span>
+                    <span className="font-medium text-foreground">{monthStats.totalHours}h</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-medium-grey">Completion:</span>
-                    <span className="font-medium text-hud-text-primary">
-                      {monthStats.totalEvents > 0 
+                    <span className="text-muted-foreground uppercase tracking-wide">Completion:</span>
+                    <span className="font-medium text-foreground">
+                      {monthStats.totalEvents > 0
                         ? Math.round((monthStats.completedEvents / monthStats.totalEvents) * 100)
                         : 0
                       }%
                     </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )
         })}
       </div>
 
       {/* Activity Heatmap */}
-      <Card>
-        <CardHeader className="bg-hud-background-secondary border-b border-hud-border">
+      <div className="neo-card">
+        <div className="bg-card border-b border-border p-6">
           <div className="flex items-center space-x-3">
-            <TrendingUp className="h-5 w-5 text-gold" />
-            <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+            <TrendingUp className="h-5 w-5 text-accent" />
+            <h3 className="font-bold text-foreground font-primary uppercase tracking-wide">
               Activity Heatmap
             </h3>
           </div>
-        </CardHeader>
-        <CardContent className="p-4">
+        </div>
+        <div className="p-4">
           <div className="grid grid-cols-53 gap-1">
             {Array.from({ length: 365 }, (_, i) => {
               const date = new Date(yearStart)
@@ -357,7 +354,7 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
               )
             })}
           </div>
-          <div className="flex items-center justify-between mt-4 text-xs text-medium-grey">
+          <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground font-primary uppercase tracking-wide">
             <span>Less</span>
             <div className="flex items-center space-x-1">
               <div className="w-3 h-3 rounded-sm bg-tactical-grey-100"></div>
@@ -368,8 +365,8 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
             </div>
             <span>More</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

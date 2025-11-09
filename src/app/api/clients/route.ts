@@ -159,6 +159,31 @@ export async function POST(request: NextRequest) {
     };
     const prismaStatus: ClientStatus = validatedData.status ? statusMap[validatedData.status.toLowerCase()] || ClientStatus.ACTIVE : ClientStatus.ACTIVE;
 
+    // Handle household creation if requested
+    let householdId = null;
+    let isPrimaryContact = false;
+    let relationshipRole = null;
+
+    if (body.household) {
+      const householdData = body.household;
+
+      // Create household first
+      const household = await prisma.household.create({
+        data: {
+          name: householdData.name,
+          accountType: householdData.accountType || 'PERSONAL',
+          address: householdData.address ? JsonFieldSerializers.serializeAddress(householdData.address) : undefined,
+          notes: householdData.notes || null,
+          tags: householdData.tags ? JsonFieldSerializers.serializeStringArray(householdData.tags) : undefined,
+          billingPreferences: householdData.billingPreferences ? JsonFieldSerializers.serializeObject(householdData.billingPreferences) : undefined,
+        }
+      });
+
+      householdId = household.id;
+      isPrimaryContact = householdData.isPrimaryContact || false;
+      relationshipRole = householdData.relationshipRole || null;
+    }
+
     // Clean phone and email - only use if non-empty (already validated by Zod)
     const cleanPhone = validatedData.phone && validatedData.phone.trim() ? validatedData.phone.trim() : null;
     const cleanEmail = validatedData.email && validatedData.email.trim() ? validatedData.email.trim() : null;
@@ -217,12 +242,25 @@ export async function POST(request: NextRequest) {
         personalInfo: body.personalInfo ? JsonFieldSerializers.serializeObject(body.personalInfo) : undefined,
         serviceProfile: body.serviceProfile ? JsonFieldSerializers.serializeObject(body.serviceProfile) : undefined,
         billingInfo: body.billingInfo ? JsonFieldSerializers.serializeObject(body.billingInfo) : undefined,
-        relationshipData: body.relationshipData ? JsonFieldSerializers.serializeObject(body.relationshipData) : undefined
+        relationshipData: body.relationshipData ? JsonFieldSerializers.serializeObject(body.relationshipData) : undefined,
+        // Household relationship fields
+        householdId: householdId,
+        isPrimaryContact: isPrimaryContact,
+        relationshipRole: relationshipRole
       },
       include: {
-        participant: true
+        participant: true,
+        household: true
       }
     });
+
+    // If this client is marked as primary contact, update the household
+    if (householdId && isPrimaryContact) {
+      await prisma.household.update({
+        where: { id: householdId },
+        data: { primaryContactId: client.id }
+      });
+    }
 
     // Transform for response
     const transformedClient = transformClientRecordForResponse(client);

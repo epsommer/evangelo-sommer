@@ -261,13 +261,13 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="p-0">
+      <div className="neo-card">
+        <div className="p-0">
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-0 border-b">
+          <div className="grid grid-cols-7 gap-0 border-b border-border">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-3 bg-hud-background-secondary border-r border-b border-hud-border text-center">
-                <span className="text-sm font-bold text-hud-text-primary uppercase tracking-wide font-primary">
+              <div key={day} className="p-3 bg-card border-r border-b border-border text-center">
+                <span className="text-sm font-bold text-foreground uppercase tracking-wide font-primary">
                   {day}
                 </span>
               </div>
@@ -284,14 +284,14 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               return (
                 <div
                   key={day.toISOString()}
-                  className={`min-h-[140px] p-2 border-r border-b cursor-pointer transition-colors relative group ${
-                    !isCurrentMonth 
-                      ? 'bg-hud-background text-medium-grey' 
+                  className={`min-h-[140px] p-2 border-r border-b border-border cursor-pointer transition-colors relative group ${
+                    !isCurrentMonth
+                      ? 'bg-background text-muted'
                       : isSelected
-                      ? 'bg-tactical-gold-light'
+                      ? 'bg-accent/20'
                       : isTodayDate
-                      ? 'bg-tactical-gold-light/50 border-2 border-tactical-gold'
-                      : 'bg-hud-background-secondary hover:bg-tactical-gold-light/30'
+                      ? 'bg-accent/10 border-2 border-accent'
+                      : 'bg-card hover:bg-card/80'
                   }`}
                   onClick={() => {
                     onDateSelect?.(day)
@@ -301,8 +301,8 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-sm font-medium ${
-                      isTodayDate ? 'bg-tactical-gold text-hud-text-primary px-2 py-1 rounded font-bold' : ''
+                    <span className={`text-sm font-medium font-primary ${
+                      isTodayDate ? 'bg-accent text-accent-foreground px-2 py-1 rounded font-bold' : ''
                     }`}>
                       {format(day, 'd')}
                     </span>
@@ -310,7 +310,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                       {/* Add Event Button - appears on hover */}
                       {isCurrentMonth && onDayClick && (
                         <button
-                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-tactical-gold hover:bg-tactical-gold-light text-hud-text-primary rounded p-1 text-xs font-bold"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity neo-button-active text-xs p-1"
                           onClick={(e) => {
                             e.stopPropagation()
                             onDayClick(day)
@@ -498,47 +498,47 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
               );
             })}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Upcoming Events */}
-      <Card>
-        <CardHeader className="bg-hud-background-secondary border-b border-hud-border">
+      <div className="neo-card">
+        <div className="bg-card border-b border-border p-6">
           <div className="flex items-center justify-between">
-            <h4 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+            <h4 className="font-bold text-foreground font-primary uppercase tracking-wide">
               Upcoming Events
             </h4>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => syncWithGoogleCalendar()}
-                className="px-3 py-1 bg-tactical-gold hover:bg-tactical-gold-dark text-white text-sm rounded font-medium"
+                className="neo-button px-3 py-1 text-sm font-medium font-primary uppercase tracking-wide"
                 title="Sync with Google Calendar"
               >
-                🔄 Sync
+                🔄 SYNC
               </button>
               <button
                 onClick={() => exportToGoogleCalendar()}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-medium"
+                className="neo-button-active px-3 py-1 text-sm font-medium font-primary uppercase tracking-wide"
                 title="Export to Google Calendar"
               >
-                📤 Export
+                📤 EXPORT
               </button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-4">
+        </div>
+        <div className="p-6">
           {getUpcomingEvents().length > 0 ? (
             <div className="space-y-3">
               {getUpcomingEvents().map(event => (
-                <div 
-                  key={event.id} 
-                  className="p-4 border border-hud-border rounded bg-white cursor-pointer hover:bg-tactical-grey-100 transition-colors"
+                <div
+                  key={event.id}
+                  className="p-4 border border-border rounded neo-card cursor-pointer hover:bg-card/80 transition-colors"
                   onClick={() => setViewingSchedule(event)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h5 className="font-bold text-hud-text-primary">{event.title || event.service}</h5>
-                      <p className="text-sm text-tactical-grey-500">
+                      <h5 className="font-bold text-foreground font-primary">{event.title || event.service}</h5>
+                      <p className="text-sm text-muted-foreground font-primary">
                         {safeFormatDate(event.scheduledDate, 'EEEE, MMM d')} at {safeFormatDate(event.scheduledDate, 'h:mm a')}
                       </p>
                     </div>
@@ -562,7 +562,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                               e.stopPropagation();
                               handleEditSchedule(event);
                             }}
-                            className="p-1 text-tactical-gold hover:text-tactical-brown-dark"
+                            className="p-1 text-accent hover:text-accent/80"
                             title="Edit schedule"
                           >
                             ✏️
@@ -581,7 +581,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm text-medium-grey">
+                  <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground font-primary">
                     <div className="flex items-center space-x-2">
                       <Clock className="h-4 w-4" />
                       <span>{event.duration || 60} minutes</span>
@@ -592,7 +592,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                     </div>
                   </div>
                   {event.notes && (
-                    <p className="mt-2 text-sm text-medium-grey">{event.notes}</p>
+                    <p className="mt-2 text-sm text-muted-foreground font-primary">{event.notes}</p>
                   )}
                 </div>
               ))}
@@ -600,19 +600,19 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
           ) : (
             <div className="text-center py-8">
               <div className="text-4xl mb-2">📅</div>
-              <p className="text-medium-grey">
-                No upcoming events
+              <p className="text-muted-foreground font-primary uppercase tracking-wide">
+                NO UPCOMING EVENTS
               </p>
               <button
                 onClick={() => syncWithGoogleCalendar()}
-                className="mt-3 px-4 py-2 bg-tactical-gold hover:bg-tactical-gold-dark text-white text-sm rounded"
+                className="mt-3 neo-button-active px-4 py-2 text-sm font-primary uppercase tracking-wide"
               >
-                Sync with Google Calendar
+                SYNC WITH GOOGLE CALENDAR
               </button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Edit Schedule Modal */}
       {editingSchedule && enableEditing && (
