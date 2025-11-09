@@ -1408,7 +1408,7 @@ button:disabled,
   color: var(--tactical-grey-900);
 }
 
-[data-theme="dark"] *:focus {
+[data-theme="dark"] *:focus:not(.neomorphic-toggle):not(.neomorphic-button):not([class*="neomorphic"]) {
   outline: 2px solid var(--tactical-gold) !important;
   outline-offset: 2px;
 }
@@ -1477,11 +1477,24 @@ body.modal-open .border-hud-border {
 .neomorphic-window .neo-button-circle,
 .neomorphic-window .neo-button-active,
 .neomorphic-window .neomorphic-input,
-.neomorphic-window button,
+.neomorphic-window button:not(.neomorphic-toggle),
 .neomorphic-window input,
 .neomorphic-window select,
 .neomorphic-window textarea {
   border-radius: var(--window-border-radius) !important;
+}
+
+/* Preserve toggle specific border-radius */
+.neomorphic-window .neomorphic-toggle {
+  border-radius: 88px !important;
+}
+
+.neomorphic-window .neomorphic-toggle__slider {
+  border-radius: 100px !important;
+}
+
+.neomorphic-window .neomorphic-toggle::before {
+  border-radius: 88px !important;
 }
 
 /* Tactical Window Theme - Sharp, angular, flat interface */

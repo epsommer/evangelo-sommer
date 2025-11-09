@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { SlidingThemeToggle } from "@/components/SlidingThemeToggle";
 import "@/app/neomorphic.css";
 
 export default function MaintenancePage() {
@@ -10,29 +11,11 @@ export default function MaintenancePage() {
 
   useEffect(() => {
     const updateTheme = () => {
-      let theme = localStorage.getItem('color-theme') || 'light';
-      // Convert mocha to true-night for development page
-      if (theme === 'mocha') {
-        theme = 'true-night';
-        localStorage.setItem('color-theme', 'true-night');
-      }
-      const isDarkTheme = theme === 'true-night';
+      const theme = localStorage.getItem('color-theme') || 'light';
+      const isDarkTheme = theme === 'true-night' || theme === 'mocha';
       setIsDark(isDarkTheme);
-
-      // Apply theme classes
-      document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
-      if (theme === 'mocha') {
-        document.documentElement.classList.add('mocha-mode');
-      } else if (theme === 'overkast') {
-        document.documentElement.classList.add('overkast-mode');
-      } else if (theme === 'true-night') {
-        document.documentElement.classList.add('true-night-mode');
-      }
     };
 
-    // Initialize theme on mount
-    const theme = localStorage.getItem('color-theme') || 'light';
-    document.documentElement.setAttribute('data-color-theme', theme);
     updateTheme();
 
     const observer = new MutationObserver((mutations) => {
@@ -52,60 +35,35 @@ export default function MaintenancePage() {
     };
   }, []);
 
-  const toggleTheme = () => {
-    const currentTheme = localStorage.getItem('color-theme') || 'light';
-    const newTheme = (currentTheme === 'light' || currentTheme === 'overkast') ? 'true-night' : 'light';
-
-    document.documentElement.setAttribute('data-color-theme', newTheme);
-    localStorage.setItem('color-theme', newTheme);
-    window.dispatchEvent(new Event('storage'));
-  };
-
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative bg-background text-foreground transition-colors duration-300"
     >
+      {/* Grainy texture overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          opacity: isDark ? 0.2 : 0.5,
+          background: '#000000',
+          mixBlendMode: 'multiply',
+          filter: 'url(#noiseFilter)',
+        }}
+      />
+
+      {/* SVG Filter for grain texture */}
+      <svg className="absolute w-0 h-0">
+        <filter id="noiseFilter">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.6"
+            stitchTiles="stitch"
+          />
+        </filter>
+      </svg>
       {/* Header Controls - Responsive */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-3 sm:gap-4 z-10">
         {/* Theme Toggle - Neomorphic Sliding Switch */}
-        <button
-          onClick={toggleTheme}
-          className="neomorphic-toggle"
-          aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-        >
-          <div
-            className="neomorphic-toggle__indicator"
-            style={{
-              transform: isDark ? 'translate3d(25%, 0, 0)' : 'translate3d(-75%, 0, 0)',
-              transition: 'transform 0.4s cubic-bezier(0.85, 0.05, 0.18, 1.35), box-shadow 300ms ease-in-out, background-color 300ms ease-in-out'
-            }}
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              style={{
-                color: '#FFA500',
-                transition: 'all 300ms ease-in-out',
-                opacity: isDark ? 0 : 1
-              }}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
-            </svg>
-            <svg
-              className="w-3.5 h-3.5"
-              style={{
-                color: 'var(--neomorphic-icon)',
-                transition: 'all 300ms ease-in-out',
-                opacity: isDark ? 1 : 0
-              }}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-            </svg>
-          </div>
-        </button>
+        <SlidingThemeToggle dayNightOnly={false} />
 
         {/* Login Link - Neomorphic Button - Responsive */}
         <Link

@@ -77,25 +77,76 @@
 .neomorphic-button:active {
   box-shadow: inset -4px -4px 6px -1px var(--neomorphic-light-shadow),
               inset 2px 2px 8px -1px var(--neomorphic-dark-shadow);
-  border-color: transparent;
+  border-color: var(--neomorphic-light-shadow);
 }
 
 .neomorphic-toggle {
-  isolation: isolate;
   position: relative;
-  height: 30px;
-  width: 60px;
-  border-radius: 15px !important;
-  overflow: hidden;
-  box-shadow: -8px -4px 8px 0px var(--neomorphic-light-shadow),
-              8px 4px 12px 0px var(--neomorphic-dark-shadow),
-              4px 4px 4px 0px var(--neomorphic-dark-shadow) inset,
-              -4px -4px 4px 0px var(--neomorphic-light-shadow) inset;
-  transition: box-shadow 300ms ease-in-out;
+  height: 44px;
+  width: 88px;
+  border-radius: 88px !important;
   cursor: pointer;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border: none;
   outline: none;
+  background: var(--neomorphic-bg);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+/* Grainy texture overlay for toggle */
+.neomorphic-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 88px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Light mode grain */
+:root .neomorphic-toggle::before,
+.neomorphic-toggle::before {
+  opacity: 0.5;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#toggleNoiseFilter);
+}
+
+/* Dark mode grain */
+.true-night-mode .neomorphic-toggle::before,
+.mocha-mode .neomorphic-toggle::before {
+  opacity: 0.2;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#toggleNoiseFilter);
+}
+
+/* Light mode toggle track */
+:root .neomorphic-toggle,
+.neomorphic-toggle {
+  box-shadow: inset 0 -3px 3px 0 rgba(0, 0, 0, 0.13),
+              inset 0 3px 3px 0 rgba(255, 255, 255, 1),
+              inset 12px -17px 14px 0 rgba(255, 255, 255, 0.9),
+              inset -13px 14px 12px 0 rgba(0, 0, 0, 0.1),
+              0 -8px 10px 0 rgba(255, 255, 255, 1),
+              0 13px 21px 0 rgba(0, 0, 0, 0.16);
+}
+
+/* Dark mode toggle track */
+.true-night-mode .neomorphic-toggle,
+.mocha-mode .neomorphic-toggle {
+  box-shadow: inset 0 -3px 3px 0 rgba(0, 0, 0, 0.5),
+              inset 0 3px 3px 0 rgba(255, 255, 255, 0.13),
+              inset 12px -17px 14px 0 rgba(255, 255, 255, 0.03),
+              inset -13px 14px 12px 0 rgba(0, 0, 0, 0.4),
+              0 -8px 15px 0 rgba(255, 255, 255, 0.08),
+              0 13px 21px 0 rgba(0, 0, 0, 0.4);
 }
 
 .neomorphic-toggle:focus {
@@ -103,29 +154,122 @@
   border: none;
 }
 
-.neomorphic-toggle__input {
-  display: none;
+.neomorphic-toggle:active .neomorphic-toggle__slider {
+  box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.3),
+              -1px -1px 2px 0px rgba(255, 255, 255, 0.1);
 }
 
-.neomorphic-toggle__input:checked ~ .neomorphic-toggle__indicator {
-  transform: translate3d(25%, 0, 0);
-}
-
-.neomorphic-toggle__indicator {
-  height: 100%;
-  width: 200%;
+.neomorphic-toggle__slider {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
   background: var(--neomorphic-bg);
-  border-radius: 15px !important;
-  transform: translate3d(-75%, 0, 0);
-  transition: transform 0.4s cubic-bezier(0.85, 0.05, 0.18, 1.35),
-              box-shadow 300ms ease-in-out,
-              background-color 300ms ease-in-out;
-  box-shadow: -8px -4px 8px 0px var(--neomorphic-light-shadow),
-              8px 4px 12px 0px var(--neomorphic-dark-shadow);
+  border-radius: 100px !important;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 8px;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--neomorphic-text);
+  user-select: none;
+  z-index: 2;
+}
+
+/* Light mode slider - ON state (sun icon showing) */
+:root .neomorphic-toggle__slider,
+.neomorphic-toggle__slider {
+  box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.2),
+              -2px -2px 2px 0px rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode slider - ON state */
+.true-night-mode .neomorphic-toggle__slider,
+.mocha-mode .neomorphic-toggle__slider {
+  box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.4),
+              -2px -2px 2px 0px rgba(255, 255, 255, 0.08);
+}
+
+.neomorphic-toggle.active .neomorphic-toggle__slider {
+  transform: translateX(-44px);
+  right: 6px;
+}
+
+/* Light mode active slider */
+:root .neomorphic-toggle.active .neomorphic-toggle__slider,
+.neomorphic-toggle.active .neomorphic-toggle__slider {
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.3),
+              -2px -2px 2px 0px rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode active slider */
+.true-night-mode .neomorphic-toggle.active .neomorphic-toggle__slider,
+.mocha-mode .neomorphic-toggle.active .neomorphic-toggle__slider {
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.5),
+              -2px -2px 2px 0px rgba(255, 255, 255, 0.06);
+}
+
+/* Responsive Toggle - Tablet (768px and below) */
+@media only screen and (max-width: 768px) {
+  .neomorphic-toggle {
+    height: 40px;
+    width: 80px;
+    border-radius: 80px !important;
+  }
+
+  .neomorphic-toggle::before {
+    border-radius: 80px;
+  }
+
+  .neomorphic-toggle__slider {
+    top: 5px;
+    right: 5px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .neomorphic-toggle.active .neomorphic-toggle__slider {
+    transform: translateX(-40px);
+    right: 5px;
+  }
+
+  .neomorphic-toggle__slider svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Responsive Toggle - Mobile (480px and below) */
+@media only screen and (max-width: 480px) {
+  .neomorphic-toggle {
+    height: 36px;
+    width: 72px;
+    border-radius: 72px !important;
+  }
+
+  .neomorphic-toggle::before {
+    border-radius: 72px;
+  }
+
+  .neomorphic-toggle__slider {
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .neomorphic-toggle.active .neomorphic-toggle__slider {
+    transform: translateX(-36px);
+    right: 4px;
+  }
+
+  .neomorphic-toggle__slider svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* Neomorphic Input Fields */
@@ -155,7 +299,7 @@
 .neomorphic-input:focus {
   box-shadow: inset 2px 2px 4px 0px var(--neomorphic-dark-shadow),
               inset -2px -2px 4px 0px var(--neomorphic-light-shadow);
-  border-color: var(--neomorphic-accent);
+  border-color: var(--neomorphic-light-shadow);
 }
 
 /* Neomorphic Submit Button */
