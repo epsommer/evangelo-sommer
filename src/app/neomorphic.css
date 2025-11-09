@@ -67,6 +67,34 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+/* Grainy texture overlay for button */
+.neomorphic-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 40px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#toggleNoiseFilter);
+}
+
+.true-night-mode .neomorphic-button::before,
+.mocha-mode .neomorphic-button::before {
+  opacity: 0.2;
+}
+
+.neomorphic-button > * {
+  position: relative;
+  z-index: 2;
 }
 
 .neomorphic-button:hover {
@@ -272,6 +300,35 @@
   }
 }
 
+/* Neomorphic Input Wrapper for grain texture */
+.neomorphic-input-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.neomorphic-input-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#noiseFilter);
+}
+
+.true-night-mode .neomorphic-input-wrapper::before,
+.mocha-mode .neomorphic-input-wrapper::before {
+  opacity: 0.2;
+}
+
 /* Neomorphic Input Fields */
 .neomorphic-input {
   font-family: 'Montserrat', sans-serif;
@@ -289,6 +346,7 @@
   box-shadow: inset 4px 4px 8px 0px var(--neomorphic-dark-shadow),
               inset -4px -4px 8px 0px var(--neomorphic-light-shadow);
   transition: all 250ms ease-in-out, box-shadow 300ms ease-in-out;
+  z-index: 2;
 }
 
 .neomorphic-input::placeholder {
@@ -322,6 +380,34 @@
               -6px -6px 12px -1px var(--neomorphic-light-shadow);
   transition: all 250ms ease-in-out, box-shadow 300ms ease-in-out;
   cursor: pointer;
+  overflow: hidden;
+}
+
+/* Grainy texture overlay for submit button */
+.neomorphic-submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#toggleNoiseFilter);
+}
+
+.true-night-mode .neomorphic-submit::before,
+.mocha-mode .neomorphic-submit::before {
+  opacity: 0.2;
+}
+
+.neomorphic-submit > * {
+  position: relative;
+  z-index: 2;
 }
 
 .neomorphic-submit:hover:not(:disabled) {
@@ -351,6 +437,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grainy texture overlay for logo */
+.neomorphic-logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#toggleNoiseFilter);
+}
+
+.true-night-mode .neomorphic-logo::before,
+.mocha-mode .neomorphic-logo::before {
+  opacity: 0.2;
+}
+
+.neomorphic-logo > div {
+  position: relative;
+  z-index: 2;
 }
 
 /* Neomorphic Card */
@@ -363,6 +478,35 @@
   border: 3px solid transparent;
   cursor: pointer;
   outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grainy texture overlay for card */
+.neomorphic-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background: #000000;
+  mix-blend-mode: multiply;
+  filter: url(#toggleNoiseFilter);
+}
+
+.true-night-mode .neomorphic-card::before,
+.mocha-mode .neomorphic-card::before {
+  opacity: 0.2;
+}
+
+.neomorphic-card > * {
+  position: relative;
+  z-index: 2;
 }
 
 .neomorphic-card:hover {

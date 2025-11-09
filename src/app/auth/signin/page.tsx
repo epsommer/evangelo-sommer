@@ -113,12 +113,34 @@ export default function SignIn() {
     <div
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative bg-background text-foreground transition-colors duration-300"
     >
+      {/* Grainy texture overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          opacity: isDark ? 0.2 : 0.5,
+          background: '#000000',
+          mixBlendMode: 'multiply',
+          filter: 'url(#noiseFilter)',
+        }}
+      />
+
+      {/* SVG Filter for grain texture */}
+      <svg className="absolute w-0 h-0">
+        <filter id="noiseFilter">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.6"
+            stitchTiles="stitch"
+          />
+        </filter>
+      </svg>
+
       {/* Theme Toggle */}
-      <div className="absolute top-6 right-6 flex items-center">
+      <div className="absolute top-6 right-6 flex items-center z-10">
         <SlidingThemeToggle dayNightOnly={true} />
       </div>
 
-      <div className={`max-w-md w-full space-y-8 ${isDark ? 'dark-mode' : ''}`}>
+      <div className={`max-w-md w-full space-y-8 relative z-10 ${isDark ? 'dark-mode' : ''}`}>
         <div>
           <div className={`mx-auto neomorphic-logo ${isDark ? 'dark-mode' : ''}`}>
             <div className="relative w-12 h-12">
@@ -134,7 +156,7 @@ export default function SignIn() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit} suppressHydrationWarning>
-          <div suppressHydrationWarning>
+          <div className="neomorphic-input-wrapper" suppressHydrationWarning>
             <input
               id="email"
               name="email"
@@ -148,7 +170,7 @@ export default function SignIn() {
             />
           </div>
 
-          <div className="relative" suppressHydrationWarning>
+          <div className="neomorphic-input-wrapper relative" suppressHydrationWarning>
             <input
               id="password"
               name="password"
@@ -164,7 +186,7 @@ export default function SignIn() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className={`absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
+              className={`password-toggle-btn absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-200 bg-transparent border-none z-10 ${
                 isDark
                   ? 'text-muted-foreground hover:text-neutral-300'
                   : 'text-muted-foreground hover:text-neutral-600'
@@ -212,7 +234,7 @@ export default function SignIn() {
               type="button"
               onClick={handleForgotPassword}
               disabled={isSendingReset || !email.trim()}
-              className={`text-sm font-primary uppercase tracking-wide underline disabled:cursor-not-allowed transition-colors duration-200 ${
+              className={`forgot-password-btn text-sm font-primary uppercase tracking-wide underline disabled:cursor-not-allowed transition-colors duration-200 bg-transparent border-none ${
                 isDark
                   ? 'text-muted-foreground hover:text-neutral-300 disabled:text-muted-foreground/50'
                   : 'text-muted-foreground hover:text-neutral-600 disabled:text-muted-foreground/50'

@@ -1250,15 +1250,27 @@ button:disabled,
 }
 
 /* Enhanced Button Dark Mode */
-[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *) {
+[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn) {
   background-color: var(--tactical-gold) !important;
   color: var(--tactical-grey-900) !important;
   border-color: var(--tactical-gold) !important;
 }
 
-[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *) {
+[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn) {
   background-color: var(--tactical-amber) !important;
   box-shadow: var(--hud-glow-secondary) !important;
+}
+
+/* Auth page utility buttons - keep transparent */
+.password-toggle-btn,
+.forgot-password-btn {
+  background: transparent !important;
+  border: none !important;
+}
+
+.password-toggle-btn:hover,
+.forgot-password-btn:hover {
+  background: transparent !important;
 }
 
 /* Enhanced Modal and Dropdown Dark Mode */
