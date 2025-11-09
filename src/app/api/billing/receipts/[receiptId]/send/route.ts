@@ -30,7 +30,7 @@ export async function POST(
       return NextResponse.json({ message: 'Database connection failed' }, { status: 500 });
     }
 
-    const client = await prisma.clientRecord.findUnique({
+    const client = await prisma.clientRecord.findFirst({
       where: { participantId: receipt.clientId }
     });
 

@@ -126,8 +126,10 @@ export async function GET(request: NextRequest) {
         participants: {
           some: {
             participant: {
-              clientRecord: {
-                id: clientId
+              clientRecords: {
+                some: {
+                  id: clientId
+                }
               }
             }
           }
@@ -377,7 +379,11 @@ export async function POST(request: NextRequest) {
           participants: {
             some: {
               participant: {
-                clientRecord: { id: clientId }
+                clientRecords: {
+                  some: {
+                    id: clientId
+                  }
+                }
               }
             }
           },

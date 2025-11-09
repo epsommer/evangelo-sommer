@@ -87,7 +87,7 @@ async function migrateMarkLevy() {
     }
 
     // Create ClientRecord
-    let clientRecord = await prisma.clientRecord.findUnique({
+    let clientRecord = await prisma.clientRecord.findFirst({
       where: { participantId: participant.id }
     })
 
