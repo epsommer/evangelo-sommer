@@ -12,10 +12,40 @@ export default function SignOutPage() {
 
   // Load theme preference
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setIsDark(savedTheme === "dark");
-    }
+    const updateTheme = () => {
+      const theme = localStorage.getItem('color-theme') || 'light';
+      const isDarkTheme = theme === 'mocha' || theme === 'true-night';
+      setIsDark(isDarkTheme);
+      document.documentElement.setAttribute('data-color-theme', theme);
+
+      // Apply theme classes
+      document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+      if (theme === 'mocha') {
+        document.documentElement.classList.add('dark', 'mocha-mode');
+      } else if (theme === 'overkast') {
+        document.documentElement.classList.add('overkast-mode');
+      } else if (theme === 'true-night') {
+        document.documentElement.classList.add('dark', 'true-night-mode');
+      }
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-color-theme') {
+          updateTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] });
+    window.addEventListener('storage', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', updateTheme);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -24,13 +54,8 @@ export default function SignOutPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative"
-      style={{
-        backgroundColor: isDark ? "#1c1917" : "#EBECF0",
-        transition: "background-color 300ms ease-in-out"
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative bg-background text-foreground transition-colors duration-300">
+
       <div className={`max-w-md w-full space-y-6 sm:space-y-8 text-center ${isDark ? 'dark-mode' : ''}`}>
         {/* Logo with neomorphic border */}
         <div className="flex justify-center">
@@ -53,16 +78,10 @@ export default function SignOutPage() {
 
         {/* Heading */}
         <div className="space-y-3 sm:space-y-4">
-          <h1
-            className="text-3xl sm:text-4xl font-bold font-space-grotesk uppercase tracking-wide"
-            style={{ color: isDark ? '#d1d5db' : '#6C7587' }}
-          >
+          <h1 className="text-3xl sm:text-4xl font-bold font-display uppercase tracking-wide text-foreground">
             Sign Out
           </h1>
-          <p
-            className="text-base sm:text-lg font-space-grotesk"
-            style={{ color: isDark ? '#9ca3af' : '#8992A5' }}
-          >
+          <p className="text-base sm:text-lg font-body text-muted-foreground">
             Are you sure you want to sign out?
           </p>
         </div>
@@ -76,7 +95,7 @@ export default function SignOutPage() {
           >
             {isSigningOut ? (
               <div className="flex items-center justify-center gap-2">
-                <div className="animate-spin h-4 w-4 border-b-2" style={{ borderColor: isDark ? '#d1d5db' : '#6C7587' }}></div>
+                <div className="animate-spin h-4 w-4 border-b-2 border-foreground"></div>
                 <span>Signing Out...</span>
               </div>
             ) : (
@@ -96,19 +115,10 @@ export default function SignOutPage() {
         </div>
 
         {/* Divider */}
-        <div
-          className="w-16 sm:w-24 h-0.5 mx-auto"
-          style={{
-            backgroundColor: "#D4AF37",
-            opacity: isDark ? 0.6 : 0.8,
-          }}
-        ></div>
+        <div className="w-16 sm:w-24 h-0.5 mx-auto bg-primary opacity-70"></div>
 
         {/* Footer text */}
-        <p
-          className="text-xs sm:text-sm font-space-grotesk"
-          style={{ color: isDark ? '#6b7280' : '#8992A5' }}
-        >
+        <p className="text-xs sm:text-sm font-body text-muted-foreground">
           Thank you for using Evangelo Sommer Portfolio
         </p>
       </div>

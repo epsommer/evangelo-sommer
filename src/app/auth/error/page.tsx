@@ -4,6 +4,7 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
+import "@/app/neomorphic.css";
 
 function ErrorContent() {
   const searchParams = useSearchParams();
@@ -37,12 +38,12 @@ function ErrorContent() {
   const errorInfo = errorMessages[error || "Default"] || errorMessages.Default;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-tactical-grey-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-red-100 rounded-full flex items-center justify-center">
+          <div className="mx-auto h-16 w-16 bg-destructive/10 neomorphic-rounded-full flex items-center justify-center">
             <svg
-              className="h-8 w-8 text-red-600"
+              className="h-8 w-8 text-destructive"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -55,19 +56,19 @@ function ErrorContent() {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-tactical-grey-800">
+          <h2 className="mt-6 text-center text-3xl font-extrabold font-display uppercase tracking-wide text-foreground">
             {errorInfo.title}
           </h2>
-          <p className="mt-2 text-center text-sm text-tactical-grey-500">
+          <p className="mt-2 text-center text-sm font-body text-muted-foreground">
             {errorInfo.description}
           </p>
 
           {error === "AccessDenied" && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+            <div className="mt-4 bg-yellow-500/10 border-2 border-yellow-500 neomorphic-rounded-lg p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
-                    className="h-5 w-5 text-yellow-400"
+                    className="h-5 w-5 text-yellow-500"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -79,7 +80,7 @@ function ErrorContent() {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
+                  <p className="text-sm font-body text-yellow-700 dark:text-yellow-400">
                     Only <strong>admin@evangelosommer.com</strong> is authorized
                     to access this system.
                   </p>
@@ -91,14 +92,14 @@ function ErrorContent() {
           <div className="mt-6 space-y-4">
             <Link
               href="/auth/signin"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-tactical-gold hover:bg-tactical-gold-dark"
+              className="inline-flex items-center px-4 py-2 text-sm font-primary font-medium uppercase tracking-wide neomorphic-rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
             >
               Try Again
             </Link>
             <div>
               <Link
                 href="/"
-                className="text-sm text-tactical-grey-500 hover:text-tactical-grey-600"
+                className="text-sm font-primary uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
               >
                 ← Back to Homepage
               </Link>
@@ -114,8 +115,8 @@ export default function AuthError() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tactical-gold"></div>
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="animate-spin neomorphic-rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       }
     >

@@ -16,26 +16,50 @@ export default function SignIn() {
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [error, setError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const [isToggling, setIsToggling] = useState(false);
   const router = useRouter();
 
   // Load theme preference from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setIsDark(savedTheme === "dark");
-    }
+  useEffect(() => {    
+    const updateTheme = () => {
+      const theme = localStorage.getItem('color-theme') || 'light';
+      setIsDark(theme === 'mocha' || theme === 'true-night');
+      document.documentElement.setAttribute('data-color-theme', theme);
+    };
+
+    // Initial theme setup
+    updateTheme();
+
+    // Observe changes to the 'data-color-theme' attribute on the html element
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-color-theme') {
+          updateTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] });
+
+    window.addEventListener('storage', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', updateTheme);
+    };
   }, []);
 
   // Save theme preference
   const toggleTheme = () => {
-    setIsToggling(true);
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-    setTimeout(() => setIsToggling(false), 300);
+    const currentTheme = localStorage.getItem('color-theme') || 'light';
+    const newTheme = (currentTheme === 'light' || currentTheme === 'overkast') ? 'true-night' : 'light';
+    
+    // Update the data-color-theme attribute on the html element
+    document.documentElement.setAttribute('data-color-theme', newTheme);
+    localStorage.setItem('color-theme', newTheme);
+    
+    // This event will be picked up by the useEffect listener to update the state
+    window.dispatchEvent(new Event('storage'));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +120,6 @@ export default function SignIn() {
       if (response.ok) {
         console.log("[Forgot Password] API call successful:", data.message);
         setResetMessage(data.message || "Password reset link has been sent to your email.");
-        setShowForgotPassword(false);
       } else {
         console.error("[Forgot Password] API call failed:", data.error);
         setError(data.error || "Failed to send reset email");
@@ -111,11 +134,7 @@ export default function SignIn() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
-      style={{
-        backgroundColor: isDark ? "#1c1917" : "#EBECF0",
-        transition: "background-color 300ms ease-in-out"
-      }}
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative bg-background text-foreground transition-colors duration-300"
     >
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 flex items-center">
@@ -127,20 +146,10 @@ export default function SignIn() {
             onChange={toggleTheme}
           />
           <div className="neomorphic-toggle__indicator">
-            <svg
-              className="w-3.5 h-3.5"
-              style={{ color: "#FFA500" }}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
+            <svg className="w-3.5 h-3.5 text-neomorphic-accent-light" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
             </svg>
-            <svg
-              className="w-3.5 h-3.5"
-              style={{ color: "#8992A5" }}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
+            <svg className="w-3.5 h-3.5 text-neomorphic-text-muted" fill="currentColor" viewBox="0 0 20 20">
               <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
             </svg>
           </div>
@@ -151,35 +160,13 @@ export default function SignIn() {
         <div>
           <div className={`mx-auto neomorphic-logo ${isDark ? 'dark-mode' : ''}`}>
             <div className="relative w-12 h-12">
-              <Image
-                src="/EvangeloSommer-ES-Monogram.svg"
-                alt="ES Monogram"
-                fill
-                className="object-contain"
-                style={{
-                  filter: isDark
-                    ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
-                    : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
-                }}
-              />
+              <Image src="/EvangeloSommer-ES-Monogram.svg" alt="ES Monogram" fill className="object-contain neomorphic-logo-image" />
             </div>
           </div>
-          <h2
-            className="mt-6 text-center text-2xl font-bold font-space-grotesk uppercase tracking-wide"
-            style={{
-              color: isDark ? '#d1d5db' : '#6C7587',
-              transition: 'color 300ms ease-in-out'
-            }}
-          >
+          <h2 className="mt-6 text-center text-2xl font-bold font-display uppercase tracking-wide text-foreground transition-colors duration-300">
             Sign In
           </h2>
-          <p
-            className="mt-2 text-center text-sm font-space-grotesk"
-            style={{
-              color: isDark ? '#9ca3af' : '#8992A5',
-              transition: 'color 300ms ease-in-out'
-            }}
-          >
+          <p className="mt-2 text-center text-sm font-body text-muted-foreground transition-colors duration-300">
             Access your account
           </p>
         </div>
@@ -215,13 +202,7 @@ export default function SignIn() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-5 top-1/2 -translate-y-1/2 text-xs uppercase tracking-wide font-space-grotesk"
-              style={{
-                color: isDark ? '#9ca3af' : '#8992A5',
-                transition: 'color 200ms ease-in-out'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = isDark ? '#d1d5db' : '#6C7587'}
-              onMouseLeave={(e) => e.currentTarget.style.color = isDark ? '#9ca3af' : '#8992A5'}
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-xs uppercase tracking-wide font-primary text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {showPassword ? "HIDE" : "SHOW"}
             </button>
@@ -232,40 +213,21 @@ export default function SignIn() {
               type="submit"
               disabled={isLoading || !email.trim() || !password.trim()}
               className={`neomorphic-submit ${isDark ? 'dark-mode' : ''}`}
-            >
-              {isLoading ? (
-                <div className="animate-spin h-4 w-4 border-b-2" style={{ borderColor: isDark ? '#d1d5db' : '#6C7587' }}></div>
-              ) : (
+            >{isLoading ? (<div className="animate-spin h-4 w-4 border-b-2 border-neomorphic-text-primary"></div>) : (
                 "Sign In"
               )}
             </button>
           </div>
 
           {error && (
-            <div
-              className="mt-4 p-4 rounded-lg"
-              style={{
-                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(254, 226, 226, 1)',
-                border: '2px solid #EF4444',
-                color: isDark ? '#FCA5A5' : '#991B1B',
-                transition: 'all 300ms ease-in-out'
-              }}
-            >
-              <p className="text-sm font-space-grotesk">{error}</p>
+            <div className="mt-4 p-4 rounded-lg bg-destructive/10 border-2 border-destructive text-destructive transition-all duration-300">
+              <p className="text-sm font-body">{error}</p>
             </div>
           )}
 
           {resetMessage && (
-            <div
-              className="mt-4 p-4 rounded-lg"
-              style={{
-                backgroundColor: isDark ? 'rgba(34, 197, 94, 0.1)' : 'rgba(220, 252, 231, 1)',
-                border: '2px solid #22C55E',
-                color: isDark ? '#86EFAC' : '#166534',
-                transition: 'all 300ms ease-in-out'
-              }}
-            >
-              <p className="text-sm font-space-grotesk">{resetMessage}</p>
+            <div className="mt-4 p-4 rounded-lg bg-green-500/10 border-2 border-green-500 text-green-700 dark:text-green-400 transition-all duration-300">
+              <p className="text-sm font-body">{resetMessage}</p>
             </div>
           )}
 
@@ -274,11 +236,7 @@ export default function SignIn() {
               type="button"
               onClick={handleForgotPassword}
               disabled={isSendingReset || !email.trim()}
-              className="text-sm font-space-grotesk uppercase tracking-wide underline disabled:cursor-not-allowed"
-              style={{
-                color: isSendingReset || !email.trim() ? (isDark ? '#6b7280' : '#9ca3af') : '#D4AF37',
-                transition: 'color 200ms ease-in-out'
-              }}
+              className="text-sm font-primary uppercase tracking-wide underline disabled:cursor-not-allowed text-primary hover:text-foreground transition-colors duration-200"
             >
               {isSendingReset ? "Sending..." : "Forgot Password?"}
             </button>
@@ -288,11 +246,7 @@ export default function SignIn() {
         <div className="text-center mt-6">
           <Link
             href="/"
-            className="text-sm font-space-grotesk uppercase tracking-wide"
-            style={{
-              color: '#D4AF37',
-              transition: 'color 200ms ease-in-out'
-            }}
+            className="text-sm font-primary uppercase tracking-wide text-primary hover:text-foreground transition-colors duration-200"
           >
             ← Back to Homepage
           </Link>

@@ -7,32 +7,56 @@ import "@/app/neomorphic.css";
 
 export default function MaintenancePage() {
   const [isDark, setIsDark] = useState(true);
-  const [isToggling, setIsToggling] = useState(false);
 
-  // Load theme preference from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setIsDark(savedTheme === "dark");
-    }
+    const updateTheme = () => {
+      const theme = localStorage.getItem('color-theme') || 'light';
+      const isDarkTheme = theme === 'mocha' || theme === 'true-night';
+      setIsDark(isDarkTheme);
+      document.documentElement.setAttribute('data-color-theme', theme);
+
+      // Apply theme classes
+      document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+      if (theme === 'mocha') {
+        document.documentElement.classList.add('dark', 'mocha-mode');
+      } else if (theme === 'overkast') {
+        document.documentElement.classList.add('overkast-mode');
+      } else if (theme === 'true-night') {
+        document.documentElement.classList.add('dark', 'true-night-mode');
+      }
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-color-theme') {
+          updateTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] });
+    window.addEventListener('storage', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', updateTheme);
+    };
   }, []);
 
-  // Save theme preference
   const toggleTheme = () => {
-    setIsToggling(true);
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-    setTimeout(() => setIsToggling(false), 300);
+    const currentTheme = localStorage.getItem('color-theme') || 'light';
+    const newTheme = (currentTheme === 'light' || currentTheme === 'overkast') ? 'mocha' : 'light';
+
+    document.documentElement.setAttribute('data-color-theme', newTheme);
+    localStorage.setItem('color-theme', newTheme);
+    window.dispatchEvent(new Event('storage'));
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative"
-      style={{
-        backgroundColor: isDark ? "#1c1917" : "#EBECF0",
-        transition: "background-color 300ms ease-in-out"
-      }}
+      className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative bg-background text-foreground transition-colors duration-300"
     >
       {/* Header Controls - Responsive */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-3 sm:gap-4 z-10">
@@ -100,53 +124,28 @@ export default function MaintenancePage() {
 
         {/* Heading - Responsive */}
         <div className="space-y-3 sm:space-y-4">
-          <h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-space-grotesk uppercase tracking-wide px-2"
-            style={{ color: isDark ? "#d1d5db" : "#6C7587" }}
-          >
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-display uppercase tracking-wide px-2 text-foreground">
             Under Development
           </h1>
-          <p
-            className="text-base sm:text-lg md:text-xl font-space-grotesk px-2"
-            style={{ color: isDark ? "#9ca3af" : "#6C7587" }}
-          >
+          <p className="text-base sm:text-lg md:text-xl font-body px-2 text-muted-foreground">
             Evangelo Sommer Portfolio
           </p>
-          <p
-            className="text-sm sm:text-base font-space-grotesk px-2"
-            style={{ color: isDark ? "#6b7280" : "#8992A5" }}
-          >
+          <p className="text-sm sm:text-base font-body px-2 text-muted-foreground/80">
             Something immersive is coming soon...
           </p>
         </div>
 
         {/* Divider */}
-        <div
-          className="w-16 sm:w-24 h-0.5 mx-auto"
-          style={{
-            backgroundColor: "#D4AF37",
-            opacity: isDark ? 0.6 : 0.8,
-          }}
-        ></div>
+        <div className="w-16 sm:w-24 h-0.5 mx-auto bg-primary opacity-70"></div>
 
         {/* Contact Information - Responsive */}
         <div className="space-y-3 sm:space-y-4">
-          <h2
-            className="text-lg sm:text-xl font-bold font-space-grotesk uppercase tracking-wide px-2"
-            style={{ color: isDark ? "#d1d5db" : "#6C7587" }}
-          >
+          <h2 className="text-lg sm:text-xl font-bold font-display uppercase tracking-wide px-2 text-foreground">
             Get In Touch
           </h2>
           <a
             href="mailto:hi@evangelosommer.com"
-            className="inline-block transition-colors duration-200 font-space-grotesk text-sm sm:text-base px-2 break-all"
-            style={{ color: isDark ? "#9ca3af" : "#6C7587" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = isDark ? "#d1d5db" : "#484f60")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = isDark ? "#9ca3af" : "#6C7587")
-            }
+            className="inline-block transition-colors duration-200 font-body text-sm sm:text-base px-2 break-all text-muted-foreground hover:text-foreground"
           >
             hi@evangelosommer.com
           </a>
@@ -158,14 +157,7 @@ export default function MaintenancePage() {
             href="https://linkedin.com/in/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors duration-200 p-2 touch-manipulation"
-            style={{ color: isDark ? "#6b7280" : "#8992A5" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = isDark ? "#9ca3af" : "#6C7587")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = isDark ? "#6b7280" : "#8992A5")
-            }
+            className="transition-colors duration-200 p-2 touch-manipulation text-muted-foreground/60 hover:text-muted-foreground"
             aria-label="LinkedIn"
           >
             <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -176,14 +168,7 @@ export default function MaintenancePage() {
             href="https://github.com/epsommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors duration-200 p-2 touch-manipulation"
-            style={{ color: isDark ? "#6b7280" : "#8992A5" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = isDark ? "#9ca3af" : "#6C7587")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = isDark ? "#6b7280" : "#8992A5")
-            }
+            className="transition-colors duration-200 p-2 touch-manipulation text-muted-foreground/60 hover:text-muted-foreground"
             aria-label="GitHub"
           >
             <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -194,14 +179,7 @@ export default function MaintenancePage() {
             href="https://twitter.com/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors duration-200 p-2 touch-manipulation"
-            style={{ color: isDark ? "#6b7280" : "#8992A5" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = isDark ? "#9ca3af" : "#6C7587")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = isDark ? "#6b7280" : "#8992A5")
-            }
+            className="transition-colors duration-200 p-2 touch-manipulation text-muted-foreground/60 hover:text-muted-foreground"
             aria-label="Twitter"
           >
             <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -211,14 +189,8 @@ export default function MaintenancePage() {
         </div>
 
         {/* Copyright Notice - Responsive */}
-        <div
-          className="pt-6 sm:pt-8 border-t px-4"
-          style={{ borderColor: isDark ? "#374151" : "#d1d5db" }}
-        >
-          <p
-            className="text-xs sm:text-sm font-space-grotesk"
-            style={{ color: isDark ? "#4b5563" : "#8992A5" }}
-          >
+        <div className="pt-6 sm:pt-8 border-t border-border/50 px-4">
+          <p className="text-xs sm:text-sm font-body text-muted-foreground/50">
             &copy; {new Date().getFullYear()} Evangelo Sommer. All rights
             reserved.
           </p>
