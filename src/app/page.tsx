@@ -13,7 +13,6 @@ export default function MaintenancePage() {
       const theme = localStorage.getItem('color-theme') || 'light';
       const isDarkTheme = theme === 'mocha' || theme === 'true-night';
       setIsDark(isDarkTheme);
-      document.documentElement.setAttribute('data-color-theme', theme);
 
       // Apply theme classes
       document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
@@ -26,6 +25,9 @@ export default function MaintenancePage() {
       }
     };
 
+    // Initialize theme on mount
+    const theme = localStorage.getItem('color-theme') || 'light';
+    document.documentElement.setAttribute('data-color-theme', theme);
     updateTheme();
 
     const observer = new MutationObserver((mutations) => {

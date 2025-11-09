@@ -24,10 +24,11 @@ export default function SignIn() {
     const updateTheme = () => {
       const theme = localStorage.getItem('color-theme') || 'light';
       setIsDark(theme === 'mocha' || theme === 'true-night');
-      document.documentElement.setAttribute('data-color-theme', theme);
     };
 
     // Initial theme setup
+    const theme = localStorage.getItem('color-theme') || 'light';
+    document.documentElement.setAttribute('data-color-theme', theme);
     updateTheme();
 
     // Observe changes to the 'data-color-theme' attribute on the html element
