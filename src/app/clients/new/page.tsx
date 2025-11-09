@@ -59,6 +59,7 @@ function NewClientPageContent() {
   // Household/Account management
   const [createHousehold, setCreateHousehold] = useState(false);
   const [householdName, setHouseholdName] = useState("");
+  const [householdType, setHouseholdType] = useState<'PERSONAL' | 'FAMILY' | 'BUSINESS' | 'ORGANIZATION'>('PERSONAL');
   const [isPrimaryContact, setIsPrimaryContact] = useState(true);
   const [relationshipRole, setRelationshipRole] = useState("Primary Client");
 
@@ -139,7 +140,7 @@ function NewClientPageContent() {
       if (createHousehold) {
         clientData.household = {
           name: householdName.trim(),
-          accountType: formData.householdType || 'PERSONAL',
+          accountType: householdType,
           address: formData.address,
           isPrimaryContact: isPrimaryContact,
           relationshipRole: relationshipRole,
@@ -435,8 +436,8 @@ function NewClientPageContent() {
                       Account Type *
                     </label>
                     <select
-                      value={formData.householdType || 'PERSONAL'}
-                      onChange={(e) => handleInputChange('householdType', e.target.value)}
+                      value={householdType}
+                      onChange={(e) => setHouseholdType(e.target.value as 'PERSONAL' | 'FAMILY' | 'BUSINESS' | 'ORGANIZATION')}
                       className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
                       required={createHousehold}
                     >

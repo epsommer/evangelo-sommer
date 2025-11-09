@@ -422,12 +422,12 @@ function TransactionsTable({
             Recent Transactions
           </h2>
           {showViewAll && (
-            <Button
+            <button
               onClick={onViewAllClick}
-              className="text-accent border-border-accent hover:bg-accent hover:text-foreground"
+              className="neo-button text-accent border-border-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm"
             >
               View All History
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -1015,12 +1015,12 @@ export default function ServicesBillingPage() {
         {/* Show Less Button for All Transactions View */}
         {showAllTransactions && filteredTransactions.length > 5 && (
           <div className="text-center mt-4">
-            <Button
+            <button
               onClick={() => setShowAllTransactions(false)}
-              className="text-accent border-border-accent hover:bg-accent hover:text-foreground"
+              className="neo-button text-accent border-border-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm"
             >
               Show Recent Only
-            </Button>
+            </button>
           </div>
         )}
         

@@ -65,8 +65,7 @@ export default function MaintenancePage() {
           onClick={toggleTheme}
           className={`neomorphic-toggle ${isDark ? 'dark-mode' : ''}`}
           style={{
-            transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isToggling ? 'scale(0.95)' : 'scale(1)'
+            transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)'
           }}
           aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
         >
