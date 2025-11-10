@@ -93,6 +93,8 @@ interface StatusSelectorProps {
 export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
   const [status, setStatus] = useState<UserStatus>("online");
   const [showSubmenu, setShowSubmenu] = useState(false);
+  const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
+  const [submenuPosition, setSubmenuPosition] = useState({ top: 0, right: 0 });
 
   // Load status from localStorage
   useEffect(() => {
@@ -112,6 +114,17 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  // Calculate submenu position when button ref changes or submenu opens
+  useEffect(() => {
+    if (buttonRef && showSubmenu) {
+      const rect = buttonRef.getBoundingClientRect();
+      setSubmenuPosition({
+        top: rect.top,
+        right: window.innerWidth - rect.left + 8 // 8px gap (mr-2 = 0.5rem = 8px)
+      });
+    }
+  }, [buttonRef, showSubmenu]);
+
   const handleStatusChange = (newStatus: UserStatus) => {
     setStatus(newStatus);
     localStorage.setItem("user-status", newStatus);
@@ -130,35 +143,46 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
   const currentConfig = statusConfigs[status];
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setShowSubmenu(true)}
-      onMouseLeave={() => setShowSubmenu(false)}
-    >
-      <button
-        onClick={() => setShowSubmenu(!showSubmenu)}
-        className="neo-button-menu w-full flex items-center justify-between p-3 rounded-lg group"
+    <>
+      <div
+        className="relative"
+        onMouseEnter={() => setShowSubmenu(true)}
+        onMouseLeave={() => setShowSubmenu(false)}
       >
-        <div className="flex items-center space-x-3">
-          <svg
-            className="w-4 h-4 text-muted-foreground transition-transform group-hover:-translate-x-0.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span className="font-medium">Status</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground">{currentConfig.label}</span>
-          <Circle className={`h-3 w-3 ${currentConfig.color} fill-current`} />
-        </div>
-      </button>
+        <button
+          ref={setButtonRef}
+          onClick={() => setShowSubmenu(!showSubmenu)}
+          className="neo-button-menu w-full flex items-center justify-between p-3 rounded-lg group"
+        >
+          <div className="flex items-center space-x-3">
+            <svg
+              className="w-4 h-4 text-muted-foreground transition-transform group-hover:-translate-x-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="font-medium">Status</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-muted-foreground">{currentConfig.label}</span>
+            <Circle className={`h-3 w-3 ${currentConfig.color} fill-current`} />
+          </div>
+        </button>
+      </div>
 
-      {/* Side Dropdown - appears on the LEFT */}
+      {/* Side Dropdown - fixed positioned to appear on the LEFT, outside parent overflow */}
       {showSubmenu && (
-        <div className="absolute right-full top-0 mr-2 w-64 neo-container rounded-xl overflow-hidden z-[70]">
+        <div
+          className="fixed w-64 neo-container rounded-xl overflow-hidden z-[70]"
+          style={{
+            top: `${submenuPosition.top}px`,
+            right: `${submenuPosition.right}px`
+          }}
+          onMouseEnter={() => setShowSubmenu(true)}
+          onMouseLeave={() => setShowSubmenu(false)}
+        >
           <div className="p-3 border-b border-border">
             <h4 className="font-primary text-xs uppercase tracking-wide text-foreground">
               Set Status
@@ -196,7 +220,7 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
