@@ -13,7 +13,9 @@
       "WebFetch(domain:codepen.io)",
       "Bash(npx prisma migrate dev:*)",
       "Bash(/Users/epsommer/projects/evangelo-sommer/src/app/globals.css.tmp)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(curl:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []

@@ -218,7 +218,7 @@ const Sidebar = ({
                         {conversationCount}
                       </Badge>
                     )}
-                    {isServiceLinesItem && <ChevronDown className="ml-auto h-4 w-4" />}
+                    {isServiceLinesItem && <ChevronRight className="ml-auto h-4 w-4" />}
                   </>
                 )}
               </button>
@@ -271,13 +271,10 @@ const Sidebar = ({
     {/* Service Lines Submenu */}
     {showServiceLinesSubmenu && !isCollapsed && (
       <div
-        className="fixed z-[9999] py-2 shadow-lg min-w-[240px] rounded-lg border"
+        className="fixed z-[9999] py-2 neo-container min-w-[240px]"
         style={{
           top: `${submenuPosition.top}px`,
-          left: `${submenuPosition.left}px`,
-          backgroundColor: 'hsl(var(--card))',
-          color: 'hsl(var(--card-foreground))',
-          borderColor: 'hsl(var(--border))'
+          left: `${submenuPosition.left}px`
         }}
         onMouseEnter={() => {
           if (closeTimeoutRef.current) {
@@ -294,7 +291,7 @@ const Sidebar = ({
           return (
             <button
               key={service.id}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm transition-all duration-200 hover:bg-muted"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm text-foreground transition-all duration-200 hover:neo-inset rounded-lg"
               onClick={() => {
                 handleTabChange(service.id)
                 setShowServiceLinesSubmenu(false)
