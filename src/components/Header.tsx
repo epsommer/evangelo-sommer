@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import AccountSettingsModal, { AccountSettings } from "@/components/AccountSettingsModal"
 import PreferencesModal, { SystemPreferences } from "@/components/PreferencesModal"
-import UserStatusIndicator from "@/components/UserStatusIndicator"
+import UserStatusIndicator, { StatusSelector } from "@/components/UserStatusIndicator"
 
 interface ScheduledService {
   id: string;
@@ -198,7 +198,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
           </button>
 
           {showScheduleDropdown && (
-            <div className="neo-dropdown absolute right-0 top-full mt-2 w-96 z-50 overflow-hidden rounded-xl">
+            <div className="neo-dropdown absolute right-0 top-full mt-2 w-96 z-[60] overflow-hidden rounded-xl">
               <div className="p-4 bg-background border-b border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-0">
                   Upcoming Schedule
@@ -277,13 +277,13 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
             }}
           >
             <span className="relative z-10">ES</span>
-            <UserStatusIndicator showMenu={true} />
+            <UserStatusIndicator />
           </button>
-          
+
           {/* Profile Dropdown */}
           {showProfileDropdown && (
             <div
-              className="neo-dropdown absolute right-0 top-full mt-2 w-72 z-50 rounded-xl overflow-hidden"
+              className="neo-dropdown absolute right-0 top-full mt-2 w-72 z-[60] rounded-xl overflow-hidden"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -319,6 +319,15 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
                   <Settings className="h-4 w-4" />
                   <span className="font-medium">System Preferences</span>
                 </button>
+
+                {/* Status Section */}
+                <div className="h-px bg-border my-2"></div>
+                <div className="px-2 py-2">
+                  <h4 className="font-primary text-xs uppercase tracking-wide text-muted-foreground mb-2 px-2">
+                    Status
+                  </h4>
+                  <StatusSelector />
+                </div>
 
                 <div className="h-px bg-border my-2"></div>
 

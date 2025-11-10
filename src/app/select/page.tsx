@@ -7,7 +7,7 @@ import Image from "next/image";
 import "@/app/neomorphic.css";
 import { Palette, Box, Users, Edit, Eye, Grid3x3, List, Settings, User, LogOut } from "lucide-react";
 import { SlidingThemeToggle } from "@/components/SlidingThemeToggle";
-import UserStatusIndicator from "@/components/UserStatusIndicator";
+import UserStatusIndicator, { StatusSelector } from "@/components/UserStatusIndicator";
 
 interface StudioProject {
   id: string;
@@ -175,7 +175,7 @@ export default function SelectPage() {
             }}
           >
             <span className="relative z-10">ES</span>
-            <UserStatusIndicator showMenu={true} />
+            <UserStatusIndicator />
           </button>
 
           {/* Dropdown Menu */}
@@ -183,12 +183,12 @@ export default function SelectPage() {
             <>
               {/* Backdrop */}
               <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0 z-[55]"
                 onClick={() => setIsDropdownOpen(false)}
               />
 
               {/* Menu */}
-              <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 z-[60] w-72 rounded-xl overflow-hidden">
                 <div className={`neo-card p-0`}>
                   {/* Header */}
                   <div className="p-4 border-b border-border/30">
@@ -222,6 +222,15 @@ export default function SelectPage() {
                       <User size={18} />
                       <span>Profile</span>
                     </button>
+
+                    {/* Status Section */}
+                    <div className="h-px bg-border/30 my-2" />
+                    <div className="px-2 py-2">
+                      <h4 className="font-primary text-xs uppercase tracking-wide text-muted-foreground mb-2 px-2">
+                        Status
+                      </h4>
+                      <StatusSelector />
+                    </div>
 
                     {/* Divider */}
                     <div className="h-px bg-border/30 my-2" />
