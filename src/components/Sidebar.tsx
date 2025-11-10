@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
-import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Home, Receipt, LayoutGrid, Heart } from "lucide-react"
+import React, { useState, useRef } from "react"
+import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Home, Receipt, LayoutGrid, Heart, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -28,9 +28,10 @@ const navigationItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
   { id: "clients", label: "Clients", icon: Users },
   { id: "conversations", label: "Conversations", icon: MessageSquare },
-  { id: "services-billing", label: "Services & Billing", icon: Receipt },
+  { id: "billing", label: "Billing", icon: Receipt },
   { id: "time-manager", label: "Time Manager", icon: Clock },
   { id: "goals", label: "Goals", icon: Target },
+  { id: "service-lines", label: "Service Lines", icon: Briefcase },
 ]
 
 const serviceLines = [
@@ -53,6 +54,10 @@ const Sidebar = ({
   const [showDeployments, setShowDeployments] = useState(false)
   const [showWordmarkTooltip, setShowWordmarkTooltip] = useState(false)
   const [showVersionTooltip, setShowVersionTooltip] = useState(false)
+  const [showServiceLinesSubmenu, setShowServiceLinesSubmenu] = useState(false)
+  const [serviceLinesButtonRef, setServicesLinesButtonRef] = useState<HTMLButtonElement | null>(null)
+  const [submenuPosition, setSubmenuPosition] = useState({ top: 0, right: 0 })
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleTabChange = (tab: string) => {
     setActiveTab?.(tab)
@@ -94,7 +99,7 @@ const Sidebar = ({
             /* Full wordmark when expanded */
             <div className="relative overflow-visible">
               <button
-                onClick={() => setShowDeployments(!showDeployments)}
+                onClick={onTitleClick}
                 onMouseEnter={() => setShowWordmarkTooltip(true)}
                 onMouseLeave={() => setShowWordmarkTooltip(false)}
                 className="group w-full text-left"
@@ -108,15 +113,16 @@ const Sidebar = ({
               </button>
 
               {/* Version with deployment info tooltip */}
-              <div
+              <button
                 className="relative ml-8 mt-1"
+                onClick={() => setShowDeployments(!showDeployments)}
                 onMouseEnter={() => setShowVersionTooltip(true)}
                 onMouseLeave={() => setShowVersionTooltip(false)}
               >
                 <div className="text-[10px] text-muted-foreground cursor-help">
                   {CURRENT_VERSION}
                 </div>
-              </div>
+              </button>
             </div>
           )}
         </div>
@@ -166,15 +172,41 @@ const Sidebar = ({
         <div className="space-y-1">
           {navigationItems.map(item => {
             const IconComponent = item.icon
+            const isServiceLinesItem = item.id === 'service-lines'
+
             return (
               <button
                 key={item.id}
+                ref={isServiceLinesItem ? setServicesLinesButtonRef : undefined}
                 className={`neo-nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium text-sm transition-all duration-200 rounded-lg ${
-                  activeTab === item.id
+                  activeTab === item.id || (isServiceLinesItem && ['woodgreen', 'whiteknight', 'pupawalk', 'creative'].includes(activeTab))
                     ? 'neo-nav-button-active'
                     : ''
                 }`}
                 onClick={() => handleTabChange(item.id)}
+                onMouseEnter={() => {
+                  if (isServiceLinesItem && !isCollapsed) {
+                    if (closeTimeoutRef.current) {
+                      clearTimeout(closeTimeoutRef.current)
+                      closeTimeoutRef.current = null
+                    }
+                    if (serviceLinesButtonRef) {
+                      const rect = serviceLinesButtonRef.getBoundingClientRect()
+                      setSubmenuPosition({
+                        top: rect.top,
+                        right: window.innerWidth - rect.left + 8
+                      })
+                    }
+                    setShowServiceLinesSubmenu(true)
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (isServiceLinesItem) {
+                    closeTimeoutRef.current = setTimeout(() => {
+                      setShowServiceLinesSubmenu(false)
+                    }, 150)
+                  }
+                }}
                 title={isCollapsed ? item.label : undefined}
               >
                 <IconComponent className="h-4 w-4" />
@@ -186,44 +218,12 @@ const Sidebar = ({
                         {conversationCount}
                       </Badge>
                     )}
+                    {isServiceLinesItem && <ChevronDown className="ml-auto h-4 w-4" />}
                   </>
                 )}
               </button>
             )
           })}
-        </div>
-        
-        {/* Service Lines Section */}
-        <div className={isCollapsed ? 'mt-4' : 'mt-8'}>
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-muted-foreground mb-4">
-              Service Lines
-            </h3>
-          )}
-          {isCollapsed && (
-            <div className="w-full h-px bg-border mb-4"></div>
-          )}
-          <div className="space-y-1">
-            {serviceLines.map(service => {
-              const IconComponent = service.icon
-              return (
-                <button
-                  key={service.id}
-                  className={`neo-nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium text-sm transition-all duration-200 rounded-lg`}
-                  onClick={() => handleTabChange(service.id)}
-                  title={isCollapsed ? service.name : undefined}
-                >
-                  <div className={`w-3 h-3 ${service.color} ${isCollapsed ? 'mx-auto' : ''}`}></div>
-                  {!isCollapsed && (
-                    <>
-                      <IconComponent className="h-4 w-4" />
-                      <span>{service.name}</span>
-                    </>
-                  )}
-                </button>
-              )
-            })}
-          </div>
         </div>
       </nav>
     </aside>
@@ -265,6 +265,47 @@ const Sidebar = ({
             <div className="text-[10px] opacity-70 truncate">{deployment.url}</div>
           </div>
         ))}
+      </div>
+    )}
+
+    {/* Service Lines Submenu */}
+    {showServiceLinesSubmenu && !isCollapsed && (
+      <div
+        className="fixed z-[9999] py-2 shadow-lg min-w-[240px] rounded-lg border"
+        style={{
+          top: `${submenuPosition.top}px`,
+          right: `${submenuPosition.right}px`,
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          borderColor: 'hsl(var(--border))'
+        }}
+        onMouseEnter={() => {
+          if (closeTimeoutRef.current) {
+            clearTimeout(closeTimeoutRef.current)
+            closeTimeoutRef.current = null
+          }
+        }}
+        onMouseLeave={() => {
+          setShowServiceLinesSubmenu(false)
+        }}
+      >
+        {serviceLines.map(service => {
+          const IconComponent = service.icon
+          return (
+            <button
+              key={service.id}
+              className="w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm transition-all duration-200 hover:bg-muted"
+              onClick={() => {
+                handleTabChange(service.id)
+                setShowServiceLinesSubmenu(false)
+              }}
+            >
+              <div className={`w-3 h-3 rounded-full ${service.color}`}></div>
+              <IconComponent className="h-4 w-4" />
+              <span>{service.name}</span>
+            </button>
+          )
+        })}
       </div>
     )}
     </>

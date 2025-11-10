@@ -32,9 +32,10 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
     if (pathname === '/dashboard') return 'dashboard'
     if (pathname?.includes('/clients')) return 'clients'
     if (pathname?.includes('/conversations')) return 'conversations'
-    if (pathname?.includes('/services-billing')) return 'services-billing'
+    if (pathname?.includes('/billing')) return 'billing'
     if (pathname?.includes('/time-manager')) return 'time-manager'
     if (pathname?.includes('/goals')) return 'goals'
+    if (pathname?.includes('/service-lines')) return 'service-lines'
     if (pathname?.includes('/services/woodgreen') || pathname?.includes('/services/landscaping')) return 'woodgreen'
     if (pathname?.includes('/services/whiteknight') || pathname?.includes('/services/snow-removal')) return 'whiteknight'
     if (pathname?.includes('/services/pupawalk') || pathname?.includes('/services/pet-services')) return 'pupawalk'
@@ -77,9 +78,10 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
       'dashboard': '/dashboard',
       'clients': '/clients',
       'conversations': '/conversations',
-      'services-billing': '/services-billing',
+      'billing': '/billing',
       'time-manager': '/time-manager',
       'goals': '/goals',
+      'service-lines': '/service-lines',
       'woodgreen': '/services/woodgreen',
       'whiteknight': '/services/whiteknight',
       'pupawalk': '/services/pupawalk',
