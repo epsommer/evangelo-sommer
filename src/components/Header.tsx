@@ -164,7 +164,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
         >
           <Heart className={`text-pink-500 dark:text-pink-400 group-hover:scale-110 transition-all duration-300 ${isScrolled ? 'w-5 h-5 md:w-6 md:h-6' : 'w-6 h-6 md:w-8 md:h-8'}`} />
           <div className="hidden sm:block">
-            <div className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>Becky</div>
+            <div className="text-2xl md:text-3xl font-bold text-foreground font-display">B.E.C.K.Y.</div>
           </div>
         </button>
 
