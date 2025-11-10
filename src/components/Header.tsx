@@ -320,14 +320,10 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
                   <span className="font-medium">System Preferences</span>
                 </button>
 
-                {/* Status Section */}
                 <div className="h-px bg-border my-2"></div>
-                <div className="px-2 py-2">
-                  <h4 className="font-primary text-xs uppercase tracking-wide text-muted-foreground mb-2 px-2">
-                    Status
-                  </h4>
-                  <StatusSelector />
-                </div>
+
+                {/* Status with Side Dropdown */}
+                <StatusSelector />
 
                 <div className="h-px bg-border my-2"></div>
 

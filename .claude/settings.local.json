@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "SlashCommand(/type-check)",
+      "Bash(git commit:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(git log:*)",
+      "WebFetch(domain:codepen.io)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(/Users/epsommer/projects/evangelo-sommer/src/app/globals.css.tmp)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": [],
     "ask": []

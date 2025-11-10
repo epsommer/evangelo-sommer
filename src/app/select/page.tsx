@@ -223,14 +223,11 @@ export default function SelectPage() {
                       <span>Profile</span>
                     </button>
 
-                    {/* Status Section */}
+                    {/* Divider */}
                     <div className="h-px bg-border/30 my-2" />
-                    <div className="px-2 py-2">
-                      <h4 className="font-primary text-xs uppercase tracking-wide text-muted-foreground mb-2 px-2">
-                        Status
-                      </h4>
-                      <StatusSelector />
-                    </div>
+
+                    {/* Status with Side Dropdown */}
+                    <StatusSelector />
 
                     {/* Divider */}
                     <div className="h-px bg-border/30 my-2" />
