@@ -1,9 +1,17 @@
 "use client"
 
 import React, { useState } from "react"
-import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Home, Receipt, LayoutGrid } from "lucide-react"
+import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Home, Receipt, LayoutGrid, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+
+const CURRENT_VERSION = "v1.2.0"
+
+const deployments = [
+  { id: "production", name: "Production", url: "https://evangelosommer.com", status: "active" },
+  { id: "staging", name: "Staging", url: "https://staging.evangelosommer.com", status: "active" },
+  { id: "development", name: "Development", url: "http://localhost:3001", status: "active" },
+]
 
 interface SidebarProps {
   activeTab?: string
@@ -13,7 +21,6 @@ interface SidebarProps {
   onCollapseChange?: (collapsed: boolean) => void
   mobileMenuOpen?: boolean
   onMobileMenuClose?: () => void
-  isScrolled?: boolean
 }
 
 const navigationItems = [
@@ -40,10 +47,12 @@ const Sidebar = ({
   onTitleClick,
   onCollapseChange,
   mobileMenuOpen = false,
-  onMobileMenuClose,
-  isScrolled = false
+  onMobileMenuClose
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [showDeployments, setShowDeployments] = useState(false)
+  const [showWordmarkTooltip, setShowWordmarkTooltip] = useState(false)
+  const [showVersionTooltip, setShowVersionTooltip] = useState(false)
 
   const handleTabChange = (tab: string) => {
     setActiveTab?.(tab)
@@ -51,33 +60,106 @@ const Sidebar = ({
   }
 
   return (
+    <>
     <aside className={`
       ${isCollapsed ? 'w-16' : 'w-64'}
       neo-sidebar
       fixed
       left-0
+      top-0
       bottom-0
       transition-all
       duration-300
-      z-40
+      z-[60]
       overflow-y-auto
       ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       lg:translate-x-0
-      ${isScrolled ? 'top-14' : 'top-20'}
     `}>
-      {/* Toggle Button - At top of sidebar - Desktop only */}
-      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border p-2 hidden lg:flex justify-end">
-        <button
-          onClick={() => {
-            const newState = !isCollapsed
-            setIsCollapsed(newState)
-            onCollapseChange?.(newState)
-          }}
-          className="neo-button-sm w-8 h-8 flex items-center justify-center transition-all duration-200"
-          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
+      {/* Header with B.E.C.K.Y. Wordmark and Toggle */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border overflow-visible">
+        {/* B.E.C.K.Y. Wordmark - Show differently based on collapsed state */}
+        <div className="px-4 pt-4 pb-2 overflow-visible">
+          {isCollapsed ? (
+            /* Heart icon only when collapsed */
+            <div className="flex justify-center">
+              <button
+                onClick={() => setIsCollapsed(false)}
+                className="w-10 h-10 flex items-center justify-center"
+                title="Business Engagement & Client Knowledge Yield"
+              >
+                <Heart className="h-6 w-6 text-pink-500 dark:text-pink-400" />
+              </button>
+            </div>
+          ) : (
+            /* Full wordmark when expanded */
+            <div className="relative overflow-visible">
+              <button
+                onClick={() => setShowDeployments(!showDeployments)}
+                onMouseEnter={() => setShowWordmarkTooltip(true)}
+                onMouseLeave={() => setShowWordmarkTooltip(false)}
+                className="group w-full text-left"
+              >
+                <div className="flex items-center space-x-2">
+                  <Heart className="h-6 w-6 text-pink-500 dark:text-pink-400 flex-shrink-0" />
+                  <div className="tk-lores-9-wide text-2xl font-bold text-foreground tracking-wide max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                    B.E.C.K.Y.
+                  </div>
+                </div>
+              </button>
+
+              {/* Version with deployment info tooltip */}
+              <div
+                className="relative ml-8 mt-1"
+                onMouseEnter={() => setShowVersionTooltip(true)}
+                onMouseLeave={() => setShowVersionTooltip(false)}
+              >
+                <div className="text-[10px] text-muted-foreground cursor-help">
+                  {CURRENT_VERSION}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Deployments Dropdown */}
+        {showDeployments && !isCollapsed && (
+          <div className="px-4 pb-2">
+            <div className="neo-container rounded-lg p-2 text-xs">
+              <div className="font-semibold text-foreground mb-2">Deployments</div>
+              {deployments.map((deployment) => (
+                <a
+                  key={deployment.id}
+                  href={deployment.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-2 rounded hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-foreground">{deployment.name}</span>
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  </div>
+                  <div className="text-muted-foreground text-[10px] mt-0.5 truncate">{deployment.url}</div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Toggle Button - Centered when collapsed */}
+        <div className={`p-2 hidden lg:flex ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
+          <button
+            onClick={() => {
+              const newState = !isCollapsed
+              setIsCollapsed(newState)
+              onCollapseChange?.(newState)
+            }}
+            className="neo-button-sm w-8 h-8 flex items-center justify-center transition-all duration-200"
+            style={isCollapsed ? { margin: 0 } : {}}
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       <nav className={`${isCollapsed ? 'px-2 py-6' : 'p-6'}`}>
@@ -145,6 +227,47 @@ const Sidebar = ({
         </div>
       </nav>
     </aside>
+
+    {/* Tooltips rendered outside sidebar to avoid overflow clipping */}
+    {showWordmarkTooltip && !isCollapsed && (
+      <div
+        className="fixed z-[9999] px-3 py-1.5 text-xs shadow-lg whitespace-nowrap rounded-lg border pointer-events-none"
+        style={{
+          left: '280px',
+          top: '50px',
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          borderColor: 'hsl(var(--border))'
+        }}
+      >
+        Business Engagement & Client Knowledge Yield
+      </div>
+    )}
+
+    {showVersionTooltip && !isCollapsed && (
+      <div
+        className="fixed z-[9999] px-3 py-2 text-xs shadow-lg min-w-[240px] rounded-lg border pointer-events-none"
+        style={{
+          left: '280px',
+          top: '80px',
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          borderColor: 'hsl(var(--border))'
+        }}
+      >
+        <div className="font-semibold mb-2">Version History</div>
+        {deployments.map((deployment) => (
+          <div key={deployment.id} className="mb-1.5 last:mb-0">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">{deployment.name}</span>
+              <span className="text-[10px] opacity-70">{CURRENT_VERSION}</span>
+            </div>
+            <div className="text-[10px] opacity-70 truncate">{deployment.url}</div>
+          </div>
+        ))}
+      </div>
+    )}
+    </>
   )
 }
 

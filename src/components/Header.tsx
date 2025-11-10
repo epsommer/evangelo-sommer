@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Search, Calendar, Clock, User, Settings, LogOut, Command, Activity, Menu, Heart } from "lucide-react"
+import { Search, Calendar, Clock, User, Settings, LogOut, Command, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -34,6 +34,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [customStatus, setCustomStatus] = useState<string>("No status set");
   
   // Click outside to close dropdown handler
   useEffect(() => {
@@ -64,6 +65,14 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Load custom status from localStorage
+  useEffect(() => {
+    const savedStatus = localStorage.getItem("user-custom-status");
+    if (savedStatus) {
+      setCustomStatus(savedStatus);
+    }
   }, []);
 
 
@@ -149,7 +158,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-4 md:px-8 transition-all duration-300 ${isScrolled ? 'h-14' : 'h-20'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-14' : 'h-20'}`}>
       <div className="flex items-center space-x-2 md:space-x-8 relative">
         {/* Mobile Menu Button */}
         <button
@@ -159,22 +168,6 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
         >
           <Menu className="w-5 h-5 text-foreground" />
         </button>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className={`flex items-center space-x-2 md:space-x-3 tracking-wide transition-all duration-300 group bg-transparent border-none ${isScrolled ? 'text-base md:text-lg' : 'text-lg md:text-2xl'}`}
-        >
-          <Heart className={`text-pink-500 dark:text-pink-400 group-hover:scale-110 transition-all duration-300 ${isScrolled ? 'w-5 h-5 md:w-6 md:h-6' : 'w-6 h-6 md:w-8 md:h-8'}`} />
-          <div className="hidden sm:block">
-            <div className="text-2xl md:text-3xl font-bold text-foreground tk-lores-9-wide">B.E.C.K.Y.</div>
-          </div>
-        </button>
-
-        <div className={`neo-badge px-3 py-1 transition-all duration-300 hidden md:flex ${isScrolled ? 'scale-75' : 'scale-100'}`}>
-          <Activity className={`text-foreground/70 transition-all duration-300 mr-2 ${isScrolled ? 'w-3 h-3' : 'w-4 h-4'}`} />
-          <div>
-            <div className={`text-foreground/60 transition-all duration-300 ${isScrolled ? 'text-[0.625rem]' : 'text-xs'}`}>CRM v2.1</div>
-          </div>
-        </div>
       </div>
       <div className="flex items-center space-x-2 md:space-x-6 relative z-10">
         <button className="neo-button hidden md:flex items-center px-4 py-2">
@@ -269,16 +262,33 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
             </div>
           </div>
 
-          <button
-            className="neo-button-circle w-10 h-10 md:w-12 md:h-12 font-bold text-sm md:text-base relative"
-            data-dropdown-trigger
-            onClick={() => {
-              setShowProfileDropdown(!showProfileDropdown);
-            }}
-          >
-            <span className="relative z-10">ES</span>
-            <UserStatusIndicator />
-          </button>
+          <div className="relative group/avatar">
+            <button
+              className="neo-button-circle w-10 h-10 md:w-12 md:h-12 font-bold text-sm md:text-base relative"
+              data-dropdown-trigger
+              onClick={() => {
+                setShowProfileDropdown(!showProfileDropdown);
+              }}
+            >
+              <span className="relative z-10">ES</span>
+              <UserStatusIndicator />
+            </button>
+
+            {/* User status tooltip on hover */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none z-[9999] px-3 py-1.5 text-xs shadow-lg whitespace-nowrap rounded-lg border"
+              style={{
+                backgroundColor: 'hsl(var(--card))',
+                color: 'hsl(var(--card-foreground))',
+                borderColor: 'hsl(var(--border))'
+              }}
+            >
+              <div className="font-medium">E.SOMMER</div>
+              <div className="opacity-70 text-[10px] mt-0.5">
+                {customStatus}
+              </div>
+            </div>
+          </div>
 
           {/* Profile Dropdown */}
           {showProfileDropdown && (

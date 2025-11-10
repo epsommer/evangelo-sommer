@@ -128,13 +128,20 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       root.setAttribute('data-theme', 'dark')
     } else if (theme === 'overkast') {
       root.classList.add('overkast-mode')
+      root.removeAttribute('data-theme')
     } else if (theme === 'true-night') {
       root.classList.add('true-night-mode')
       root.setAttribute('data-theme', 'dark')
     } else if (theme === 'gilded-meadow') {
       root.classList.add('gilded-meadow-mode')
       root.removeAttribute('data-theme')
+    } else {
+      // Light theme - remove all theme classes and data-theme attribute
+      root.removeAttribute('data-theme')
     }
+
+    // Update data-color-theme attribute for consistency
+    root.setAttribute('data-color-theme', theme)
 
     localStorage.setItem('color-theme', theme)
     window.dispatchEvent(new Event('themechange'))

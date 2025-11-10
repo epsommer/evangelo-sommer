@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Circle } from "lucide-react";
 
 export type UserStatus = "online" | "inactive" | "dnd" | "invisible";
@@ -95,6 +95,7 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
   const [showSubmenu, setShowSubmenu] = useState(false);
   const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
   const [submenuPosition, setSubmenuPosition] = useState({ top: 0, right: 0 });
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load status from localStorage
   useEffect(() => {
@@ -125,6 +126,31 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
     }
   }, [buttonRef, showSubmenu]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    // Clear any pending close timeout
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setShowSubmenu(true);
+  };
+
+  const handleMouseLeave = () => {
+    // Delay closing to allow mouse to move to submenu
+    closeTimeoutRef.current = setTimeout(() => {
+      setShowSubmenu(false);
+    }, 150); // 150ms delay
+  };
+
   const handleStatusChange = (newStatus: UserStatus) => {
     setStatus(newStatus);
     localStorage.setItem("user-status", newStatus);
@@ -137,6 +163,12 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
     }));
 
     onStatusChange?.(newStatus);
+
+    // Clear timeout and close immediately
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
     setShowSubmenu(false);
   };
 
@@ -146,8 +178,8 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
     <>
       <div
         className="relative"
-        onMouseEnter={() => setShowSubmenu(true)}
-        onMouseLeave={() => setShowSubmenu(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <button
           ref={setButtonRef}
@@ -175,13 +207,13 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
       {/* Side Dropdown - fixed positioned to appear on the LEFT, outside parent overflow */}
       {showSubmenu && (
         <div
-          className="fixed w-64 neo-container rounded-xl overflow-hidden z-[70]"
+          className="fixed w-64 neo-container rounded-xl overflow-hidden z-[102]"
           style={{
             top: `${submenuPosition.top}px`,
             right: `${submenuPosition.right}px`
           }}
-          onMouseEnter={() => setShowSubmenu(true)}
-          onMouseLeave={() => setShowSubmenu(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <div className="p-3 border-b border-border">
             <h4 className="font-primary text-xs uppercase tracking-wide text-foreground">

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import "@/app/neomorphic.css";
-import { Palette, Box, Users, Edit, Eye, Grid3x3, List, Settings, User, LogOut } from "lucide-react";
+import { Palette, Box, Users, Edit, Eye, Grid3x3, List } from "lucide-react";
 import { SlidingThemeToggle } from "@/components/SlidingThemeToggle";
-import UserStatusIndicator, { StatusSelector } from "@/components/UserStatusIndicator";
+import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 
 interface StudioProject {
   id: string;
@@ -25,7 +25,6 @@ export default function SelectPage() {
   const [studioProjects, setStudioProjects] = useState<StudioProject[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectsViewMode, setProjectsViewMode] = useState<'grid' | 'list'>('grid');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Load theme preference
   useEffect(() => {
@@ -94,7 +93,7 @@ export default function SelectPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-background text-foreground transition-colors duration-300">
         <div className="text-center relative z-10">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-t-transparent animate-spin mx-auto mb-4" style={{ borderColor: "#D4AF37", borderRadius: "50%" }}></div>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-t-transparent animate-spin mx-auto mb-4" style={{ borderColor: "var(--neomorphic-accent)", borderRadius: "50%" }}></div>
           <p className="font-space-grotesk uppercase tracking-wide text-sm sm:text-base text-muted-foreground">
             Loading...
           </p>
@@ -114,7 +113,7 @@ export default function SelectPage() {
       description: "Explore visual works and portfolio pieces",
       icon: Palette,
       path: "/gallery",
-      color: "#D4AF37",
+      color: "var(--neomorphic-accent)",
     },
     {
       id: "studio",
@@ -159,96 +158,12 @@ export default function SelectPage() {
       </svg>
 
       {/* Top Right Controls */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex items-center gap-3">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-3">
         {/* Theme Toggle */}
         <SlidingThemeToggle dayNightOnly={false} />
 
         {/* User Avatar with Dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`neomorphic-button ${isDark ? 'dark-mode' : ''} w-11 h-11 font-bold text-sm relative flex items-center justify-center`}
-            style={{
-              borderRadius: '50%',
-              fontFamily: 'var(--font-space-grotesk)',
-              letterSpacing: '0.05em',
-            }}
-          >
-            <span className="relative z-10">ES</span>
-            <UserStatusIndicator />
-          </button>
-
-          {/* Dropdown Menu */}
-          {isDropdownOpen && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-[55]"
-                onClick={() => setIsDropdownOpen(false)}
-              />
-
-              {/* Menu */}
-              <div className="absolute right-0 top-full mt-2 z-[60] w-72 rounded-xl">
-                <div className={`neo-card p-0`}>
-                  {/* Header */}
-                  <div className="p-4 border-b border-border/30">
-                    <h3 className="font-primary text-sm uppercase tracking-wide text-foreground mb-1">
-                      Account Menu
-                    </h3>
-                    <div className="font-body text-xs text-muted-foreground">
-                      {session?.user?.email || 'User'}
-                    </div>
-                  </div>
-
-                  {/* Menu Items */}
-                  <div className="p-2 space-y-1">
-                    {/* Account Settings */}
-                    <button
-                      onClick={() => {
-                        router.push('/account');
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full neo-button px-4 py-3 flex items-center gap-3 text-left font-primary text-sm uppercase tracking-wide"
-                    >
-                      <Settings size={18} />
-                      <span>Account Settings</span>
-                    </button>
-
-                    {/* Profile */}
-                    <button
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="w-full neo-button px-4 py-3 flex items-center gap-3 text-left font-primary text-sm uppercase tracking-wide"
-                    >
-                      <User size={18} />
-                      <span>Profile</span>
-                    </button>
-
-                    {/* Divider */}
-                    <div className="h-px bg-border/30 my-2" />
-
-                    {/* Status with Side Dropdown */}
-                    <StatusSelector />
-
-                    {/* Divider */}
-                    <div className="h-px bg-border/30 my-2" />
-
-                    {/* Sign Out */}
-                    <button
-                      onClick={() => {
-                        router.push('/auth/signout');
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full neo-button px-4 py-3 flex items-center gap-3 text-left font-primary text-sm uppercase tracking-wide text-red-600"
-                    >
-                      <LogOut size={18} />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        <UserAvatarDropdown isDark={isDark} />
       </div>
 
       <div className="max-w-6xl w-full space-y-8 sm:space-y-12 relative z-10">
@@ -382,7 +297,7 @@ export default function SelectPage() {
                 >
                   <Grid3x3
                     className="w-4 h-4"
-                    style={{ color: projectsViewMode === 'grid' ? '#D4AF37' : 'var(--neomorphic-text)' }}
+                    style={{ color: projectsViewMode === 'grid' ? 'var(--neomorphic-accent)' : 'var(--neomorphic-text)' }}
                   />
                 </button>
                 <button
@@ -403,7 +318,7 @@ export default function SelectPage() {
                 >
                   <List
                     className="w-4 h-4"
-                    style={{ color: projectsViewMode === 'list' ? '#D4AF37' : 'var(--neomorphic-text)' }}
+                    style={{ color: projectsViewMode === 'list' ? 'var(--neomorphic-accent)' : 'var(--neomorphic-text)' }}
                   />
                 </button>
               </div>
@@ -433,7 +348,7 @@ export default function SelectPage() {
                     }}
                     onClick={() => handleExploreProject(project.id)}
                   >
-                    <Box className="w-10 h-10 sm:w-12 sm:h-12" style={{ color: "#D4AF37" }} />
+                    <Box className="w-10 h-10 sm:w-12 sm:h-12" style={{ color: "var(--neomorphic-accent)" }} />
                   </div>
 
                   {/* Project name */}
@@ -507,7 +422,7 @@ export default function SelectPage() {
                         }}
                         onClick={() => handleExploreProject(project.id)}
                       >
-                        <Box className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: "#D4AF37" }} />
+                        <Box className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: "var(--neomorphic-accent)" }} />
                       </div>
 
                       {/* Project details */}
@@ -569,7 +484,7 @@ export default function SelectPage() {
         {/* Loading state - Responsive */}
         {loadingProjects && (
           <div className="mt-8 sm:mt-12 text-center">
-            <div className="inline-block w-7 h-7 sm:w-8 sm:h-8 border-4 border-t-transparent animate-spin mx-auto" style={{ borderColor: "#D4AF37", borderRadius: "50%" }}></div>
+            <div className="inline-block w-7 h-7 sm:w-8 sm:h-8 border-4 border-t-transparent animate-spin mx-auto" style={{ borderColor: "var(--neomorphic-accent)", borderRadius: "50%" }}></div>
             <p className="mt-3 sm:mt-4 font-space-grotesk text-sm sm:text-base text-muted-foreground">
               Loading scenes...
             </p>

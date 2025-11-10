@@ -861,13 +861,13 @@ button:disabled,
 }
 
 /* Enhanced Button Dark Mode */
-[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn) {
+[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
   background-color: var(--tactical-gold) !important;
   color: var(--tactical-grey-900) !important;
   border-color: var(--tactical-gold) !important;
 }
 
-[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn) {
+[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
   background-color: var(--tactical-amber) !important;
   box-shadow: var(--hud-glow-secondary) !important;
 }
@@ -1052,6 +1052,96 @@ button:disabled,
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: var(--tactical-amber);
+}
+
+/* True Night Theme - Monochrome Scrollbars */
+.true-night-mode ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.true-night-mode ::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+
+.true-night-mode ::-webkit-scrollbar-thumb {
+  background: #a6a6a6;
+  border-radius: 0;
+}
+
+.true-night-mode ::-webkit-scrollbar-thumb:hover {
+  background: #c2c2c2;
+}
+
+/* Overkast Theme - Monochrome Scrollbars */
+.overkast-mode ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overkast-mode ::-webkit-scrollbar-track {
+  background: #9A9A9A;
+}
+
+.overkast-mode ::-webkit-scrollbar-thumb {
+  background: #5A5A5A;
+  border-radius: 0;
+}
+
+.overkast-mode ::-webkit-scrollbar-thumb:hover {
+  background: #7A7A7A;
+}
+
+/* Mocha Theme - Warm Scrollbars */
+.mocha-mode ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mocha-mode ::-webkit-scrollbar-track {
+  background: #0a0908;
+}
+
+.mocha-mode ::-webkit-scrollbar-thumb {
+  background: #a8a29e;
+  border-radius: 0;
+}
+
+.mocha-mode ::-webkit-scrollbar-thumb:hover {
+  background: #c4bfbb;
+}
+
+/* Gilded Meadow Theme - Sage Scrollbars */
+.gilded-meadow-mode ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gilded-meadow-mode ::-webkit-scrollbar-track {
+  background: #d0d097;
+}
+
+.gilded-meadow-mode ::-webkit-scrollbar-thumb {
+  background: #abab72;
+  border-radius: 0;
+}
+
+.gilded-meadow-mode ::-webkit-scrollbar-thumb:hover {
+  background: #85854c;
+}
+
+/* Light Theme - Default Scrollbars */
+:root:not(.mocha-mode):not(.overkast-mode):not(.true-night-mode):not(.gilded-meadow-mode) ::-webkit-scrollbar {
+  width: 8px;
+}
+
+:root:not(.mocha-mode):not(.overkast-mode):not(.true-night-mode):not(.gilded-meadow-mode) ::-webkit-scrollbar-track {
+  background: #d1d9e6;
+}
+
+:root:not(.mocha-mode):not(.overkast-mode):not(.true-night-mode):not(.gilded-meadow-mode) ::-webkit-scrollbar-thumb {
+  background: #8992A5;
+  border-radius: 0;
+}
+
+:root:not(.mocha-mode):not(.overkast-mode):not(.true-night-mode):not(.gilded-meadow-mode) ::-webkit-scrollbar-thumb:hover {
+  background: #a8b2c7;
 }
 
 /* Modal Open State - Override sidebar styles for proper greying */

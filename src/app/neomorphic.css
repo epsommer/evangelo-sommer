@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
 
-/* Neomorphic Design System */
+/* Neomorphic Design System - Light Theme */
 :root {
   --neomorphic-bg: #EBECF0;
   --neomorphic-text: #6C7587;
   --neomorphic-icon: #8992A5;
   --neomorphic-dark-shadow: #d1d9e6;
   --neomorphic-light-shadow: #FFFFFF;
-  --neomorphic-accent: #D4AF37;
-  --neomorphic-bright: #E6C866;
+  --neomorphic-accent: #8992A5; /* Neutral blue-grey accent */
+  --neomorphic-bright: #a8b2c7; /* Lighter blue-grey */
 }
 
 /* Mocha Theme - Warm Dark (warm brown-grey tones) */
@@ -18,11 +18,11 @@
   --neomorphic-icon: #a8a29e;
   --neomorphic-dark-shadow: #0a0908;
   --neomorphic-light-shadow: #2e2b29;
-  --neomorphic-accent: #D4AF37;
-  --neomorphic-bright: #E6C866;
+  --neomorphic-accent: #a8a29e; /* Warm stone grey accent */
+  --neomorphic-bright: #c4bfbb; /* Lighter warm grey */
 }
 
-/* Overkast Theme - Monochrome Grey with Gold Accents */
+/* Overkast Theme - Pure Monochrome Grey */
 :root.overkast-mode,
 .overkast-mode {
   --neomorphic-bg: #B8B8B8;
@@ -30,8 +30,8 @@
   --neomorphic-icon: #5A5A5A;
   --neomorphic-dark-shadow: #9A9A9A;
   --neomorphic-light-shadow: #D6D6D6;
-  --neomorphic-accent: #D4AF37;
-  --neomorphic-bright: #E6C866;
+  --neomorphic-accent: #5A5A5A; /* Grey accent instead of gold for pure monochrome */
+  --neomorphic-bright: #7A7A7A; /* Grey bright instead of gold */
 }
 
 /* True Night Theme - Pure Neutral Dark */
@@ -42,20 +42,32 @@
   --neomorphic-icon: #a6a6a6;
   --neomorphic-dark-shadow: #0d0d0d;
   --neomorphic-light-shadow: #242424;
-  --neomorphic-accent: #D4AF37;
-  --neomorphic-bright: #E6C866;
+  --neomorphic-accent: #a6a6a6; /* Neutral grey accent */
+  --neomorphic-bright: #c2c2c2; /* Lighter neutral grey */
 }
 
-/* Gilded Meadow Theme - Light Yellow with Dark Grey */
+/* Gilded Meadow Theme - Sunkissed Yellow with Green Sage Accents */
 :root.gilded-meadow-mode,
 .gilded-meadow-mode {
-  --neomorphic-bg: #F5F5DC;
-  --neomorphic-text: #2A2A2A;
-  --neomorphic-icon: #4A4A4A;
-  --neomorphic-dark-shadow: #D4C5A9;
-  --neomorphic-light-shadow: #FFFEF8;
-  --neomorphic-accent: #D4AF37;
-  --neomorphic-bright: #E6C866;
+  --neomorphic-bg: #f6f6bd; /* Sunkissed yellow (color-550) */
+  --neomorphic-text: #5f5f26; /* Deep sage (color-950) */
+  --neomorphic-icon: #85854c; /* Medium sage (color-850) */
+  --neomorphic-dark-shadow: #d0d097; /* Shadow sage (color-650) */
+  --neomorphic-light-shadow: #ffffe3; /* Light sunkissed (color-450) */
+  --neomorphic-accent: #abab72; /* Green sage accent (color-750) */
+  --neomorphic-bright: #d0d097; /* Brighter sage (color-650) */
+
+  /* Sunkissed Yellow Palette */
+  --color-50: #ffffff;
+  --color-150: #ffffff;
+  --color-250: #ffffff;
+  --color-350: #ffffff;
+  --color-450: #ffffe3;
+  --color-550: #f6f6bd;
+  --color-650: #d0d097;
+  --color-750: #abab72;
+  --color-850: #85854c;
+  --color-950: #5f5f26;
 }
 
 .neomorphic-button {
