@@ -315,7 +315,7 @@ export default function SelectPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-wide px-2 mb-3 sm:mb-4 text-foreground ${selection.id === 'crm' ? 'font-display' : 'font-space-grotesk'}`}>
+                  <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-wide px-2 mb-3 sm:mb-4 text-foreground ${selection.id === 'crm' ? 'tk-lores-9-wide' : 'font-space-grotesk'}`}>
                     {selection.title}
                   </h3>
 
