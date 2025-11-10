@@ -140,25 +140,25 @@ export function StatusSelector({ onStatusChange }: StatusSelectorProps) {
         className="neo-button-menu w-full flex items-center justify-between p-3 rounded-lg group"
       >
         <div className="flex items-center space-x-3">
-          <Circle className={`h-3 w-3 ${currentConfig.color} fill-current`} />
-          <span className="font-medium">Status</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground">{currentConfig.label}</span>
           <svg
-            className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+            className="w-4 h-4 text-muted-foreground transition-transform group-hover:-translate-x-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
+          <span className="font-medium">Status</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-muted-foreground">{currentConfig.label}</span>
+          <Circle className={`h-3 w-3 ${currentConfig.color} fill-current`} />
         </div>
       </button>
 
-      {/* Side Dropdown */}
+      {/* Side Dropdown - appears on the LEFT */}
       {showSubmenu && (
-        <div className="absolute left-full top-0 ml-2 w-64 neo-container rounded-xl overflow-hidden z-[70]">
+        <div className="absolute right-full top-0 mr-2 w-64 neo-container rounded-xl overflow-hidden z-[70]">
           <div className="p-3 border-b border-border">
             <h4 className="font-primary text-xs uppercase tracking-wide text-foreground">
               Set Status
