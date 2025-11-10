@@ -56,7 +56,7 @@ const Sidebar = ({
   const [showVersionTooltip, setShowVersionTooltip] = useState(false)
   const [showServiceLinesSubmenu, setShowServiceLinesSubmenu] = useState(false)
   const [serviceLinesButtonRef, setServicesLinesButtonRef] = useState<HTMLButtonElement | null>(null)
-  const [submenuPosition, setSubmenuPosition] = useState({ top: 0, right: 0 })
+  const [submenuPosition, setSubmenuPosition] = useState({ top: 0, left: 0 })
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleTabChange = (tab: string) => {
@@ -194,7 +194,7 @@ const Sidebar = ({
                       const rect = serviceLinesButtonRef.getBoundingClientRect()
                       setSubmenuPosition({
                         top: rect.top,
-                        right: window.innerWidth - rect.left + 8
+                        left: rect.right + 8
                       })
                     }
                     setShowServiceLinesSubmenu(true)
@@ -274,7 +274,7 @@ const Sidebar = ({
         className="fixed z-[9999] py-2 shadow-lg min-w-[240px] rounded-lg border"
         style={{
           top: `${submenuPosition.top}px`,
-          right: `${submenuPosition.right}px`,
+          left: `${submenuPosition.left}px`,
           backgroundColor: 'hsl(var(--card))',
           color: 'hsl(var(--card-foreground))',
           borderColor: 'hsl(var(--border))'
