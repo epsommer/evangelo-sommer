@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import AccountSettingsModal, { AccountSettings } from "@/components/AccountSettingsModal"
 import PreferencesModal, { SystemPreferences } from "@/components/PreferencesModal"
+import UserStatusIndicator from "@/components/UserStatusIndicator"
 
 interface ScheduledService {
   id: string;
@@ -276,7 +277,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
             }}
           >
             <span className="relative z-10">ES</span>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></div>
+            <UserStatusIndicator showMenu={true} />
           </button>
           
           {/* Profile Dropdown */}

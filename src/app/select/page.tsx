@@ -7,6 +7,7 @@ import Image from "next/image";
 import "@/app/neomorphic.css";
 import { Palette, Box, Users, Edit, Eye, Grid3x3, List, Settings, User, LogOut } from "lucide-react";
 import { SlidingThemeToggle } from "@/components/SlidingThemeToggle";
+import UserStatusIndicator from "@/components/UserStatusIndicator";
 
 interface StudioProject {
   id: string;
@@ -174,7 +175,7 @@ export default function SelectPage() {
             }}
           >
             <span className="relative z-10">ES</span>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+            <UserStatusIndicator showMenu={true} />
           </button>
 
           {/* Dropdown Menu */}
