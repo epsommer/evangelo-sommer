@@ -1,11 +1,10 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { X, Settings, Bell, Eye, Globe, Clock, Save, Palette, Monitor, Calendar, MessageSquare, Plus, Trash2 } from 'lucide-react'
+import { X, Settings, Bell, Eye, Globe, Clock, Save, Monitor, Calendar, MessageSquare, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import CalendarIntegrationManager from './CalendarIntegrationManager'
-import { TacticalThemeToggle } from './ThemeToggle'
 
 interface PreferencesModalProps {
   isOpen: boolean
@@ -14,13 +13,13 @@ interface PreferencesModalProps {
 }
 
 export interface SystemPreferences {
-  display: {
-    colorTheme: 'light' | 'mocha' | 'overkast' | 'true-night' | 'auto'
-    windowTheme: 'neomorphic' | 'tactical'
-    compactMode: boolean
-    showSidebar: boolean
-    defaultView: 'grid' | 'list' | 'table'
-  }
+  // display: {
+  //   colorTheme: 'light' | 'mocha' | 'overkast' | 'true-night' | 'auto'
+  //   windowTheme: 'neomorphic' | 'tactical'
+  //   compactMode: boolean
+  //   showSidebar: boolean
+  //   defaultView: 'grid' | 'list' | 'table'
+  // }
   notifications: {
     enableAll: boolean
     clientUpdates: boolean
@@ -77,15 +76,15 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
   onClose,
   onSave
 }) => {
-  const [activeTab, setActiveTab] = useState<'display' | 'notifications' | 'workflow' | 'performance' | 'conversations' | 'integrations'>('display')
+  const [activeTab, setActiveTab] = useState<'notifications' | 'workflow' | 'performance' | 'conversations' | 'integrations'>('notifications')
   const [preferences, setPreferences] = useState<SystemPreferences>({
-    display: {
-      colorTheme: 'auto',
-      windowTheme: 'neomorphic',
-      compactMode: false,
-      showSidebar: true,
-      defaultView: 'grid'
-    },
+    // display: {
+    //   colorTheme: 'auto',
+    //   windowTheme: 'neomorphic',
+    //   compactMode: false,
+    //   showSidebar: true,
+    //   defaultView: 'grid'
+    // },
     notifications: {
       enableAll: true,
       clientUpdates: true,
@@ -185,60 +184,17 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
       localStorage.setItem('system-preferences', JSON.stringify(preferences))
       onSave(preferences)
       onClose()
-
-      // Apply themes immediately
-      const colorThemeMap: Record<string, string> = {
-        'light': '',
-        'mocha': 'mocha-mode',
-        'overkast': 'overkast-mode',
-        'true-night': 'true-night-mode'
-      }
-
-      const windowThemeMap: Record<string, string> = {
-        'neomorphic': 'neomorphic-window',
-        'tactical': 'tactical-window'
-      }
-
-      // Remove all color theme classes
-      document.documentElement.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode')
-      // Remove all window theme classes
-      document.documentElement.classList.remove('neomorphic-window', 'tactical-window')
-
-      // Apply color theme
-      let appliedColorTheme = preferences.display.colorTheme
-      if (preferences.display.colorTheme === 'auto') {
-        // Auto theme - check system preference
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        appliedColorTheme = isDark ? 'mocha' : 'light'
-      }
-
-      const colorThemeClass = colorThemeMap[appliedColorTheme]
-      if (colorThemeClass) {
-        document.documentElement.classList.add(colorThemeClass)
-      }
-
-      // Apply window theme
-      const windowThemeClass = windowThemeMap[preferences.display.windowTheme]
-      if (windowThemeClass) {
-        document.documentElement.classList.add(windowThemeClass)
-      }
-
-      // Save to localStorage
-      document.documentElement.setAttribute('data-color-theme', appliedColorTheme)
-      document.documentElement.setAttribute('data-window-theme', preferences.display.windowTheme)
-      localStorage.setItem('color-theme', appliedColorTheme)
-      localStorage.setItem('window-theme', preferences.display.windowTheme)
     } catch (error) {
       console.error('Error saving preferences:', error)
     }
   }
 
-  const updateDisplay = (key: string, value: any) => {
-    setPreferences(prev => ({
-      ...prev,
-      display: { ...prev.display, [key]: value }
-    }))
-  }
+  // const updateDisplay = (key: string, value: any) => {
+  //   setPreferences(prev => ({
+  //     ...prev,
+  //     display: { ...prev.display, [key]: value }
+  //   }))
+  // }
 
   const updateNotifications = (key: string, value: any) => {
     setPreferences(prev => ({
@@ -319,7 +275,6 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             <div className="p-4">
               <div className="space-y-2">
                 {[
-                  { id: 'display', label: 'Display & Theme', icon: Palette },
                   { id: 'notifications', label: 'Notifications', icon: Bell },
                   { id: 'workflow', label: 'Workflow', icon: Settings },
                   { id: 'performance', label: 'Performance', icon: Monitor },
@@ -348,142 +303,6 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
           {/* Content */}
           <div className="flex-1 p-6 overflow-y-auto">
-            {activeTab === 'display' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
-                  Display & Theme
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Color Theme */}
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Color Theme
-                    </h4>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                          Color Palette
-                        </label>
-                        <select
-                          value={preferences.display.colorTheme}
-                          onChange={(e) => updateDisplay('colorTheme', e.target.value)}
-                          className="neomorphic-input w-full"
-                        >
-                          <option value="light">Light</option>
-                          <option value="mocha">Mocha (Warm Dark)</option>
-                          <option value="overkast">Overkast (Grey)</option>
-                          <option value="true-night">True Night (Deep Dark)</option>
-                          <option value="auto">Auto (System)</option>
-                        </select>
-                      </div>
-
-                      <div className="text-xs text-medium-grey font-primary space-y-1">
-                        <p><strong>Light:</strong> Clean white background</p>
-                        <p><strong>Mocha:</strong> Warm brown-grey tones</p>
-                        <p><strong>Overkast:</strong> Monochrome grey with gold</p>
-                        <p><strong>True Night:</strong> Deep black with warm text</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Window Theme */}
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Window Theme
-                    </h4>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                          Interface Style
-                        </label>
-                        <select
-                          value={preferences.display.windowTheme}
-                          onChange={(e) => updateDisplay('windowTheme', e.target.value)}
-                          className="neomorphic-input w-full"
-                        >
-                          <option value="neomorphic">Neomorphic (Soft, Rounded)</option>
-                          <option value="tactical">Tactical (Sharp, Angular)</option>
-                        </select>
-                      </div>
-
-                      <div className="text-xs text-medium-grey font-primary space-y-1">
-                        <p><strong>Neomorphic:</strong> Soft shadows, rounded corners, subtle depth</p>
-                        <p><strong>Tactical:</strong> Sharp edges, flat surfaces, military-inspired</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Layout Options */}
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Layout
-                    </h4>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                          Default View
-                        </label>
-                        <select
-                          value={preferences.display.defaultView}
-                          onChange={(e) => updateDisplay('defaultView', e.target.value)}
-                          className="neomorphic-input w-full"
-                        >
-                          <option value="grid">Grid View</option>
-                          <option value="list">List View</option>
-                          <option value="table">Table View</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-hud-text-primary font-primary">Compact Mode</div>
-                          <div className="text-sm text-medium-grey font-primary">Reduce spacing for more content</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferences.display.compactMode}
-                            onChange={(e) => updateDisplay('compactMode', e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sidebar Options */}
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Sidebar
-                    </h4>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-hud-text-primary font-primary">Show Sidebar</div>
-                          <div className="text-sm text-medium-grey font-primary">Always show navigation sidebar</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferences.display.showSidebar}
-                            onChange={(e) => updateDisplay('showSidebar', e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeTab === 'notifications' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">

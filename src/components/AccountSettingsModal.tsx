@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { X, User, Mail, Phone, MapPin, Building, Key, Shield, Save, Eye, EyeOff } from 'lucide-react'
+import { X, User, Mail, Phone, MapPin, Building, Key, Shield, Save, Eye, EyeOff, Palette, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { GrainyTexture, setGrainIntensity, getGrainIntensity } from '@/components/GrainyTexture'
 
 interface AccountSettingsModalProps {
   isOpen: boolean
@@ -39,12 +40,16 @@ export interface AccountSettings {
   }
 }
 
+type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night'
+type GrainIntensity = 'off' | 'low' | 'medium' | 'high'
+type WindowTheme = 'neomorphic' | 'tactical'
+
 const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   isOpen,
   onClose,
   onSave
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences' | 'display'>('profile')
   const [showPasswords, setShowPasswords] = useState(false)
   const [settings, setSettings] = useState<AccountSettings>({
     profile: {
@@ -70,6 +75,11 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       }
     }
   })
+
+  // Display & Theme state
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('light')
+  const [grainIntensity, setGrainIntensityState] = useState<GrainIntensity>('medium')
+  const [windowTheme, setWindowTheme] = useState<WindowTheme>('neomorphic')
 
   const handleSave = () => {
     onSave(settings)
@@ -97,6 +107,57 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     }))
   }
 
+  // Load Display & Theme settings from localStorage on mount
+  useEffect(() => {
+    const loadedTheme = (localStorage.getItem('color-theme') as ColorTheme) || 'light'
+    const loadedGrain = getGrainIntensity()
+    const loadedWindow = (localStorage.getItem('window-theme') as WindowTheme) || 'neomorphic'
+
+    setColorTheme(loadedTheme)
+    setGrainIntensityState(loadedGrain)
+    setWindowTheme(loadedWindow)
+  }, [])
+
+  // Theme application logic
+  const applyTheme = (theme: ColorTheme) => {
+    const root = document.documentElement
+    root.classList.remove('mocha-mode', 'overkast-mode', 'true-night-mode')
+
+    if (theme === 'mocha') {
+      root.classList.add('mocha-mode')
+      root.setAttribute('data-theme', 'dark')
+    } else if (theme === 'overkast') {
+      root.classList.add('overkast-mode')
+    } else if (theme === 'true-night') {
+      root.classList.add('true-night-mode')
+      root.setAttribute('data-theme', 'dark')
+    }
+
+    localStorage.setItem('color-theme', theme)
+    window.dispatchEvent(new Event('themechange'))
+  }
+
+  const applyWindowTheme = (theme: WindowTheme) => {
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window')
+    document.documentElement.classList.add(`${theme}-window`)
+  }
+
+  const handleColorThemeChange = (theme: ColorTheme) => {
+    setColorTheme(theme)
+    applyTheme(theme)
+  }
+
+  const handleGrainIntensityChange = (intensity: GrainIntensity) => {
+    setGrainIntensityState(intensity)
+    setGrainIntensity(intensity)
+  }
+
+  const handleWindowThemeChange = (theme: WindowTheme) => {
+    setWindowTheme(theme)
+    localStorage.setItem('window-theme', theme)
+    applyWindowTheme(theme)
+  }
+
   // Disable body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -104,7 +165,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     } else {
       document.body.style.overflow = 'unset'
     }
-    
+
     // Cleanup function to restore scroll when component unmounts
     return () => {
       document.body.style.overflow = 'unset'
@@ -140,6 +201,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                 {[
                   { id: 'profile', label: 'Profile Information', icon: User },
                   { id: 'security', label: 'Security & Privacy', icon: Shield },
+                  { id: 'display', label: 'Display & Theme', icon: Palette },
                   { id: 'preferences', label: 'Preferences', icon: Building }
                 ].map(tab => {
                   const IconComponent = tab.icon
@@ -379,6 +441,169 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
               </div>
             )}
 
+            {activeTab === 'display' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+                  Display & Theme
+                </h3>
+
+                {/* Color Theme Section */}
+                <div className="neo-container p-6">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-2">
+                    Color Theme
+                  </h4>
+                  <p className="text-sm text-medium-grey font-primary mb-4">
+                    Choose your preferred color palette
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Light Theme */}
+                    <button
+                      onClick={() => handleColorThemeChange('light')}
+                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                        colorTheme === 'light' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      {colorTheme === 'light' && (
+                        <div className="absolute top-2 right-2">
+                          <Check className="h-5 w-5 text-tactical-gold" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#EBECF0] to-[#d1d9e6] border-2 border-[#d1d9e6]" />
+                      <span className="font-primary text-xs uppercase tracking-wide">Light</span>
+                    </button>
+
+                    {/* Mocha Theme */}
+                    <button
+                      onClick={() => handleColorThemeChange('mocha')}
+                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                        colorTheme === 'mocha' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      {colorTheme === 'mocha' && (
+                        <div className="absolute top-2 right-2">
+                          <Check className="h-5 w-5 text-tactical-gold" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#1c1917] to-[#44403c] border-2 border-[#78716c]" />
+                      <span className="font-primary text-xs uppercase tracking-wide">Mocha</span>
+                    </button>
+
+                    {/* Overkast Theme */}
+                    <button
+                      onClick={() => handleColorThemeChange('overkast')}
+                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                        colorTheme === 'overkast' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      {colorTheme === 'overkast' && (
+                        <div className="absolute top-2 right-2">
+                          <Check className="h-5 w-5 text-tactical-gold" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#B8B8B8] to-[#9A9A9A] border-2 border-[#808080]" />
+                      <span className="font-primary text-xs uppercase tracking-wide">Overkast</span>
+                    </button>
+
+                    {/* True Night Theme */}
+                    <button
+                      onClick={() => handleColorThemeChange('true-night')}
+                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                        colorTheme === 'true-night' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      {colorTheme === 'true-night' && (
+                        <div className="absolute top-2 right-2">
+                          <Check className="h-5 w-5 text-tactical-gold" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#1a1a1a] to-[#242424] border-2 border-[#333333]" />
+                      <span className="font-primary text-xs uppercase tracking-wide">True Night</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Grain Texture Section */}
+                <div className="neo-container p-6">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-2">
+                    Grain Texture
+                  </h4>
+                  <p className="text-sm text-medium-grey font-primary mb-4">
+                    Adjust the film grain overlay intensity
+                  </p>
+
+                  <div className="space-y-4">
+                    {/* Grain Intensity Selector */}
+                    <div className="grid grid-cols-4 gap-4">
+                      {(['off', 'low', 'medium', 'high'] as GrainIntensity[]).map((intensity) => (
+                        <button
+                          key={intensity}
+                          onClick={() => handleGrainIntensityChange(intensity)}
+                          className={`neo-button px-4 py-3 font-primary text-sm uppercase tracking-wide ${
+                            grainIntensity === intensity ? 'neo-button-active' : ''
+                          }`}
+                        >
+                          {intensity}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Grain Preview */}
+                    <div className="relative neo-container p-8 overflow-hidden">
+                      <div className="text-center font-primary text-sm uppercase tracking-wide text-medium-grey">
+                        Preview
+                      </div>
+                      <GrainyTexture forceIntensity={grainIntensity} filterId="preview-grain" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Window Theme Section */}
+                <div className="neo-container p-6">
+                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-2">
+                    Window Style
+                  </h4>
+                  <p className="text-sm text-medium-grey font-primary mb-4">
+                    Choose your interface style
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Neomorphic Style */}
+                    <button
+                      onClick={() => handleWindowThemeChange('neomorphic')}
+                      className={`neo-button p-6 flex flex-col items-center gap-4 ${
+                        windowTheme === 'neomorphic' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      <div className="w-full h-24 rounded-xl bg-[var(--hud-background-secondary)] shadow-[8px_8px_16px_var(--neomorphic-dark-shadow),-8px_-8px_16px_var(--neomorphic-light-shadow)] flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-[var(--hud-background-primary)] shadow-[4px_4px_8px_var(--neomorphic-dark-shadow),-4px_-4px_8px_var(--neomorphic-light-shadow)]" />
+                      </div>
+                      <div className="text-center">
+                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Neomorphic</div>
+                        <div className="text-xs text-medium-grey font-primary">Soft, rounded corners</div>
+                      </div>
+                    </button>
+
+                    {/* Tactical Style */}
+                    <button
+                      onClick={() => handleWindowThemeChange('tactical')}
+                      className={`neo-button p-6 flex flex-col items-center gap-4 ${
+                        windowTheme === 'tactical' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      <div className="w-full h-24 bg-[var(--hud-background-secondary)] shadow-[0_2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center">
+                        <div className="w-12 h-12 bg-[var(--hud-background-primary)] shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
+                      </div>
+                      <div className="text-center">
+                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Tactical</div>
+                        <div className="text-xs text-medium-grey font-primary">Sharp, angular corners</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'preferences' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-hud-text-primary font-primary uppercase tracking-wide">
@@ -386,30 +611,6 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Appearance */}
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Appearance
-                    </h4>
-                    
-                    <div>
-                      <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                        Theme
-                      </label>
-                      <select
-                        value={settings.preferences.theme}
-                        onChange={(e) => updatePreferences('theme', e.target.value)}
-                        className="neomorphic-input w-full"
-                      >
-                        <option value="light">Light</option>
-                        <option value="dark">Dark (Mocha)</option>
-                        <option value="overkast">Overkast</option>
-                        <option value="true-night">True Night</option>
-                        <option value="system">System</option>
-                      </select>
-                    </div>
-                  </div>
-
                   {/* Localization */}
                   <div className="neo-container p-4">
                     <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
