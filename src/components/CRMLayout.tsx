@@ -15,6 +15,18 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
   const [conversationCount, setConversationCount] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  // Scroll tracking for compact mode
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 100); // Compact after scrolling 100px
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [])
 
   const getCurrentPage = () => {
     if (pathname === '/dashboard') return 'dashboard'
@@ -115,8 +127,9 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
         onCollapseChange={setSidebarCollapsed}
         mobileMenuOpen={mobileMenuOpen}
         onMobileMenuClose={closeMobileMenu}
+        isScrolled={isScrolled}
       />
-      <main className={`pt-20 min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10`} style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
+      <main className={`min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10 ${isScrolled ? 'pt-14' : 'pt-20'}`} style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
         {children}
       </main>
     </div>

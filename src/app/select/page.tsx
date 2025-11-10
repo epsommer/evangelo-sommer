@@ -188,7 +188,7 @@ export default function SelectPage() {
               />
 
               {/* Menu */}
-              <div className="absolute right-0 top-full mt-2 z-[60] w-72 rounded-xl overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 z-[60] w-72 rounded-xl">
                 <div className={`neo-card p-0`}>
                   {/* Header */}
                   <div className="p-4 border-b border-border/30">

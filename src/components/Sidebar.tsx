@@ -13,6 +13,7 @@ interface SidebarProps {
   onCollapseChange?: (collapsed: boolean) => void
   mobileMenuOpen?: boolean
   onMobileMenuClose?: () => void
+  isScrolled?: boolean
 }
 
 const navigationItems = [
@@ -39,7 +40,8 @@ const Sidebar = ({
   onTitleClick,
   onCollapseChange,
   mobileMenuOpen = false,
-  onMobileMenuClose
+  onMobileMenuClose,
+  isScrolled = false
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -54,7 +56,6 @@ const Sidebar = ({
       neo-sidebar
       fixed
       left-0
-      top-20
       bottom-0
       transition-all
       duration-300
@@ -62,9 +63,23 @@ const Sidebar = ({
       overflow-y-auto
       ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       lg:translate-x-0
+      ${isScrolled ? 'top-14' : 'top-20'}
     `}>
-      
-      
+      {/* Toggle Button - At top of sidebar - Desktop only */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border p-2 hidden lg:flex justify-end">
+        <button
+          onClick={() => {
+            const newState = !isCollapsed
+            setIsCollapsed(newState)
+            onCollapseChange?.(newState)
+          }}
+          className="neo-button-sm w-8 h-8 flex items-center justify-center transition-all duration-200"
+          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        >
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+      </div>
+
       <nav className={`${isCollapsed ? 'px-2 py-6' : 'p-6'}`}>
         <div className="space-y-1">
           {navigationItems.map(item => {
@@ -127,21 +142,6 @@ const Sidebar = ({
               )
             })}
           </div>
-        </div>
-        
-        {/* Toggle Button - At bottom of sidebar - Desktop only */}
-        <div className="mt-6 pt-4 border-t border-border flex justify-center">
-          <button
-            onClick={() => {
-              const newState = !isCollapsed
-              setIsCollapsed(newState)
-              onCollapseChange?.(newState)
-            }}
-            className="neo-button-sm w-8 h-8 hidden lg:flex items-center justify-center transition-all duration-200"
-            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </button>
         </div>
       </nav>
     </aside>

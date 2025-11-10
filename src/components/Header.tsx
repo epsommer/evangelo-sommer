@@ -198,7 +198,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
           </button>
 
           {showScheduleDropdown && (
-            <div className="neo-dropdown absolute right-0 top-full mt-2 w-96 z-[60] overflow-hidden rounded-xl">
+            <div className="neo-dropdown absolute right-0 top-full mt-2 w-96 z-[60] rounded-xl">
               <div className="p-4 bg-background border-b border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-0">
                   Upcoming Schedule
@@ -283,7 +283,7 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
           {/* Profile Dropdown */}
           {showProfileDropdown && (
             <div
-              className="neo-dropdown absolute right-0 top-full mt-2 w-72 z-[60] rounded-xl overflow-hidden"
+              className="neo-dropdown absolute right-0 top-full mt-2 w-72 z-[60] rounded-xl"
               onClick={(e) => {
                 e.stopPropagation();
               }}
