@@ -61,6 +61,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
 
   const handleTabChange = (tab: string) => {
     const routes = {
+      'home': '/select',
       'dashboard': '/dashboard',
       'clients': '/clients',
       'conversations': '/conversations',
@@ -72,7 +73,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
       'pupawalk': '/services/pupawalk',
       'creative': '/services/creative'
     } as const
-    
+
     const path = routes[tab as keyof typeof routes] || '/dashboard'
     router.push(path)
   }

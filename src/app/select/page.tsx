@@ -299,7 +299,9 @@ export default function SelectPage() {
                     <div
                       className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
                       style={{
-                        backgroundColor: isDark
+                        backgroundColor: selection.id === 'crm'
+                          ? 'transparent'
+                          : isDark
                           ? `${selection.color}20`
                           : `${selection.color}15`,
                         borderRadius: "8px",
@@ -313,7 +315,7 @@ export default function SelectPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg sm:text-xl font-bold font-space-grotesk uppercase tracking-wide px-2 mb-3 sm:mb-4 text-foreground">
+                  <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-wide px-2 mb-3 sm:mb-4 text-foreground ${selection.id === 'crm' ? 'font-display' : 'font-space-grotesk'}`}>
                     {selection.title}
                   </h3>
 

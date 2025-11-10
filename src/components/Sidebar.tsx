@@ -16,6 +16,7 @@ interface SidebarProps {
 }
 
 const navigationItems = [
+  { id: "home", label: "HOME", icon: Home },
   { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
   { id: "clients", label: "Clients", icon: Users },
   { id: "conversations", label: "Conversations", icon: MessageSquare },
