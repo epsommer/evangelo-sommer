@@ -65,10 +65,10 @@ function CreateConversationPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-hud-background-secondary">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hud-border-accent"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </div>
       </div>
@@ -76,22 +76,22 @@ function CreateConversationPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-hud-background-secondary">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk">
+            <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary">
               Create New Conversation
             </h1>
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-medium-grey hover:text-hud-text-primary font-space-grotesk font-bold uppercase tracking-wide transition-colors"
+              className="neo-button"
             >
               Cancel
             </button>
           </div>
-          <p className="text-medium-grey font-space-grotesk">
+          <p className="text-muted-foreground font-primary">
             Import conversation data from multiple formats with advanced editing capabilities
           </p>
         </div>
@@ -111,10 +111,10 @@ function CreateConversationPageContent() {
 export default function CreateConversationPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-hud-background-secondary">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hud-border-accent"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </div>
       </div>

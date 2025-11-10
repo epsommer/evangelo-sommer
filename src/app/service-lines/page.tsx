@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import CRMLayout from '@/components/CRMLayout'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Plus, Edit2, Trash2, DollarSign, Users, CheckCircle, TrendingUp } from 'lucide-react'
 
@@ -98,13 +97,13 @@ const ServiceLinesPage = () => {
             <h1 className="text-2xl font-bold text-foreground">Service Lines Management</h1>
             <p className="text-muted-foreground text-sm">Manage your business service lines</p>
           </div>
-          <Button
+          <button
             onClick={() => setShowAddForm(!showAddForm)}
             className="neo-button flex items-center space-x-2"
           >
             <Plus className="h-4 w-4" />
             <span>Add Service Line</span>
-          </Button>
+          </button>
         </div>
 
         {showAddForm && (
@@ -144,10 +143,10 @@ const ServiceLinesPage = () => {
                   </p>
                 </div>
                 <div className="flex space-x-3">
-                  <Button onClick={handleAddServiceLine} className="neo-button">
+                  <button onClick={handleAddServiceLine} className="neo-button">
                     Create Service Line
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => {
                       setShowAddForm(false)
                       setNewServiceLine({ name: '', route: '' })
@@ -155,7 +154,7 @@ const ServiceLinesPage = () => {
                     className="neo-button"
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               </div>
             </CardContent>
@@ -244,10 +243,10 @@ const ServiceLinesPage = () => {
         {!isLoading && serviceLines.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">No service lines yet</p>
-            <Button onClick={() => setShowAddForm(true)} className="neo-button">
+            <button onClick={() => setShowAddForm(true)} className="neo-button flex items-center justify-center mx-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Your First Service Line
-            </Button>
+            </button>
           </div>
         )}
       </div>

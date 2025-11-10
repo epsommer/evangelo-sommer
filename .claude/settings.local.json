@@ -15,7 +15,8 @@
       "Bash(/Users/epsommer/projects/evangelo-sommer/src/app/globals.css.tmp)",
       "Bash(npm run type-check:*)",
       "Bash(curl:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

@@ -169,14 +169,27 @@ export async function POST(request: NextRequest) {
 
     // Create initial messages if provided
     if (body.messages && Array.isArray(body.messages)) {
+      // Helper to validate and map message type to enum
+      const validateMessageType = (type: any): MessageType => {
+        const validTypes: MessageType[] = ['EMAIL', 'TEXT', 'CALL_NOTES', 'MEETING_NOTES', 'VOICE_MEMO', 'FILE_UPLOAD'];
+        const typeStr = String(type || 'TEXT').toUpperCase().replace(/-/g, '_') as MessageType;
+        return validTypes.includes(typeStr) ? typeStr : 'TEXT';
+      };
+
+      // Helper to validate and map message role to enum
+      const validateMessageRole = (role: any): MessageRole => {
+        const roleStr = String(role || 'CLIENT').toUpperCase();
+        return (roleStr === 'YOU' || roleStr === 'AI_DRAFT') ? roleStr as MessageRole : 'CLIENT';
+      };
+
       for (const message of body.messages) {
         await prisma.message.create({
           data: {
             conversationId: conversation.id,
-            role: message.role || 'CLIENT',
+            role: validateMessageRole(message.role),
             content: message.content,
             timestamp: message.timestamp ? new Date(message.timestamp) : new Date(),
-            type: message.type || 'MEETING_NOTES',
+            type: validateMessageType(message.type),
             metadata: message.metadata ? JsonFieldSerializers.serializeObject(message.metadata) : undefined
           }
         });

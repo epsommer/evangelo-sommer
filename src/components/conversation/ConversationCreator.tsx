@@ -94,6 +94,21 @@ export default function ConversationCreator({
 
       console.log('💾 Saving conversation:', finalConversationData);
 
+      // Helper function to map message type to database enum
+      const mapMessageType = (type: string): string => {
+        const typeUpper = type.toUpperCase().replace(/-/g, '_');
+        // Map common types to database enum values
+        const typeMap: Record<string, string> = {
+          'TEXT': 'TEXT',
+          'EMAIL': 'EMAIL',
+          'CALL_NOTES': 'CALL_NOTES',
+          'MEETING_NOTES': 'MEETING_NOTES',
+          'VOICE_MEMO': 'VOICE_MEMO',
+          'FILE_UPLOAD': 'FILE_UPLOAD',
+        };
+        return typeMap[typeUpper] || 'TEXT';
+      };
+
       // Save conversation to database
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -110,7 +125,7 @@ export default function ConversationCreator({
             role: (msg.role === 'you' || msg.role === 'YOU') ? 'YOU' : 'CLIENT',
             content: msg.content,
             timestamp: msg.timestamp,
-            type: 'TEXT',
+            type: mapMessageType(msg.type || 'text'),
             metadata: msg.metadata || {}
           }))
         }),
@@ -188,27 +203,27 @@ export default function ConversationCreator({
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <div key={step.key} className="flex items-center">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 font-bold font-primary ${
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold font-primary ${
                 index <= currentStepIndex
-                  ? 'bg-tactical-gold border-hud-border-accent text-hud-text-primary'
-                  : 'bg-white border-hud-border text-medium-grey'
+                  ? 'neo-button-active text-foreground'
+                  : 'neo-button text-muted-foreground'
               }`}>
                 {index + 1}
               </div>
               {index < steps.length - 1 && (
                 <div className={`h-0.5 w-20 ml-4 ${
-                  index < currentStepIndex ? 'bg-tactical-gold' : 'bg-light-grey'
+                  index < currentStepIndex ? 'bg-primary' : 'bg-muted'
                 }`} />
               )}
             </div>
           ))}
         </div>
-        
+
         <div className="mt-4">
-          <h2 className="text-xl font-bold text-hud-text-primary font-primary uppercase tracking-wide">
+          <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide">
             {steps[currentStepIndex]?.title}
           </h2>
-          <p className="text-medium-grey font-primary">
+          <p className="text-muted-foreground font-primary">
             {steps[currentStepIndex]?.description}
           </p>
         </div>
@@ -216,19 +231,19 @@ export default function ConversationCreator({
 
       {/* Error Display */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded">
+        <div className="mb-6 p-4 neo-container rounded-lg border-2 border-destructive">
           <div className="flex items-center">
-            <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-destructive mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
-            <span className="font-primary font-bold text-red-800">Error:</span>
-            <span className="ml-2 font-primary text-red-700">{error}</span>
+            <span className="font-primary font-bold text-destructive">Error:</span>
+            <span className="ml-2 font-primary text-destructive-foreground">{error}</span>
           </div>
         </div>
       )}
 
       {/* Step Content */}
-      <div className="bg-white rounded-lg border-2 border-hud-border p-6 mb-6">
+      <div className="neo-container rounded-lg p-6 mb-6">
         {currentStep === 'import' && (
           <FileImportEngine
             onMessagesImported={handleMessagesImported}
@@ -273,13 +288,13 @@ export default function ConversationCreator({
       <div className="flex items-center justify-between">
         <button
           onClick={currentStep === 'import' ? onCancel : handlePrevious}
-          className="px-6 py-2 border-2 border-medium-grey text-medium-grey hover:border-dark-grey hover:text-hud-text-primary font-primary font-bold uppercase tracking-wide transition-colors"
+          className="neo-button"
         >
           {currentStep === 'import' ? 'Cancel' : 'Previous'}
         </button>
 
         <div className="text-center">
-          <span className="text-sm text-medium-grey font-primary">
+          <span className="text-sm text-muted-foreground font-primary">
             Step {currentStepIndex + 1} of {steps.length}
           </span>
         </div>
@@ -288,10 +303,8 @@ export default function ConversationCreator({
           <button
             onClick={handleNext}
             disabled={!canProceedToNext()}
-            className={`px-6 py-2 font-primary font-bold uppercase tracking-wide transition-colors ${
-              canProceedToNext()
-                ? 'bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light'
-                : 'bg-light-grey text-medium-grey cursor-not-allowed'
+            className={`neo-button font-primary font-bold uppercase tracking-wide ${
+              !canProceedToNext() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             Next
