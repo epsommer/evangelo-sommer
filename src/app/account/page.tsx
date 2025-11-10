@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GrainyTexture, setGrainIntensity, getGrainIntensity } from '@/components/GrainyTexture';
 
-type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night';
+type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night' | 'gilded-meadow';
 type GrainIntensity = 'off' | 'low' | 'medium' | 'high';
 type WindowTheme = 'neomorphic' | 'tactical';
 
@@ -36,7 +36,7 @@ export default function AccountSettingsPage() {
 
   const applyTheme = (theme: ColorTheme) => {
     // Remove all theme classes
-    document.documentElement.classList.remove('mocha-mode', 'overkast-mode', 'true-night-mode');
+    document.documentElement.classList.remove('mocha-mode', 'overkast-mode', 'true-night-mode', 'gilded-meadow-mode');
 
     // Add the selected theme class
     if (theme === 'mocha') {
@@ -45,6 +45,9 @@ export default function AccountSettingsPage() {
       document.documentElement.classList.add('overkast-mode');
     } else if (theme === 'true-night') {
       document.documentElement.classList.add('true-night-mode');
+    } else if (theme === 'gilded-meadow') {
+      document.documentElement.classList.add('gilded-meadow-mode');
+      document.documentElement.removeAttribute('data-theme');
     }
 
     // Dispatch custom event for theme change
@@ -176,6 +179,17 @@ export default function AccountSettingsPage() {
             >
               <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#1a1a1a] to-[#242424] border-2 border-[#333333]" />
               <span className="font-primary text-xs uppercase tracking-wide">True Night</span>
+            </button>
+
+            {/* Gilded Meadow Theme */}
+            <button
+              onClick={() => handleColorThemeChange('gilded-meadow')}
+              className={`neo-button p-4 flex flex-col items-center gap-3 ${
+                colorTheme === 'gilded-meadow' ? 'neo-button-active' : ''
+              }`}
+            >
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#F5F5DC] to-[#F0EAD6] border-2 border-[#D4C5A9]" />
+              <span className="font-primary text-xs uppercase tracking-wide">Gilded Meadow</span>
             </button>
           </div>
         </div>

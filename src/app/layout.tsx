@@ -31,7 +31,7 @@ export default function RootLayout({
 
                   // Apply color theme
                   const root = document.documentElement;
-                  root.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode');
+                  root.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode', 'gilded-meadow-mode');
 
                   if (colorTheme === 'mocha') {
                     root.classList.add('mocha-mode');
@@ -42,6 +42,9 @@ export default function RootLayout({
                   } else if (colorTheme === 'true-night') {
                     root.classList.add('true-night-mode');
                     root.setAttribute('data-theme', 'dark');
+                  } else if (colorTheme === 'gilded-meadow') {
+                    root.classList.add('gilded-meadow-mode');
+                    root.removeAttribute('data-theme');
                   } else {
                     root.removeAttribute('data-theme');
                   }

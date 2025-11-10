@@ -40,7 +40,7 @@ export interface AccountSettings {
   }
 }
 
-type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night'
+type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night' | 'gilded-meadow'
 type GrainIntensity = 'off' | 'low' | 'medium' | 'high'
 type WindowTheme = 'neomorphic' | 'tactical'
 
@@ -121,7 +121,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   // Theme application logic
   const applyTheme = (theme: ColorTheme) => {
     const root = document.documentElement
-    root.classList.remove('mocha-mode', 'overkast-mode', 'true-night-mode')
+    root.classList.remove('mocha-mode', 'overkast-mode', 'true-night-mode', 'gilded-meadow-mode')
 
     if (theme === 'mocha') {
       root.classList.add('mocha-mode')
@@ -131,6 +131,9 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     } else if (theme === 'true-night') {
       root.classList.add('true-night-mode')
       root.setAttribute('data-theme', 'dark')
+    } else if (theme === 'gilded-meadow') {
+      root.classList.add('gilded-meadow-mode')
+      root.removeAttribute('data-theme')
     }
 
     localStorage.setItem('color-theme', theme)
@@ -519,6 +522,22 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       )}
                       <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#1a1a1a] to-[#242424] border-2 border-[#333333]" />
                       <span className="font-primary text-xs uppercase tracking-wide">True Night</span>
+                    </button>
+
+                    {/* Gilded Meadow Theme */}
+                    <button
+                      onClick={() => handleColorThemeChange('gilded-meadow')}
+                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                        colorTheme === 'gilded-meadow' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      {colorTheme === 'gilded-meadow' && (
+                        <div className="absolute top-2 right-2">
+                          <Check className="h-5 w-5 text-tactical-gold" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#F5F5DC] to-[#F0EAD6] border-2 border-[#D4C5A9]" />
+                      <span className="font-primary text-xs uppercase tracking-wide">Gilded Meadow</span>
                     </button>
                   </div>
                 </div>
