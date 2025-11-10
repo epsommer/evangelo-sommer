@@ -88,21 +88,21 @@ export default function ServiceDashboard() {
     <CRMLayout>
       <div className="p-6">
         {/* Page Header */}
-        <div className="bg-hud-background-secondary p-6 border-b-2 border-hud-border-accent mb-6">
+        <div className="neo-container p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
                 <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold font-space-grotesk"
+                  className="w-10 h-10 flex items-center justify-center text-white font-bold font-primary rounded-lg"
                   style={{ backgroundColor: service.brand.primaryColor }}
                 >
                   {service.name.charAt(0)}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-hud-text-primary uppercase tracking-wide font-space-grotesk mb-2">
+                  <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
                     {service.name.toUpperCase()}
                   </h1>
-                  <p className="text-medium-grey font-space-grotesk uppercase tracking-wide text-sm">
+                  <p className="text-muted-foreground font-primary uppercase tracking-wide text-sm">
                     {service.description?.toUpperCase()}
                   </p>
                 </div>
@@ -110,13 +110,13 @@ export default function ServiceDashboard() {
             </div>
             <div className="flex items-center space-x-3">
               <Button
-                className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-space-grotesk font-bold uppercase tracking-wide text-sm"
+                className="neo-button font-primary font-bold uppercase tracking-wide text-sm"
                 onClick={() => router.push(`/clients/new?serviceId=${serviceId}`)}
               >
                 ADD {service.businessType?.toUpperCase()} CLIENT
               </Button>
               <Button
-                className="bg-dark-grey text-white hover:bg-medium-grey font-space-grotesk font-bold uppercase tracking-wide text-sm"
+                className="neo-button font-primary font-bold uppercase tracking-wide text-sm"
                 onClick={() => window.open(`https://${service.domain}`, '_blank')}
               >
                 VISIT {service.domain?.toUpperCase()} ↗
@@ -127,46 +127,46 @@ export default function ServiceDashboard() {
 
         {/* Service Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4 bg-white border-2 border-hud-border">
-            <div className="text-2xl font-bold text-hud-text-primary font-space-grotesk">
+          <div className="neo-container p-4">
+            <div className="text-2xl font-bold text-foreground font-primary">
               {clients.length}
             </div>
-            <div className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               TOTAL CLIENTS
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-4 bg-white border-2 border-hud-border">
-            <div className="text-2xl font-bold text-gold font-space-grotesk">
+          <div className="neo-container p-4">
+            <div className="text-2xl font-bold text-green-600 font-primary">
               {activeClients}
             </div>
-            <div className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               ACTIVE PROJECTS
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-4 bg-white border-2 border-hud-border">
-            <div className="text-2xl font-bold text-hud-text-primary font-space-grotesk">
+          <div className="neo-container p-4">
+            <div className="text-2xl font-bold text-foreground font-primary">
               {prospects}
             </div>
-            <div className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               PROSPECTS
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-4 bg-white border-2 border-hud-border">
-            <div className="text-2xl font-bold text-gold font-space-grotesk">
+          <div className="neo-container p-4">
+            <div className="text-2xl font-bold text-green-600 font-primary">
               ${totalRevenue.toLocaleString()}
             </div>
-            <div className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
               PIPELINE VALUE
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Service-Specific Quick Actions */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-hud-text-primary mb-4 font-space-grotesk uppercase tracking-wide">
+          <h2 className="text-xl font-bold text-foreground mb-4 font-primary uppercase tracking-wide">
             {service.businessType?.toUpperCase()} SERVICES
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -175,23 +175,26 @@ export default function ServiceDashboard() {
                 c.serviceTypes.includes(serviceType),
               );
               return (
-                <Card
+                <div
                   key={index}
-                  className="p-4 bg-white border-2 border-hud-border hover:bg-hud-background-secondary transition-colors cursor-pointer border-l-4"
-                  style={{ borderLeftColor: service.brand.primaryColor }}
+                  className="neo-container p-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer relative overflow-hidden"
                 >
-                  <div className="font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide text-sm">
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1"
+                    style={{ backgroundColor: service.brand.primaryColor }}
+                  />
+                  <div className="font-bold text-foreground font-primary uppercase tracking-wide text-sm">
                     {serviceType.toUpperCase()}
                   </div>
-                  <div className="text-sm text-medium-grey mt-1 font-space-grotesk">
+                  <div className="text-sm text-muted-foreground mt-1 font-primary">
                     {typeClients.length} CLIENTS
                   </div>
-                  <div className="text-xs text-medium-grey mt-2 font-space-grotesk">
+                  <div className="text-xs text-muted-foreground mt-2 font-primary">
                     ${typeClients
                       .reduce((sum, c) => sum + (c.budget || 0), 0)
                       .toLocaleString()} VALUE
                   </div>
-                </Card>
+                </div>
               );
             })}
           </div>
@@ -200,12 +203,11 @@ export default function ServiceDashboard() {
         {/* Recent Clients for This Service */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+            <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide">
               {service.businessType?.toUpperCase()} CLIENTS
             </h2>
             <Button
-              className="text-gold hover:text-gold-dark font-space-grotesk font-bold uppercase tracking-wide text-sm"
-              variant="outline"
+              className="neo-button-sm font-primary font-bold uppercase tracking-wide text-sm"
               onClick={() => router.push(`/clients?service=${serviceId}`)}
             >
               VIEW ALL →
@@ -213,21 +215,21 @@ export default function ServiceDashboard() {
           </div>
 
           {clients.length === 0 ? (
-            <Card className="p-8 text-center bg-white border-2 border-hud-border">
+            <div className="neo-container p-8 text-center">
               <div className="text-4xl mb-4">🎨</div>
-              <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+              <h3 className="text-lg font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
                 NO {service.businessType?.toUpperCase()} CLIENTS YET
               </h3>
-              <p className="text-medium-grey mb-4 font-space-grotesk">
+              <p className="text-muted-foreground mb-4 font-primary">
                 START BUILDING YOUR {service.businessType?.toUpperCase()} CLIENT BASE TO TRACK PROJECTS AND RELATIONSHIPS.
               </p>
               <Button
-                className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-space-grotesk font-bold uppercase tracking-wide"
+                className="neo-button font-primary font-bold uppercase tracking-wide"
                 onClick={() => router.push(`/clients/new?serviceId=${serviceId}`)}
               >
                 ADD YOUR FIRST {service.businessType?.toUpperCase()} CLIENT
               </Button>
-            </Card>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {clients
@@ -243,37 +245,40 @@ export default function ServiceDashboard() {
                     href={`/clients/${client.id}`}
                     className="block"
                   >
-                    <Card
-                      className="bg-white border-2 border-hud-border hover:bg-hud-background-secondary transition-colors p-4 border-l-4"
-                      style={{ borderLeftColor: service.brand.primaryColor }}
+                    <div
+                      className="neo-container p-4 hover:scale-[1.02] transition-all duration-200 relative overflow-hidden"
                     >
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-1"
+                        style={{ backgroundColor: service.brand.primaryColor }}
+                      />
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="font-bold text-hud-text-primary font-space-grotesk">
+                          <h3 className="font-bold text-foreground font-primary">
                             {client.name?.toUpperCase()}
                           </h3>
                           {client.company && (
-                            <div className="text-sm text-medium-grey font-space-grotesk">
+                            <div className="text-sm text-muted-foreground font-primary">
                               {client.company.toUpperCase()}
                             </div>
                           )}
                         </div>
                         <span
-                          className={`px-2 py-1 text-xs font-bold uppercase font-space-grotesk ${
+                          className={`px-2 py-1 text-xs font-bold uppercase font-primary rounded ${
                             client.status === "active"
-                              ? "bg-tactical-gold text-hud-text-primary"
+                              ? "bg-green-600 text-white"
                               : client.status === "prospect"
-                                ? "bg-light-grey text-medium-grey"
+                                ? "neo-inset text-foreground"
                                 : client.status === "completed"
-                                  ? "bg-dark-grey text-white"
-                                  : "bg-medium-grey text-white"
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-600 text-white"
                           }`}
                         >
                           {client.status?.toUpperCase()}
                         </span>
                       </div>
 
-                      <div className="text-sm text-medium-grey space-y-1 font-space-grotesk">
+                      <div className="text-sm text-muted-foreground space-y-1 font-primary">
                         <div>📧 {client.email?.toUpperCase()}</div>
                         {client.projectType && <div>🏗️ {client.projectType.toUpperCase()}</div>}
                         {client.serviceTypes.length > 0 && (
@@ -291,10 +296,10 @@ export default function ServiceDashboard() {
                         )}
                       </div>
 
-                      <div className="mt-3 text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+                      <div className="mt-3 text-xs text-muted-foreground font-primary uppercase tracking-wide">
                         UPDATED: {new Date(client.updatedAt).toLocaleDateString().toUpperCase()}
                       </div>
-                    </Card>
+                    </div>
                   </Link>
                 ))}
             </div>
