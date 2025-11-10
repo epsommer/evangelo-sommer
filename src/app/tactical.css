@@ -174,7 +174,9 @@ label, .form-label {
 }
 
 /* Military Body Text */
-p:not(.logo-button *), span:not(.logo-button *), div:not(.logo-button *) {
+p:not(.logo-button *):not(.tk-lores-9-wide):not(.tk-lores-9-wide *),
+span:not(.logo-button *):not(.tk-lores-9-wide):not(.tk-lores-9-wide *),
+div:not(.logo-button *):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
   font-family: var(--font-body) !important;
   font-weight: 400;
   letter-spacing: 0.025em;
