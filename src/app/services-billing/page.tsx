@@ -94,23 +94,25 @@ const mockAnalytics: BillingAnalytics = {
   recentTransactions: mockTransactions
 };
 
-function BillingMetricsCard({ 
-  icon, 
-  title, 
-  value, 
-  trend, 
-  className = "" 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  value: string; 
-  trend?: string; 
-  className?: string; 
+function BillingMetricsCard({
+  icon,
+  title,
+  value,
+  trend,
+  className = ""
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  trend?: string;
+  className?: string;
 }) {
   return (
-    <div className={`p-6 border ${className}`}>
+    <div className={`neo-container p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        {icon}
+        <div className="p-2 neo-inset rounded-lg">
+          {icon}
+        </div>
         <span className="text-xs font-primary uppercase tracking-wide text-muted-foreground">
           {title}
         </span>
@@ -131,74 +133,70 @@ function BillingOverviewCards({ analytics }: { analytics: BillingAnalytics }) {
   const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <BillingMetricsCard
-        icon={<DollarSign className="w-6 h-6 text-green-600" />}
+        icon={<DollarSign className="w-5 h-5 text-green-600" />}
         title="Total Revenue"
         value={formatCurrency(analytics.totalRevenue)}
         trend="+12.5% from last month"
-        className="bg-background border-green-200"
       />
-      
+
       <BillingMetricsCard
-        icon={<FileText className="w-6 h-6 text-orange-600" />}
+        icon={<FileText className="w-5 h-5 text-orange-600" />}
         title="Pending Invoices"
         value={analytics.pendingInvoices.toString()}
         trend={formatCurrency(analytics.pendingAmount)}
-        className="bg-background border-orange-200"
       />
-      
+
       <BillingMetricsCard
-        icon={<Receipt className="w-6 h-6 text-accent" />}
+        icon={<Receipt className="w-5 h-5 text-accent" />}
         title="Total Receipts"
         value={analytics.totalReceipts.toString()}
         trend="This month"
-        className="bg-background border-border-accent"
       />
-      
+
       <BillingMetricsCard
-        icon={<TrendingUp className="w-6 h-6 text-accent" />}
+        icon={<TrendingUp className="w-5 h-5 text-accent" />}
         title="This Month"
         value={formatCurrency(analytics.currentMonthRevenue)}
         trend="vs last month"
-        className="bg-background border-accent"
       />
     </div>
   );
 }
 
-function FilteringControls({ 
-  filters, 
-  onFiltersChange 
-}: { 
-  filters: BillingFilters; 
-  onFiltersChange: (filters: Partial<BillingFilters>) => void; 
+function FilteringControls({
+  filters,
+  onFiltersChange
+}: {
+  filters: BillingFilters;
+  onFiltersChange: (filters: Partial<BillingFilters>) => void;
 }) {
   return (
     <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-3 neo-container px-4 py-2">
         <Search className="w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search transactions..."
           value={filters.searchTerm}
           onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
-          className="px-3 py-2 border border-border focus:border-border-accent focus:ring-1 focus:ring-gold font-primary text-sm"
+          className="bg-transparent border-none outline-none focus:outline-none font-primary text-sm text-foreground placeholder:text-muted-foreground min-w-[200px]"
         />
       </div>
-      
-      <div className="flex items-center space-x-2">
+
+      <div className="flex items-center space-x-3 neo-container px-4 py-2">
         <Filter className="w-4 h-4 text-muted-foreground" />
         <select
           value={filters.transactionType}
           onChange={(e) => onFiltersChange({ transactionType: e.target.value as any })}
-          className="px-3 py-2 border border-border focus:border-border-accent focus:ring-1 focus:ring-gold font-primary text-sm"
+          className="bg-transparent border-none outline-none focus:outline-none font-primary text-sm text-foreground cursor-pointer"
         >
           <option value="all">All Types</option>
           <option value="receipts">Receipts</option>
           <option value="invoices">Invoices</option>
         </select>
-        
+
       </div>
     </div>
   );
@@ -223,9 +221,9 @@ function TransactionRow({
 
   const getRowStyle = () => {
     if (transaction.status === 'sent' && !transaction.isDuplicate) {
-      return "border-b border-border bg-card opacity-75"; // Grey out sent receipts
+      return "border-b border-border opacity-60"; // Grey out sent receipts
     }
-    return "border-b border-border hover:bg-card transition-colors";
+    return "border-b border-border hover:bg-muted/30 transition-all duration-200";
   };
 
   const getSentStatus = () => {
@@ -266,17 +264,17 @@ function TransactionRow({
 
   return (
     <tr className={getRowStyle()}>
-      <td className="px-4 py-3 text-sm text-foreground font-primary">
+      <td className="px-6 py-4 text-sm text-foreground font-primary">
         {new Date(transaction.date).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'numeric', 
           day: 'numeric'
         })}
       </td>
-      <td className="px-4 py-3 text-sm text-foreground font-primary">
+      <td className="px-6 py-4 text-sm text-foreground font-primary">
         {transaction.clientName}
       </td>
-      <td className="px-4 py-3 text-sm text-foreground font-primary">
+      <td className="px-6 py-4 text-sm text-foreground font-primary">
         <div className="flex items-center space-x-2">
           {transaction.type === 'receipt' ? (
             <Receipt className="w-4 h-4 text-accent" />
@@ -291,16 +289,16 @@ function TransactionRow({
           {transaction.receiptNumber || transaction.invoiceNumber}
         </div>
       </td>
-      <td className="px-4 py-3 text-sm font-bold text-foreground font-primary">
+      <td className="px-6 py-4 text-sm font-bold text-foreground font-primary">
         {formatCurrency(transaction.amount)}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-6 py-4">
         {getSentStatus()}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-6 py-4">
         {getPaidStatus()}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-6 py-4">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewClick?.(transaction)}
@@ -393,8 +391,8 @@ function TransactionRow({
   );
 }
 
-function TransactionsTable({ 
-  transactions, 
+function TransactionsTable({
+  transactions,
   onViewTransaction,
   onEditTransaction,
   onSendReceipt,
@@ -403,8 +401,8 @@ function TransactionsTable({
   isLoading = false,
   showViewAll = false,
   onViewAllClick
-}: { 
-  transactions: Transaction[]; 
+}: {
+  transactions: Transaction[];
   onViewTransaction?: (transaction: Transaction) => void;
   onEditTransaction?: (transaction: Transaction) => void;
   onSendReceipt?: (transaction: Transaction) => void;
@@ -415,68 +413,68 @@ function TransactionsTable({
   onViewAllClick?: () => void;
 }) {
   return (
-    <div className="bg-background border border-border">
-      <div className="p-4 border-b border-border bg-card">
+    <div className="neo-container overflow-hidden">
+      <div className="p-6 border-b border-border neo-inset">
         <div className="flex items-center justify-between">
-          <h2 className="font-primary font-bold text-foreground uppercase tracking-wide">
+          <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg">
             Recent Transactions
           </h2>
           {showViewAll && (
             <button
               onClick={onViewAllClick}
-              className="neo-button text-accent border-border-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm"
+              className="neo-button text-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm transition-all"
             >
               View All History
             </button>
           )}
         </div>
       </div>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-card">
-            <tr className="border-b border-border">
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+          <thead>
+            <tr className="border-b border-border neo-inset">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Date
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Client
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Type
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Amount
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Sent
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Paid
               </th>
-              <th className="px-4 py-3 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
+              <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-background">
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground font-primary">
                   Loading transactions...
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground font-primary">
                   No transactions found
                 </td>
               </tr>
             ) : (
               transactions.map(transaction => (
-                <TransactionRow 
-                  key={transaction.id} 
-                  transaction={transaction} 
+                <TransactionRow
+                  key={transaction.id}
+                  transaction={transaction}
                   onViewClick={onViewTransaction}
                   onEditClick={onEditTransaction}
                   onSendClick={onSendReceipt}
@@ -1014,10 +1012,10 @@ export default function ServicesBillingPage() {
         
         {/* Show Less Button for All Transactions View */}
         {showAllTransactions && filteredTransactions.length > 5 && (
-          <div className="text-center mt-4">
+          <div className="text-center mt-6">
             <button
               onClick={() => setShowAllTransactions(false)}
-              className="neo-button text-accent border-border-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm"
+              className="neo-button text-accent hover:bg-accent hover:text-foreground px-6 py-3 font-primary uppercase tracking-wide text-sm transition-all"
             >
               Show Recent Only
             </button>
@@ -1025,12 +1023,12 @@ export default function ServicesBillingPage() {
         )}
         
         {filteredTransactions.length === 0 && !isLoading && (
-          <div className="text-center py-12 bg-background border border-border mt-4">
-            <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-xl font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
+          <div className="neo-container text-center py-16 mt-4">
+            <div className="text-6xl mb-6">📊</div>
+            <h3 className="text-xl font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
               No Transactions Found
             </h3>
-            <p className="text-muted-foreground font-primary">
+            <p className="text-muted-foreground font-primary text-sm">
               {filters.searchTerm || filters.transactionType !== 'all'
                 ? 'Try adjusting your filters to see more results.'
                 : 'Create your first receipt or invoice to get started.'
