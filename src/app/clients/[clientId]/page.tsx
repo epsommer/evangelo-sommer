@@ -145,6 +145,7 @@ const ClientDetailPage = () => {
   }
 
   const getServiceName = (serviceId: string) => {
+    if (!serviceId) return 'Unknown Service'
     const serviceInfo = getServiceInfo(serviceId as any)
     return serviceInfo ? serviceInfo.name : serviceId.replace(/[-_]/g, ' ').toUpperCase()
   }
@@ -303,28 +304,35 @@ const ClientDetailPage = () => {
 
               return (
                 <div className="space-y-3">
-                  {services.map((service) => (
-                    <div key={service.id} className="neo-inset p-4 rounded-lg transition-transform hover:scale-[1.01]">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          {getServiceIcon(service.id)}
-                          <div>
-                            <div className="font-bold text-foreground font-primary uppercase">
-                              {getServiceName(service.id)}
-                            </div>
-                            {service.contracts && service.contracts.length > 0 && (
-                              <div className="text-xs text-muted-foreground font-primary mt-1">
-                                {service.contracts.length} active contract{service.contracts.length > 1 ? 's' : ''}
+                  {services.map((serviceId) => {
+                    // Count contracts for this service
+                    const contractCount = client.serviceContracts?.filter(
+                      contract => contract.serviceId === serviceId
+                    ).length || 0
+
+                    return (
+                      <div key={serviceId} className="neo-inset p-4 rounded-lg transition-transform hover:scale-[1.01]">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            {getServiceIcon(serviceId)}
+                            <div>
+                              <div className="font-bold text-foreground font-primary uppercase">
+                                {getServiceName(serviceId)}
                               </div>
-                            )}
+                              {contractCount > 0 && (
+                                <div className="text-xs text-muted-foreground font-primary mt-1">
+                                  {contractCount} active contract{contractCount > 1 ? 's' : ''}
+                                </div>
+                              )}
+                            </div>
                           </div>
+                          <span className="neo-badge px-3 py-1 text-xs uppercase font-primary bg-green-600 text-white">
+                            Active
+                          </span>
                         </div>
-                        <span className="neo-badge px-3 py-1 text-xs uppercase font-primary bg-green-600 text-white">
-                          Active
-                        </span>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )
             })()}
