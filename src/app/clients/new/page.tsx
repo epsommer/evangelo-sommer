@@ -932,19 +932,6 @@ function NewClientPageContent() {
               </div>
             </div>
 
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground font-primary uppercase tracking-wide mb-1">
-                Notes
-              </label>
-              <textarea
-                value={formData.notes || ""}
-                onChange={(e) => handleInputChange("notes", e.target.value)}
-                rows={4}
-                className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
-                placeholder="Any additional information about this client..."
-              />
-            </div>
           </div>
 
           {/* Information Notice */}

@@ -360,7 +360,7 @@ export default function EditClientModal({
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
-                        className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                        className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal ${
                           errors.name ? "border-2 border-red-500" : ""
                         }`}
                         placeholder="Client name"
@@ -380,7 +380,7 @@ export default function EditClientModal({
                         type="text"
                         value={formData.company}
                         onChange={(e) => handleInputChange("company", e.target.value)}
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                         placeholder="Company name (optional)"
                         disabled={isSubmitting}
                       />
@@ -402,20 +402,6 @@ export default function EditClientModal({
                         <option value="inactive">Inactive</option>
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
-                        Notes
-                      </label>
-                      <textarea
-                        value={formData.notes}
-                        onChange={(e) => handleInputChange("notes", e.target.value)}
-                        rows={4}
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
-                        placeholder="Additional notes about the client..."
-                        disabled={isSubmitting}
-                      />
-                    </div>
                   </div>
                 )}
 
@@ -431,7 +417,7 @@ export default function EditClientModal({
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
-                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal ${
                             errors.email ? "border-2 border-red-500" : ""
                           }`}
                           placeholder="client@example.com"
@@ -450,7 +436,7 @@ export default function EditClientModal({
                           type="tel"
                           value={formData.phone}
                           onChange={handlePhoneChange}
-                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal ${
                             errors.phone ? "border-2 border-red-500" : ""
                           }`}
                           placeholder="(123) 456-7890"
@@ -471,7 +457,7 @@ export default function EditClientModal({
                           type="text"
                           value={formData.address.street}
                           onChange={(e) => handleInputChange("address.street", e.target.value)}
-                          className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                          className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                           placeholder="Street address"
                           disabled={isSubmitting}
                         />
@@ -480,7 +466,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.city}
                             onChange={(e) => handleInputChange("address.city", e.target.value)}
-                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                             placeholder="City"
                             disabled={isSubmitting}
                           />
@@ -488,7 +474,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.state}
                             onChange={(e) => handleInputChange("address.state", e.target.value)}
-                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                             placeholder="Province"
                             disabled={isSubmitting}
                           />
@@ -496,7 +482,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.zip}
                             onChange={(e) => handleInputChange("address.zip", e.target.value)}
-                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                             placeholder="Postal Code"
                             disabled={isSubmitting}
                           />
@@ -518,7 +504,7 @@ export default function EditClientModal({
                           type="text"
                           value={formData.projectType}
                           onChange={(e) => handleInputChange("projectType", e.target.value)}
-                          className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                          className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                           placeholder="e.g., Landscape Design, Snow Removal"
                           disabled={isSubmitting}
                         />
@@ -532,7 +518,7 @@ export default function EditClientModal({
                           type="text"
                           value={formData.budget}
                           onChange={(e) => handleInputChange("budget", e.target.value)}
-                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal ${
                             errors.budget ? "border-2 border-red-500" : ""
                           }`}
                           placeholder="e.g., 5000"
@@ -552,7 +538,7 @@ export default function EditClientModal({
                         type="text"
                         value={formData.timeline}
                         onChange={(e) => handleInputChange("timeline", e.target.value)}
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
                         placeholder="e.g., 2-3 weeks, Spring 2024"
                         disabled={isSubmitting}
                       />

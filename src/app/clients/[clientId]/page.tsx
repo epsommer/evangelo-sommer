@@ -14,6 +14,7 @@ import ReceiptModal from '@/components/ReceiptModal'
 import InvoiceModal from '@/components/InvoiceModal'
 import QuoteModal from '@/components/QuoteModal'
 import ClientConversationsSection from '@/components/ClientConversationsSection'
+import ClientNotesSection from '@/components/ClientNotesSection'
 
 const ClientDetailPage = () => {
   const params = useParams()
@@ -632,6 +633,9 @@ const ClientDetailPage = () => {
           </div>
         </div>
 
+
+        {/* Client Notes Section */}
+        <ClientNotesSection clientId={clientId} clientName={client.name} />
 
         {/* Client Conversations Section */}
         <ClientConversationsSection clientId={clientId} client={client} />
