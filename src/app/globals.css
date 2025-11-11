@@ -460,3 +460,12 @@ body {
   background: transparent !important;
   border: none !important;
 }
+
+/* Neo-inset input placeholder styling */
+.neo-inset::placeholder,
+input.neo-inset::placeholder,
+textarea.neo-inset::placeholder,
+select.neo-inset::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.5 !important;
+}
