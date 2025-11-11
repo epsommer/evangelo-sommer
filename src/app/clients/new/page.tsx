@@ -164,23 +164,9 @@ function NewClientPageContent() {
         return;
       }
 
-      // Also save to localStorage for backward compatibility
-      const newClient: Client = {
-        ...formData,
-        id: clientId,
-        name: formData.name.trim(),
-        metadata: {
-          ...formData.metadata,
-          ...(secondaryServices.length > 0 && { secondaryServices }),
-          ...(Object.keys(secondaryServiceTypes).length > 0 && { secondaryServiceTypes }),
-        } as any,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await clientManager.saveClient(newClient);
-
-      // Redirect to client detail page
-      router.push(`/clients/${clientId}?tab=conversations&setup=true`);
+      // Redirect to client detail page using the ID from the API response
+      const createdClientId = result.data?.id || clientId;
+      router.push(`/clients/${createdClientId}?tab=conversations&setup=true`);
     } catch (err) {
       setError("Failed to create client. Please try again.");
       console.error("Error creating client:", err);

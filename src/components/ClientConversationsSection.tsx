@@ -87,87 +87,90 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
   }
 
   return (
-    <Card className="bg-white border-2 border-hud-border p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
-          CONVERSATIONS WITH {client.name.toUpperCase()}
-        </h2>
-        <div className="flex items-center space-x-2">
-          <Link 
-            href={`/conversations?client=${clientId}`}
-            className="p-2 text-tactical-grey-500 hover:text-tactical-gold transition-colors"
-            title="View All Conversations"
-          >
-            <MessageSquare className="h-4 w-4" />
-          </Link>
-          <Button 
-            className="bg-tactical-gold text-hud-text-primary px-4 py-2 font-bold uppercase text-sm tracking-wide hover:bg-tactical-gold-light cursor-pointer"
-            onClick={() => router.push(`/conversations/create?client=${clientId}`)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            ADD CONVERSATION
-          </Button>
-        </div>
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-50 border-2 border-red-600 text-red-700 p-4 mb-4">
-          <div className="font-bold font-primary uppercase tracking-wide">ERROR</div>
-          <div className="text-sm font-primary">{error}</div>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <div className="text-center py-8">
-          <div className="w-12 h-12 border-4 border-hud-border-accent border-t-transparent animate-spin mx-auto mb-4"></div>
-          <p className="text-medium-grey font-primary uppercase tracking-wide">LOADING CONVERSATIONS...</p>
-        </div>
-      )}
-
-      {/* Conversations List */}
-      {!loading && (
-        <div className="space-y-4">
-          {conversations.length === 0 ? (
-          <div className="text-center py-8">
-            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-light-grey" />
-            <h3 className="text-lg font-bold text-hud-text-primary mb-2 font-primary uppercase tracking-wide">
-              NO CONVERSATIONS YET
-            </h3>
-            <p className="text-medium-grey font-primary mb-4">
-              START A CONVERSATION TO TRACK COMMUNICATIONS WITH THIS CLIENT.
-            </p>
-            <Button
-              className="bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-primary text-sm uppercase tracking-wide"
+    <div className="neo-container transition-transform hover:scale-[1.01]">
+      <div className="neo-inset border-b border-foreground/10 p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground uppercase tracking-wide font-primary">
+            Conversations with {client.name}
+          </h2>
+          <div className="flex items-center space-x-2">
+            <Link
+              href={`/conversations?client=${clientId}`}
+              className="neo-button-circle w-10 h-10 flex items-center justify-center transition-transform hover:scale-[1.1]"
+              title="View All Conversations"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Link>
+            <button
+              className="neo-button px-4 py-2 font-bold uppercase text-sm tracking-wide font-primary transition-transform hover:scale-[1.02]"
               onClick={() => router.push(`/conversations/create?client=${clientId}`)}
             >
               <Plus className="h-4 w-4 mr-2" />
-              START CONVERSATION
-            </Button>
+              Add Conversation
+            </button>
           </div>
-        ) : (
-          conversations.map(conversation => (
-            <ConversationItem 
-              key={conversation.id}
-              conversation={conversation}
-              onEdit={setEditingConversation}
-              onDelete={handleDeleteConversation}
-              onAddMessage={(conv) => {
-                setSelectedConversation(conv)
-                setShowMessageModal(true)
-              }}
-              getStatusColor={getStatusColor}
-              getPriorityColor={getPriorityColor}
-              getMessageTypeIcon={getMessageTypeIcon}
-            />
-          ))
-          )}
         </div>
-      )}
+      </div>
 
-      {/* Add/Edit Conversation Modal */}
-      <ConversationModal 
+      <div className="p-6">
+        {/* Error Display */}
+        {error && (
+          <div className="neo-inset p-4 border-l-4 border-red-500 mb-4">
+            <div className="font-bold font-primary uppercase tracking-wide text-red-700">Error</div>
+            <div className="text-sm font-primary text-red-600">{error}</div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-8">
+            <div className="w-12 h-12 border-4 border-foreground/20 border-t-transparent animate-spin mx-auto mb-4"></div>
+            <p className="text-muted-foreground font-primary uppercase tracking-wide">Loading conversations...</p>
+          </div>
+        )}
+
+        {/* Conversations List */}
+        {!loading && (
+          <div className="space-y-4">
+            {conversations.length === 0 ? (
+              <div className="text-center py-8">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
+                  No Conversations Yet
+                </h3>
+                <p className="text-muted-foreground font-primary mb-4">
+                  Start a conversation to track communications with this client.
+                </p>
+                <button
+                  className="neo-button px-4 py-2 font-primary text-sm uppercase tracking-wide font-bold transition-transform hover:scale-[1.02]"
+                  onClick={() => router.push(`/conversations/create?client=${clientId}`)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Start Conversation
+                </button>
+              </div>
+            ) : (
+              conversations.map(conversation => (
+                <ConversationItem
+                  key={conversation.id}
+                  conversation={conversation}
+                  onEdit={setEditingConversation}
+                  onDelete={handleDeleteConversation}
+                  onAddMessage={(conv) => {
+                    setSelectedConversation(conv)
+                    setShowMessageModal(true)
+                  }}
+                  getStatusColor={getStatusColor}
+                  getPriorityColor={getPriorityColor}
+                  getMessageTypeIcon={getMessageTypeIcon}
+                />
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Add/Edit Conversation Modal */}
+        <ConversationModal 
         isOpen={showAddModal || editingConversation !== null}
         conversation={editingConversation}
         clientId={clientId}
@@ -192,23 +195,24 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
         }}
       />
 
-      {/* Add Message Modal */}
-      <MessageModal 
-        isOpen={showMessageModal}
-        conversation={selectedConversation}
-        onClose={() => {
-          setShowMessageModal(false)
-          setSelectedConversation(null)
-        }}
-        onSave={(messageData) => {
-          if (selectedConversation) {
-            handleAddMessage(selectedConversation.id, messageData)
-          }
-          setShowMessageModal(false)
-          setSelectedConversation(null)
-        }}
-      />
-    </Card>
+        {/* Add Message Modal */}
+        <MessageModal
+          isOpen={showMessageModal}
+          conversation={selectedConversation}
+          onClose={() => {
+            setShowMessageModal(false)
+            setSelectedConversation(null)
+          }}
+          onSave={(messageData) => {
+            if (selectedConversation) {
+              handleAddMessage(selectedConversation.id, messageData)
+            }
+            setShowMessageModal(false)
+            setSelectedConversation(null)
+          }}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -222,10 +226,10 @@ interface ConversationItemProps {
   getMessageTypeIcon: (type: Message['type']) => React.ReactNode
 }
 
-const ConversationItem: React.FC<ConversationItemProps> = ({ 
-  conversation, 
-  onEdit, 
-  onDelete, 
+const ConversationItem: React.FC<ConversationItemProps> = ({
+  conversation,
+  onEdit,
+  onDelete,
   onAddMessage,
   getStatusColor,
   getPriorityColor,
@@ -235,57 +239,51 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
 
   return (
     <Link href={`/conversations/${conversation.id}`}>
-      <Card className="border-2 border-hud-border p-4 hover:border-hud-border-accent transition-colors cursor-pointer">
+      <div className="neo-container p-4 hover:scale-[1.01] transition-transform cursor-pointer">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <h4 className="font-bold text-hud-text-primary font-primary">
-              {(conversation.title || 'Untitled Conversation').toUpperCase()}
+            <h4 className="font-bold text-foreground font-primary uppercase">
+              {conversation.title || 'Untitled Conversation'}
             </h4>
-            <Badge className={`${getStatusColor(conversation.status)} text-xs font-bold uppercase tracking-wide`}>
+            <Badge className={`${getStatusColor(conversation.status)} text-xs font-bold uppercase tracking-wide neo-badge`}>
               {conversation.status || 'active'}
             </Badge>
-            <Badge className={`${getPriorityColor(conversation.priority)} text-xs font-bold uppercase tracking-wide`}>
+            <Badge className={`${getPriorityColor(conversation.priority)} text-xs font-bold uppercase tracking-wide neo-badge`}>
               {conversation.priority || 'medium'}
             </Badge>
           </div>
-          
+
           <div className="flex items-center space-x-2" onClick={(e) => e.preventDefault()}>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs bg-tactical-gold text-hud-text-primary px-2 py-1 font-bold uppercase hover:bg-tactical-gold-light cursor-pointer border-hud-border-accent"
+            <button
+              className="neo-button-sm px-2 py-1 text-xs font-bold uppercase font-primary transition-transform hover:scale-[1.1]"
               onClick={(e) => {
                 e.stopPropagation()
                 onAddMessage(conversation)
               }}
             >
               <Plus className="h-3 w-3 mr-1" />
-              MESSAGE
-            </Button>
-            <Button 
-              size="sm"
-              variant="outline"
-              className="text-xs bg-white text-hud-text-primary px-2 py-1 font-bold uppercase hover:bg-light-grey cursor-pointer border-hud-border"
+              Message
+            </button>
+            <button
+              className="neo-button-sm px-2 py-1 text-xs font-bold uppercase font-primary transition-transform hover:scale-[1.1]"
               onClick={(e) => {
                 e.stopPropagation()
                 onEdit(conversation)
               }}
             >
               <Edit className="h-3 w-3 mr-1" />
-              EDIT
-            </Button>
-            <Button 
-              size="sm"
-              variant="outline"
-              className="text-xs bg-red-600 text-white px-2 py-1 font-bold uppercase hover:bg-red-700 cursor-pointer border-red-600"
+              Edit
+            </button>
+            <button
+              className="neo-button-sm px-2 py-1 text-xs font-bold uppercase font-primary transition-transform hover:scale-[1.1] bg-red-600 text-white"
               onClick={(e) => {
                 e.stopPropagation()
                 onDelete(conversation.id)
               }}
             >
               <Trash2 className="h-3 w-3 mr-1" />
-              DELETE
-            </Button>
+              Delete
+            </button>
           </div>
         </div>
         
@@ -301,26 +299,26 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
         </div>
 
         {/* Conversation Meta */}
-        <div className="flex items-center justify-between text-xs text-medium-grey font-primary">
+        <div className="flex items-center justify-between text-xs text-muted-foreground font-primary neo-inset p-3">
           <div className="flex items-center space-x-4">
-            <span>{conversation.messages.length} MESSAGES</span>
-            <span>LAST: {format(new Date(conversation.updatedAt), 'MMM dd, HH:mm').toUpperCase()}</span>
+            <span className="uppercase">{conversation.messages.length} Messages</span>
+            <span className="uppercase">Last: {format(new Date(conversation.updatedAt), 'MMM dd, HH:mm')}</span>
             {conversation.source && (
               <div className="flex items-center space-x-1">
                 <User className="h-3 w-3" />
-                <span>{conversation.source.toUpperCase()}</span>
+                <span className="uppercase">{conversation.source}</span>
               </div>
             )}
           </div>
-          
+
           {conversation.tags && conversation.tags.length > 0 && (
             <div className="flex items-center space-x-1">
               <Tag className="h-3 w-3" />
-              <span>{conversation.tags.join(', ').toUpperCase()}</span>
+              <span className="uppercase">{conversation.tags.join(', ')}</span>
             </div>
           )}
         </div>
-      </Card>
+      </div>
     </Link>
   )
 }
@@ -331,26 +329,26 @@ interface MessageItemProps {
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, getMessageTypeIcon }) => (
-  <div className={`flex items-start space-x-3 p-2 ${
-    (message.role === 'client' || message.role === 'CLIENT') ? 'bg-hud-background-secondary' : 'bg-tactical-gold-light'
+  <div className={`flex items-start space-x-3 p-3 neo-inset ${
+    (message.role === 'client' || message.role === 'CLIENT') ? '' : 'border-l-2 border-foreground/20'
   }`}>
     <div className="flex items-center space-x-2">
       {getMessageTypeIcon(message.type)}
-      <Badge className={`text-xs font-bold uppercase ${
-        (message.role === 'client' || message.role === 'CLIENT') ? 'bg-medium-grey text-white' : 'bg-tactical-gold text-hud-text-primary'
+      <Badge className={`text-xs font-bold uppercase neo-badge ${
+        (message.role === 'client' || message.role === 'CLIENT') ? 'bg-muted-foreground/20 text-foreground' : 'bg-foreground/10 text-foreground'
       }`}>
-        {(message.role === 'client' || message.role === 'CLIENT') ? 'CLIENT' : 'YOU'}
+        {(message.role === 'client' || message.role === 'CLIENT') ? 'Client' : 'You'}
       </Badge>
     </div>
     <div className="flex-1">
-      <p className="text-sm text-hud-text-primary font-primary">
+      <p className="text-sm text-foreground font-primary">
         {message.content}
       </p>
-      <div className="flex items-center space-x-2 text-xs text-medium-grey font-primary mt-1">
+      <div className="flex items-center space-x-2 text-xs text-muted-foreground font-primary mt-1">
         <Clock className="h-3 w-3" />
-        <span>{format(new Date(message.timestamp), 'MMM dd, HH:mm').toUpperCase()}</span>
+        <span className="uppercase">{format(new Date(message.timestamp), 'MMM dd, HH:mm')}</span>
         {message.metadata?.duration && (
-          <span>• {message.metadata.duration}MIN</span>
+          <span>• {message.metadata.duration}min</span>
         )}
       </div>
     </div>

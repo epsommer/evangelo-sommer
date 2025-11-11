@@ -303,40 +303,40 @@ export default function EditClientModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden"
+            className="relative neo-container max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-6 border-b border-tactical-grey-300">
+            <div className="neo-inset p-6 border-b border-foreground/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-semibold text-tactical-grey-800">
+                  <h3 className="text-xl font-bold text-foreground uppercase tracking-wide font-primary">
                     Edit Client
                   </h3>
-                  <p className="text-sm text-tactical-grey-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 font-primary">
                     {client.name}
                   </p>
                 </div>
                 <button
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="text-gray-400 hover:text-tactical-grey-500 transition-colors disabled:opacity-50"
+                  className="neo-button-circle w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
               {/* Section Navigation */}
-              <div className="flex space-x-1 mt-4">
+              <div className="flex space-x-2 mt-4">
                 {sections.map((section) => (
                   <button
                     key={section.key}
                     onClick={() => setActiveSection(section.key)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center space-x-2 px-4 py-2 text-sm font-bold uppercase tracking-wide font-primary transition-transform hover:scale-[1.02] ${
                       activeSection === section.key
-                        ? "bg-tactical-gold-muted text-tactical-brown-dark"
-                        : "text-tactical-grey-500 hover:text-tactical-grey-800 hover:bg-tactical-grey-200"
+                        ? "neo-inset"
+                        : "neo-button"
                     }`}
                   >
                     <span>{section.icon}</span>
@@ -353,47 +353,47 @@ export default function EditClientModal({
                 {activeSection === "basic" && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Name *
                       </label>
                       <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
-                          errors.name ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
+                        className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                          errors.name ? "border-2 border-red-500" : ""
                         }`}
                         placeholder="Client name"
                         disabled={isSubmitting}
                         required
                       />
                       {errors.name && (
-                        <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+                        <p className="text-sm text-red-600 mt-1 font-primary">{errors.name}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Company
                       </label>
                       <input
                         type="text"
                         value={formData.company}
                         onChange={(e) => handleInputChange("company", e.target.value)}
-                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                         placeholder="Company name (optional)"
                         disabled={isSubmitting}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Status
                       </label>
                       <select
                         value={formData.status}
                         onChange={(e) => handleInputChange("status", e.target.value)}
-                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all uppercase"
                         disabled={isSubmitting}
                       >
                         <option value="prospect">Prospect</option>
@@ -404,14 +404,14 @@ export default function EditClientModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Notes
                       </label>
                       <textarea
                         value={formData.notes}
                         onChange={(e) => handleInputChange("notes", e.target.value)}
                         rows={4}
-                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                         placeholder="Additional notes about the client..."
                         disabled={isSubmitting}
                       />
@@ -424,46 +424,46 @@ export default function EditClientModal({
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                        <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                           Email Address
                         </label>
                         <input
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
-                            errors.email ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
+                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                            errors.email ? "border-2 border-red-500" : ""
                           }`}
                           placeholder="client@example.com"
                           disabled={isSubmitting}
                         />
                         {errors.email && (
-                          <p className="text-sm text-red-600 mt-1">{errors.email}</p>
+                          <p className="text-sm text-red-600 mt-1 font-primary">{errors.email}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                        <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                           Phone Number
                         </label>
                         <input
                           type="tel"
                           value={formData.phone}
                           onChange={handlePhoneChange}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
-                            errors.phone ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
+                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                            errors.phone ? "border-2 border-red-500" : ""
                           }`}
                           placeholder="(123) 456-7890"
                           disabled={isSubmitting}
                         />
                         {errors.phone && (
-                          <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
+                          <p className="text-sm text-red-600 mt-1 font-primary">{errors.phone}</p>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Address
                       </label>
                       <div className="space-y-3">
@@ -471,7 +471,7 @@ export default function EditClientModal({
                           type="text"
                           value={formData.address.street}
                           onChange={(e) => handleInputChange("address.street", e.target.value)}
-                          className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                          className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                           placeholder="Street address"
                           disabled={isSubmitting}
                         />
@@ -480,7 +480,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.city}
                             onChange={(e) => handleInputChange("address.city", e.target.value)}
-                            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                             placeholder="City"
                             disabled={isSubmitting}
                           />
@@ -488,7 +488,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.state}
                             onChange={(e) => handleInputChange("address.state", e.target.value)}
-                            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                             placeholder="Province"
                             disabled={isSubmitting}
                           />
@@ -496,7 +496,7 @@ export default function EditClientModal({
                             type="text"
                             value={formData.address.zip}
                             onChange={(e) => handleInputChange("address.zip", e.target.value)}
-                            className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                             placeholder="Postal Code"
                             disabled={isSubmitting}
                           />
@@ -511,71 +511,71 @@ export default function EditClientModal({
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                        <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                           Project Type
                         </label>
                         <input
                           type="text"
                           value={formData.projectType}
                           onChange={(e) => handleInputChange("projectType", e.target.value)}
-                          className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                          className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                           placeholder="e.g., Landscape Design, Snow Removal"
                           disabled={isSubmitting}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                        <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                           Budget
                         </label>
                         <input
                           type="text"
                           value={formData.budget}
                           onChange={(e) => handleInputChange("budget", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors ${
-                            errors.budget ? "border-red-300 bg-red-50" : "border-tactical-grey-400 bg-white"
+                          className={`w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all ${
+                            errors.budget ? "border-2 border-red-500" : ""
                           }`}
                           placeholder="e.g., 5000"
                           disabled={isSubmitting}
                         />
                         {errors.budget && (
-                          <p className="text-sm text-red-600 mt-1">{errors.budget}</p>
+                          <p className="text-sm text-red-600 mt-1 font-primary">{errors.budget}</p>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Timeline
                       </label>
                       <input
                         type="text"
                         value={formData.timeline}
                         onChange={(e) => handleInputChange("timeline", e.target.value)}
-                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                         placeholder="e.g., 2-3 weeks, Spring 2024"
                         disabled={isSubmitting}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-3">
+                      <label className="block text-sm font-bold text-foreground mb-3 uppercase tracking-wide font-primary">
                         Service Types
                       </label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {SERVICE_TYPE_OPTIONS.map((serviceType) => (
                           <label
                             key={serviceType}
-                            className="flex items-center space-x-2 cursor-pointer"
+                            className="flex items-center space-x-2 cursor-pointer neo-inset p-3 transition-all hover:scale-[1.02]"
                           >
                             <input
                               type="checkbox"
                               checked={formData.serviceTypes.includes(serviceType)}
                               onChange={() => handleServiceTypeToggle(serviceType)}
-                              className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
+                              className="rounded neo-checkbox"
                               disabled={isSubmitting}
                             />
-                            <span className="text-sm text-tactical-grey-600 capitalize">
+                            <span className="text-sm text-foreground capitalize font-primary font-medium">
                               {serviceType.replace('_', ' ')}
                             </span>
                           </label>
@@ -589,13 +589,13 @@ export default function EditClientModal({
                 {activeSection === "preferences" && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-tactical-grey-600 mb-2">
+                      <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                         Preferred Contact Method
                       </label>
                       <select
                         value={formData.contactPreferences.preferredMethod}
                         onChange={(e) => handleInputChange("contactPreferences.preferredMethod", e.target.value)}
-                        className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500 transition-colors bg-white"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all uppercase"
                         disabled={isSubmitting}
                       >
                         <option value="email">Email</option>
@@ -606,14 +606,14 @@ export default function EditClientModal({
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-tactical-grey-600">Automation Settings</h4>
-                      
-                      <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-foreground uppercase tracking-wide font-primary">Automation Settings</h4>
+
+                      <div className="flex items-center justify-between neo-inset p-4">
                         <div>
-                          <label className="text-sm font-medium text-tactical-grey-600">
+                          <label className="text-sm font-bold text-foreground font-primary">
                             Auto-send Invoices
                           </label>
-                          <p className="text-xs text-tactical-grey-500">
+                          <p className="text-xs text-muted-foreground font-primary">
                             Automatically email invoices when generated
                           </p>
                         </div>
@@ -621,17 +621,17 @@ export default function EditClientModal({
                           type="checkbox"
                           checked={formData.contactPreferences.autoInvoicing}
                           onChange={(e) => handleInputChange("contactPreferences.autoInvoicing", e.target.checked)}
-                          className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
+                          className="rounded neo-checkbox"
                           disabled={isSubmitting || !formData.email.trim()}
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between neo-inset p-4">
                         <div>
-                          <label className="text-sm font-medium text-tactical-grey-600">
+                          <label className="text-sm font-bold text-foreground font-primary">
                             Auto-send Receipts
                           </label>
-                          <p className="text-xs text-tactical-grey-500">
+                          <p className="text-xs text-muted-foreground font-primary">
                             Automatically email receipts when payment received
                           </p>
                         </div>
@@ -639,13 +639,13 @@ export default function EditClientModal({
                           type="checkbox"
                           checked={formData.contactPreferences.autoReceipts}
                           onChange={(e) => handleInputChange("contactPreferences.autoReceipts", e.target.checked)}
-                          className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
+                          className="rounded neo-checkbox"
                           disabled={isSubmitting || !formData.email.trim()}
                         />
                       </div>
 
                       {!formData.email.trim() && (
-                        <p className="text-sm text-amber-600">
+                        <p className="text-sm text-amber-600 font-primary neo-inset p-3">
                           Add an email address to enable automation features
                         </p>
                       )}
@@ -655,24 +655,24 @@ export default function EditClientModal({
 
                 {/* General Error */}
                 {errors.general && (
-                  <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm text-red-700">{errors.general}</p>
+                  <div className="mt-6 neo-inset p-4 border-l-4 border-red-500">
+                    <p className="text-sm text-red-700 font-primary font-bold">{errors.general}</p>
                   </div>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="flex justify-between items-center px-6 py-4 border-t border-tactical-grey-300 bg-tactical-grey-100">
+              <div className="flex justify-between items-center px-6 py-4 border-t border-foreground/10 neo-inset">
                 <div className="flex space-x-2">
                   {sections.map((section, index) => (
                     <div
                       key={section.key}
-                      className={`w-2 h-2 rounded-full ${
+                      className={`w-2 h-2 rounded-full transition-colors ${
                         activeSection === section.key
-                          ? "bg-tactical-gold-muted0"
+                          ? "bg-foreground"
                           : index < sections.findIndex(s => s.key === activeSection)
                             ? "bg-green-500"
-                            : "bg-gray-300"
+                            : "bg-muted-foreground/30"
                       }`}
                     />
                   ))}
@@ -683,22 +683,22 @@ export default function EditClientModal({
                     type="button"
                     onClick={handleClose}
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-tactical-grey-600 border border-tactical-grey-400 rounded-lg hover:bg-tactical-grey-100 transition-colors disabled:opacity-50"
+                    className="neo-button px-6 py-2 uppercase tracking-wide font-bold font-primary transition-transform hover:scale-[1.02] disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-6 py-2 rounded-lg transition-colors ${
+                    className={`px-6 py-2 uppercase tracking-wide font-bold font-primary transition-transform hover:scale-[1.02] ${
                       isSubmitting
-                        ? "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
-                        : "bg-tactical-gold text-white hover:bg-tactical-gold-dark"
+                        ? "neo-inset opacity-50 cursor-not-allowed"
+                        : "neo-button"
                     }`}
                   >
                     {isSubmitting ? (
                       <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-foreground mr-2"></div>
                         Saving...
                       </div>
                     ) : (
