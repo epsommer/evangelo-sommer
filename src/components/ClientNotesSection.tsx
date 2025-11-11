@@ -66,6 +66,18 @@ const ClientNotesSection: React.FC<ClientNotesSectionProps> = ({ clientId, clien
     setIsAdding(false)
   }
 
+  const handleStartAddingNote = () => {
+    const now = new Date()
+    // Format date as YYYY-MM-DD for input[type="date"]
+    const dateString = now.toISOString().split('T')[0]
+    // Format time as HH:MM for input[type="time"]
+    const timeString = now.toTimeString().substring(0, 5)
+
+    setNewNoteDate(dateString)
+    setNewNoteTime(timeString)
+    setIsAdding(true)
+  }
+
   const handleUpdateNote = (noteId: string, updates: Partial<ClientNote>) => {
     setNotes(prev => prev.map(note =>
       note.id === noteId
@@ -98,7 +110,7 @@ const ClientNotesSection: React.FC<ClientNotesSectionProps> = ({ clientId, clien
           </h2>
           <button
             className="neo-button px-4 py-2 font-bold uppercase text-sm tracking-wide font-primary transition-transform hover:scale-[1.02]"
-            onClick={() => setIsAdding(true)}
+            onClick={handleStartAddingNote}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Note
