@@ -68,10 +68,17 @@ const ClientNotesSection: React.FC<ClientNotesSectionProps> = ({ clientId, clien
 
   const handleStartAddingNote = () => {
     const now = new Date()
-    // Format date as YYYY-MM-DD for input[type="date"]
-    const dateString = now.toISOString().split('T')[0]
-    // Format time as HH:MM for input[type="time"]
-    const timeString = now.toTimeString().substring(0, 5)
+
+    // Format date as YYYY-MM-DD using local timezone
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+
+    // Format time as HH:MM using local timezone
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const timeString = `${hours}:${minutes}`
 
     setNewNoteDate(dateString)
     setNewNoteTime(timeString)
