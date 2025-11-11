@@ -374,8 +374,8 @@
 }
 
 .neomorphic-input::placeholder {
-  color: var(--neomorphic-icon);
-  opacity: 0.7;
+  color: var(--neomorphic-text);
+  opacity: 0.4;
 }
 
 .neomorphic-input:focus {

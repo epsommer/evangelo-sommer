@@ -153,7 +153,7 @@ export async function PATCH(
         email: updates.email,
         phone: updates.phone,
         company: updates.company,
-        status: updates.status,
+        status: updates.status ? updates.status.toUpperCase() : undefined,
         projectType: updates.projectType,
         budget: updates.budget,
         timeline: updates.timeline,
