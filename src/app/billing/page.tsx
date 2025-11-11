@@ -1,7 +1,26 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Receipt, DollarSign, TrendingUp, Clock, FileText, Search, Filter, Download, Plus, ArrowLeft, Eye, Edit, Trash2, Archive, Mail, CheckCircle, XCircle, Send } from "lucide-react";
+import {
+  Receipt,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  FileText,
+  Search,
+  Filter,
+  Download,
+  Plus,
+  ArrowLeft,
+  Eye,
+  Edit,
+  Trash2,
+  Archive,
+  Mail,
+  CheckCircle,
+  XCircle,
+  Send,
+} from "lucide-react";
 import Link from "next/link";
 import CRMLayout from "../../components/CRMLayout";
 import ReceiptDetailsModal from "../../components/ReceiptDetailsModal";
@@ -9,13 +28,13 @@ import CreateReceiptModal from "../../components/CreateReceiptModal";
 
 interface Transaction {
   id: string;
-  type: 'receipt' | 'invoice';
+  type: "receipt" | "invoice";
   receiptNumber?: string;
   invoiceNumber?: string;
   clientId: string;
   clientName: string;
   amount: number;
-  status: 'paid' | 'sent' | 'draft';
+  status: "paid" | "sent" | "draft";
   emailSentAt?: string;
   emailDeliveredAt?: string;
   date: string;
@@ -38,60 +57,60 @@ interface BillingAnalytics {
 interface BillingFilters {
   dateRange: string;
   clientId: string;
-  transactionType: 'all' | 'receipts' | 'invoices';
+  transactionType: "all" | "receipts" | "invoices";
   searchTerm: string;
 }
 
 // Mock data for development - will be replaced with real API calls
 const mockTransactions: Transaction[] = [
   {
-    id: '1',
-    type: 'receipt',
-    receiptNumber: 'REC-001',
-    clientId: 'cmfbmj9lx0002uzjt6iloabiv',
-    clientName: 'Evan Sommer (Mock Client)',
+    id: "1",
+    type: "receipt",
+    receiptNumber: "REC-001",
+    clientId: "cmfbmj9lx0002uzjt6iloabiv",
+    clientName: "Evan Sommer (Mock Client)",
     amount: 50,
-    status: 'sent',
+    status: "sent",
     emailSentAt: new Date(Date.now() - 3600000).toISOString(),
     emailDeliveredAt: new Date(Date.now() - 3500000).toISOString(),
     date: new Date().toISOString(),
-    serviceType: 'Lawn Service',
-    description: 'Lawn maintenance service completed',
-    conversationId: 'cmfbuvvy60001uzdb0enyewyk'
+    serviceType: "Lawn Service",
+    description: "Lawn maintenance service completed",
+    conversationId: "cmfbuvvy60001uzdb0enyewyk",
   },
   {
-    id: '2',
-    type: 'invoice',
-    invoiceNumber: 'INV-001',
-    clientId: 'cmfbmj9lx0002uzjt6iloabiv',
-    clientName: 'Evan Sommer (Mock Client)',
+    id: "2",
+    type: "invoice",
+    invoiceNumber: "INV-001",
+    clientId: "cmfbmj9lx0002uzjt6iloabiv",
+    clientName: "Evan Sommer (Mock Client)",
     amount: 150,
-    status: 'sent',
+    status: "sent",
     date: new Date(Date.now() - 86400000).toISOString(),
-    serviceType: 'Consulting',
-    description: 'Business consultation services'
+    serviceType: "Consulting",
+    description: "Business consultation services",
   },
   {
-    id: '3',
-    type: 'receipt',
-    receiptNumber: 'REC-002',
-    clientId: 'cmfbmj9lx0002uzjt6iloabiv',
-    clientName: 'Evan Sommer (Mock Client)',
+    id: "3",
+    type: "receipt",
+    receiptNumber: "REC-002",
+    clientId: "cmfbmj9lx0002uzjt6iloabiv",
+    clientName: "Evan Sommer (Mock Client)",
     amount: 75,
-    status: 'sent',
+    status: "sent",
     date: new Date(Date.now() - 172800000).toISOString(),
-    serviceType: 'Snow Removal',
-    description: 'Driveway and walkway snow clearing'
-  }
+    serviceType: "Snow Removal",
+    description: "Driveway and walkway snow clearing",
+  },
 ];
 
 const mockAnalytics: BillingAnalytics = {
-  totalRevenue: 1250.00,
+  totalRevenue: 1250.0,
   pendingInvoices: 3,
-  pendingAmount: 450.00,
+  pendingAmount: 450.0,
   totalReceipts: 12,
-  currentMonthRevenue: 850.00,
-  recentTransactions: mockTransactions
+  currentMonthRevenue: 850.0,
+  recentTransactions: mockTransactions,
 };
 
 function BillingMetricsCard({
@@ -99,7 +118,7 @@ function BillingMetricsCard({
   title,
   value,
   trend,
-  className = ""
+  className = "",
 }: {
   icon: React.ReactNode;
   title: string;
@@ -110,9 +129,7 @@ function BillingMetricsCard({
   return (
     <div className={`neo-container p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <div className="p-2 neo-inset rounded-lg">
-          {icon}
-        </div>
+        <div className="p-2 neo-inset rounded-lg">{icon}</div>
         <span className="text-xs font-primary uppercase tracking-wide text-muted-foreground">
           {title}
         </span>
@@ -167,7 +184,7 @@ function BillingOverviewCards({ analytics }: { analytics: BillingAnalytics }) {
 
 function FilteringControls({
   filters,
-  onFiltersChange
+  onFiltersChange,
 }: {
   filters: BillingFilters;
   onFiltersChange: (filters: Partial<BillingFilters>) => void;
@@ -189,45 +206,44 @@ function FilteringControls({
         <Filter className="w-4 h-4 text-muted-foreground" />
         <select
           value={filters.transactionType}
-          onChange={(e) => onFiltersChange({ transactionType: e.target.value as any })}
+          onChange={(e) =>
+            onFiltersChange({ transactionType: e.target.value as any })
+          }
           className="bg-transparent border-none outline-none focus:outline-none font-primary text-sm text-foreground cursor-pointer"
         >
           <option value="all">All Types</option>
           <option value="receipts">Receipts</option>
           <option value="invoices">Invoices</option>
         </select>
-
       </div>
     </div>
   );
 }
 
-
-function TransactionRow({ 
-  transaction, 
+function TransactionRow({
+  transaction,
   onViewClick,
   onEditClick,
   onSendClick,
   onDeleteClick,
-  onArchiveClick
-}: { 
-  transaction: Transaction; 
+  onArchiveClick,
+}: {
+  transaction: Transaction;
   onViewClick?: (transaction: Transaction) => void;
   onEditClick?: (transaction: Transaction) => void;
   onSendClick?: (transaction: Transaction) => void;
   onDeleteClick?: (transaction: Transaction) => void;
   onArchiveClick?: (transaction: Transaction) => void;
 }) {
-
   const getRowStyle = () => {
-    if (transaction.status === 'sent' && !transaction.isDuplicate) {
+    if (transaction.status === "sent" && !transaction.isDuplicate) {
       return "border-b border-border opacity-60"; // Grey out sent receipts
     }
     return "border-b border-border hover:bg-muted/30 transition-all duration-200";
   };
 
   const getSentStatus = () => {
-    if (transaction.emailSentAt || transaction.status === 'sent') {
+    if (transaction.emailSentAt || transaction.status === "sent") {
       return (
         <span className="flex items-center text-xs text-green-600">
           <CheckCircle className="w-3 h-3 mr-1" />
@@ -244,7 +260,7 @@ function TransactionRow({
   };
 
   const getPaidStatus = () => {
-    if (transaction.status === 'paid') {
+    if (transaction.status === "paid") {
       return (
         <span className="flex items-center text-xs text-green-600">
           <CheckCircle className="w-3 h-3 mr-1" />
@@ -265,10 +281,10 @@ function TransactionRow({
   return (
     <tr className={getRowStyle()}>
       <td className="px-6 py-4 text-sm text-foreground font-primary">
-        {new Date(transaction.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'numeric', 
-          day: 'numeric'
+        {new Date(transaction.date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
         })}
       </td>
       <td className="px-6 py-4 text-sm text-foreground font-primary">
@@ -276,14 +292,12 @@ function TransactionRow({
       </td>
       <td className="px-6 py-4 text-sm text-foreground font-primary">
         <div className="flex items-center space-x-2">
-          {transaction.type === 'receipt' ? (
+          {transaction.type === "receipt" ? (
             <Receipt className="w-4 h-4 text-accent" />
           ) : (
             <FileText className="w-4 h-4 text-accent" />
           )}
-          <span className="uppercase tracking-wide">
-            {transaction.type}
-          </span>
+          <span className="uppercase tracking-wide">{transaction.type}</span>
         </div>
         <div className="text-xs text-muted-foreground">
           {transaction.receiptNumber || transaction.invoiceNumber}
@@ -292,12 +306,8 @@ function TransactionRow({
       <td className="px-6 py-4 text-sm font-bold text-foreground font-primary">
         {formatCurrency(transaction.amount)}
       </td>
-      <td className="px-6 py-4">
-        {getSentStatus()}
-      </td>
-      <td className="px-6 py-4">
-        {getPaidStatus()}
-      </td>
+      <td className="px-6 py-4">{getSentStatus()}</td>
+      <td className="px-6 py-4">{getPaidStatus()}</td>
       <td className="px-6 py-4">
         <div className="flex items-center space-x-2">
           <button
@@ -316,7 +326,7 @@ function TransactionRow({
               💬
             </Link>
           )}
-          {!transaction.emailSentAt && transaction.status !== 'sent' ? (
+          {!transaction.emailSentAt && transaction.status !== "sent" ? (
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => onEditClick?.(transaction)}
@@ -325,7 +335,7 @@ function TransactionRow({
               >
                 <Edit className="w-4 h-4" />
               </button>
-              {transaction.status === 'paid' ? (
+              {transaction.status === "paid" ? (
                 <button
                   onClick={() => onSendClick?.(transaction)}
                   className="p-1 text-green-600 hover:text-green-800 transition-colors"
@@ -357,9 +367,12 @@ function TransactionRow({
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-          ) : transaction.emailSentAt || transaction.status === 'sent' ? (
+          ) : transaction.emailSentAt || transaction.status === "sent" ? (
             <div className="flex items-center space-x-2">
-              <span className="text-xs text-tactical-grey-500 bg-card px-2 py-1 rounded" title="Receipt has already been sent. Editing is locked.">
+              <span
+                className="text-xs text-tactical-grey-500 bg-card px-2 py-1 rounded"
+                title="Receipt has already been sent. Editing is locked."
+              >
                 🔒 Sent
               </span>
               <button
@@ -400,7 +413,7 @@ function TransactionsTable({
   onArchiveTransaction,
   isLoading = false,
   showViewAll = false,
-  onViewAllClick
+  onViewAllClick,
 }: {
   transactions: Transaction[];
   onViewTransaction?: (transaction: Transaction) => void;
@@ -460,18 +473,24 @@ function TransactionsTable({
           <tbody className="bg-background">
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground font-primary">
+                <td
+                  colSpan={8}
+                  className="px-6 py-12 text-center text-muted-foreground font-primary"
+                >
                   Loading transactions...
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground font-primary">
+                <td
+                  colSpan={8}
+                  className="px-6 py-12 text-center text-muted-foreground font-primary"
+                >
                   No transactions found
                 </td>
               </tr>
             ) : (
-              transactions.map(transaction => (
+              transactions.map((transaction) => (
                 <TransactionRow
                   key={transaction.id}
                   transaction={transaction}
@@ -494,19 +513,32 @@ export default function ServicesBillingPage() {
   const [analytics, setAnalytics] = useState<BillingAnalytics>(mockAnalytics);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<BillingFilters>({
-    dateRange: 'all',
-    clientId: '',
-    transactionType: 'all',
-    searchTerm: ''
+    dateRange: "all",
+    clientId: "",
+    transactionType: "all",
+    searchTerm: "",
   });
-  const [selectedReceipt, setSelectedReceipt] = useState<Transaction | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<Transaction | null>(
+    null,
+  );
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingReceipt, setEditingReceipt] = useState<Transaction | null>(null);
+  const [editingReceipt, setEditingReceipt] = useState<Transaction | null>(
+    null,
+  );
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [showHeaderExportMenu, setShowHeaderExportMenu] = useState(false);
   const [sendingReceiptId, setSendingReceiptId] = useState<string | null>(null);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualEntryData, setManualEntryData] = useState({
+    documentType: 'receipt' as 'receipt' | 'invoice' | 'quote' | 'estimate',
+    serviceType: '',
+    amount: '',
+    description: '',
+    date: new Date().toISOString().slice(0, 10),
+    clientId: '',
+  });
 
   useEffect(() => {
     loadTransactions();
@@ -515,65 +547,89 @@ export default function ServicesBillingPage() {
   const loadTransactions = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/billing/receipts');
+      const response = await fetch("/api/billing/receipts");
       if (response.ok) {
         const receiptsData = await response.json();
-        const receipts = Array.isArray(receiptsData) ? receiptsData : (receiptsData.data || receiptsData.receipts || []);
-        
+        const receipts = Array.isArray(receiptsData)
+          ? receiptsData
+          : receiptsData.data || receiptsData.receipts || [];
+
         // Transform receipts to Transaction format
         const transactions: Transaction[] = receipts.map((receipt: any) => {
           // Determine status based on receipt status from API
-          let status: 'draft' | 'sent' | 'paid';
-          if (receipt.status === 'paid') {
-            status = 'paid';
-          } else if (receipt.status === 'sent') {
-            status = 'sent';
+          let status: "draft" | "sent" | "paid";
+          if (receipt.status === "paid") {
+            status = "paid";
+          } else if (receipt.status === "sent") {
+            status = "sent";
           } else {
-            status = 'draft';
+            status = "draft";
           }
 
           return {
             id: receipt.id,
-            type: 'receipt' as const,
-            receiptNumber: receipt.receiptNumber || `REC-${receipt.id.slice(-6).toUpperCase()}`,
+            type: "receipt" as const,
+            receiptNumber:
+              receipt.receiptNumber ||
+              `REC-${receipt.id.slice(-6).toUpperCase()}`,
             clientId: receipt.clientId,
-            clientName: receipt.client?.name || 'Unknown Client',
+            clientName: receipt.client?.name || "Unknown Client",
             amount: receipt.totalAmount || 0,
             status: status,
             emailSentAt: receipt.emailSentAt,
             emailDeliveredAt: receipt.emailDeliveredAt,
-            date: receipt.createdAt || receipt.serviceDate || new Date().toISOString(),
-            serviceType: receipt.items?.[0]?.serviceType || 'Service',
-            description: receipt.items?.[0]?.description || receipt.notes || 'Service provided',
+            date:
+              receipt.createdAt ||
+              receipt.serviceDate ||
+              new Date().toISOString(),
+            serviceType: receipt.items?.[0]?.serviceType || "Service",
+            description:
+              receipt.items?.[0]?.description ||
+              receipt.notes ||
+              "Service provided",
             conversationId: receipt.conversationId,
-            isEditable: status === 'draft',
-            isDuplicate: receipt.isDuplicate || false
+            isEditable: status === "draft",
+            isDuplicate: receipt.isDuplicate || false,
           };
         });
-        
+
         // Calculate analytics from real data
-        const totalRevenue = transactions.reduce((sum, t) => sum + (t.status === 'paid' ? t.amount : 0), 0);
-        const pendingAmount = transactions.reduce((sum, t) => sum + (t.status === 'sent' ? t.amount : 0), 0);
-        const pendingCount = transactions.filter(t => t.status === 'sent').length;
-        
+        const totalRevenue = transactions.reduce(
+          (sum, t) => sum + (t.status === "paid" ? t.amount : 0),
+          0,
+        );
+        const pendingAmount = transactions.reduce(
+          (sum, t) => sum + (t.status === "sent" ? t.amount : 0),
+          0,
+        );
+        const pendingCount = transactions.filter(
+          (t) => t.status === "sent",
+        ).length;
+
         const currentMonth = new Date().getMonth();
         const currentMonthRevenue = transactions
-          .filter(t => new Date(t.date).getMonth() === currentMonth && t.status === 'paid')
+          .filter(
+            (t) =>
+              new Date(t.date).getMonth() === currentMonth &&
+              t.status === "paid",
+          )
           .reduce((sum, t) => sum + t.amount, 0);
-        
+
         setAnalytics({
           totalRevenue,
           pendingInvoices: pendingCount,
           pendingAmount,
           totalReceipts: transactions.length,
           currentMonthRevenue,
-          recentTransactions: transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          recentTransactions: transactions.sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          ),
         });
       } else {
-        console.error('Failed to fetch receipts:', response.status);
+        console.error("Failed to fetch receipts:", response.status);
       }
     } catch (error) {
-      console.error('Error loading transactions:', error);
+      console.error("Error loading transactions:", error);
     }
     setIsLoading(false);
   };
@@ -581,21 +637,25 @@ export default function ServicesBillingPage() {
   const filteredTransactions = useMemo(() => {
     let filtered = analytics.recentTransactions;
 
-    if (filters.transactionType !== 'all') {
-      filtered = filtered.filter(t => 
-        filters.transactionType === 'receipts' ? t.type === 'receipt' : t.type === 'invoice'
+    if (filters.transactionType !== "all") {
+      filtered = filtered.filter((t) =>
+        filters.transactionType === "receipts"
+          ? t.type === "receipt"
+          : t.type === "invoice",
       );
     }
 
-
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(t => 
-        t.clientName.toLowerCase().includes(searchLower) ||
-        t.serviceType?.toLowerCase().includes(searchLower) ||
-        t.description?.toLowerCase().includes(searchLower) ||
-        (t.receiptNumber && t.receiptNumber.toLowerCase().includes(searchLower)) ||
-        (t.invoiceNumber && t.invoiceNumber.toLowerCase().includes(searchLower))
+      filtered = filtered.filter(
+        (t) =>
+          t.clientName.toLowerCase().includes(searchLower) ||
+          t.serviceType?.toLowerCase().includes(searchLower) ||
+          t.description?.toLowerCase().includes(searchLower) ||
+          (t.receiptNumber &&
+            t.receiptNumber.toLowerCase().includes(searchLower)) ||
+          (t.invoiceNumber &&
+            t.invoiceNumber.toLowerCase().includes(searchLower)),
       );
     }
 
@@ -604,27 +664,29 @@ export default function ServicesBillingPage() {
 
   const displayedTransactions = useMemo(() => {
     // Show recent 5 transactions by default, all if showAllTransactions is true
-    return showAllTransactions ? filteredTransactions : filteredTransactions.slice(0, 5);
+    return showAllTransactions
+      ? filteredTransactions
+      : filteredTransactions.slice(0, 5);
   }, [filteredTransactions, showAllTransactions]);
 
   const handleFiltersChange = (newFilters: Partial<BillingFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
   const handleViewReceipt = (transaction: Transaction) => {
-    if (transaction.type === 'receipt') {
+    if (transaction.type === "receipt") {
       setSelectedReceipt(transaction);
       setShowReceiptModal(true);
     }
   };
 
   const handleEditReceipt = (transaction: Transaction) => {
-    if (transaction.type === 'receipt') {
-      if (transaction.status === 'draft' || transaction.status === 'paid') {
+    if (transaction.type === "receipt") {
+      if (transaction.status === "draft" || transaction.status === "paid") {
         // Edit existing draft or paid receipt
         setEditingReceipt(transaction);
         setShowEditModal(true);
-      } else if (transaction.status === 'sent') {
+      } else if (transaction.status === "sent") {
         // Duplicate sent receipt to create a new draft
         duplicateReceipt(transaction);
       }
@@ -634,11 +696,13 @@ export default function ServicesBillingPage() {
   const duplicateReceipt = async (originalTransaction: Transaction) => {
     try {
       // Fetch the original receipt data
-      const response = await fetch(`/api/billing/receipts/${originalTransaction.id}`);
+      const response = await fetch(
+        `/api/billing/receipts/${originalTransaction.id}`,
+      );
       if (response.ok) {
         const data = await response.json();
         const originalReceipt = data.receipt;
-        
+
         // Create duplicate receipt data in the format expected by the API
         const duplicateData = {
           clientId: originalReceipt.clientId,
@@ -646,88 +710,102 @@ export default function ServicesBillingPage() {
           subtotal: originalReceipt.subtotal || 0,
           taxAmount: originalReceipt.taxAmount || 0,
           totalAmount: originalReceipt.totalAmount || 0,
-          paymentMethod: originalReceipt.paymentMethod || 'cash',
+          paymentMethod: originalReceipt.paymentMethod || "cash",
           paymentDate: new Date().toISOString(),
           serviceDate: originalReceipt.serviceDate || new Date().toISOString(),
-          status: 'draft',
-          notes: (originalReceipt.notes || '') + '\n\n[Corrected version of receipt ' + originalTransaction.receiptNumber + ']',
-          isDuplicate: true
+          status: "draft",
+          notes:
+            (originalReceipt.notes || "") +
+            "\n\n[Corrected version of receipt " +
+            originalTransaction.receiptNumber +
+            "]",
+          isDuplicate: true,
         };
-        
+
         // Create new receipt via API
-        const createResponse = await fetch('/api/billing/receipts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(duplicateData)
+        const createResponse = await fetch("/api/billing/receipts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(duplicateData),
         });
-        
+
         if (createResponse.ok) {
           const newReceiptData = await createResponse.json();
-          console.log('Duplicated receipt created:', newReceiptData);
-          
+          console.log("Duplicated receipt created:", newReceiptData);
+
           // Refresh transactions and open edit modal for the new draft
           await loadTransactions();
-          
+
           // Find and edit the newly created receipt
           setTimeout(() => {
             setEditingReceipt({
               ...originalTransaction,
               id: newReceiptData.receipt?.id || newReceiptData.id,
-              status: 'draft',
+              status: "draft",
               isEditable: true,
-              isDuplicate: true
+              isDuplicate: true,
             });
             setShowEditModal(true);
           }, 100);
         }
       }
     } catch (error) {
-      console.error('Failed to duplicate receipt:', error);
-      alert('Failed to duplicate receipt. Please try again.');
+      console.error("Failed to duplicate receipt:", error);
+      alert("Failed to duplicate receipt. Please try again.");
     }
   };
 
   const handleReceiptUpdate = async (updatedReceipt: any) => {
     // Refresh the transactions list to show the updated receipt
-    console.log('Receipt updated:', updatedReceipt);
+    console.log("Receipt updated:", updatedReceipt);
     await loadTransactions();
   };
 
   const handleEmailSent = (updatedReceipt: any) => {
     // In a real app, this would refresh the transaction list
-    console.log('Email sent for receipt:', updatedReceipt);
+    console.log("Email sent for receipt:", updatedReceipt);
   };
 
   const handleReceiptCreated = (newReceipt: any) => {
-    console.log('New receipt created:', newReceipt);
+    console.log("New receipt created:", newReceipt);
     // Refresh the transactions list to show the new receipt
     loadTransactions();
   };
 
   // Export functionality
   const exportToCSV = () => {
-    const headers = ['Date', 'Client', 'Type', 'Receipt/Invoice Number', 'Amount', 'Sent', 'Paid', 'Service Type', 'Description'];
-    const csvData = displayedTransactions.map(transaction => [
+    const headers = [
+      "Date",
+      "Client",
+      "Type",
+      "Receipt/Invoice Number",
+      "Amount",
+      "Sent",
+      "Paid",
+      "Service Type",
+      "Description",
+    ];
+    const csvData = displayedTransactions.map((transaction) => [
       new Date(transaction.date).toLocaleDateString(),
       transaction.clientName,
       transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1),
-      transaction.receiptNumber || transaction.invoiceNumber || '',
+      transaction.receiptNumber || transaction.invoiceNumber || "",
       `$${transaction.amount.toFixed(2)}`,
-      (transaction.emailSentAt || transaction.status === 'sent') ? 'Yes' : 'No',
-      transaction.status === 'paid' ? 'Yes' : 'No',
-      transaction.serviceType || '',
-      transaction.description || ''
+      transaction.emailSentAt || transaction.status === "sent" ? "Yes" : "No",
+      transaction.status === "paid" ? "Yes" : "No",
+      transaction.serviceType || "",
+      transaction.description || "",
     ]);
-    
+
     const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+      .map((row) => row.map((field) => `"${field}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -735,28 +813,38 @@ export default function ServicesBillingPage() {
   };
 
   const exportAllDataToCSV = () => {
-    const headers = ['Date', 'Client', 'Type', 'Receipt/Invoice Number', 'Amount', 'Sent', 'Paid', 'Service Type', 'Description'];
-    const csvData = filteredTransactions.map(transaction => [
+    const headers = [
+      "Date",
+      "Client",
+      "Type",
+      "Receipt/Invoice Number",
+      "Amount",
+      "Sent",
+      "Paid",
+      "Service Type",
+      "Description",
+    ];
+    const csvData = filteredTransactions.map((transaction) => [
       new Date(transaction.date).toLocaleDateString(),
       transaction.clientName,
       transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1),
-      transaction.receiptNumber || transaction.invoiceNumber || '',
+      transaction.receiptNumber || transaction.invoiceNumber || "",
       `$${transaction.amount.toFixed(2)}`,
-      (transaction.emailSentAt || transaction.status === 'sent') ? 'Yes' : 'No',
-      transaction.status === 'paid' ? 'Yes' : 'No',
-      transaction.serviceType || '',
-      transaction.description || ''
+      transaction.emailSentAt || transaction.status === "sent" ? "Yes" : "No",
+      transaction.status === "paid" ? "Yes" : "No",
+      transaction.serviceType || "",
+      transaction.description || "",
     ]);
-    
+
     const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+      .map((row) => row.map((field) => `"${field}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `all_transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `all_transactions_${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -765,17 +853,21 @@ export default function ServicesBillingPage() {
 
   const exportToPDF = () => {
     // Create a simple HTML structure for PDF export
-    const transactionRows = displayedTransactions.map(transaction => `
+    const transactionRows = displayedTransactions
+      .map(
+        (transaction) => `
       <tr>
         <td>${new Date(transaction.date).toLocaleDateString()}</td>
         <td>${transaction.clientName}</td>
         <td class="status">${transaction.type}</td>
-        <td>${transaction.receiptNumber || transaction.invoiceNumber || ''}</td>
+        <td>${transaction.receiptNumber || transaction.invoiceNumber || ""}</td>
         <td class="amount">$${transaction.amount.toFixed(2)}</td>
-        <td>${transaction.serviceType || ''}</td>
+        <td>${transaction.serviceType || ""}</td>
       </tr>
-    `).join('');
-    
+    `,
+      )
+      .join("");
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -793,7 +885,7 @@ export default function ServicesBillingPage() {
         </style>
       </head>
       <body>
-        <h1>Services & Billing Report</h1>
+        <h1>Billing Report</h1>
         <div class="header-info">
           <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
           <p><strong>Total Transactions:</strong> ${displayedTransactions.length}</p>
@@ -817,9 +909,9 @@ export default function ServicesBillingPage() {
       </body>
       </html>
     `;
-    
+
     // Open print dialog for PDF export
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
@@ -830,78 +922,94 @@ export default function ServicesBillingPage() {
 
   // Delete receipt functionality
   const handleDeleteReceipt = async (transaction: Transaction) => {
-    const confirmed = confirm(`Are you sure you want to permanently delete receipt ${transaction.receiptNumber}? This action cannot be undone.`);
+    const confirmed = confirm(
+      `Are you sure you want to permanently delete receipt ${transaction.receiptNumber}? This action cannot be undone.`,
+    );
     if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/billing/receipts/${transaction.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete receipt');
+        throw new Error("Failed to delete receipt");
       }
 
       const result = await response.json();
       if (result.success) {
-        alert('Receipt deleted successfully');
+        alert("Receipt deleted successfully");
         loadTransactions(); // Refresh the data
       } else {
-        throw new Error(result.error || 'Failed to delete receipt');
+        throw new Error(result.error || "Failed to delete receipt");
       }
     } catch (error) {
-      console.error('Error deleting receipt:', error);
-      alert(`Failed to delete receipt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error deleting receipt:", error);
+      alert(
+        `Failed to delete receipt: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 
   // Archive receipt functionality
   const handleArchiveReceipt = async (transaction: Transaction) => {
-    const confirmed = confirm(`Archive receipt ${transaction.receiptNumber} for later review? It will be removed from the main transactions view.`);
+    const confirmed = confirm(
+      `Archive receipt ${transaction.receiptNumber} for later review? It will be removed from the main transactions view.`,
+    );
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/billing/receipts/${transaction.id}/archive`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/billing/receipts/${transaction.id}/archive`,
+        {
+          method: "POST",
+        },
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to archive receipt');
+        throw new Error("Failed to archive receipt");
       }
 
       const result = await response.json();
       if (result.success) {
-        alert('Receipt archived successfully');
+        alert("Receipt archived successfully");
         loadTransactions(); // Refresh the data
       } else {
-        throw new Error(result.error || 'Failed to archive receipt');
+        throw new Error(result.error || "Failed to archive receipt");
       }
     } catch (error) {
-      console.error('Error archiving receipt:', error);
-      alert(`Failed to archive receipt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error archiving receipt:", error);
+      alert(
+        `Failed to archive receipt: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 
   // Send receipt functionality
   const handleSendReceipt = async (transaction: Transaction) => {
-    if (transaction.emailSentAt || transaction.status === 'sent') {
-      alert('This receipt has already been sent.');
+    if (transaction.emailSentAt || transaction.status === "sent") {
+      alert("This receipt has already been sent.");
       return;
     }
 
-    const confirmed = confirm(`Send receipt ${transaction.receiptNumber} to ${transaction.clientName}?`);
+    const confirmed = confirm(
+      `Send receipt ${transaction.receiptNumber} to ${transaction.clientName}?`,
+    );
     if (!confirmed) return;
 
     try {
       // Call API to send the receipt via email
-      const response = await fetch(`/api/billing/receipts/${transaction.id}/send-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientEmail: 'contact@evangelosommer.com', // Mock client email for testing
-          clientName: transaction.clientName
-        })
-      });
+      const response = await fetch(
+        `/api/billing/receipts/${transaction.id}/send-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientEmail: "contact@evangelosommer.com", // Mock client email for testing
+            clientName: transaction.clientName,
+          }),
+        },
+      );
 
       if (response.ok) {
         alert(`Receipt sent successfully to ${transaction.clientName}!`);
@@ -909,13 +1017,19 @@ export default function ServicesBillingPage() {
         await loadTransactions();
       } else {
         const errorData = await response.json();
-        console.error('Send receipt API error:', errorData);
-        throw new Error(errorData.error || errorData.message || `Server responded with ${response.status}`);
+        console.error("Send receipt API error:", errorData);
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            `Server responded with ${response.status}`,
+        );
       }
     } catch (error) {
-      console.error('Error sending receipt:', error);
-      alert(`Failed to send receipt: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.error('Full error details:', error);
+      console.error("Error sending receipt:", error);
+      alert(
+        `Failed to send receipt: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+      console.error("Full error details:", error);
     }
   };
 
@@ -927,7 +1041,7 @@ export default function ServicesBillingPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
-                SERVICES & BILLING
+                BILLING & INVOICING
               </h1>
               <p className="text-muted-foreground font-primary uppercase tracking-wider text-sm">
                 Manage all receipts and transactions across clients
@@ -943,7 +1057,7 @@ export default function ServicesBillingPage() {
                   <Download className="w-4 h-4" />
                   Export Data
                 </button>
-                
+
                 {showHeaderExportMenu && (
                   <div className="absolute right-0 top-full mt-1 bg-background border border-border shadow-lg z-10 min-w-[150px]">
                     <button
@@ -989,142 +1103,370 @@ export default function ServicesBillingPage() {
 
         {/* Main Content */}
         <div>
-        {/* Overview Cards */}
-        <BillingOverviewCards analytics={analytics} />
-        
-        {/* Filtering & Search */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <FilteringControls filters={filters} onFiltersChange={handleFiltersChange} />
-        </div>
-        
-        {/* Transactions Table */}
-        <TransactionsTable 
-          transactions={displayedTransactions} 
-          onViewTransaction={handleViewReceipt}
-          onEditTransaction={handleEditReceipt}
-          onSendReceipt={handleSendReceipt}
-          onDeleteTransaction={handleDeleteReceipt}
-          onArchiveTransaction={handleArchiveReceipt}
-          isLoading={isLoading}
-          showViewAll={!showAllTransactions && filteredTransactions.length > 5}
-          onViewAllClick={() => setShowAllTransactions(true)}
-        />
-        
-        {/* Show Less Button for All Transactions View */}
-        {showAllTransactions && filteredTransactions.length > 5 && (
-          <div className="text-center mt-6">
-            <button
-              onClick={() => setShowAllTransactions(false)}
-              className="neo-button text-accent hover:bg-accent hover:text-foreground px-6 py-3 font-primary uppercase tracking-wide text-sm transition-all"
-            >
-              Show Recent Only
-            </button>
-          </div>
-        )}
-        
-        {filteredTransactions.length === 0 && !isLoading && (
-          <div className="neo-container text-center py-16 mt-4">
-            <div className="text-6xl mb-6">📊</div>
-            <h3 className="text-xl font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
-              No Transactions Found
-            </h3>
-            <p className="text-muted-foreground font-primary text-sm">
-              {filters.searchTerm || filters.transactionType !== 'all'
-                ? 'Try adjusting your filters to see more results.'
-                : 'Create your first receipt or invoice to get started.'
-              }
-            </p>
-          </div>
-        )}
-      </div>
+          {/* Overview Cards */}
+          <BillingOverviewCards analytics={analytics} />
 
-      {/* Receipt Details Modal */}
-      {showReceiptModal && selectedReceipt && (
-        <ReceiptDetailsModal
-          isOpen={showReceiptModal}
-          onClose={() => {
-            setShowReceiptModal(false);
-            setSelectedReceipt(null);
-          }}
-          receipt={{
-            id: selectedReceipt.id,
-            receiptNumber: selectedReceipt.receiptNumber || '',
-            clientId: selectedReceipt.clientId,
-            client: {
-              id: selectedReceipt.clientId,
-              name: selectedReceipt.clientName,
-              email: 'contact@evangelosommer.com',
-              phone: '647.327.8401',
-              address: {
-                street: '84 Newton Dr.',
-                city: 'Toronto',
-                province: 'Ontario',
-                country: 'Canada',
-                postalCode: 'M2M 2M9'
-              }
-            } as any,
-            conversationId: selectedReceipt.conversationId,
-            items: [{
-              id: '1',
-              description: selectedReceipt.description || 'Service provided',
-              serviceType: 'landscaping' as any,
-              quantity: 1,
-              unitPrice: selectedReceipt.amount,
-              totalPrice: selectedReceipt.amount,
-              taxable: false
-            }],
-            subtotal: selectedReceipt.amount,
-            taxAmount: 0,
-            totalAmount: selectedReceipt.amount,
-            paymentMethod: 'cash' as any,
-            paymentDate: new Date(selectedReceipt.date),
-            serviceDate: new Date(selectedReceipt.date),
-            status: selectedReceipt.status as any,
-            emailSentAt: selectedReceipt.emailSentAt ? new Date(selectedReceipt.emailSentAt) : undefined,
-            emailDeliveredAt: selectedReceipt.emailDeliveredAt ? new Date(selectedReceipt.emailDeliveredAt) : undefined,
-            notes: selectedReceipt.description,
-            createdAt: new Date(selectedReceipt.date),
-            updatedAt: new Date(selectedReceipt.date)
-          }}
-          client={{
-            id: selectedReceipt.clientId,
-            name: selectedReceipt.clientName,
-            email: 'contact@evangelosommer.com',
-            phone: '647.327.8401',
-            address: {
-              street: '84 Newton Dr.',
-              city: 'Toronto',
-              province: 'Ontario',
-              country: 'Canada',
-              postalCode: 'M2M 2M9'
+          {/* Quick Actions and Manual Entry */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Quick Actions */}
+            <div className="neo-container p-6">
+              <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg mb-4">
+                Quick Actions
+              </h2>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowAllTransactions(true)}
+                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                >
+                  <TrendingUp className="w-4 h-4 text-accent" />
+                  <span>View All History</span>
+                </button>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                >
+                  <Receipt className="w-4 h-4 text-accent" />
+                  <span>Create Custom Invoice</span>
+                </button>
+                <button
+                  onClick={() => alert('Time tracking feature coming soon!')}
+                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                >
+                  <Clock className="w-4 h-4 text-accent" />
+                  <span>Time Tracking Summary</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Manual Entry Form */}
+            <div className="lg:col-span-2 neo-container p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg">
+                  Quick Entry
+                </h2>
+                <button
+                  onClick={() => setShowManualEntry(!showManualEntry)}
+                  className="neo-button text-sm px-4 py-2 flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  {showManualEntry ? 'Close Form' : 'Manual Entry'}
+                </button>
+              </div>
+
+              {showManualEntry && (
+                <div className="neo-inset p-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
+                        Document Type
+                      </label>
+                      <select
+                        value={manualEntryData.documentType}
+                        onChange={(e) => setManualEntryData({ ...manualEntryData, documentType: e.target.value as any })}
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                      >
+                        <option value="receipt">Receipt</option>
+                        <option value="invoice">Invoice</option>
+                        <option value="quote">Quote</option>
+                        <option value="estimate">Estimate</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
+                        Service Type
+                      </label>
+                      <input
+                        type="text"
+                        value={manualEntryData.serviceType}
+                        onChange={(e) => setManualEntryData({ ...manualEntryData, serviceType: e.target.value })}
+                        placeholder="e.g., Consultation, Review, Analysis"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
+                        Amount (USD)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={manualEntryData.amount}
+                        onChange={(e) => setManualEntryData({ ...manualEntryData, amount: e.target.value })}
+                        placeholder="0.00"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        value={manualEntryData.date}
+                        onChange={(e) => setManualEntryData({ ...manualEntryData, date: e.target.value })}
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
+                        Client ID (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={manualEntryData.clientId}
+                        onChange={(e) => setManualEntryData({ ...manualEntryData, clientId: e.target.value })}
+                        placeholder="Enter client ID or leave blank"
+                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
+                      Description
+                    </label>
+                    <textarea
+                      value={manualEntryData.description}
+                      onChange={(e) => setManualEntryData({ ...manualEntryData, description: e.target.value })}
+                      placeholder="Brief description of the service..."
+                      rows={3}
+                      className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all resize-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        setShowManualEntry(false);
+                        setManualEntryData({
+                          documentType: 'receipt',
+                          serviceType: '',
+                          amount: '',
+                          description: '',
+                          date: new Date().toISOString().slice(0, 10),
+                          clientId: '',
+                        });
+                      }}
+                      className="neo-button px-6 py-3 font-primary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          if (!manualEntryData.amount || parseFloat(manualEntryData.amount) <= 0) {
+                            alert('Please enter a valid amount');
+                            return;
+                          }
+
+                          const response = await fetch('/api/billing/receipts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              clientId: manualEntryData.clientId || undefined,
+                              documentType: manualEntryData.documentType,
+                              items: [{
+                                description: manualEntryData.description || manualEntryData.serviceType,
+                                serviceType: manualEntryData.serviceType || 'general',
+                                quantity: 1,
+                                unitPrice: parseFloat(manualEntryData.amount),
+                                totalPrice: parseFloat(manualEntryData.amount),
+                                taxable: false,
+                              }],
+                              subtotal: parseFloat(manualEntryData.amount),
+                              taxAmount: 0,
+                              totalAmount: parseFloat(manualEntryData.amount),
+                              paymentMethod: 'cash',
+                              paymentDate: manualEntryData.date,
+                              serviceDate: manualEntryData.date,
+                              status: 'draft',
+                              notes: manualEntryData.description,
+                            })
+                          });
+
+                          if (response.ok) {
+                            setShowManualEntry(false);
+                            setManualEntryData({
+                              documentType: 'receipt',
+                              serviceType: '',
+                              amount: '',
+                              description: '',
+                              date: new Date().toISOString().slice(0, 10),
+                              clientId: '',
+                            });
+                            alert(`${manualEntryData.documentType.charAt(0).toUpperCase() + manualEntryData.documentType.slice(1)} created successfully!`);
+                            loadTransactions();
+                          } else {
+                            const error = await response.json();
+                            alert(`Failed to create ${manualEntryData.documentType}: ${error.message || 'Unknown error'}`);
+                          }
+                        } catch (err) {
+                          console.error(`Error creating ${manualEntryData.documentType}:`, err);
+                          alert(`Error creating ${manualEntryData.documentType}`);
+                        }
+                      }}
+                      className="neo-button-active px-6 py-3 font-primary flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Create {manualEntryData.documentType.charAt(0).toUpperCase() + manualEntryData.documentType.slice(1)}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Filtering & Search */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <FilteringControls
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+            />
+          </div>
+
+          {/* Transactions Table */}
+          <TransactionsTable
+            transactions={displayedTransactions}
+            onViewTransaction={handleViewReceipt}
+            onEditTransaction={handleEditReceipt}
+            onSendReceipt={handleSendReceipt}
+            onDeleteTransaction={handleDeleteReceipt}
+            onArchiveTransaction={handleArchiveReceipt}
+            isLoading={isLoading}
+            showViewAll={
+              !showAllTransactions && filteredTransactions.length > 5
             }
-          } as any}
-          onUpdate={handleReceiptUpdate}
-          onEmailSent={handleEmailSent}
-        />
-      )}
+            onViewAllClick={() => setShowAllTransactions(true)}
+          />
 
-      {/* Create Receipt Modal */}
-      <CreateReceiptModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onReceiptCreated={handleReceiptCreated}
-      />
+          {/* Show Less Button for All Transactions View */}
+          {showAllTransactions && filteredTransactions.length > 5 && (
+            <div className="text-center mt-6">
+              <button
+                onClick={() => setShowAllTransactions(false)}
+                className="neo-button text-accent hover:bg-accent hover:text-foreground px-6 py-3 font-primary uppercase tracking-wide text-sm transition-all"
+              >
+                Show Recent Only
+              </button>
+            </div>
+          )}
 
-      {/* Edit Receipt Modal */}
-      {showEditModal && editingReceipt && (
+          {filteredTransactions.length === 0 && !isLoading && (
+            <div className="neo-container text-center py-16 mt-4">
+              <div className="text-6xl mb-6">📊</div>
+              <h3 className="text-xl font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
+                No Transactions Found
+              </h3>
+              <p className="text-muted-foreground font-primary text-sm">
+                {filters.searchTerm || filters.transactionType !== "all"
+                  ? "Try adjusting your filters to see more results."
+                  : "Create your first receipt or invoice to get started."}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Receipt Details Modal */}
+        {showReceiptModal && selectedReceipt && (
+          <ReceiptDetailsModal
+            isOpen={showReceiptModal}
+            onClose={() => {
+              setShowReceiptModal(false);
+              setSelectedReceipt(null);
+            }}
+            receipt={{
+              id: selectedReceipt.id,
+              receiptNumber: selectedReceipt.receiptNumber || "",
+              clientId: selectedReceipt.clientId,
+              client: {
+                id: selectedReceipt.clientId,
+                name: selectedReceipt.clientName,
+                email: "contact@evangelosommer.com",
+                phone: "647.327.8401",
+                address: {
+                  street: "84 Newton Dr.",
+                  city: "Toronto",
+                  province: "Ontario",
+                  country: "Canada",
+                  postalCode: "M2M 2M9",
+                },
+              } as any,
+              conversationId: selectedReceipt.conversationId,
+              items: [
+                {
+                  id: "1",
+                  description:
+                    selectedReceipt.description || "Service provided",
+                  serviceType: "landscaping" as any,
+                  quantity: 1,
+                  unitPrice: selectedReceipt.amount,
+                  totalPrice: selectedReceipt.amount,
+                  taxable: false,
+                },
+              ],
+              subtotal: selectedReceipt.amount,
+              taxAmount: 0,
+              totalAmount: selectedReceipt.amount,
+              paymentMethod: "cash" as any,
+              paymentDate: new Date(selectedReceipt.date),
+              serviceDate: new Date(selectedReceipt.date),
+              status: selectedReceipt.status as any,
+              emailSentAt: selectedReceipt.emailSentAt
+                ? new Date(selectedReceipt.emailSentAt)
+                : undefined,
+              emailDeliveredAt: selectedReceipt.emailDeliveredAt
+                ? new Date(selectedReceipt.emailDeliveredAt)
+                : undefined,
+              notes: selectedReceipt.description,
+              createdAt: new Date(selectedReceipt.date),
+              updatedAt: new Date(selectedReceipt.date),
+            }}
+            client={
+              {
+                id: selectedReceipt.clientId,
+                name: selectedReceipt.clientName,
+                email: "contact@evangelosommer.com",
+                phone: "647.327.8401",
+                address: {
+                  street: "84 Newton Dr.",
+                  city: "Toronto",
+                  province: "Ontario",
+                  country: "Canada",
+                  postalCode: "M2M 2M9",
+                },
+              } as any
+            }
+            onUpdate={handleReceiptUpdate}
+            onEmailSent={handleEmailSent}
+          />
+        )}
+
+        {/* Create Receipt Modal */}
         <CreateReceiptModal
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingReceipt(null);
-          }}
-          onReceiptCreated={handleReceiptUpdate}
-          editMode={true}
-          existingReceiptId={editingReceipt.id}
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onReceiptCreated={handleReceiptCreated}
         />
-      )}
+
+        {/* Edit Receipt Modal */}
+        {showEditModal && editingReceipt && (
+          <CreateReceiptModal
+            isOpen={showEditModal}
+            onClose={() => {
+              setShowEditModal(false);
+              setEditingReceipt(null);
+            }}
+            onReceiptCreated={handleReceiptUpdate}
+            editMode={true}
+            existingReceiptId={editingReceipt.id}
+          />
+        )}
       </div>
     </CRMLayout>
   );
 }
+
