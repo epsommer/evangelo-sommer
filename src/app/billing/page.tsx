@@ -25,6 +25,7 @@ import Link from "next/link";
 import CRMLayout from "../../components/CRMLayout";
 import ReceiptDetailsModal from "../../components/ReceiptDetailsModal";
 import CreateReceiptModal from "../../components/CreateReceiptModal";
+import PunchClock from "../../components/PunchClock";
 
 interface Transaction {
   id: string;
@@ -1106,46 +1107,82 @@ export default function ServicesBillingPage() {
           {/* Overview Cards */}
           <BillingOverviewCards analytics={analytics} />
 
-          {/* Quick Actions and Manual Entry */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Quick Actions */}
-            <div className="neo-container p-6">
-              <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg mb-4">
-                Quick Actions
-              </h2>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowAllTransactions(true)}
-                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
-                >
-                  <TrendingUp className="w-4 h-4 text-accent" />
-                  <span>View All History</span>
-                </button>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
-                >
-                  <Receipt className="w-4 h-4 text-accent" />
-                  <span>Create Custom Invoice</span>
-                </button>
-                <button
-                  onClick={() => alert('Time tracking feature coming soon!')}
-                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
-                >
-                  <Clock className="w-4 h-4 text-accent" />
-                  <span>Time Tracking Summary</span>
-                </button>
-              </div>
+          {/* Time Tracker and Quick Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Punch Clock */}
+            <div>
+              <PunchClock />
             </div>
 
-            {/* Manual Entry Form */}
-            <div className="lg:col-span-2 neo-container p-6">
+            {/* Quick Actions */}
+            <div className="space-y-6">
+              <div className="neo-container p-6">
+                <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg mb-4">
+                  Quick Actions
+                </h2>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setShowAllTransactions(true)}
+                    className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                  >
+                    <TrendingUp className="w-4 h-4 text-accent" />
+                    <span>View All History</span>
+                  </button>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                  >
+                    <Receipt className="w-4 h-4 text-accent" />
+                    <span>Create Custom Invoice</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const punchClockElement = document.querySelector('[data-punch-clock]');
+                      if (punchClockElement) {
+                        punchClockElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                    className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                  >
+                    <Clock className="w-4 h-4 text-accent" />
+                    <span>Time Tracker</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Manual Entry Form */}
+          <div className="mb-8">
+            <div className="neo-container p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg">
                   Quick Entry
                 </h2>
                 <button
-                  onClick={() => setShowManualEntry(!showManualEntry)}
+                  onClick={() => {
+                    setShowManualEntry(!showManualEntry);
+                    // Auto-fill from punch clock if available
+                    if (!showManualEntry) {
+                      const punchClockData = sessionStorage.getItem('punchClockReceipt');
+                      if (punchClockData) {
+                        try {
+                          const data = JSON.parse(punchClockData);
+                          setManualEntryData({
+                            ...manualEntryData,
+                            serviceType: data.serviceType || '',
+                            amount: data.amount || '',
+                            description: data.description || '',
+                            date: data.date || new Date().toISOString().slice(0, 10),
+                            clientId: data.clientId || '',
+                          });
+                          sessionStorage.removeItem('punchClockReceipt');
+                        } catch (error) {
+                          console.error('Failed to parse punch clock data:', error);
+                        }
+                      }
+                    }
+                  }}
                   className="neo-button text-sm px-4 py-2 flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
