@@ -96,7 +96,7 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
           <div className="flex items-center space-x-2">
             <Link
               href={`/conversations?client=${clientId}`}
-              className="neo-button-circle w-10 h-10 flex items-center justify-center transition-transform hover:scale-[1.1]"
+              className="neo-button-circle w-10 h-10 flex items-center justify-center transition-transform hover:scale-[1.1] text-foreground"
               title="View All Conversations"
             >
               <MessageSquare className="h-4 w-4" />

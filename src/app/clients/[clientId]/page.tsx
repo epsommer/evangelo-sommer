@@ -282,6 +282,55 @@ const ClientDetailPage = () => {
         )}
 
 
+        {/* Client Services Section */}
+        <div className="neo-container transition-transform hover:scale-[1.01]">
+          <div className="neo-inset border-b border-foreground/10 p-6">
+            <h3 className="text-lg font-bold text-foreground uppercase tracking-wide font-primary">
+              Services
+            </h3>
+          </div>
+          <div className="p-6">
+            {(() => {
+              const services = getAllClientServices(client)
+
+              if (services.length === 0) {
+                return (
+                  <div className="text-center py-6">
+                    <span className="text-muted-foreground font-primary">No services purchased yet</span>
+                  </div>
+                )
+              }
+
+              return (
+                <div className="space-y-3">
+                  {services.map((service) => (
+                    <div key={service.id} className="neo-inset p-4 rounded-lg transition-transform hover:scale-[1.01]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          {getServiceIcon(service.id)}
+                          <div>
+                            <div className="font-bold text-foreground font-primary uppercase">
+                              {getServiceName(service.id)}
+                            </div>
+                            {service.contracts && service.contracts.length > 0 && (
+                              <div className="text-xs text-muted-foreground font-primary mt-1">
+                                {service.contracts.length} active contract{service.contracts.length > 1 ? 's' : ''}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <span className="neo-badge px-3 py-1 text-xs uppercase font-primary bg-green-600 text-white">
+                          Active
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+
         {/* Client Details - BELONGS ON CLIENT PAGE */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="neo-container transition-transform hover:scale-[1.01]">
@@ -364,15 +413,15 @@ const ClientDetailPage = () => {
             <div className="neo-inset border-b border-foreground/10 p-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-foreground uppercase tracking-wide font-primary">
-                  Services & Billing
+                  Billing
                 </h3>
                 <button
                   className="neo-button-sm text-xs uppercase transition-transform hover:scale-[1.02]"
                   onClick={() => {
-                    router.push(`/clients/${clientId}/services-billing`)
+                    router.push('/billing')
                   }}
                 >
-                  View Services & Billing
+                  View Billing
                 </button>
               </div>
             </div>
