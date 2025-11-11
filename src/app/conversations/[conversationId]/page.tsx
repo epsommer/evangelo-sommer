@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Sparkles, Send } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
 import ConversationLayout from "../../../components/ConversationLayout";
@@ -37,6 +37,14 @@ export default function ConversationPage() {
     role: 'CLIENT' as 'CLIENT' | 'YOU',
     timestamp: ''
   });
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const [draftOptions, setDraftOptions] = useState({
+    tone: 'professional' as 'professional' | 'friendly' | 'formal' | 'casual',
+    messageType: 'response' as 'response' | 'follow-up' | 'inquiry',
+    specificInstructions: '',
+  });
+  const [draftedMessage, setDraftedMessage] = useState('');
+  const [isDrafting, setIsDrafting] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -280,7 +288,15 @@ export default function ConversationPage() {
               >
                 Edit
               </Button>
-              <Button variant="default" size="sm">Actions</Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowDraftModal(true)}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Draft with AI
+              </Button>
             </div>
           </div>
         </div>
@@ -687,6 +703,208 @@ export default function ConversationPage() {
                 >
                   Save Changes
                 </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Draft Message Modal */}
+      {showDraftModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border-2 border-hud-border max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-tactical-gold" />
+                  Draft Message with AI
+                </h2>
+                <span className="text-xs px-2 py-1 bg-tactical-gold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+                  Powered by Claude
+                </span>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                      Tone
+                    </label>
+                    <select
+                      value={draftOptions.tone}
+                      onChange={(e) => setDraftOptions({ ...draftOptions, tone: e.target.value as any })}
+                      className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                      disabled={isDrafting}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="formal">Formal</option>
+                      <option value="casual">Casual</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                      Message Type
+                    </label>
+                    <select
+                      value={draftOptions.messageType}
+                      onChange={(e) => setDraftOptions({ ...draftOptions, messageType: e.target.value as any })}
+                      className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                      disabled={isDrafting}
+                    >
+                      <option value="response">Response</option>
+                      <option value="follow-up">Follow-up</option>
+                      <option value="inquiry">Inquiry</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                    Specific Instructions (Optional)
+                  </label>
+                  <textarea
+                    value={draftOptions.specificInstructions}
+                    onChange={(e) => setDraftOptions({ ...draftOptions, specificInstructions: e.target.value })}
+                    placeholder="E.g., Include pricing information, mention the next meeting date, etc."
+                    rows={3}
+                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none resize-none"
+                    disabled={isDrafting}
+                  />
+                </div>
+              </div>
+
+              {!draftedMessage && !isDrafting && (
+                <div className="bg-tactical-gold-light border-2 border-tactical-gold p-4 mb-6">
+                  <p className="text-sm text-hud-text-primary font-space-grotesk">
+                    AI will analyze the conversation history and draft an appropriate message based on your preferences.
+                  </p>
+                </div>
+              )}
+
+              {isDrafting && (
+                <div className="bg-white border-2 border-hud-border p-6 mb-6 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tactical-gold mx-auto mb-4"></div>
+                  <p className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+                    Drafting message with AI...
+                  </p>
+                </div>
+              )}
+
+              {draftedMessage && !isDrafting && (
+                <div className="space-y-4 mb-6">
+                  <label className="block text-sm font-semibold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+                    AI-Generated Draft
+                  </label>
+                  <textarea
+                    value={draftedMessage}
+                    onChange={(e) => setDraftedMessage(e.target.value)}
+                    rows={8}
+                    className="w-full px-3 py-2 border-2 border-tactical-gold focus:border-tactical-gold-dark outline-none resize-none"
+                  />
+                  <p className="text-xs text-medium-grey font-space-grotesk">
+                    You can edit the draft above before adding it to the conversation.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowDraftModal(false);
+                    setDraftedMessage('');
+                    setDraftOptions({
+                      tone: 'professional',
+                      messageType: 'response',
+                      specificInstructions: '',
+                    });
+                  }}
+                  className="flex-1"
+                  disabled={isDrafting}
+                >
+                  Cancel
+                </Button>
+                {!draftedMessage ? (
+                  <Button
+                    variant="default"
+                    onClick={async () => {
+                      if (!conversation) return;
+
+                      setIsDrafting(true);
+                      try {
+                        const response = await fetch('/api/ai/draft-message', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            conversationContext: conversation.messages.map(msg => ({
+                              role: msg.role === 'YOU' ? 'assistant' : 'user',
+                              content: msg.content,
+                            })),
+                            clientName: client?.name || 'Client',
+                            ...draftOptions,
+                          }),
+                        });
+
+                        if (!response.ok) {
+                          throw new Error('Failed to draft message');
+                        }
+
+                        const result = await response.json();
+                        if (result.success && result.draftedMessage) {
+                          setDraftedMessage(result.draftedMessage);
+                        } else {
+                          throw new Error(result.error || 'No drafted message received');
+                        }
+                      } catch (err) {
+                        console.error('Draft error:', err);
+                        alert('Failed to draft message with AI. Please try again.');
+                      } finally {
+                        setIsDrafting(false);
+                      }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2"
+                    disabled={isDrafting}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Generate Draft
+                  </Button>
+                ) : (
+                  <Button
+                    variant="default"
+                    onClick={async () => {
+                      if (!conversation || !draftedMessage.trim()) return;
+
+                      try {
+                        const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            content: draftedMessage,
+                            role: 'YOU',
+                            type: 'text',
+                            timestamp: new Date().toISOString(),
+                          }),
+                        });
+
+                        if (!response.ok) throw new Error('Failed to add message');
+
+                        const result = await response.json();
+
+                        // Reload conversation to show new message
+                        window.location.reload();
+                      } catch (err) {
+                        console.error('Add message error:', err);
+                        alert('Failed to add message to conversation');
+                      }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    Add to Conversation
+                  </Button>
+                )}
               </div>
             </div>
           </div>
