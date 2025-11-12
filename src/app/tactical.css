@@ -776,6 +776,20 @@ button:disabled,
   border-color: var(--tactical-gold) !important;
 }
 
+/* Override for Mocha Theme */
+.mocha-mode header,
+.mocha-mode .header,
+.mocha-mode nav {
+  background-color: #1c1917 !important;
+}
+
+/* Override for True Night Theme */
+.true-night-mode header,
+.true-night-mode .header,
+.true-night-mode nav {
+  background-color: #1a1a1a !important;
+}
+
 [data-theme="dark"] .bg-hud-overlay,
 [data-theme="dark"] .bg-dark-grey {
   background-color: var(--hud-background-overlay) !important;

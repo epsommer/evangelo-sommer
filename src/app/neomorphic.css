@@ -553,6 +553,15 @@
   box-shadow: 0 2px 8px 0px var(--neomorphic-dark-shadow);
 }
 
+/* Ensure proper background for dark themes */
+.mocha-mode .neo-container {
+  background-color: #1c1917;
+}
+
+.true-night-mode .neo-container {
+  background-color: #1a1a1a;
+}
+
 .neo-container-inner {
   background: transparent;
 }
