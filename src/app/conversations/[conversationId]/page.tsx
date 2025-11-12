@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil, Sparkles, Send } from "lucide-react";
+import { Pencil, Send, Sparkles } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
-import ConversationLayout from "../../../components/ConversationLayout";
+import CRMLayout from "../../../components/CRMLayout";
 import { useConversations } from "../../../hooks/useConversations";
-import ConversationSidebarLayout from "../../../components/ConversationSidebarLayout";
+import ContextualSidebar from "../../../components/ContextualSidebar";
 import AutoDraftTrigger from "../../../components/AutoDraftTrigger";
 import AutoDraftPrompt from "../../../components/AutoDraftPrompt";
 import EnhancedReceiptModal from "../../../components/EnhancedReceiptModal";
@@ -45,9 +45,22 @@ export default function ConversationPage() {
   });
   const [draftedMessage, setDraftedMessage] = useState('');
   const [isDrafting, setIsDrafting] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  // Track scroll position for header height adjustment
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 100);
+    };
+
+    handleScroll(); // Set initial value
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
   // Use real-time conversations hook if client ID is available
@@ -174,81 +187,86 @@ export default function ConversationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-hud-background-secondary">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hud-border-accent mx-auto mb-4"></div>
-              <p className="text-medium-grey font-space-grotesk uppercase tracking-wide">
-                Loading conversation...
-              </p>
-            </div>
+      <CRMLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+            <p className="text-muted-foreground font-primary uppercase tracking-wide">
+              Loading conversation...
+            </p>
           </div>
         </div>
-      </div>
+      </CRMLayout>
     );
   }
 
   if (error || !conversation) {
     return (
-      <div className="min-h-screen bg-hud-background-secondary">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="text-6xl mb-4">💬</div>
-              <h1 className="text-2xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
-                Conversation Not Found
-              </h1>
-              <p className="text-medium-grey mb-4 font-space-grotesk">
-                {error || "The conversation you're looking for doesn't exist."}
-              </p>
-              <Link
-                href="/conversations"
-                className="inline-flex items-center px-4 py-2 bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold-light font-space-grotesk font-bold uppercase tracking-wide"
-              >
-                ← Back to Conversations
-              </Link>
-            </div>
+      <CRMLayout>
+        <div className="flex items-center justify-center min-h-[400px] p-6">
+          <div className="text-center">
+            <div className="text-6xl mb-4">💬</div>
+            <h1 className="text-2xl font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
+              Conversation Not Found
+            </h1>
+            <p className="text-muted-foreground mb-4 font-primary">
+              {error || "The conversation you're looking for doesn't exist."}
+            </p>
+            <Link
+              href="/conversations"
+              className="neo-button-active font-primary font-bold uppercase tracking-wide inline-flex items-center"
+            >
+              ← Back to Conversations
+            </Link>
           </div>
         </div>
-      </div>
+      </CRMLayout>
     );
   }
 
   return (
-    <ConversationSidebarLayout
-      conversation={conversation}
-      client={client}
-    >
-      {/* Header */}
-      <div className="bg-white border-b-2 border-hud-border-accent sticky top-0 z-10">
+    <CRMLayout>
+      <div className="relative">
+        {/* Contextual Sidebar */}
+        {client && (
+          <ContextualSidebar
+            conversation={conversation}
+            client={client}
+            onDraftWithAI={() => setShowDraftModal(true)}
+          />
+        )}
+
+        {/* Main Content Area */}
+        <div className="pr-16">
+          {/* Header */}
+          <div className={`neo-container sticky z-10 mb-6 transition-all duration-300 ${isScrolled ? 'top-14' : 'top-20'}`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Left side - Navigation & Title */}
             <div className="flex items-center space-x-4">
               <Link
                 href="/conversations"
-                className="text-gold hover:text-gold-dark font-space-grotesk font-bold uppercase tracking-wide transition-colors"
+                className="text-accent hover:text-accent/80 font-primary font-bold uppercase tracking-wide transition-colors"
               >
                 ← Back to Conversations
               </Link>
-              <div className="hidden lg:block w-px h-6 bg-light-grey"></div>
+              <div className="hidden lg:block w-px h-6 bg-border"></div>
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">
                   {getSourceIcon(conversation?.source)}
                 </div>
                 <div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+                  <h1 className="text-xl lg:text-2xl font-bold text-foreground font-primary uppercase tracking-wide">
                     {(conversation?.title || 
                       `${conversation?.source || 'Conversation'}`).toUpperCase()}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-medium-grey font-space-grotesk uppercase tracking-wide">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-primary uppercase tracking-wide">
                     {client && (
                       <>
                         <span>WITH </span>
                         <Link
                           href={`/clients/${client.id}`}
-                          className="text-tactical-gold hover:text-tactical-gold-dark transition-colors duration-150 underline"
+                          className="text-accent hover:text-accent/80 transition-colors duration-150 underline"
                         >
                           {client.name.toUpperCase()}
                         </Link>
@@ -269,14 +287,13 @@ export default function ConversationPage() {
             <div className="flex items-center space-x-3">
               {conversation?.priority && (
                 <span
-                  className={`px-3 py-1 text-xs font-bold border-2 font-space-grotesk uppercase tracking-wide ${getPriorityColor(conversation.priority)}`}
+                  className={`neo-badge px-3 py-1 text-xs font-bold font-primary uppercase tracking-wide ${getPriorityColor(conversation.priority)}`}
                 >
                   {conversation.priority.toUpperCase()}
                 </span>
               )}
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                className="neo-button text-xs font-primary uppercase tracking-wide"
                 onClick={() => {
                   setEditFormData({
                     title: conversation?.title || '',
@@ -287,37 +304,28 @@ export default function ConversationPage() {
                 }}
               >
                 Edit
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setShowDraftModal(true)}
-                className="flex items-center gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                Draft with AI
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6 lg:py-8">
+      <div className="px-4 sm:px-6 py-6 lg:py-8">
         <div className="max-w-4xl mx-auto lg:max-w-5xl">
           {/* Conversation Summary */}
           {conversation?.summary && (
-            <div className="mb-8 p-6 bg-white border-2 border-hud-border">
-              <h2 className="font-space-grotesk uppercase tracking-wide text-hud-text-primary font-bold mb-4">
+            <div className="mb-8 p-6 neo-container">
+              <h2 className="font-primary uppercase tracking-wide text-foreground font-bold mb-4">
                 Conversation Summary
               </h2>
-              <p className="text-hud-text-primary text-sm mb-4">{conversation.summary}</p>
+              <p className="text-foreground text-sm mb-4">{conversation.summary}</p>
               {conversation.tags && conversation.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {conversation.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-2 py-1 bg-tactical-gold text-hud-text-primary text-xs border border-hud-border-accent-dark font-space-grotesk uppercase tracking-wide"
+                      className="neo-badge-accent px-2 py-1 text-xs font-primary uppercase tracking-wide"
                     >
                       {tag}
                     </span>
@@ -331,10 +339,10 @@ export default function ConversationPage() {
           {conversation?.messages && conversation.messages.length > 0 ? (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+                <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide">
                   Conversation Messages
                 </h2>
-                <span className="text-sm text-medium-grey font-space-grotesk">
+                <span className="text-sm text-muted-foreground font-primary">
                   {conversation.messages.length} messages
                 </span>
               </div>
@@ -346,15 +354,15 @@ export default function ConversationPage() {
                     className={`flex ${message.role === "YOU" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-2xl p-4 border-2 ${
+                      className={`max-w-2xl p-4 neo-container ${
                         message.role === "YOU"
-                          ? "bg-tactical-gold text-hud-text-primary border-hud-border-accent-dark"
-                          : "bg-white text-hud-text-primary border-hud-border"
+                          ? "bg-accent/20"
+                          : ""
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-bold font-space-grotesk uppercase tracking-wide">
+                          <span className="text-sm font-bold font-primary uppercase tracking-wide">
                             {message.role === "YOU" ? "You" : (client?.name || "Client")}
                           </span>
                           {/* Auto-draft trigger for client messages */}
@@ -384,7 +392,7 @@ export default function ConversationPage() {
                           })()}
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-xs text-medium-grey font-space-grotesk">
+                          <span className="text-xs text-muted-foreground font-primary">
                             {isClient ? new Date(message.timestamp).toLocaleString() : 'Loading...'}
                           </span>
                           <button
@@ -430,35 +438,35 @@ export default function ConversationPage() {
           ) : (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">💬</div>
-              <h2 className="text-xl font-bold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+              <h2 className="text-xl font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
                 No Messages Yet
               </h2>
-              <p className="text-medium-grey font-space-grotesk">
+              <p className="text-muted-foreground font-primary">
                 Start a conversation to see messages here.
               </p>
-              <Button className="mt-4" variant="default">
+              <button className="mt-4 neo-button-active font-primary uppercase tracking-wide">
                 Add Message
-              </Button>
+              </button>
             </div>
           )}
 
           {/* Next Actions */}
           {conversation?.nextActions && conversation.nextActions.length > 0 && (
-            <div className="mt-8 p-6 bg-tactical-gold-light border-2 border-hud-border-accent">
-              <h2 className="font-space-grotesk uppercase tracking-wide text-hud-text-primary font-bold mb-4">
+            <div className="mt-8 p-6 neo-container bg-accent/10">
+              <h2 className="font-primary uppercase tracking-wide text-foreground font-bold mb-4">
                 Next Actions
               </h2>
               <div className="space-y-3">
                 {conversation.nextActions.map((action, index) => (
                   <div
                     key={index}
-                    className="flex items-center space-x-3 p-3 bg-white border border-hud-border-accent"
+                    className="flex items-center space-x-3 p-3 neo-card"
                   >
                     <input
                       type="checkbox"
-                      className="border-2 border-hud-border-accent text-gold focus:ring-gold"
+                      className="border-2 border-border text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-hud-text-primary font-space-grotesk">{action}</span>
+                    <span className="text-sm text-foreground font-primary">{action}</span>
                   </div>
                 ))}
               </div>
@@ -466,12 +474,14 @@ export default function ConversationPage() {
           )}
         </div>
       </div>
+    </div>
+  </div>
 
       {/* Auto-draft prompt */}
       {showPrompt && currentAnalysis && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white border-2 border-hud-border p-6 max-w-lg mx-4">
-            <h3 className="text-lg font-bold font-space-grotesk uppercase tracking-wide text-hud-text-primary mb-4">
+          <div className="neo-container p-6 max-w-lg mx-4">
+            <h3 className="text-lg font-bold font-primary uppercase tracking-wide text-foreground mb-4">
               Auto-Draft Billing Suggestion
             </h3>
             <AutoDraftPrompt
@@ -511,33 +521,33 @@ export default function ConversationPage() {
       {/* Edit Conversation Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border-2 border-hud-border max-w-md w-full">
+          <div className="neo-container max-w-md w-full">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide mb-6">
+              <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide mb-6">
                 Edit Conversation
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Title
                   </label>
                   <input
                     type="text"
                     value={editFormData.title}
                     onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                    className="neomorphic-input w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Priority
                   </label>
                   <select
                     value={editFormData.priority}
                     onChange={(e) => setEditFormData({ ...editFormData, priority: e.target.value as any })}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                    className="neomorphic-input w-full"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -547,13 +557,13 @@ export default function ConversationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Status
                   </label>
                   <select
                     value={editFormData.status}
                     onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                    className="neomorphic-input w-full"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="ARCHIVED">Archived</option>
@@ -563,15 +573,14 @@ export default function ConversationPage() {
               </div>
 
               <div className="flex space-x-3 mt-6">
-                <Button
-                  variant="outline"
+                <button
+                  className="neo-button flex-1 font-primary uppercase tracking-wide"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1"
                 >
                   Cancel
-                </Button>
-                <Button
-                  variant="default"
+                </button>
+                <button
+                  className="neo-button-active flex-1 font-primary uppercase tracking-wide"
                   onClick={async () => {
                     try {
                       const response = await fetch(`/api/conversations/${conversationId}`, {
@@ -594,10 +603,9 @@ export default function ConversationPage() {
                       alert('Failed to update conversation');
                     }
                   }}
-                  className="flex-1"
                 >
                   Save Changes
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -607,21 +615,21 @@ export default function ConversationPage() {
       {/* Edit Message Modal */}
       {editingMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border-2 border-hud-border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="neo-container max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide mb-6">
+              <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide mb-6">
                 Edit Message
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Sender
                   </label>
                   <select
                     value={messageEditData.role}
                     onChange={(e) => setMessageEditData({ ...messageEditData, role: e.target.value as 'CLIENT' | 'YOU' })}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                    className="neomorphic-input w-full"
                   >
                     <option value="YOU">You</option>
                     <option value="CLIENT">{client?.name || 'Client'}</option>
@@ -629,43 +637,42 @@ export default function ConversationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Date & Time
                   </label>
                   <input
                     type="datetime-local"
                     value={messageEditData.timestamp}
                     onChange={(e) => setMessageEditData({ ...messageEditData, timestamp: e.target.value })}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                    className="neomorphic-input w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Message Content
                   </label>
                   <textarea
                     value={messageEditData.content}
                     onChange={(e) => setMessageEditData({ ...messageEditData, content: e.target.value })}
                     rows={10}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none resize-none"
+                    className="neomorphic-input w-full resize-none"
                   />
                 </div>
               </div>
 
               <div className="flex space-x-3 mt-6">
-                <Button
-                  variant="outline"
+                <button
+                  className="neo-button flex-1 font-primary uppercase tracking-wide"
                   onClick={() => {
                     setEditingMessage(null);
                     setMessageEditData({ content: '', role: 'CLIENT', timestamp: '' });
                   }}
-                  className="flex-1"
                 >
                   Cancel
-                </Button>
-                <Button
-                  variant="default"
+                </button>
+                <button
+                  className="neo-button-active flex-1 font-primary uppercase tracking-wide"
                   onClick={async () => {
                     if (!editingMessage) return;
 
@@ -699,10 +706,9 @@ export default function ConversationPage() {
                       alert('Failed to update message');
                     }
                   }}
-                  className="flex-1"
                 >
                   Save Changes
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -712,14 +718,14 @@ export default function ConversationPage() {
       {/* AI Draft Message Modal */}
       {showDraftModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border-2 border-hud-border max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="neo-container max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-hud-text-primary font-space-grotesk uppercase tracking-wide flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-tactical-gold" />
+                <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-accent" />
                   Draft Message with AI
                 </h2>
-                <span className="text-xs px-2 py-1 bg-tactical-gold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+                <span className="text-xs px-2 py-1 neo-badge-accent font-primary uppercase tracking-wide">
                   Powered by Claude
                 </span>
               </div>
@@ -727,13 +733,13 @@ export default function ConversationPage() {
               <div className="space-y-4 mb-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                    <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                       Tone
                     </label>
                     <select
                       value={draftOptions.tone}
                       onChange={(e) => setDraftOptions({ ...draftOptions, tone: e.target.value as any })}
-                      className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                      className="neomorphic-input w-full"
                       disabled={isDrafting}
                     >
                       <option value="professional">Professional</option>
@@ -744,13 +750,13 @@ export default function ConversationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                    <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                       Message Type
                     </label>
                     <select
                       value={draftOptions.messageType}
                       onChange={(e) => setDraftOptions({ ...draftOptions, messageType: e.target.value as any })}
-                      className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none"
+                      className="neomorphic-input w-full"
                       disabled={isDrafting}
                     >
                       <option value="response">Response</option>
@@ -761,7 +767,7 @@ export default function ConversationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-hud-text-primary mb-2 font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
                     Specific Instructions (Optional)
                   </label>
                   <textarea
@@ -769,24 +775,24 @@ export default function ConversationPage() {
                     onChange={(e) => setDraftOptions({ ...draftOptions, specificInstructions: e.target.value })}
                     placeholder="E.g., Include pricing information, mention the next meeting date, etc."
                     rows={3}
-                    className="w-full px-3 py-2 border-2 border-hud-border focus:border-tactical-gold outline-none resize-none"
+                    className="neomorphic-input w-full resize-none"
                     disabled={isDrafting}
                   />
                 </div>
               </div>
 
               {!draftedMessage && !isDrafting && (
-                <div className="bg-tactical-gold-light border-2 border-tactical-gold p-4 mb-6">
-                  <p className="text-sm text-hud-text-primary font-space-grotesk">
+                <div className="neo-card bg-accent/10 p-4 mb-6">
+                  <p className="text-sm text-foreground font-primary">
                     AI will analyze the conversation history and draft an appropriate message based on your preferences.
                   </p>
                 </div>
               )}
 
               {isDrafting && (
-                <div className="bg-white border-2 border-hud-border p-6 mb-6 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tactical-gold mx-auto mb-4"></div>
-                  <p className="text-sm text-medium-grey font-space-grotesk uppercase tracking-wide">
+                <div className="neo-container p-6 mb-6 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+                  <p className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
                     Drafting message with AI...
                   </p>
                 </div>
@@ -794,24 +800,24 @@ export default function ConversationPage() {
 
               {draftedMessage && !isDrafting && (
                 <div className="space-y-4 mb-6">
-                  <label className="block text-sm font-semibold text-hud-text-primary font-space-grotesk uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-foreground font-primary uppercase tracking-wide">
                     AI-Generated Draft
                   </label>
                   <textarea
                     value={draftedMessage}
                     onChange={(e) => setDraftedMessage(e.target.value)}
                     rows={8}
-                    className="w-full px-3 py-2 border-2 border-tactical-gold focus:border-tactical-gold-dark outline-none resize-none"
+                    className="neomorphic-input w-full resize-none border-accent"
                   />
-                  <p className="text-xs text-medium-grey font-space-grotesk">
+                  <p className="text-xs text-muted-foreground font-primary">
                     You can edit the draft above before adding it to the conversation.
                   </p>
                 </div>
               )}
 
               <div className="flex space-x-3">
-                <Button
-                  variant="outline"
+                <button
+                  className="neo-button flex-1 font-primary uppercase tracking-wide"
                   onClick={() => {
                     setShowDraftModal(false);
                     setDraftedMessage('');
@@ -821,14 +827,13 @@ export default function ConversationPage() {
                       specificInstructions: '',
                     });
                   }}
-                  className="flex-1"
                   disabled={isDrafting}
                 >
                   Cancel
-                </Button>
+                </button>
                 {!draftedMessage ? (
-                  <Button
-                    variant="default"
+                  <button
+                    className="neo-button-active flex-1 font-primary uppercase tracking-wide flex items-center justify-center gap-2"
                     onClick={async () => {
                       if (!conversation) return;
 
@@ -864,15 +869,14 @@ export default function ConversationPage() {
                         setIsDrafting(false);
                       }
                     }}
-                    className="flex-1 flex items-center justify-center gap-2"
                     disabled={isDrafting}
                   >
                     <Sparkles className="w-4 h-4" />
                     Generate Draft
-                  </Button>
+                  </button>
                 ) : (
-                  <Button
-                    variant="default"
+                  <button
+                    className="neo-button-active flex-1 font-primary uppercase tracking-wide flex items-center justify-center gap-2"
                     onClick={async () => {
                       if (!conversation || !draftedMessage.trim()) return;
 
@@ -899,17 +903,16 @@ export default function ConversationPage() {
                         alert('Failed to add message to conversation');
                       }
                     }}
-                    className="flex-1 flex items-center justify-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                     Add to Conversation
-                  </Button>
+                  </button>
                 )}
               </div>
             </div>
           </div>
         </div>
       )}
-    </ConversationSidebarLayout>
+    </CRMLayout>
   );
 }

@@ -9,7 +9,8 @@ import {
   Receipt,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import { Conversation, Client, Message } from '../types/client';
 import { BillingSuggestion } from '../types/billing';
@@ -26,6 +27,7 @@ interface ContextualSidebarProps {
   className?: string;
   onAutoDetails?: (message: Message, suggestion: BillingSuggestion) => void;
   onStateChange?: (isOpen: boolean, width: number) => void;
+  onDraftWithAI?: () => void;
 }
 
 export default function ContextualSidebar({
@@ -33,19 +35,34 @@ export default function ContextualSidebar({
   client,
   className = "",
   onAutoDetails,
-  onStateChange
+  onStateChange,
+  onDraftWithAI
 }: ContextualSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(80); // 20 * 4 = 80px (h-20)
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Track header height based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      // Header is h-20 (80px) initially, h-14 (56px) when scrolled > 100px
+      setHeaderHeight(scrollY > 100 ? 56 : 80);
+    };
+
+    handleScroll(); // Set initial value
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Check for mobile viewport
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -157,26 +174,30 @@ export default function ContextualSidebar({
   };
 
   return (
-    <div 
+    <div
       ref={sidebarRef}
       className={`
-        fixed right-0 top-0 h-full z-40 flex
+        fixed right-0 z-40 flex transition-all duration-300
         ${isMobile ? 'w-full' : 'w-auto'}
         ${className}
       `}
+      style={{
+        top: `${headerHeight}px`,
+        height: `calc(100vh - ${headerHeight}px)`
+      }}
     >
       {/* Primary Navigation Sidebar */}
       <div className={`
-        bg-white border-l-2 border-hud-border-accent shadow-lg
+        neo-sidebar
         ${isMobile ? 'w-16' : 'w-16'}
         ${isMobile && activeTab ? 'shadow-2xl' : ''}
         transition-all duration-300 ease-in-out
         flex flex-col
       `}>
         {/* Logo/Brand Area */}
-        <div className="p-4 border-b border-hud-border">
-          <div className="w-8 h-8 bg-tactical-gold flex items-center justify-center">
-            <MessageSquare className="w-5 h-5 text-hud-text-primary" />
+        <div className="p-4 border-b border-b-[var(--neomorphic-dark-shadow)]">
+          <div className="w-8 h-8 neo-button-circle flex items-center justify-center">
+            <MessageSquare className="w-5 h-5 text-[var(--neomorphic-text)]" />
           </div>
         </div>
 
@@ -185,7 +206,7 @@ export default function ContextualSidebar({
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            
+
             return (
               <button
                 key={tab.id}
@@ -193,9 +214,9 @@ export default function ContextualSidebar({
                 className={`
                   w-full p-3 mb-2 flex flex-col items-center justify-center
                   group relative transition-all duration-200
-                  ${isActive ? 
-                    `${tab.bgColor} ${tab.color} border-r-4 border-current` : 
-                    'text-medium-grey hover:text-hud-text-primary hover:bg-light-grey'
+                  ${isActive ?
+                    'neo-nav-button-active border-r-4 border-[var(--neomorphic-accent)]' :
+                    'neo-nav-button'
                   }
                 `}
                 title={tab.label}
@@ -204,13 +225,13 @@ export default function ContextualSidebar({
                 <span className="text-xs font-primary uppercase tracking-wide">
                   {tab.label.slice(0, 3)}
                 </span>
-                
+
                 {/* Count Badge */}
                 {tab.count !== null && tab.count > 0 && (
                   <div className={`
                     absolute -top-1 -right-1 w-5 h-5 rounded-full
                     flex items-center justify-center text-xs font-bold
-                    ${isActive ? 'bg-white text-current' : 'bg-tactical-gold text-hud-text-primary'}
+                    ${isActive ? 'neo-badge-accent' : 'neo-badge'}
                   `}>
                     {tab.count > 99 ? '99+' : tab.count}
                   </div>
@@ -218,16 +239,32 @@ export default function ContextualSidebar({
 
                 {/* Active Indicator */}
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-current rounded-r-full" />
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-[var(--neomorphic-accent)] rounded-r-full" />
                 )}
               </button>
             );
           })}
         </div>
 
+        {/* Draft with AI Button */}
+        {onDraftWithAI && (
+          <div className="px-2 pb-4">
+            <button
+              onClick={onDraftWithAI}
+              className="neo-button-active w-full p-3 flex flex-col items-center justify-center gap-1"
+              title="Draft with AI"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span className="text-[9px] font-primary uppercase tracking-wide leading-tight">
+                AI
+              </span>
+            </button>
+          </div>
+        )}
+
         {/* Collapse Toggle (Desktop Only) */}
         {!isMobile && (
-          <div className="p-2 border-t border-hud-border">
+          <div className="p-2 border-t border-t-[var(--neomorphic-dark-shadow)]">
             <button
               onClick={() => {
                 if (isExpanded) {
@@ -244,7 +281,7 @@ export default function ContextualSidebar({
                   onStateChange?.(true, width);
                 }
               }}
-              className="w-full p-2 text-medium-grey hover:text-hud-text-primary hover:bg-light-grey transition-all duration-200"
+              className="neo-button-sm w-full p-2 transition-all duration-200"
               title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
             >
               {isExpanded ? (
@@ -259,7 +296,7 @@ export default function ContextualSidebar({
 
       {/* Contextual Content Panel */}
       <div className={`
-        bg-white border-l border-hud-border shadow-lg
+        neo-container border-l border-l-[var(--neomorphic-dark-shadow)]
         transition-all duration-300 ease-in-out overflow-hidden
         ${isExpanded && activeTab ?
           (isMobile ? 'w-96' : 'w-[28rem]') :
@@ -270,7 +307,7 @@ export default function ContextualSidebar({
         {activeTab && (
           <div className="h-full flex flex-col">
             {/* Panel Header */}
-            <div className="p-4 border-b border-hud-border bg-hud-background-secondary flex items-center justify-between">
+            <div className="p-4 border-b border-b-[var(--neomorphic-dark-shadow)] bg-[var(--neomorphic-bg)] flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 {(() => {
                   const tab = tabs.find(t => t.id === activeTab);
@@ -278,14 +315,14 @@ export default function ContextualSidebar({
                   const Icon = tab.icon;
                   return (
                     <>
-                      <div className={`p-2 ${tab.bgColor} rounded`}>
-                        <Icon className={`w-5 h-5 ${tab.color}`} />
+                      <div className="neo-button-circle w-10 h-10 p-2 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-[var(--neomorphic-text)]" />
                       </div>
                       <div>
-                        <h2 className="font-primary font-bold text-hud-text-primary uppercase tracking-wide">
+                        <h2 className="font-primary font-bold text-[var(--neomorphic-text)] uppercase tracking-wide">
                           {tab.label}
                         </h2>
-                        <p className="text-xs text-medium-grey">
+                        <p className="text-xs text-[var(--neomorphic-icon)]">
                           {client.name}
                         </p>
                       </div>
@@ -293,10 +330,10 @@ export default function ContextualSidebar({
                   );
                 })()}
               </div>
-              
+
               <button
                 onClick={handleClose}
-                className="p-1 text-medium-grey hover:text-hud-text-primary hover:bg-light-grey rounded transition-colors duration-150"
+                className="neo-button-sm p-2 transition-colors duration-150"
                 title="Close panel"
               >
                 <X className="w-4 h-4" />
@@ -304,7 +341,7 @@ export default function ContextualSidebar({
             </div>
 
             {/* Panel Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto bg-[var(--neomorphic-bg)]">
               {renderTabContent()}
             </div>
           </div>
