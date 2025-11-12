@@ -109,6 +109,20 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
     setMobileMenuOpen(false)
   }, [pathname])
 
+  // Disable scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Cleanup function to restore scroll on unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
+
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
       <Header onMobileMenuToggle={toggleMobileMenu} />

@@ -187,15 +187,15 @@ function ConversationsPageContent() {
 
   return (
     <CRMLayout>
-      <div className="p-6">
+      <div className="p-3 sm:p-4 md:p-6 max-w-full overflow-x-hidden">
         {/* Page Header */}
-        <div className="neo-container p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
+        <div className="neo-container p-4 sm:p-5 md:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="w-full sm:w-auto">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
                 {filteredClient ? `${filteredClient.name.toUpperCase()} CONVERSATIONS` : 'ALL CONVERSATIONS'}
               </h1>
-              <p className="text-muted-foreground font-primary">
+              <p className="text-xs sm:text-sm text-muted-foreground font-primary">
                 {filteredClient
                   ? `VIEW AND MANAGE CONVERSATIONS FOR ${filteredClient.name.toUpperCase()}`
                   : 'VIEW AND MANAGE ALL CLIENT COMMUNICATIONS'
@@ -216,55 +216,56 @@ function ConversationsPageContent() {
               )}
             </div>
             <button
-              className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2"
+              className="neo-button-active font-primary text-xs sm:text-sm uppercase tracking-wide flex items-center gap-2 w-full sm:w-auto justify-center"
               onClick={() => router.push('/conversations/create')}
             >
               <Plus className="h-4 w-4" />
-              NEW CONVERSATION
+              <span className="hidden sm:inline">NEW CONVERSATION</span>
+              <span className="sm:hidden">NEW</span>
             </button>
           </div>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="neo-card p-4">
-            <div className="text-2xl font-bold text-foreground font-primary">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="neo-card p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-foreground font-primary">
               {stats.total}
             </div>
-            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
-              TOTAL CONVERSATIONS
+            <div className="text-xs sm:text-sm text-muted-foreground font-primary uppercase tracking-wide">
+              TOTAL
             </div>
           </div>
-          <div className="neo-card p-4">
-            <div className="text-2xl font-bold text-accent font-primary">
+          <div className="neo-card p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-accent font-primary">
               {stats.active}
             </div>
-            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
+            <div className="text-xs sm:text-sm text-muted-foreground font-primary uppercase tracking-wide">
               ACTIVE
             </div>
           </div>
-          <div className="neo-card p-4">
-            <div className="text-2xl font-bold text-yellow-600 font-primary">
+          <div className="neo-card p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-yellow-600 font-primary">
               {stats.pending}
             </div>
-            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
+            <div className="text-xs sm:text-sm text-muted-foreground font-primary uppercase tracking-wide">
               PENDING
             </div>
           </div>
-          <div className="neo-card p-4">
-            <div className="text-2xl font-bold text-red-600 font-primary">
+          <div className="neo-card p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-red-600 font-primary">
               {stats.unread}
             </div>
-            <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
+            <div className="text-xs sm:text-sm text-muted-foreground font-primary uppercase tracking-wide">
               UNREAD
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="neo-container p-6 mb-6">
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
+        <div className="neo-container p-4 sm:p-5 md:p-6 mb-4 sm:mb-6">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
@@ -288,7 +289,7 @@ function ConversationsPageContent() {
               </select>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <select
                 value={filterClient}
                 onChange={(e) => setFilterClient(e.target.value)}
@@ -368,7 +369,7 @@ function ConversationsPageContent() {
                   href={`/conversations/${conversation.id}`}
                   className="block"
                 >
-                  <div className="neo-container p-6 hover:bg-card transition-colors cursor-pointer">
+                  <div className="neo-container p-4 sm:p-5 md:p-6 hover:bg-card transition-colors cursor-pointer">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-3">

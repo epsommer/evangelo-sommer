@@ -694,6 +694,15 @@
   box-shadow: 4px 0 12px 0px var(--neomorphic-dark-shadow);
 }
 
+/* Ensure proper background for dark themes on mobile */
+.mocha-mode .neo-sidebar {
+  background-color: #1c1917;
+}
+
+.true-night-mode .neo-sidebar {
+  background-color: #1a1a1a;
+}
+
 .neo-nav-button {
   color: var(--neomorphic-text);
   background: transparent;
