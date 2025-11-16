@@ -116,8 +116,11 @@ out
 build
 dist
 
-# Markdown files
-*.md
+# Markdown files (commented out to allow commit documentation)
+# *.md
+
+# Private documentation folder
+.docs-private/
 
 # Scripts with sensitive configuration
 get-refresh-token.js

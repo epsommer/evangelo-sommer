@@ -61,7 +61,7 @@ esac
 
 echo ""
 print_color "$BLUE" "Files to be committed:"
-git diff --cached --name-status
+git --no-pager diff --cached --name-status
 
 # Check if there are staged changes
 if ! git diff --cached --quiet; then
@@ -139,7 +139,7 @@ echo ""
 
 # Show diff summary
 print_color "$BLUE" "Changes summary:"
-git diff --cached --stat
+git --no-pager diff --cached --stat
 
 echo ""
 read -p "$(print_color $YELLOW "Proceed with commit? (y/n): ")${NC}" confirm

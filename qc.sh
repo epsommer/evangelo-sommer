@@ -46,7 +46,7 @@ fi
 
 # Show what will be committed
 echo -e "${YELLOW}Committing:${NC}"
-git diff --cached --name-status
+git --no-pager diff --cached --name-status
 
 # Create commit message
 commit_msg="${type}: ${message}"

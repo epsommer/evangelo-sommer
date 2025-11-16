@@ -19,7 +19,10 @@
       "Bash(npm run build:*)",
       "Bash(git push)",
       "Bash(git config:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(find:*)",
+      "Bash(for dir in /Users/epsommer/projects/evangelo-sommer/.docs-private/*/)",
+      "Bash(do echo '=== $(basename $dir) ===' ls -1 $dir)"
     ],
     "deny": [],
     "ask": []
