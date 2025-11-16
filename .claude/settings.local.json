@@ -16,7 +16,10 @@
       "Bash(npm run type-check:*)",
       "Bash(curl:*)",
       "Bash(npx tsx:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git push)",
+      "Bash(git config:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
