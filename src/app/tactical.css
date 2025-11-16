@@ -1003,14 +1003,15 @@ button:disabled,
 }
 
 /* Enhanced Dark Mode Link Elements */
-[data-theme="dark"] a {
+/* Commented out to allow specific link styling in components */
+/* [data-theme="dark"] a {
   color: var(--tactical-gold) !important;
-}
+} */
 
-[data-theme="dark"] a:hover {
+/* [data-theme="dark"] a:hover {
   color: var(--tactical-amber) !important;
   text-shadow: 0 0 5px var(--tactical-amber) !important;
-}
+} */
 
 /* Enhanced Dark Mode Root Elements */
 [data-theme="dark"] html {

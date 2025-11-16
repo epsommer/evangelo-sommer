@@ -154,7 +154,11 @@ export default function MaintenancePage() {
             href="https://linkedin.com/in/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors duration-200 p-2 touch-manipulation text-muted-foreground/60 hover:text-muted-foreground"
+            className={`transition-colors duration-200 p-2 touch-manipulation ${
+              isDark
+                ? 'text-foreground/70 hover:text-foreground'
+                : 'text-muted-foreground/60 hover:text-muted-foreground'
+            }`}
             aria-label="LinkedIn"
           >
             <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -165,7 +169,11 @@ export default function MaintenancePage() {
             href="https://github.com/epsommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors duration-200 p-2 touch-manipulation text-muted-foreground/60 hover:text-muted-foreground"
+            className={`transition-colors duration-200 p-2 touch-manipulation ${
+              isDark
+                ? 'text-foreground/70 hover:text-foreground'
+                : 'text-muted-foreground/60 hover:text-muted-foreground'
+            }`}
             aria-label="GitHub"
           >
             <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -176,7 +184,11 @@ export default function MaintenancePage() {
             href="https://twitter.com/evangelosommer"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors duration-200 p-2 touch-manipulation text-muted-foreground/60 hover:text-muted-foreground"
+            className={`transition-colors duration-200 p-2 touch-manipulation ${
+              isDark
+                ? 'text-foreground/70 hover:text-foreground'
+                : 'text-muted-foreground/60 hover:text-muted-foreground'
+            }`}
             aria-label="Twitter"
           >
             <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">

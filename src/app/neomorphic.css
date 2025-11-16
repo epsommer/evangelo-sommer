@@ -449,6 +449,24 @@
   cursor: not-allowed;
 }
 
+/* True Night Mode - Ensure submit button has light text */
+.true-night-mode .neomorphic-submit {
+  color: #f2f2f2 !important;
+}
+
+.true-night-mode .neomorphic-submit > * {
+  color: #f2f2f2 !important;
+}
+
+/* Mocha Mode - Ensure submit button has light text */
+.mocha-mode .neomorphic-submit {
+  color: #fafaf9 !important;
+}
+
+.mocha-mode .neomorphic-submit > * {
+  color: #fafaf9 !important;
+}
+
 /* Neomorphic Logo Container */
 .neomorphic-logo {
   width: 80px;
