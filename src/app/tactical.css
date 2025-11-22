@@ -1250,3 +1250,109 @@ body.modal-open .border-hud-border {
 .tactical-window .neo-button-active:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* ========================================
+   NEOMORPHIC INPUT & SELECT STYLES
+   Recessed appearance for form elements
+   ======================================== */
+
+/* Base neomorphic input style - recessed/inset appearance */
+.neo-input {
+  background: hsl(var(--background));
+  border: none;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  transition: all 0.2s ease;
+  border-radius: var(--radius);
+  /* Inset shadow for recessed appearance */
+  box-shadow:
+    inset 0.15rem 0.15rem 0.3rem rgba(0, 0, 0, 0.2),
+    inset -0.15rem -0.15rem 0.3rem rgba(255, 255, 255, 0.7);
+}
+
+.neo-input:focus {
+  outline: none;
+  /* Slightly deeper inset on focus */
+  box-shadow:
+    inset 0.2rem 0.2rem 0.4rem rgba(0, 0, 0, 0.25),
+    inset -0.2rem -0.2rem 0.4rem rgba(255, 255, 255, 0.6);
+}
+
+.neo-input::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
+
+/* Dropdown/Select recessed styling */
+.neo-select,
+select.neo-input {
+  background: hsl(var(--background));
+  border: none;
+  padding: 0.75rem 1rem;
+  padding-right: 2.5rem;
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px;
+  border-radius: var(--radius);
+  /* Recessed appearance */
+  box-shadow:
+    inset 0.15rem 0.15rem 0.3rem rgba(0, 0, 0, 0.2),
+    inset -0.15rem -0.15rem 0.3rem rgba(255, 255, 255, 0.7);
+}
+
+.neo-select:focus,
+select.neo-input:focus {
+  outline: none;
+  box-shadow:
+    inset 0.2rem 0.2rem 0.4rem rgba(0, 0, 0, 0.25),
+    inset -0.2rem -0.2rem 0.4rem rgba(255, 255, 255, 0.6);
+}
+
+/* Textarea recessed styling */
+textarea.neo-input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Dark mode adjustments - deeper shadows */
+.mocha-mode .neo-input,
+.mocha-mode .neo-select,
+.mocha-mode select.neo-input,
+.mocha-mode textarea.neo-input,
+.true-night-mode .neo-input,
+.true-night-mode .neo-select,
+.true-night-mode select.neo-input,
+.true-night-mode textarea.neo-input {
+  box-shadow:
+    inset 0.15rem 0.15rem 0.3rem rgba(0, 0, 0, 0.4),
+    inset -0.15rem -0.15rem 0.3rem rgba(255, 255, 255, 0.05);
+}
+
+.mocha-mode .neo-input:focus,
+.mocha-mode .neo-select:focus,
+.mocha-mode select.neo-input:focus,
+.mocha-mode textarea.neo-input:focus,
+.true-night-mode .neo-input:focus,
+.true-night-mode .neo-select:focus,
+.true-night-mode select.neo-input:focus,
+.true-night-mode textarea.neo-input:focus {
+  box-shadow:
+    inset 0.2rem 0.2rem 0.4rem rgba(0, 0, 0, 0.5),
+    inset -0.2rem -0.2rem 0.4rem rgba(255, 255, 255, 0.03);
+}
+
+/* Update dropdown arrow color for dark mode */
+.mocha-mode .neo-select,
+.mocha-mode select.neo-input,
+.true-night-mode .neo-select,
+.true-night-mode select.neo-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
