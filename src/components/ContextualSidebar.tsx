@@ -74,7 +74,9 @@ export default function ContextualSidebar({
   const [isEditingConversation, setIsEditingConversation] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedPriority, setEditedPriority] = useState('');
+  const [editedClientId, setEditedClientId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [allClients, setAllClients] = useState<Client[]>([]);
 
   // Helper function for priority colors
   const getPriorityColor = (priority: string) => {
@@ -145,8 +147,30 @@ export default function ContextualSidebar({
     if (conversation) {
       setEditedTitle(conversation.title || '');
       setEditedPriority(conversation.priority || 'MEDIUM');
+      setEditedClientId(conversation.clientId || '');
     }
   }, [conversation]);
+
+  // Fetch all clients when entering edit mode
+  useEffect(() => {
+    const fetchClients = async () => {
+      if (!isEditingConversation) return;
+
+      try {
+        const response = await fetch('/api/clients');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setAllClients(result.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    };
+
+    fetchClients();
+  }, [isEditingConversation]);
 
   // Handle saving conversation changes
   const handleSaveConversation = async () => {
@@ -160,6 +184,7 @@ export default function ContextualSidebar({
         body: JSON.stringify({
           title: editedTitle,
           priority: editedPriority.toUpperCase(),
+          clientId: editedClientId,
         }),
       });
 
@@ -287,15 +312,42 @@ export default function ContextualSidebar({
                     </h3>
                   )}
 
-                  {/* Client Link */}
-                  {client && (
-                    <Link
-                      href={`/clients/${client.id}`}
-                      className="text-sm text-[var(--neomorphic-accent)] hover:opacity-80 transition-opacity uppercase inline-flex items-center gap-1"
+                  {/* Client Selector/Link */}
+                  {isEditingConversation ? (
+                    <div className="space-y-1">
+                      <label className="text-xs text-[var(--neomorphic-icon)] font-primary uppercase tracking-wide">
+                        Assigned Client
+                      </label>
+                      <select
+                        value={editedClientId}
+                        onChange={(e) => setEditedClientId(e.target.value)}
+                        className="neo-input w-full text-xs font-primary uppercase"
+                      >
+                        <option value="">-- Select Client --</option>
+                        {allClients.map((clientOption) => (
+                          <option key={clientOption.id} value={clientOption.id}>
+                            {clientOption.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : client ? (
+                    <div
+                      className="text-sm text-[var(--neomorphic-accent)] hover:opacity-80 transition-opacity uppercase inline-flex items-center gap-1 cursor-pointer"
+                      onClick={() => setIsEditingConversation(true)}
+                      title="Click to change client"
                     >
                       <span>Client:</span>
                       <span className="font-bold">{client.name}</span>
-                    </Link>
+                    </div>
+                  ) : (
+                    <div
+                      className="text-sm text-[var(--neomorphic-icon)] hover:opacity-80 transition-opacity uppercase inline-flex items-center gap-1 cursor-pointer"
+                      onClick={() => setIsEditingConversation(true)}
+                      title="Click to assign client"
+                    >
+                      <span>No Client Assigned</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -379,6 +431,7 @@ export default function ContextualSidebar({
                     setIsEditingConversation(false);
                     setEditedTitle(conversation?.title || '');
                     setEditedPriority(conversation?.priority || 'MEDIUM');
+                    setEditedClientId(conversation?.clientId || '');
                   }}
                   className="neo-button-sm w-full px-4 py-2 text-xs font-primary uppercase tracking-wide"
                 >
