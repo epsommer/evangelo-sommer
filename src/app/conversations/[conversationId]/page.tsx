@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil, Send, Sparkles, ArrowLeft } from "lucide-react";
+import { Pencil, Send, Sparkles, ArrowLeft, History, Star } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
 import CRMLayout from "../../../components/CRMLayout";
@@ -12,6 +12,7 @@ import ContextualSidebar from "../../../components/ContextualSidebar";
 import AutoDraftTrigger from "../../../components/AutoDraftTrigger";
 import AutoDraftPrompt from "../../../components/AutoDraftPrompt";
 import EnhancedReceiptModal from "../../../components/EnhancedReceiptModal";
+import TestimonialRequestModal from "../../../components/TestimonialRequestModal";
 // Removed billingManager import - moved to API endpoints
 
 export default function ConversationPage() {
@@ -39,6 +40,7 @@ export default function ConversationPage() {
   });
   const [selectedMessageForDraft, setSelectedMessageForDraft] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showTestimonialModal, setShowTestimonialModal] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -242,16 +244,42 @@ export default function ConversationPage() {
 
         {/* Main Content Area */}
         <div className="pr-16">
-          {/* Header with Back Button */}
+          {/* Header with Navigation Buttons */}
           <div className="px-4 sm:px-6 pt-6 lg:pt-8 pb-4">
-            <div className="max-w-4xl mx-auto lg:max-w-5xl">
+            <div className="max-w-4xl mx-auto lg:max-w-5xl flex items-center justify-between gap-4 flex-wrap">
               <Link
                 href="/conversations"
-                className="inline-flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-sm font-primary uppercase tracking-wide transition-opacity mb-6"
+                className="inline-flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-sm font-primary uppercase tracking-wide transition-opacity"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Conversations</span>
               </Link>
+
+              <div className="flex items-center gap-3">
+                {client && (
+                  <>
+                    <Link
+                      href={`/clients/${client.id}/master`}
+                      className="neo-button-active px-3 py-2 text-xs sm:text-sm font-primary uppercase tracking-wide flex items-center gap-2 transition-transform hover:scale-[1.02]"
+                      title="View Master Timeline"
+                    >
+                      <History className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Master Timeline</span>
+                      <span className="sm:hidden">Master</span>
+                    </Link>
+
+                    <button
+                      onClick={() => setShowTestimonialModal(true)}
+                      className="neo-button px-3 py-2 text-xs sm:text-sm font-primary uppercase tracking-wide flex items-center gap-2 transition-transform hover:scale-[1.02]"
+                      title="Request Testimonial"
+                    >
+                      <Star className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Request Testimonial</span>
+                      <span className="sm:hidden">Testimonial</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -671,6 +699,15 @@ export default function ConversationPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Testimonial Request Modal */}
+      {client && (
+        <TestimonialRequestModal
+          isOpen={showTestimonialModal}
+          onClose={() => setShowTestimonialModal(false)}
+          client={client}
+        />
       )}
     </CRMLayout>
   );

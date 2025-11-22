@@ -571,13 +571,14 @@ export default function ContextualSidebar({
     <div
       ref={sidebarRef}
       className={`
-        fixed right-0 z-40 flex flex-row-reverse transition-all duration-300
+        fixed right-0 z-40 flex flex-row-reverse
         ${isMobile ? 'w-full' : 'w-auto'}
         ${className}
       `}
       style={{
         top: `${headerHeight}px`,
-        height: `calc(100vh - ${headerHeight}px)`
+        height: `calc(100vh - ${headerHeight}px)`,
+        transition: 'all 0.3s ease-in-out'
       }}
     >
       {/* Primary Navigation Sidebar */}
