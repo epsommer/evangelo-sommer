@@ -235,42 +235,42 @@ export default function ConversationPage() {
         <div className="pr-16">
           {/* Header */}
           <div className={`neo-container sticky z-10 mb-6 transition-all duration-300 ${isScrolled ? 'top-14' : 'top-20'}`}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
             {/* Left side - Navigation & Title */}
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0">
               <Link
                 href="/conversations"
-                className="text-accent hover:text-accent/80 font-primary font-bold uppercase tracking-wide transition-colors"
+                className="text-accent hover:text-accent/80 font-primary font-bold uppercase tracking-wide transition-colors text-xs sm:text-sm whitespace-nowrap"
               >
-                ← Back to Conversations
+                ← Back
               </Link>
               <div className="hidden lg:block w-px h-6 bg-border"></div>
-              <div className="flex items-center space-x-3">
-                <div className="text-2xl">
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                <div className="text-xl sm:text-2xl flex-shrink-0">
                   {getSourceIcon(conversation?.source)}
                 </div>
-                <div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-foreground font-primary uppercase tracking-wide">
-                    {(conversation?.title || 
+                <div className="min-w-0">
+                  <h1 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-foreground font-primary uppercase tracking-wide truncate">
+                    {(conversation?.title ||
                       `${conversation?.source || 'Conversation'}`).toUpperCase()}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-primary uppercase tracking-wide">
+                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground font-primary uppercase tracking-wide">
                     {client && (
                       <>
-                        <span>WITH </span>
+                        <span className="hidden xs:inline">WITH </span>
                         <Link
                           href={`/clients/${client.id}`}
-                          className="text-accent hover:text-accent/80 transition-colors duration-150 underline"
+                          className="text-accent hover:text-accent/80 transition-colors duration-150 underline truncate max-w-[120px] sm:max-w-none"
                         >
                           {client.name.toUpperCase()}
                         </Link>
                       </>
                     )}
                     {client && <span>•</span>}
-                    <span>{conversation?.messages?.length || 0} MESSAGES</span>
-                    <span>•</span>
-                    <span>
+                    <span>{conversation?.messages?.length || 0} MSG</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">
                       {conversation?.updatedAt ? new Date(conversation.updatedAt).toLocaleDateString().toUpperCase() : 'N/A'}
                     </span>
                   </div>

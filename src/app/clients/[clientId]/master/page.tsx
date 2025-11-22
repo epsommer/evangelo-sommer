@@ -317,35 +317,35 @@ export default function MasterConversationPage() {
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="neo-container mb-6 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={() => router.back()}
-                className="neo-button-sm p-2"
+                className="neo-button-sm p-1.5 sm:p-2 flex-shrink-0"
                 title="Go back"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
-              <div>
-                <h1 className="text-2xl font-bold font-primary uppercase tracking-wide text-foreground">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold font-primary uppercase tracking-wide text-foreground truncate">
                   Master Timeline
                 </h1>
-                <p className="text-sm text-muted-foreground font-primary mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground font-primary mt-1 truncate">
                   All communications with {client.name}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={toggleReassignMode}
-                className={`neo-button px-4 py-2 text-xs uppercase tracking-wide font-primary font-bold transition-transform hover:scale-[1.02] flex items-center gap-2 ${
+                className={`neo-button px-2 sm:px-4 py-2 text-xs uppercase tracking-wide font-primary font-bold transition-transform hover:scale-[1.02] flex items-center gap-1 sm:gap-2 ${
                   reassignMode ? 'neo-button-active' : ''
                 }`}
                 title="Toggle bulk reassignment mode"
               >
-                <ListChecks className="w-4 h-4" />
-                {reassignMode ? 'Exit Reassign' : 'Reassign Mode'}
+                <ListChecks className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">{reassignMode ? 'Exit ' : ''}</span>Reassign<span className="hidden xs:inline"> Mode</span>
               </button>
 
               <div className="neo-card px-3 py-2">

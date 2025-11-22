@@ -212,31 +212,31 @@ const ClientDetailPage = () => {
 
   return (
     <CRMLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
         {/* Client Header - BELONGS ON CLIENT PAGE */}
-        <div className="neo-inset p-6 transition-transform hover:scale-[1.01]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 neo-button-circle flex items-center justify-center text-foreground font-bold text-xl font-primary">
+        <div className="neo-inset p-3 sm:p-6 transition-transform hover:scale-[1.01]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 neo-button-circle flex items-center justify-center text-foreground font-bold text-base sm:text-xl font-primary flex-shrink-0">
                 {client.name.split(' ').map(n => n[0]).join('')}
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground uppercase tracking-wide font-primary">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground uppercase tracking-wide font-primary truncate">
                   {client.name}
                 </h1>
-                <div className="text-muted-foreground font-medium font-primary">
+                <div className="text-xs sm:text-sm text-muted-foreground font-medium font-primary truncate">
                   {client.company || 'Individual Client'}
                 </div>
-                <div className="flex items-center space-x-4 mt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-2 gap-1 sm:gap-0">
                   {client.email && (
-                    <div className="flex items-center text-sm text-muted-foreground font-primary">
-                      <Mail className="h-4 w-4 mr-1" />
-                      {client.email}
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground font-primary truncate">
+                      <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                      <span className="truncate">{client.email}</span>
                     </div>
                   )}
                   {client.phone && (
-                    <div className="flex items-center text-sm text-muted-foreground font-primary">
-                      <Phone className="h-4 w-4 mr-1" />
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground font-primary">
+                      <Phone className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
                       {client.phone}
                     </div>
                   )}
@@ -244,13 +244,13 @@ const ClientDetailPage = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`neo-badge px-3 py-1 text-xs uppercase font-primary ${
+              <span className={`neo-badge px-2 sm:px-3 py-1 text-xs uppercase font-primary ${
                 client.status === 'active' ? 'bg-green-600 text-white' : ''
               }`}>
                 {client.status}
               </span>
               <button
-                className="neo-button px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02]"
+                className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm whitespace-nowrap"
                 onClick={() => setShowEditModal(true)}
               >
                 <Edit className="h-4 w-4 mr-2" />
