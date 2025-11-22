@@ -224,19 +224,19 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
 
   return (
     <>
-    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-14' : 'h-20'} ${mobileMenuOpen ? 'lg:opacity-100' : ''} ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-2 sm:px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-20'} ${mobileMenuOpen ? 'lg:opacity-100' : ''} ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
       {/* Grey overlay when sidebar is open on mobile */}
       {mobileMenuOpen && (
         <div className="absolute inset-0 bg-black/30 lg:hidden pointer-events-none transition-opacity duration-200"></div>
       )}
-      <div className={`flex items-center space-x-2 md:space-x-8 relative z-[60] transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+      <div className={`flex items-center space-x-1 sm:space-x-2 md:space-x-8 relative z-[60] transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
         {/* ES Monogram - Mobile Only */}
         <button
           onClick={() => router.push('/select')}
           className="lg:hidden flex items-center hover:opacity-80 transition-opacity cursor-pointer"
         >
-          <div className={`neomorphic-logo ${isDark ? 'dark-mode' : ''}`} style={{ width: '40px', height: '40px' }}>
-            <div className="relative w-5 h-5">
+          <div className={`neomorphic-logo ${isDark ? 'dark-mode' : ''}`} style={{ width: '32px', height: '32px' }}>
+            <div className="relative w-4 h-4">
               <Image
                 src="/EvangeloSommer-ES-Monogram.svg"
                 alt="ES Monogram"
@@ -255,10 +255,10 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
         {/* B.E.C.K.Y. Wordmark - Mobile and Desktop */}
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center space-x-2 lg:space-x-4 hover:opacity-80 transition-opacity cursor-pointer"
+          className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4 hover:opacity-80 transition-opacity cursor-pointer"
         >
-          <Heart className="h-4 w-4 lg:h-5 lg:w-5 text-pink-500 dark:text-pink-400 flex-shrink-0" />
-          <div className="tk-lores-9-wide text-sm lg:text-lg font-bold text-foreground tracking-wide">
+          <Heart className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-pink-500 dark:text-pink-400 flex-shrink-0" />
+          <div className="tk-lores-9-wide text-xs sm:text-sm lg:text-lg font-bold text-foreground tracking-wide">
             B.E.C.K.Y.
           </div>
         </button>
@@ -277,16 +277,16 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
       </div>
       <div className={`flex items-center space-x-2 md:space-x-6 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
         <button
-          className="neo-button hidden md:flex items-center px-4 py-2 group"
+          className="neo-button flex items-center px-2 sm:px-4 py-2 group"
           onClick={() => {
             // TODO: Implement CommandPalette toggle
             console.log('Command Palette triggered')
           }}
         >
-          <Command className="h-4 w-4 mr-2" />
-          <span className="text-sm">Commands</span>
-          <kbd className="ml-2 hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-            <span className="text-xs">⌘</span>K
+          <Command className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline text-sm">Commands</span>
+          <kbd className="ml-1 sm:ml-2 inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <span className="text-xs hidden lg:inline">⌘</span>K
           </kbd>
         </button>
 

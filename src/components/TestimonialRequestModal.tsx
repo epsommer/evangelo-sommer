@@ -173,12 +173,12 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
   )
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start sm:items-center justify-center z-[100] p-4 pt-20 sm:pt-4 overflow-y-auto">
-      <div className="neo-container max-w-2xl w-full max-h-[calc(100vh-5rem)] sm:max-h-[90vh] overflow-y-auto my-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start sm:items-center justify-center z-[100] px-2 sm:p-4 pt-16 sm:pt-4 overflow-y-auto">
+      <div className="neo-container max-w-2xl w-full max-h-[calc(100vh-4rem)] sm:max-h-[90vh] overflow-y-auto my-auto">
         {/* Header */}
-        <div className="neo-inset border-b border-foreground/10 p-6">
+        <div className="neo-inset border-b border-foreground/10 p-3 sm:p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-foreground uppercase tracking-wide font-primary">
+            <h2 className="text-base sm:text-xl font-bold text-foreground uppercase tracking-wide font-primary">
               Request Testimonial
             </h2>
             <button
@@ -192,7 +192,7 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {success ? (
             <div className="text-center py-8">
               <div className="neo-card p-6 mb-6">
