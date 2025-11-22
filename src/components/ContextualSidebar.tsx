@@ -7,7 +7,6 @@ import {
   Lightbulb,
   Calendar,
   Receipt,
-  X,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -276,12 +275,6 @@ export default function ContextualSidebar({
     }
   };
 
-  const handleClose = () => {
-    setActiveTab(null);
-    setIsExpanded(false);
-    onStateChange?.(false, 0);
-  };
-
   const renderTabContent = () => {
     if (!activeTab) return null;
 
@@ -289,17 +282,6 @@ export default function ContextualSidebar({
       case 'conversation':
         return (
           <div className="p-6 space-y-6">
-            {/* Back to Conversations */}
-            {!isMasterTimeline && (
-              <Link
-                href="/conversations"
-                className="flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-sm font-primary uppercase tracking-wide transition-opacity"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Conversations</span>
-              </Link>
-            )}
-
             {/* Conversation Title & Source */}
             <div className="neo-card p-4 space-y-3">
               <div className="flex items-start gap-3">
@@ -627,9 +609,9 @@ export default function ContextualSidebar({
               title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
             >
               {isExpanded ? (
-                <ChevronLeft className="w-5 h-5" />
-              ) : (
                 <ChevronRight className="w-5 h-5" />
+              ) : (
+                <ChevronLeft className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -709,17 +691,17 @@ export default function ContextualSidebar({
           <div className="h-full flex flex-col">
             {/* Panel Header */}
             <div className="p-4 border-b border-b-[var(--neomorphic-dark-shadow)] bg-[var(--neomorphic-bg)] flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
                 {(() => {
                   const tab = tabs.find(t => t.id === activeTab);
                   if (!tab) return null;
                   const Icon = tab.icon;
                   return (
                     <>
-                      <div className="neo-button-circle w-10 h-10 p-2 flex items-center justify-center">
+                      <div className="neo-button-circle w-10 h-10 p-2 flex items-center justify-center flex-shrink-0">
                         <Icon className="w-5 h-5 text-[var(--neomorphic-text)]" />
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <h2 className="font-primary font-bold text-[var(--neomorphic-text)] uppercase tracking-wide">
                           {tab.label}
                         </h2>
@@ -732,13 +714,16 @@ export default function ContextualSidebar({
                 })()}
               </div>
 
-              <button
-                onClick={handleClose}
-                className="neo-button-sm p-2 transition-colors duration-150"
-                title="Close panel"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {/* Back to Conversations link for conversation tab */}
+              {activeTab === 'conversation' && !isMasterTimeline && (
+                <Link
+                  href="/conversations"
+                  className="flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-xs font-primary uppercase tracking-wide transition-opacity whitespace-nowrap flex-shrink-0"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  <span>Back</span>
+                </Link>
+              )}
             </div>
 
             {/* Panel Content */}
@@ -751,9 +736,13 @@ export default function ContextualSidebar({
 
       {/* Mobile Overlay */}
       {isMobile && activeTab && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 -z-10"
-          onClick={handleClose}
+          onClick={() => {
+            setActiveTab(null);
+            setIsExpanded(false);
+            onStateChange?.(false, 0);
+          }}
         />
       )}
     </div>
