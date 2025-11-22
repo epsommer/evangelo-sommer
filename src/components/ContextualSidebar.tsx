@@ -713,17 +713,6 @@ export default function ContextualSidebar({
                   );
                 })()}
               </div>
-
-              {/* Back to Conversations link for conversation tab */}
-              {activeTab === 'conversation' && !isMasterTimeline && (
-                <Link
-                  href="/conversations"
-                  className="flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-xs font-primary uppercase tracking-wide transition-opacity whitespace-nowrap flex-shrink-0"
-                >
-                  <ArrowLeft className="w-3 h-3" />
-                  <span>Back</span>
-                </Link>
-              )}
             </div>
 
             {/* Panel Content */}

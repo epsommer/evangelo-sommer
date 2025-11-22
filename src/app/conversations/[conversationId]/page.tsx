@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Pencil, Send, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Pencil, Send, Sparkles, ArrowLeft } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
 import CRMLayout from "../../../components/CRMLayout";
@@ -241,11 +242,23 @@ export default function ConversationPage() {
 
         {/* Main Content Area */}
         <div className="pr-16">
+          {/* Header with Back Button */}
+          <div className="px-4 sm:px-6 pt-6 lg:pt-8 pb-4">
+            <div className="max-w-4xl mx-auto lg:max-w-5xl">
+              <Link
+                href="/conversations"
+                className="inline-flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-sm font-primary uppercase tracking-wide transition-opacity mb-6"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Conversations</span>
+              </Link>
+            </div>
+          </div>
 
-      {/* Main Content */}
-      <div className="px-4 sm:px-6 py-6 lg:py-8">
-        <div className="max-w-4xl mx-auto lg:max-w-5xl">
-          {/* Conversation Summary */}
+          {/* Main Content */}
+          <div className="px-4 sm:px-6 pb-6 lg:pb-8">
+            <div className="max-w-4xl mx-auto lg:max-w-5xl">
+              {/* Conversation Summary */}
           {conversation?.summary && (
             <div className="mb-8 p-6 neo-container">
               <h2 className="font-primary uppercase tracking-wide text-foreground font-bold mb-4">
@@ -656,6 +669,7 @@ export default function ConversationPage() {
                 </button>
               </div>
             </div>
+          </div>
           </div>
         </div>
       )}
