@@ -738,11 +738,11 @@
 
 /* Ensure proper background for dark themes on mobile */
 .mocha-mode .neo-sidebar {
-  background-color: #1c1917;
+  background-color: #1c1917 !important;
 }
 
 .true-night-mode .neo-sidebar {
-  background-color: #1a1a1a;
+  background-color: #1a1a1a !important;
 }
 
 .neo-nav-button {

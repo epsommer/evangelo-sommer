@@ -243,11 +243,62 @@ export default function ContextualSidebar({
         transition-all duration-300 ease-in-out
         flex flex-col
       `}>
-        {/* Logo/Brand Area */}
-        <div className="p-4 border-b border-b-[var(--neomorphic-dark-shadow)]">
-          <div className="w-8 h-8 neo-button-circle flex items-center justify-center">
-            <MessageSquare className="w-5 h-5 text-[var(--neomorphic-text)]" />
+        {/* Collapse Toggle - Always at Top */}
+        {!isMobile && (
+          <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)]">
+            <button
+              onClick={() => {
+                if (isExpanded) {
+                  setIsExpanded(false);
+                  setActiveTab(null);
+                  onStateChange?.(false, 0);
+                } else {
+                  const tabToOpen = activeTab || 'analytics';
+                  setActiveTab(tabToOpen as SidebarTab);
+                  setIsExpanded(true);
+                  const width = isMobile ? 384 : 448;
+                  onStateChange?.(true, width);
+                }
+              }}
+              className="neo-button-sm w-full p-2 transition-all duration-200"
+              title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
+            >
+              {isExpanded ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
           </div>
+        )}
+
+        {/* Conversation Actions Area */}
+        <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)] space-y-2">
+          {/* Master Timeline Link */}
+          {client && (
+            <button
+              onClick={() => window.location.href = `/clients/${client.id}/master`}
+              className="w-full neo-button-sm p-2 transition-all duration-200"
+              title="View Master Timeline"
+            >
+              <MessageSquare className="w-4 h-4 text-[var(--neomorphic-text)]" />
+            </button>
+          )}
+
+          {/* Priority Status Indicator */}
+          {conversation.priority && (
+            <div className={`w-full p-2 rounded flex items-center justify-center ${
+              conversation.priority === 'high' ? 'bg-red-500/20' :
+              conversation.priority === 'medium' ? 'bg-yellow-500/20' :
+              'bg-green-500/20'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${
+                conversation.priority === 'high' ? 'bg-red-500' :
+                conversation.priority === 'medium' ? 'bg-yellow-500' :
+                'bg-green-500'
+              }`} />
+            </div>
+          )}
         </div>
 
         {/* Tab Navigation */}
@@ -294,37 +345,6 @@ export default function ContextualSidebar({
             );
           })}
         </div>
-
-        {/* Collapse Toggle (Desktop Only) */}
-        {!isMobile && (
-          <div className="p-2 border-t border-t-[var(--neomorphic-dark-shadow)]">
-            <button
-              onClick={() => {
-                if (isExpanded) {
-                  // Collapsing - close everything
-                  setIsExpanded(false);
-                  setActiveTab(null);
-                  onStateChange?.(false, 0);
-                } else {
-                  // Expanding - open with last active tab or default to analytics
-                  const tabToOpen = activeTab || 'analytics';
-                  setActiveTab(tabToOpen as SidebarTab);
-                  setIsExpanded(true);
-                  const width = isMobile ? 384 : 448;
-                  onStateChange?.(true, width);
-                }
-              }}
-              className="neo-button-sm w-full p-2 transition-all duration-200"
-              title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
-            >
-              {isExpanded ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronLeft className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Contextual Content Panel */}
