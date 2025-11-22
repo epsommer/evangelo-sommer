@@ -66,7 +66,7 @@ export default function ContextualSidebar({
   const [activeTab, setActiveTab] = useState<SidebarTab | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(80); // 20 * 4 = 80px (h-20)
+  const [headerHeight, setHeaderHeight] = useState(56); // Default to mobile not-scrolled height
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Editable conversation state
@@ -106,17 +106,28 @@ export default function ContextualSidebar({
     }
   };
 
-  // Track header height based on scroll position
+  // Track header height based on scroll position and screen size
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      // Header is h-20 (80px) initially, h-14 (56px) when scrolled > 100px
-      setHeaderHeight(scrollY > 100 ? 56 : 80);
+      const isSmallScreen = window.innerWidth < 640; // sm breakpoint
+
+      if (isSmallScreen) {
+        // Mobile: h-14 (56px) initially, h-12 (48px) when scrolled
+        setHeaderHeight(scrollY > 100 ? 48 : 56);
+      } else {
+        // Desktop: h-20 (80px) initially, h-14 (56px) when scrolled
+        setHeaderHeight(scrollY > 100 ? 56 : 80);
+      }
     };
 
     handleScroll(); // Set initial value
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
   // Check for mobile viewport
@@ -571,14 +582,13 @@ export default function ContextualSidebar({
     <div
       ref={sidebarRef}
       className={`
-        fixed right-0 z-40 flex-row-reverse hidden sm:flex
+        fixed right-0 z-40 flex flex-row-reverse
         ${isMobile ? 'w-full' : 'w-auto'}
         ${className}
       `}
       style={{
         top: `${headerHeight}px`,
-        height: `calc(100vh - ${headerHeight}px)`,
-        transition: 'all 0.3s ease-in-out'
+        height: `calc(100vh - ${headerHeight}px)`
       }}
     >
       {/* Primary Navigation Sidebar */}
