@@ -670,7 +670,6 @@ export default function ConversationPage() {
               </div>
             </div>
           </div>
-          </div>
         </div>
       )}
     </CRMLayout>
