@@ -280,11 +280,11 @@ const TestimonialsPage = () => {
             </p>
           </div>
           <button
-            className="neo-button px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02]"
+            className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm"
             onClick={() => setShowRequestModal(true)}
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Request Testimonial
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Request </span>Testimonial
           </button>
         </div>
 

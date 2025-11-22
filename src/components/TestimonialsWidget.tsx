@@ -152,10 +152,10 @@ const TestimonialsWidget: React.FC<TestimonialsWidgetProps> = ({ onViewAll }) =>
                   Start collecting client testimonials
                 </p>
                 <button
-                  className="neo-button text-xs px-4 py-2"
+                  className="neo-button text-xs px-2 sm:px-4 py-2"
                   onClick={() => router.push('/testimonials')}
                 >
-                  Request Testimonial
+                  <span className="hidden xs:inline">Request </span>Testimonial
                 </button>
               </div>
             ) : (

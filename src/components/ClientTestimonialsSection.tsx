@@ -173,13 +173,13 @@ const ClientTestimonialsSection: React.FC<ClientTestimonialsSectionProps> = ({ c
               Testimonials
             </h3>
             <button
-              className="neo-button px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02]"
+              className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm"
               onClick={() => setShowRequestModal(true)}
               disabled={!client.email}
               title={!client.email ? 'Client email required to send testimonial request' : 'Request testimonial'}
             >
-              <Send className="h-4 w-4 mr-2" />
-              Request Testimonial
+              <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Request </span>Testimonial
             </button>
           </div>
         </div>
@@ -190,11 +190,11 @@ const ClientTestimonialsSection: React.FC<ClientTestimonialsSectionProps> = ({ c
               <Star className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
               <p className="text-muted-foreground font-primary mb-4">No testimonials yet</p>
               <button
-                className="neo-button px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02]"
+                className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm"
                 onClick={() => setShowRequestModal(true)}
                 disabled={!client.email}
               >
-                Request First Testimonial
+                <span className="hidden xs:inline">Request </span>First Testimonial
               </button>
             </div>
           ) : (
