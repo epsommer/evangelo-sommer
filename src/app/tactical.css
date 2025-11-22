@@ -1198,8 +1198,8 @@ body.modal-open .border-hud-border {
   --window-shadow-depth: soft;
 }
 
-/* Apply neomorphic styling to all interface elements */
-.neomorphic-window .neo-container,
+/* Apply neomorphic styling to all interface elements except header */
+.neomorphic-window .neo-container:not(header),
 .neomorphic-window .neo-card,
 .neomorphic-window .neo-button,
 .neomorphic-window .neo-button-circle,
