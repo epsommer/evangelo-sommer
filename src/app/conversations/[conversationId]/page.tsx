@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil, Send, Sparkles, ArrowLeft, History, Star } from "lucide-react";
+import { Pencil, Send, Sparkles, ArrowLeft, History } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
 import CRMLayout from "../../../components/CRMLayout";
@@ -239,6 +239,7 @@ export default function ConversationPage() {
               setShowEditModal(true);
             }}
             conversationSource={conversation?.source}
+            onTestimonialClick={() => setShowTestimonialModal(true)}
           />
         )}
 
@@ -255,31 +256,17 @@ export default function ConversationPage() {
                 <span>Back to Conversations</span>
               </Link>
 
-              <div className="flex items-center gap-3">
-                {client && (
-                  <>
-                    <Link
-                      href={`/clients/${client.id}/master`}
-                      className="neo-button-active px-3 py-2 text-xs sm:text-sm font-primary uppercase tracking-wide flex items-center gap-2 transition-transform hover:scale-[1.02]"
-                      title="View Master Timeline"
-                    >
-                      <History className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="hidden sm:inline">Master Timeline</span>
-                      <span className="sm:hidden">Master</span>
-                    </Link>
-
-                    <button
-                      onClick={() => setShowTestimonialModal(true)}
-                      className="neo-button px-3 py-2 text-xs sm:text-sm font-primary uppercase tracking-wide flex items-center gap-2 transition-transform hover:scale-[1.02]"
-                      title="Request Testimonial"
-                    >
-                      <Star className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="hidden sm:inline">Request Testimonial</span>
-                      <span className="sm:hidden">Testimonial</span>
-                    </button>
-                  </>
-                )}
-              </div>
+              {client && (
+                <Link
+                  href={`/clients/${client.id}/master`}
+                  className="neo-button-active px-3 py-2 text-xs sm:text-sm font-primary uppercase tracking-wide flex items-center gap-2 transition-transform hover:scale-[1.02]"
+                  title="View Master Timeline"
+                >
+                  <History className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Master Timeline</span>
+                  <span className="sm:hidden">Master</span>
+                </Link>
+              )}
             </div>
           </div>
 

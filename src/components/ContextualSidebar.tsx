@@ -12,7 +12,9 @@ import {
   Sparkles,
   History,
   Pencil,
-  ArrowLeft
+  ArrowLeft,
+  Info,
+  Star
 } from 'lucide-react';
 import Link from 'next/link';
 import { Conversation, Client, Message } from '../types/client';
@@ -44,6 +46,7 @@ interface ContextualSidebarProps {
   // Conversation header props
   onEditClick?: () => void;
   conversationSource?: string;
+  onTestimonialClick?: () => void;
 }
 
 export default function ContextualSidebar({
@@ -61,7 +64,8 @@ export default function ContextualSidebar({
   selectedMessage,
   onRefresh,
   onEditClick,
-  conversationSource
+  conversationSource,
+  onTestimonialClick
 }: ContextualSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -231,14 +235,6 @@ export default function ContextualSidebar({
   };
 
   const tabs = [
-    {
-      id: 'draft' as SidebarTab,
-      icon: Sparkles,
-      label: 'Draft AI',
-      color: 'text-[var(--neomorphic-accent)]',
-      bgColor: 'bg-[var(--neomorphic-accent)]/10',
-      count: null
-    },
     {
       id: 'analytics' as SidebarTab,
       icon: BarChart3,
@@ -600,36 +596,46 @@ export default function ContextualSidebar({
         flex flex-col
       `}>
         {/* Collapse Toggle - Always at Top */}
-        {!isMobile && (
-          <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)] flex justify-center">
-            <button
-              onClick={() => {
-                if (isExpanded) {
-                  setIsExpanded(false);
-                  setActiveTab(null);
-                  onStateChange?.(false, 0);
-                } else {
-                  const tabToOpen = activeTab || 'analytics';
-                  setActiveTab(tabToOpen as SidebarTab);
-                  setIsExpanded(true);
-                  const width = isMobile ? 384 : 448;
-                  onStateChange?.(true, width);
-                }
-              }}
-              className="neo-button-sm p-3 w-12 h-12 flex items-center justify-center transition-all duration-200"
-              title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
-            >
-              {isExpanded ? (
-                <ChevronRight className="w-5 h-5" />
-              ) : (
-                <ChevronLeft className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        )}
+        <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)] flex justify-center">
+          <button
+            onClick={() => {
+              if (isExpanded) {
+                setIsExpanded(false);
+                setActiveTab(null);
+                onStateChange?.(false, 0);
+              } else {
+                const tabToOpen = activeTab || 'analytics';
+                setActiveTab(tabToOpen as SidebarTab);
+                setIsExpanded(true);
+                const width = isMobile ? 384 : 448;
+                onStateChange?.(true, width);
+              }
+            }}
+            className="neo-button-sm p-3 w-12 h-12 flex items-center justify-center transition-all duration-200"
+            title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
+          >
+            {isExpanded ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <ChevronLeft className="w-5 h-5" />
+            )}
+          </button>
+        </div>
 
-        {/* Conversation Info Button - Separate from tabs */}
-        <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)]">
+        {/* Top Action Buttons */}
+        <div className="p-2 space-y-2">
+          {/* Draft AI Button */}
+          <button
+            onClick={() => handleTabClick('draft')}
+            className={`w-full p-3 flex items-center justify-center transition-all duration-200 ${
+              activeTab === 'draft' ? 'neo-nav-button-active border-l-4 border-[var(--neomorphic-accent)]' : 'neo-nav-button'
+            }`}
+            title="Draft with AI"
+          >
+            <MessageSquare className="w-5 h-5 text-[var(--neomorphic-text)]" />
+          </button>
+
+          {/* Conversation Info Button */}
           <button
             onClick={() => handleTabClick('conversation')}
             className={`w-full p-3 flex items-center justify-center transition-all duration-200 ${
@@ -637,8 +643,19 @@ export default function ContextualSidebar({
             }`}
             title="Conversation Details"
           >
-            <MessageSquare className="w-5 h-5 text-[var(--neomorphic-text)]" />
+            <Info className="w-5 h-5 text-[var(--neomorphic-text)]" />
           </button>
+
+          {/* Request Testimonial Button */}
+          {onTestimonialClick && (
+            <button
+              onClick={onTestimonialClick}
+              className="w-full p-3 flex items-center justify-center transition-all duration-200 neo-nav-button"
+              title="Request Testimonial"
+            >
+              <Star className="w-5 h-5 text-[var(--neomorphic-text)]" />
+            </button>
+          )}
         </div>
 
         {/* Tab Navigation */}
