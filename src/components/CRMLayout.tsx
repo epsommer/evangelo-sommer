@@ -32,6 +32,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
     if (pathname === '/dashboard') return 'dashboard'
     if (pathname?.includes('/clients')) return 'clients'
     if (pathname?.includes('/conversations')) return 'conversations'
+    if (pathname?.includes('/testimonials')) return 'testimonials'
     if (pathname?.includes('/billing')) return 'billing'
     if (pathname?.includes('/time-manager')) return 'time-manager'
     if (pathname?.includes('/goals')) return 'goals'
@@ -78,6 +79,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
       'dashboard': '/dashboard',
       'clients': '/clients',
       'conversations': '/conversations',
+      'testimonials': '/testimonials',
       'billing': '/billing',
       'time-manager': '/time-manager',
       'goals': '/goals',
@@ -93,7 +95,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
   }
 
   const handleTitleClick = () => {
-    router.push('/dashboard')
+    router.push('/select')
   }
 
   const toggleMobileMenu = () => {
@@ -125,7 +127,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
-      <Header onMobileMenuToggle={toggleMobileMenu} />
+      <Header onMobileMenuToggle={toggleMobileMenu} mobileMenuOpen={mobileMenuOpen} sidebarCollapsed={sidebarCollapsed} />
 
       {/* Backdrop overlay for mobile */}
       {mobileMenuOpen && (

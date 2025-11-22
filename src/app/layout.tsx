@@ -29,6 +29,20 @@ export default function RootLayout({
                   let colorTheme = localStorage.getItem('color-theme') || 'light';
                   const windowTheme = localStorage.getItem('window-theme') || 'neomorphic';
 
+                  // Check if on unauthorized page (auth pages, root, etc.)
+                  const isUnauthorizedPage = window.location.pathname === '/' ||
+                                             window.location.pathname.startsWith('/auth/');
+
+                  // Define admin-only themes
+                  const adminOnlyThemes = ['mocha', 'overkast', 'gilded-meadow'];
+
+                  // Reset admin themes on unauthorized pages
+                  if (isUnauthorizedPage && adminOnlyThemes.includes(colorTheme)) {
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    colorTheme = prefersDark ? 'true-night' : 'light';
+                    localStorage.setItem('color-theme', colorTheme);
+                  }
+
                   // Apply color theme
                   const root = document.documentElement;
                   root.classList.remove('dark', 'mocha-mode', 'overkast-mode', 'true-night-mode', 'gilded-meadow-mode');

@@ -20,8 +20,30 @@ export default function SignIn() {
   const [isDark, setIsDark] = useState(false);
   const router = useRouter();
 
-  // Track theme changes for styling
+  // Track theme changes for styling and reset admin themes
   useEffect(() => {
+    // Reset admin-only themes on signin page
+    const adminOnlyThemes = ['mocha', 'overkast', 'gilded-meadow'];
+    const currentTheme = localStorage.getItem('color-theme');
+
+    if (currentTheme && adminOnlyThemes.includes(currentTheme)) {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const defaultTheme = prefersDark ? 'true-night' : 'light';
+
+      // Reset to default theme
+      localStorage.setItem('color-theme', defaultTheme);
+      document.documentElement.classList.remove('mocha-mode', 'overkast-mode', 'gilded-meadow-mode', 'true-night-mode');
+
+      if (defaultTheme === 'true-night') {
+        document.documentElement.classList.add('true-night-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+
+      document.documentElement.setAttribute('data-color-theme', defaultTheme);
+    }
+
     const updateTheme = () => {
       const theme = localStorage.getItem('color-theme') || 'light';
       setIsDark(theme === 'true-night');

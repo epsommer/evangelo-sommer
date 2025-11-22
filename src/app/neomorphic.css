@@ -4,6 +4,8 @@
 :root {
   --neomorphic-bg: #EBECF0;
   --neomorphic-text: #6C7587;
+  --neomorphic-button-bg: #6C7587; /* Dark grey for button background */
+  --neomorphic-button-text: #EBECF0; /* Light background color for button text */
   --neomorphic-icon: #8992A5;
   --neomorphic-dark-shadow: #d1d9e6;
   --neomorphic-light-shadow: #FFFFFF;
@@ -15,9 +17,11 @@
 .mocha-mode {
   --neomorphic-bg: #1c1917;
   --neomorphic-text: #fafaf9;
+  --neomorphic-button-bg: #44403c; /* Darker warm grey for button background */
+  --neomorphic-button-text: #fafaf9; /* Light text for button */
   --neomorphic-icon: #a8a29e;
   --neomorphic-dark-shadow: #0a0908;
-  --neomorphic-light-shadow: #2e2b29;
+  --neomorphic-light-shadow: rgba(255, 255, 255, 0.05); /* Reduced brightness */
   --neomorphic-accent: #a8a29e; /* Warm stone grey accent */
   --neomorphic-bright: #c4bfbb; /* Lighter warm grey */
 }
@@ -27,6 +31,8 @@
 .overkast-mode {
   --neomorphic-bg: #B8B8B8;
   --neomorphic-text: #3A3A3A;
+  --neomorphic-button-bg: #3A3A3A; /* Dark grey for button background */
+  --neomorphic-button-text: #B8B8B8; /* Light grey for button text */
   --neomorphic-icon: #5A5A5A;
   --neomorphic-dark-shadow: #9A9A9A;
   --neomorphic-light-shadow: #D6D6D6;
@@ -39,9 +45,11 @@
 .true-night-mode {
   --neomorphic-bg: #1a1a1a;
   --neomorphic-text: #f2f2f2;
+  --neomorphic-button-bg: #404040; /* Medium grey for button background */
+  --neomorphic-button-text: #f2f2f2; /* Light text for button */
   --neomorphic-icon: #a6a6a6;
   --neomorphic-dark-shadow: #0d0d0d;
-  --neomorphic-light-shadow: #242424;
+  --neomorphic-light-shadow: rgba(255, 255, 255, 0.04); /* Reduced brightness */
   --neomorphic-accent: #a6a6a6; /* Neutral grey accent */
   --neomorphic-bright: #c2c2c2; /* Lighter neutral grey */
 }
@@ -51,6 +59,8 @@
 .gilded-meadow-mode {
   --neomorphic-bg: #f6f6bd; /* Sunkissed yellow (color-550) */
   --neomorphic-text: #5f5f26; /* Deep sage (color-950) */
+  --neomorphic-button-bg: #5f5f26; /* Deep sage for button background */
+  --neomorphic-button-text: #f6f6bd; /* Sunkissed yellow for button text */
   --neomorphic-icon: #85854c; /* Medium sage (color-850) */
   --neomorphic-dark-shadow: #d0d097; /* Shadow sage (color-650) */
   --neomorphic-light-shadow: #ffffe3; /* Light sunkissed (color-450) */
@@ -471,7 +481,7 @@
 .neomorphic-logo {
   width: 80px;
   height: 80px;
-  border-radius: 20px !important;
+  border-radius: 12px !important;
   background: var(--neomorphic-bg);
   box-shadow: 8px 8px 16px 0px var(--neomorphic-dark-shadow),
               -8px -8px 16px 0px var(--neomorphic-light-shadow);
@@ -483,6 +493,11 @@
   overflow: hidden;
 }
 
+/* Ensure gilded meadow logo blends with background */
+.gilded-meadow-mode .neomorphic-logo {
+  background: #f6f6bd !important;
+}
+
 /* Grainy texture overlay for logo */
 .neomorphic-logo::before {
   content: '';
@@ -491,11 +506,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  border-radius: 20px;
+  border-radius: inherit;
   pointer-events: none;
   z-index: 1;
   opacity: 0.5;
-  background: #000000;
   mix-blend-mode: multiply;
   filter: url(#toggleNoiseFilter);
 }
@@ -503,6 +517,11 @@
 .true-night-mode .neomorphic-logo::before,
 .mocha-mode .neomorphic-logo::before {
   opacity: 0.2;
+}
+
+/* Reduce overlay opacity for gilded meadow to prevent darkening */
+.gilded-meadow-mode .neomorphic-logo::before {
+  opacity: 0.15;
 }
 
 .neomorphic-logo > div {
@@ -618,14 +637,14 @@
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   font-size: 14px;
-  color: var(--neomorphic-text);
+  color: var(--neomorphic-button-text, var(--neomorphic-bg));
   padding: 8px 16px;
-  border: 2px solid var(--neomorphic-dark-shadow);
+  border: none;
   border-radius: 12px !important;
   outline: none;
-  background-color: var(--neomorphic-bg);
-  box-shadow: inset 4px 4px 8px 0px var(--neomorphic-dark-shadow),
-              inset -4px -4px 8px 0px var(--neomorphic-light-shadow);
+  background-color: var(--neomorphic-button-bg, var(--neomorphic-text));
+  box-shadow: 4px 4px 8px -1px var(--neomorphic-dark-shadow),
+              -3px -3px 8px -1px var(--neomorphic-light-shadow);
   transition: all 200ms ease-in-out;
   cursor: pointer;
   display: inline-flex;
@@ -634,8 +653,13 @@
 }
 
 .neo-button-active:hover {
-  box-shadow: inset 5px 5px 10px 0px var(--neomorphic-dark-shadow),
-              inset -5px -5px 10px 0px var(--neomorphic-light-shadow);
+  box-shadow: 2px 2px 4px -1px var(--neomorphic-dark-shadow),
+              -2px -2px 4px -1px var(--neomorphic-light-shadow);
+}
+
+.neo-button-active:active {
+  box-shadow: inset 2px 2px 4px 0px var(--neomorphic-dark-shadow),
+              inset -2px -2px 4px 0px var(--neomorphic-light-shadow);
 }
 
 .neo-button-sm {

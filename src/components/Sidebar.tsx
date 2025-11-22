@@ -1,17 +1,10 @@
 "use client"
 
-import React, { useState, useRef } from "react"
-import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Home, Receipt, LayoutGrid, Heart, ChevronDown } from "lucide-react"
+import React, { useState, useRef, useEffect } from "react"
+import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Receipt, LayoutGrid, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-
-const CURRENT_VERSION = "v1.2.0"
-
-const deployments = [
-  { id: "production", name: "Production", url: "https://evangelosommer.com", status: "active" },
-  { id: "staging", name: "Staging", url: "https://staging.evangelosommer.com", status: "active" },
-  { id: "development", name: "Development", url: "http://localhost:3001", status: "active" },
-]
+import Image from "next/image"
 
 interface SidebarProps {
   activeTab?: string
@@ -24,10 +17,10 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-  { id: "home", label: "HOME", icon: Home },
   { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
   { id: "clients", label: "Clients", icon: Users },
   { id: "conversations", label: "Conversations", icon: MessageSquare },
+  { id: "testimonials", label: "Testimonials", icon: Star },
   { id: "billing", label: "Billing", icon: Receipt },
   { id: "time-manager", label: "Time Manager", icon: Clock },
   { id: "goals", label: "Goals", icon: Target },
@@ -51,13 +44,38 @@ const Sidebar = ({
   onMobileMenuClose
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [showDeployments, setShowDeployments] = useState(false)
-  const [showWordmarkTooltip, setShowWordmarkTooltip] = useState(false)
-  const [showVersionTooltip, setShowVersionTooltip] = useState(false)
   const [showServiceLinesSubmenu, setShowServiceLinesSubmenu] = useState(false)
   const [serviceLinesButtonRef, setServicesLinesButtonRef] = useState<HTMLButtonElement | null>(null)
   const [submenuPosition, setSubmenuPosition] = useState({ top: 0, left: 0 })
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isDark, setIsDark] = useState(false)
+
+  // Track theme changes for ES monogram styling
+  useEffect(() => {
+    const updateTheme = () => {
+      const theme = localStorage.getItem('color-theme') || 'light'
+      const willBeDark = theme === 'true-night' || theme === 'mocha'
+      setIsDark(willBeDark)
+    }
+
+    updateTheme()
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-color-theme') {
+          updateTheme()
+        }
+      })
+    })
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] })
+    window.addEventListener('storage', updateTheme)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('storage', updateTheme)
+    }
+  }, [])
 
   const handleTabChange = (tab: string) => {
     setActiveTab?.(tab)
@@ -80,78 +98,40 @@ const Sidebar = ({
       ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       lg:translate-x-0
     `}>
-      {/* Header with B.E.C.K.Y. Wordmark and Toggle */}
+      {/* Header with ES Logo and Toggle */}
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border overflow-visible">
-        {/* B.E.C.K.Y. Wordmark - Show differently based on collapsed state */}
-        <div className="px-4 pt-4 pb-2 overflow-visible">
-          {isCollapsed ? (
-            /* Heart icon only when collapsed */
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsCollapsed(false)}
-                className="w-10 h-10 flex items-center justify-center"
-                title="Business Engagement & Client Knowledge Yield"
-              >
-                <Heart className="h-6 w-6 text-pink-500 dark:text-pink-400" />
-              </button>
+        {/* ES Logo - Always visible, smaller when collapsed */}
+        <div className={`pt-4 pb-2 overflow-visible transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+          <button
+            onClick={onTitleClick}
+            className="group hover:opacity-80 transition-opacity w-full flex justify-center relative z-10"
+          >
+            <div
+              className={`neomorphic-logo ${isDark ? 'dark-mode' : ''} transition-all duration-300`}
+              style={{
+                width: isCollapsed ? '40px' : '80px',
+                height: isCollapsed ? '40px' : '80px',
+                borderRadius: isCollapsed ? '10px' : '20px'
+              }}
+            >
+              <div className={`relative transition-all duration-300 ${isCollapsed ? 'w-5 h-5' : 'w-10 h-10'}`}>
+                <Image
+                  src="/EvangeloSommer-ES-Monogram.svg"
+                  alt="ES Monogram"
+                  fill
+                  className="object-contain"
+                  style={{
+                    filter: isDark
+                      ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
+                      : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
+                  }}
+                />
+              </div>
             </div>
-          ) : (
-            /* Full wordmark when expanded */
-            <div className="relative overflow-visible">
-              <button
-                onClick={onTitleClick}
-                onMouseEnter={() => setShowWordmarkTooltip(true)}
-                onMouseLeave={() => setShowWordmarkTooltip(false)}
-                className="group w-full text-left"
-              >
-                <div className="flex items-center space-x-2">
-                  <Heart className="h-6 w-6 text-pink-500 dark:text-pink-400 flex-shrink-0" />
-                  <div className="tk-lores-9-wide text-2xl font-bold text-foreground tracking-wide max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                    B.E.C.K.Y.
-                  </div>
-                </div>
-              </button>
-
-              {/* Version with deployment info tooltip */}
-              <button
-                className="relative ml-8 mt-1"
-                onClick={() => setShowDeployments(!showDeployments)}
-                onMouseEnter={() => setShowVersionTooltip(true)}
-                onMouseLeave={() => setShowVersionTooltip(false)}
-              >
-                <div className="text-[10px] text-muted-foreground cursor-help">
-                  {CURRENT_VERSION}
-                </div>
-              </button>
-            </div>
-          )}
+          </button>
         </div>
 
-        {/* Deployments Dropdown */}
-        {showDeployments && !isCollapsed && (
-          <div className="px-4 pb-2">
-            <div className="neo-container rounded-lg p-2 text-xs">
-              <div className="font-semibold text-foreground mb-2">Deployments</div>
-              {deployments.map((deployment) => (
-                <a
-                  key={deployment.id}
-                  href={deployment.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-2 rounded hover:bg-muted transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-foreground">{deployment.name}</span>
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  </div>
-                  <div className="text-muted-foreground text-[10px] mt-0.5 truncate">{deployment.url}</div>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Toggle Button - Centered when collapsed */}
+        {/* Desktop Toggle Button - Centered when collapsed */}
         <div className={`p-2 hidden lg:flex ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
           <button
             onClick={() => {
@@ -214,7 +194,7 @@ const Sidebar = ({
                   <>
                     <span>{item.label}</span>
                     {item.id === "conversations" && conversationCount > 0 && (
-                      <Badge className="ml-auto h-5 w-5 p-0 text-xs bg-red-600 text-white">
+                      <Badge className="ml-auto flex items-center justify-center h-5 min-w-[1.25rem] px-1.5 py-0 text-xs font-semibold rounded-full bg-[var(--neomorphic-button-bg)] text-[var(--neomorphic-button-text)] hover:opacity-90 transition-opacity">
                         {conversationCount}
                       </Badge>
                     )}
@@ -227,46 +207,6 @@ const Sidebar = ({
         </div>
       </nav>
     </aside>
-
-    {/* Tooltips rendered outside sidebar to avoid overflow clipping */}
-    {showWordmarkTooltip && !isCollapsed && (
-      <div
-        className="fixed z-[9999] px-3 py-1.5 text-xs shadow-lg whitespace-nowrap rounded-lg border pointer-events-none"
-        style={{
-          left: '280px',
-          top: '50px',
-          backgroundColor: 'hsl(var(--card))',
-          color: 'hsl(var(--card-foreground))',
-          borderColor: 'hsl(var(--border))'
-        }}
-      >
-        Business Engagement & Client Knowledge Yield
-      </div>
-    )}
-
-    {showVersionTooltip && !isCollapsed && (
-      <div
-        className="fixed z-[9999] px-3 py-2 text-xs shadow-lg min-w-[240px] rounded-lg border pointer-events-none"
-        style={{
-          left: '280px',
-          top: '80px',
-          backgroundColor: 'hsl(var(--card))',
-          color: 'hsl(var(--card-foreground))',
-          borderColor: 'hsl(var(--border))'
-        }}
-      >
-        <div className="font-semibold mb-2">Version History</div>
-        {deployments.map((deployment) => (
-          <div key={deployment.id} className="mb-1.5 last:mb-0">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">{deployment.name}</span>
-              <span className="text-[10px] opacity-70">{CURRENT_VERSION}</span>
-            </div>
-            <div className="text-[10px] opacity-70 truncate">{deployment.url}</div>
-          </div>
-        ))}
-      </div>
-    )}
 
     {/* Service Lines Submenu */}
     {showServiceLinesSubmenu && !isCollapsed && (

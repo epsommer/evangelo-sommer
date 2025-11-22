@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Search, Calendar, Clock, User, Settings, LogOut, Command, Menu } from "lucide-react"
+import { Search, Calendar, Clock, User, Settings, LogOut, Command, Menu, Heart, X, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -10,6 +10,15 @@ import { signOut } from "next-auth/react"
 import AccountSettingsModal, { AccountSettings } from "@/components/AccountSettingsModal"
 import PreferencesModal, { SystemPreferences } from "@/components/PreferencesModal"
 import UserStatusIndicator, { StatusSelector } from "@/components/UserStatusIndicator"
+import Image from "next/image"
+
+const CURRENT_VERSION = "v1.2.0"
+
+const deployments = [
+  { id: "production", name: "Production", url: "https://evangelosommer.com", status: "active" },
+  { id: "staging", name: "Staging", url: "https://staging.evangelosommer.com", status: "active" },
+  { id: "development", name: "Development", url: "http://localhost:3001", status: "active" },
+]
 
 interface ScheduledService {
   id: string;
@@ -23,9 +32,11 @@ interface ScheduledService {
 
 interface HeaderProps {
   onMobileMenuToggle?: () => void;
+  mobileMenuOpen?: boolean;
+  sidebarCollapsed?: boolean;
 }
 
-const Header = ({ onMobileMenuToggle }: HeaderProps) => {
+const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed = false }: HeaderProps) => {
   const router = useRouter();
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([]);
   const [showScheduleDropdown, setShowScheduleDropdown] = useState(false);
@@ -35,6 +46,37 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
   const [showPreferences, setShowPreferences] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [customStatus, setCustomStatus] = useState<string>("No status set");
+  const [showDeployments, setShowDeployments] = useState(false);
+  const [showWordmarkTooltip, setShowWordmarkTooltip] = useState(false);
+  const [showVersionTooltip, setShowVersionTooltip] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  // Track theme changes for ES monogram styling
+  useEffect(() => {
+    const updateTheme = () => {
+      const theme = localStorage.getItem('color-theme') || 'light';
+      const willBeDark = theme === 'true-night' || theme === 'mocha';
+      setIsDark(willBeDark);
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-color-theme') {
+          updateTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] });
+    window.addEventListener('storage', updateTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', updateTheme);
+    };
+  }, []);
   
   // Click outside to close dropdown handler
   useEffect(() => {
@@ -112,10 +154,33 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
   const handleSignOut = async () => {
     setIsSigningOut(true);
     setShowProfileDropdown(false);
-    
+
     try {
+      // Define admin-only themes
+      const adminOnlyThemes = ['mocha', 'overkast', 'gilded-meadow'];
+      const currentTheme = localStorage.getItem('color-theme');
+
+      // Reset admin themes to default before sign out
+      if (currentTheme && adminOnlyThemes.includes(currentTheme)) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const defaultTheme = prefersDark ? 'true-night' : 'light';
+
+        // Apply the default theme
+        localStorage.setItem('color-theme', defaultTheme);
+        document.documentElement.classList.remove('mocha-mode', 'overkast-mode', 'gilded-meadow-mode', 'true-night-mode');
+
+        if (defaultTheme === 'true-night') {
+          document.documentElement.classList.add('true-night-mode');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+
+        document.documentElement.setAttribute('data-color-theme', defaultTheme);
+      }
+
       // Clear any local data if needed
-      const keysToKeep = ['system-preferences']; // Keep preferences across sessions
+      const keysToKeep = ['system-preferences', 'color-theme']; // Keep preferences and theme across sessions
       const allKeys = Object.keys(localStorage);
       allKeys.forEach(key => {
         if (!keysToKeep.includes(key)) {
@@ -158,31 +223,81 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-14' : 'h-20'}`}>
-      <div className="flex items-center space-x-2 md:space-x-8 relative">
-        {/* Mobile Menu Button */}
+    <>
+    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-14' : 'h-20'} ${mobileMenuOpen ? 'lg:opacity-100' : ''} ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
+      {/* Grey overlay when sidebar is open on mobile */}
+      {mobileMenuOpen && (
+        <div className="absolute inset-0 bg-black/30 lg:hidden pointer-events-none transition-opacity duration-200"></div>
+      )}
+      <div className={`flex items-center space-x-2 md:space-x-8 relative z-[60] transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+        {/* ES Monogram - Mobile Only */}
         <button
-          onClick={onMobileMenuToggle}
-          className="lg:hidden neo-button-sm p-2 transition-colors"
-          aria-label="Toggle mobile menu"
+          onClick={() => router.push('/select')}
+          className="lg:hidden flex items-center hover:opacity-80 transition-opacity cursor-pointer"
         >
-          <Menu className="w-5 h-5 text-foreground" />
-        </button>
-      </div>
-      <div className="flex items-center space-x-2 md:space-x-6 relative z-10">
-        <button className="neo-button hidden md:flex items-center px-4 py-2">
-          <Search className="h-4 w-4 mr-2" />
-          <span className="text-sm">Search</span>
+          <div className={`neomorphic-logo ${isDark ? 'dark-mode' : ''}`} style={{ width: '40px', height: '40px' }}>
+            <div className="relative w-5 h-5">
+              <Image
+                src="/EvangeloSommer-ES-Monogram.svg"
+                alt="ES Monogram"
+                fill
+                className="object-contain"
+                style={{
+                  filter: isDark
+                    ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
+                    : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
+                }}
+              />
+            </div>
+          </div>
         </button>
 
-        {/* Schedule Dropdown */}
+        {/* B.E.C.K.Y. Wordmark - Mobile and Desktop */}
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="flex items-center space-x-2 lg:space-x-4 hover:opacity-80 transition-opacity cursor-pointer"
+        >
+          <Heart className="h-4 w-4 lg:h-5 lg:w-5 text-pink-500 dark:text-pink-400 flex-shrink-0" />
+          <div className="tk-lores-9-wide text-sm lg:text-lg font-bold text-foreground tracking-wide">
+            B.E.C.K.Y.
+          </div>
+        </button>
+
+        {/* Version - Desktop Only */}
+        <button
+          className="relative hidden lg:block"
+          onClick={() => setShowDeployments(!showDeployments)}
+          onMouseEnter={() => setShowVersionTooltip(true)}
+          onMouseLeave={() => setShowVersionTooltip(false)}
+        >
+          <div className="text-[10px] text-muted-foreground cursor-help">
+            {CURRENT_VERSION}
+          </div>
+        </button>
+      </div>
+      <div className={`flex items-center space-x-2 md:space-x-6 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+        <button
+          className="neo-button hidden md:flex items-center px-4 py-2 group"
+          onClick={() => {
+            // TODO: Implement CommandPalette toggle
+            console.log('Command Palette triggered')
+          }}
+        >
+          <Command className="h-4 w-4 mr-2" />
+          <span className="text-sm">Commands</span>
+          <kbd className="ml-2 hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </button>
+
+        {/* Notifications Dropdown */}
         <div className="relative hidden md:block">
           <button
             className="neo-button flex items-center px-4 py-2 relative"
             onClick={() => setShowScheduleDropdown(!showScheduleDropdown)}
           >
-            <Calendar className="h-4 w-4 mr-2" />
-            <span className="hidden lg:inline text-sm">Schedule</span>
+            <Bell className="h-4 w-4 mr-2" />
+            <span className="hidden lg:inline text-sm">Notifications</span>
             {scheduledServices.length > 0 && (
               <div className="ml-2 neo-badge-accent px-2 py-0.5 text-xs rounded-full">
                 {scheduledServices.length}
@@ -194,8 +309,11 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
             <div className="neo-dropdown absolute right-0 top-full mt-2 w-96 z-[60] rounded-xl">
               <div className="p-4 bg-background border-b border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-0">
-                  Upcoming Schedule
+                  Notifications
                 </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Events, reminders, drafts & more
+                </p>
               </div>
               <div className="max-h-80 overflow-y-auto bg-background">
                 {scheduledServices.length > 0 ? (
@@ -229,8 +347,12 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
                 ) : (
                   <div className="p-6 text-center">
                     <div className="text-center p-4">
+                      <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-50" />
                       <div className="text-muted-foreground text-sm">
-                        No scheduled services
+                        No notifications
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        You're all caught up!
                       </div>
                     </div>
                   </div>
@@ -240,13 +362,13 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
                 <div className="p-4 bg-background border-t border-border">
                   <button
                     onClick={() => {
-                      router.push('/time-manager');
+                      // TODO: Navigate to notifications page
                       setShowScheduleDropdown(false);
                     }}
                     className="neo-button w-full text-xs py-2 flex items-center justify-center"
                   >
-                    View All
-                    <Command className="w-3 h-3 ml-2" />
+                    View All Notifications
+                    <Bell className="w-3 h-3 ml-2" />
                   </button>
                 </div>
               )}
@@ -351,6 +473,23 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
             </div>
           )}
         </div>
+
+        {/* Mobile Menu Button - After Avatar */}
+        <button
+          onClick={onMobileMenuToggle}
+          className={`lg:hidden neo-button-sm p-2 transition-all duration-200 relative z-50 ${
+            mobileMenuOpen
+              ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
+              : ''
+          }`}
+          aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+        >
+          {mobileMenuOpen ? (
+            <X className="w-5 h-5 text-foreground" />
+          ) : (
+            <Menu className="w-5 h-5 text-foreground" />
+          )}
+        </button>
       </div>
 
       {/* Account Settings Modal */}
@@ -366,7 +505,70 @@ const Header = ({ onMobileMenuToggle }: HeaderProps) => {
         onClose={() => setShowPreferences(false)}
         onSave={handlePreferencesSave}
       />
+
+      {/* Deployments Dropdown */}
+      {showDeployments && (
+        <div className="fixed top-20 left-4 md:left-8 z-[60] neo-container rounded-lg p-2 text-xs min-w-[240px]">
+          <div className="font-semibold text-foreground mb-2">Deployments</div>
+          {deployments.map((deployment) => (
+            <a
+              key={deployment.id}
+              href={deployment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-2 rounded hover:bg-muted transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-foreground">{deployment.name}</span>
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              </div>
+              <div className="text-muted-foreground text-[10px] mt-0.5 truncate">{deployment.url}</div>
+            </a>
+          ))}
+        </div>
+      )}
     </header>
+
+    {/* Tooltips rendered outside header to avoid overflow clipping */}
+    {showWordmarkTooltip && (
+      <div
+        className="fixed z-[9999] px-3 py-1.5 text-xs shadow-lg whitespace-nowrap rounded-lg border pointer-events-none"
+        style={{
+          left: '120px',
+          top: '70px',
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          borderColor: 'hsl(var(--border))'
+        }}
+      >
+        Business Engagement & Client Knowledge Yield
+      </div>
+    )}
+
+    {showVersionTooltip && (
+      <div
+        className="fixed z-[9999] px-3 py-2 text-xs shadow-lg min-w-[240px] rounded-lg border pointer-events-none"
+        style={{
+          left: '200px',
+          top: '70px',
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          borderColor: 'hsl(var(--border))'
+        }}
+      >
+        <div className="font-semibold mb-2">Version History</div>
+        {deployments.map((deployment) => (
+          <div key={deployment.id} className="mb-1.5 last:mb-0">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">{deployment.name}</span>
+              <span className="text-[10px] opacity-70">{CURRENT_VERSION}</span>
+            </div>
+            <div className="text-[10px] opacity-70 truncate">{deployment.url}</div>
+          </div>
+        ))}
+      </div>
+    )}
+    </>
   )
 }
 
