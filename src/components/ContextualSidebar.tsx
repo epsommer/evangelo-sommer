@@ -77,6 +77,8 @@ export default function ContextualSidebar({
   const [editedClientId, setEditedClientId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [allClients, setAllClients] = useState<Client[]>([]);
+  const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Helper function for priority colors
   const getPriorityColor = (priority: string) => {
@@ -148,8 +150,20 @@ export default function ContextualSidebar({
       setEditedTitle(conversation.title || '');
       setEditedPriority(conversation.priority || 'MEDIUM');
       setEditedClientId(conversation.clientId || '');
+      setHasChanges(false);
     }
   }, [conversation]);
+
+  // Track if changes have been made
+  useEffect(() => {
+    if (!conversation) return;
+
+    const titleChanged = editedTitle !== (conversation.title || '');
+    const priorityChanged = editedPriority !== (conversation.priority || 'MEDIUM');
+    const clientChanged = editedClientId !== (conversation.clientId || '');
+
+    setHasChanges(titleChanged || priorityChanged || clientChanged);
+  }, [editedTitle, editedPriority, editedClientId, conversation]);
 
   // Fetch all clients when entering edit mode
   useEffect(() => {
@@ -408,21 +422,30 @@ export default function ContextualSidebar({
                 )}
               </div>
 
-              {/* Save/Edit Button */}
-              <button
-                onClick={() => {
-                  if (isEditingConversation) {
-                    handleSaveConversation();
-                  } else {
-                    setIsEditingConversation(true);
-                  }
-                }}
-                disabled={isSaving}
-                className="neo-button w-full px-4 py-3 text-sm font-primary uppercase tracking-wide flex items-center justify-center gap-2"
-              >
-                <Pencil className="w-4 h-4" />
-                <span>{isEditingConversation ? (isSaving ? 'Saving...' : 'Save') : 'Edit Conversation'}</span>
-              </button>
+              {/* Edit Button */}
+              {!isEditingConversation && (
+                <button
+                  onClick={() => setIsEditingConversation(true)}
+                  className="neo-button w-full px-4 py-3 text-sm font-primary uppercase tracking-wide flex items-center justify-center gap-2"
+                >
+                  <Pencil className="w-4 h-4" />
+                  <span>Edit Conversation</span>
+                </button>
+              )}
+
+              {/* Save Button (only when editing and has changes) */}
+              {isEditingConversation && (
+                <button
+                  onClick={handleSaveConversation}
+                  disabled={!hasChanges || isSaving}
+                  className={`neo-button w-full px-4 py-3 text-sm font-primary uppercase tracking-wide flex items-center justify-center gap-2 ${
+                    !hasChanges || isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <Pencil className="w-4 h-4" />
+                  <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+                </button>
+              )}
 
               {/* Cancel Button (only when editing) */}
               {isEditingConversation && (
@@ -432,11 +455,74 @@ export default function ContextualSidebar({
                     setEditedTitle(conversation?.title || '');
                     setEditedPriority(conversation?.priority || 'MEDIUM');
                     setEditedClientId(conversation?.clientId || '');
+                    setSelectedMessageIds(new Set());
                   }}
                   className="neo-button-sm w-full px-4 py-2 text-xs font-primary uppercase tracking-wide"
                 >
                   Cancel
                 </button>
+              )}
+
+              {/* Message Selection (only when editing) */}
+              {isEditingConversation && conversation?.messages && conversation.messages.length > 0 && (
+                <div className="neo-card p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs text-[var(--neomorphic-text)] font-primary uppercase tracking-wide font-bold">
+                      Select Messages
+                    </h4>
+                    <button
+                      onClick={() => {
+                        if (selectedMessageIds.size === conversation.messages.length) {
+                          setSelectedMessageIds(new Set());
+                        } else {
+                          setSelectedMessageIds(new Set(conversation.messages.map(m => m.id)));
+                        }
+                      }}
+                      className="text-xs text-[var(--neomorphic-accent)] hover:opacity-80 transition-opacity"
+                    >
+                      {selectedMessageIds.size === conversation.messages.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto space-y-2">
+                    {conversation.messages.map((message) => (
+                      <label
+                        key={message.id}
+                        className="flex items-start gap-2 p-2 neo-inset rounded cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedMessageIds.has(message.id)}
+                          onChange={(e) => {
+                            const newSet = new Set(selectedMessageIds);
+                            if (e.target.checked) {
+                              newSet.add(message.id);
+                            } else {
+                              newSet.delete(message.id);
+                            }
+                            setSelectedMessageIds(newSet);
+                          }}
+                          className="mt-1 flex-shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs text-[var(--neomorphic-text)] font-bold">
+                            {message.role === 'CLIENT' ? client?.name || 'Client' : 'You'}
+                          </div>
+                          <div className="text-xs text-[var(--neomorphic-icon)] truncate">
+                            {message.content.substring(0, 60)}{message.content.length > 60 ? '...' : ''}
+                          </div>
+                          <div className="text-[10px] text-[var(--neomorphic-icon)] opacity-70">
+                            {new Date(message.timestamp).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  {selectedMessageIds.size > 0 && (
+                    <div className="text-xs text-[var(--neomorphic-accent)] font-primary uppercase">
+                      {selectedMessageIds.size} message{selectedMessageIds.size !== 1 ? 's' : ''} selected
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -522,7 +608,7 @@ export default function ContextualSidebar({
       `}>
         {/* Collapse Toggle - Always at Top */}
         {!isMobile && (
-          <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)]">
+          <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)] flex justify-center">
             <button
               onClick={() => {
                 if (isExpanded) {
@@ -537,13 +623,13 @@ export default function ContextualSidebar({
                   onStateChange?.(true, width);
                 }
               }}
-              className="neo-button-sm w-full p-2 transition-all duration-200"
+              className="neo-button-sm p-3 w-12 h-12 flex items-center justify-center transition-all duration-200"
               title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
             >
               {isExpanded ? (
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-5 h-5" />
               ) : (
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-5 h-5" />
               )}
             </button>
           </div>
