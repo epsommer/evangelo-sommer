@@ -36,6 +36,37 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
   const [error, setError] = useState('')
   const [formLink, setFormLink] = useState('')
 
+  // Generate template message based on service
+  const getTemplateMessage = (service: string): string => {
+    const templates: { [key: string]: string } = {
+      'woodgreen': `Thank you for choosing Woodgreen Landscaping! We'd greatly appreciate your feedback on our landscaping services. Your testimonial helps us continue to provide exceptional service to our valued clients.`,
+      'whiteknight': `Thank you for trusting White Knight Snow Service! We hope our snow removal services exceeded your expectations. Your feedback helps us maintain the highest standards of service.`,
+      'lawn_care': `Thank you for trusting us with your lawn care needs! We'd love to hear about your experience with our service. Your feedback helps us continue to deliver exceptional results.`,
+      'landscaping': `Thank you for choosing our landscaping services! We'd appreciate hearing about your experience. Your testimonial helps us serve our clients better.`,
+      'snow_removal': `Thank you for choosing our snow removal service! We hope we kept your property safe and accessible throughout the winter. We'd love to hear your feedback.`,
+      'maintenance': `Thank you for choosing our maintenance services! We'd appreciate your feedback on how we're keeping your property in top condition.`,
+      'tree_trimming': `Thank you for trusting us with your tree care! We'd love to hear about your experience with our tree trimming services.`,
+      'lawn_mowing': `Thank you for choosing our lawn mowing service! We'd appreciate hearing about your experience with our regular lawn care.`,
+      'hedge_trimming': `Thank you for choosing our hedge trimming service! We'd love to hear how we did keeping your hedges looking great.`,
+      'weeding': `Thank you for choosing our weeding service! We'd appreciate your feedback on our garden maintenance work.`,
+      'gardening': `Thank you for choosing our gardening and planting services! We'd love to hear about your experience with our horticultural expertise.`,
+      'mulching': `Thank you for choosing our mulching service! We'd appreciate hearing about your experience with our landscape enhancement work.`,
+      'gutter_cleaning': `Thank you for choosing our gutter cleaning service! We'd love to hear about your experience with our maintenance work.`,
+      'leaf_removal': `Thank you for choosing our leaf removal service! We'd appreciate your feedback on our seasonal cleanup work.`,
+      'snow_plowing': `Thank you for choosing our snow plowing service! We'd love to hear how we did keeping your property clear and safe.`,
+      'salting': `Thank you for choosing our premium salting service! We'd appreciate your feedback on our ice management and safety services.`,
+      'ice_management': `Thank you for choosing our ice management service! We'd love to hear about your experience with our winter safety solutions.`,
+    }
+    return templates[service] || `Thank you for choosing our services! We'd greatly appreciate your feedback. Your testimonial helps us continue to provide exceptional service to our valued clients.`
+  }
+
+  const insertTemplateMessage = () => {
+    if (serviceId || serviceName) {
+      const template = getTemplateMessage(serviceId)
+      setMessage(template)
+    }
+  }
+
   // Predefined services list
   const predefinedServices = [
     { id: 'woodgreen', name: 'Woodgreen Landscaping' },
@@ -364,9 +395,35 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
 
               {/* Message */}
               <div className="neo-card p-5">
-                <label className="block text-sm font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
-                  Personal Message (Optional)
-                </label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-bold text-foreground font-primary uppercase tracking-wide">
+                    Personal Message (Optional)
+                  </label>
+                  {(serviceId || serviceName) && (
+                    <button
+                      type="button"
+                      onClick={insertTemplateMessage}
+                      className="neo-button-sm px-3 py-1 text-xs uppercase tracking-wide transition-transform hover:scale-[1.02]"
+                      title="Insert template message for selected service"
+                    >
+                      Use Template
+                    </button>
+                  )}
+                </div>
+
+                {/* Show template preview if service selected and message is empty */}
+                {(serviceId || serviceName) && !message && (
+                  <div className="neo-inset p-3 rounded-lg mb-3">
+                    <div className="text-xs text-muted-foreground font-primary uppercase tracking-wide mb-2 flex items-center">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Template Preview
+                    </div>
+                    <p className="text-xs text-foreground font-primary italic">
+                      {getTemplateMessage(serviceId)}
+                    </p>
+                  </div>
+                )}
+
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
