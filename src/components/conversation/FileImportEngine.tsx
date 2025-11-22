@@ -30,6 +30,57 @@ interface ParseResult {
   method: string;
 }
 
+/**
+ * Extract plain text string from ExcelJS cell value
+ * Handles rich text, hyperlinks, formulas, and encoding issues
+ */
+function extractCellText(cellValue: any): string {
+  if (cellValue === null || cellValue === undefined) {
+    return '';
+  }
+
+  // Handle different cell value types
+  if (typeof cellValue === 'string') {
+    return cellValue;
+  }
+
+  if (typeof cellValue === 'number') {
+    return cellValue.toString();
+  }
+
+  if (typeof cellValue === 'boolean') {
+    return cellValue.toString();
+  }
+
+  // Handle Date objects
+  if (cellValue instanceof Date) {
+    return cellValue.toISOString();
+  }
+
+  // Handle rich text objects
+  if (cellValue.richText && Array.isArray(cellValue.richText)) {
+    return cellValue.richText.map((rt: any) => rt.text || '').join('');
+  }
+
+  // Handle hyperlink objects
+  if (cellValue.text && cellValue.hyperlink) {
+    return cellValue.text;
+  }
+
+  // Handle formula results
+  if (cellValue.result !== undefined) {
+    return extractCellText(cellValue.result);
+  }
+
+  // Handle error values
+  if (cellValue.error) {
+    return `#${cellValue.error}`;
+  }
+
+  // Last resort: convert to string
+  return String(cellValue);
+}
+
 export default function FileImportEngine({ onMessagesImported, onError }: FileImportEngineProps) {
   const [dragActive, setDragActive] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -78,7 +129,19 @@ export default function FileImportEngine({ onMessagesImported, onError }: FileIm
             await workbook.xlsx.load(data as ArrayBuffer);
             const worksheet = workbook.worksheets[0];
             const jsonData: any[][] = [];
-            worksheet.eachRow((row: ExcelJS.Row) => jsonData.push(row.values as any[]));
+
+            // Extract cell values properly, handling rich text objects
+            worksheet.eachRow((row: ExcelJS.Row) => {
+              const rowData: any[] = [];
+              row.eachCell((cell) => {
+                rowData.push(extractCellText(cell.value));
+              });
+              // Add empty strings for any missing cells at the end
+              while (rowData.length < 5) {
+                rowData.push('');
+              }
+              jsonData.push(rowData);
+            });
 
             console.log('📊 Excel data parsed:', jsonData.length, 'rows');
             console.log('📋 First few rows:', jsonData.slice(0, 3));

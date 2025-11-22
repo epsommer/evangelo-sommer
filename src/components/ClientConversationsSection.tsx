@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { MessageSquare, Phone, Mail, Video, MapPin, Clock, Plus, Edit, Trash2, Tag, User } from 'lucide-react'
+import { MessageSquare, Phone, Mail, Video, MapPin, Clock, Plus, Edit, Trash2, Tag, User, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +26,7 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
   const [editingConversation, setEditingConversation] = useState<Conversation | null>(null)
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [viewMode, setViewMode] = useState<'individual' | 'compacted'>('individual')
 
 
   const getStatusColor = (status: Conversation['status']) => {
@@ -86,14 +87,44 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
     }
   }
 
+  // Get compacted messages (up to 9 most recent across all conversations)
+  const getCompactedMessages = () => {
+    const allMessages: Array<Message & { conversationId: string; conversationTitle: string }> = []
+
+    conversations.forEach(conversation => {
+      if (conversation.messages && Array.isArray(conversation.messages)) {
+        conversation.messages.forEach(message => {
+          allMessages.push({
+            ...message,
+            conversationId: conversation.id,
+            conversationTitle: conversation.title || 'Untitled Conversation'
+          })
+        })
+      }
+    })
+
+    // Sort by timestamp (newest first) and take top 9
+    return allMessages
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 9)
+  }
+
   return (
     <div className="neo-container transition-transform hover:scale-[1.01]">
       <div className="neo-inset border-b border-foreground/10 p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-foreground uppercase tracking-wide font-primary">
             Conversations with {client.name}
           </h2>
           <div className="flex items-center space-x-2">
+            <Link
+              href={`/clients/${clientId}/master`}
+              className="neo-button-active px-4 py-2 font-bold uppercase text-sm tracking-wide font-primary transition-transform hover:scale-[1.02] flex items-center gap-2"
+              title="View complete message history in master timeline"
+            >
+              <History className="h-4 w-4" />
+              Full Timeline
+            </Link>
             <Link
               href={`/conversations?client=${clientId}`}
               className="neo-button-circle w-10 h-10 flex items-center justify-center transition-transform hover:scale-[1.1] text-foreground"
@@ -109,6 +140,29 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
               Add Conversation
             </button>
           </div>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-muted-foreground font-primary uppercase tracking-wide mr-2">View:</span>
+          <button
+            onClick={() => setViewMode('individual')}
+            className={`px-4 py-2 text-xs font-bold uppercase tracking-wide font-primary transition-all ${
+              viewMode === 'individual' ? 'neo-button-active' : 'neo-button'
+            }`}
+          >
+            <MessageSquare className="h-3 w-3 inline mr-2" />
+            Conversations
+          </button>
+          <button
+            onClick={() => setViewMode('compacted')}
+            className={`px-4 py-2 text-xs font-bold uppercase tracking-wide font-primary transition-all ${
+              viewMode === 'compacted' ? 'neo-button-active' : 'neo-button'
+            }`}
+          >
+            <Clock className="h-3 w-3 inline mr-2" />
+            Recent Messages
+          </button>
         </div>
       </div>
 
@@ -129,7 +183,7 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
           </div>
         )}
 
-        {/* Conversations List */}
+        {/* Content - Conditional based on view mode */}
         {!loading && (
           <div className="space-y-4">
             {conversations.length === 0 ? (
@@ -149,7 +203,8 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
                   Start Conversation
                 </button>
               </div>
-            ) : (
+            ) : viewMode === 'individual' ? (
+              // Individual Conversations View
               conversations.map(conversation => (
                 <ConversationItem
                   key={conversation.id}
@@ -165,6 +220,15 @@ const ClientConversationsSection: React.FC<ClientConversationsSectionProps> = ({
                   getMessageTypeIcon={getMessageTypeIcon}
                 />
               ))
+            ) : (
+              // Compacted Messages View
+              <CompactedMessagesView
+                messages={getCompactedMessages()}
+                clientName={client.name}
+                clientId={clientId}
+                getMessageTypeIcon={getMessageTypeIcon}
+                router={router}
+              />
             )}
           </div>
         )}
@@ -680,6 +744,126 @@ const MessageModal: React.FC<{
         </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// Compacted Messages View Component
+interface CompactedMessagesViewProps {
+  messages: Array<Message & { conversationId: string; conversationTitle: string }>
+  clientName: string
+  clientId: string
+  getMessageTypeIcon: (type: Message['type']) => React.ReactNode
+  router: ReturnType<typeof useRouter>
+}
+
+const CompactedMessagesView: React.FC<CompactedMessagesViewProps> = ({
+  messages,
+  clientName,
+  clientId,
+  getMessageTypeIcon,
+  router
+}) => {
+  if (messages.length === 0) {
+    return (
+      <div className="text-center py-8 neo-inset">
+        <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+        <h3 className="text-lg font-bold text-foreground mb-2 font-primary uppercase tracking-wide">
+          No Messages Yet
+        </h3>
+        <p className="text-muted-foreground font-primary">
+          Start a conversation to see recent messages here.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between mb-4 neo-inset p-3">
+        <div className="text-sm font-primary text-muted-foreground uppercase tracking-wide">
+          Showing {messages.length} most recent message{messages.length !== 1 ? 's' : ''}
+        </div>
+        <div className="text-xs text-muted-foreground font-primary">
+          Click message to view full conversation
+        </div>
+      </div>
+
+      {messages.map((message, index) => {
+        const prevMessage = index > 0 ? messages[index - 1] : null
+        const showDateDivider = !prevMessage ||
+          new Date(message.timestamp).toDateString() !== new Date(prevMessage.timestamp).toDateString()
+
+        return (
+          <div key={`${message.conversationId}-${message.id}`}>
+            {/* Date Divider */}
+            {showDateDivider && (
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-foreground/10"></div>
+                <span className="text-xs font-primary uppercase tracking-wide text-muted-foreground px-3 py-1 neo-badge">
+                  {format(new Date(message.timestamp), 'EEE, MMM dd, yyyy')}
+                </span>
+                <div className="flex-1 h-px bg-foreground/10"></div>
+              </div>
+            )}
+
+            {/* Message */}
+            <div
+              onClick={() => router.push(`/conversations/${message.conversationId}`)}
+              className="neo-container p-4 hover:scale-[1.02] transition-transform cursor-pointer"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <Badge className={`text-xs font-bold uppercase neo-badge ${
+                    (message.role === 'client' || message.role === 'CLIENT')
+                      ? 'bg-muted-foreground/20 text-foreground'
+                      : 'bg-foreground/10 text-foreground'
+                  }`}>
+                    {(message.role === 'client' || message.role === 'CLIENT') ? clientName : 'You'}
+                  </Badge>
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    {getMessageTypeIcon(message.type)}
+                    <span className="font-primary uppercase">{message.type}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground font-primary">
+                  {format(new Date(message.timestamp), 'HH:mm')}
+                </div>
+              </div>
+
+              <p className="text-sm text-foreground font-primary mb-3 line-clamp-3">
+                {message.content}
+              </p>
+
+              <div className="flex items-center justify-between pt-2 border-t border-foreground/10">
+                <div className="flex items-center space-x-2 text-xs text-muted-foreground font-primary">
+                  <MessageSquare className="h-3 w-3" />
+                  <span className="uppercase">{message.conversationTitle}</span>
+                </div>
+                <button className="text-xs text-accent hover:underline font-primary uppercase tracking-wide flex items-center gap-1">
+                  View Conversation
+                  <MessageSquare className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+
+      {messages.length === 9 && (
+        <div className="text-center py-4 neo-inset">
+          <p className="text-sm text-muted-foreground font-primary mb-3">
+            Showing 9 most recent messages
+          </p>
+          <Link
+            href={`/clients/${clientId}/master`}
+            className="neo-button px-4 py-2 text-xs uppercase tracking-wide font-primary font-bold transition-transform hover:scale-[1.02] inline-flex items-center gap-2"
+          >
+            <History className="h-4 w-4" />
+            View All in Full Timeline
+          </Link>
+        </div>
+      )}
+    </div>
   )
 }
 

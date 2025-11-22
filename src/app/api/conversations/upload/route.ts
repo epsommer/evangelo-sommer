@@ -233,14 +233,114 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Extract plain text string from ExcelJS cell value
+ * Handles rich text, hyperlinks, formulas, and encoding issues
+ */
+function extractCellText(cellValue: any): string {
+  if (cellValue === null || cellValue === undefined) {
+    return '';
+  }
+
+  // Handle different cell value types
+  if (typeof cellValue === 'string') {
+    return cellValue;
+  }
+
+  if (typeof cellValue === 'number') {
+    return cellValue.toString();
+  }
+
+  if (typeof cellValue === 'boolean') {
+    return cellValue.toString();
+  }
+
+  // Handle Date objects
+  if (cellValue instanceof Date) {
+    return cellValue.toISOString();
+  }
+
+  // Handle rich text objects
+  if (cellValue.richText && Array.isArray(cellValue.richText)) {
+    return cellValue.richText.map((rt: any) => rt.text || '').join('');
+  }
+
+  // Handle hyperlink objects
+  if (cellValue.text && cellValue.hyperlink) {
+    return cellValue.text;
+  }
+
+  // Handle formula results
+  if (cellValue.result !== undefined) {
+    return extractCellText(cellValue.result);
+  }
+
+  // Handle error values
+  if (cellValue.error) {
+    return `#${cellValue.error}`;
+  }
+
+  // Last resort: convert to string
+  return String(cellValue);
+}
+
+/**
+ * Detect and decode text with proper encoding
+ * Tries UTF-8 first, then falls back to common encodings
+ */
+function decodeBuffer(buffer: ArrayBuffer): string {
+  const uint8Array = new Uint8Array(buffer);
+
+  // Try UTF-8 first
+  const utf8Decoder = new TextDecoder('utf-8', { fatal: false });
+  let text = utf8Decoder.decode(uint8Array);
+
+  // Check for replacement characters indicating encoding issues
+  const replacementCharCount = (text.match(/�/g) || []).length;
+
+  // If more than 1% of characters are replacement chars, try other encodings
+  if (replacementCharCount > text.length * 0.01) {
+    // Try Windows-1252 (common for legacy Windows exports)
+    try {
+      const win1252Decoder = new TextDecoder('windows-1252');
+      const altText = win1252Decoder.decode(uint8Array);
+
+      // Check if this encoding has fewer issues
+      const altReplacementCount = (altText.match(/�/g) || []).length;
+      if (altReplacementCount < replacementCharCount) {
+        text = altText;
+      }
+    } catch (e) {
+      // Stick with UTF-8 if Windows-1252 fails
+    }
+
+    // Try ISO-8859-1 (Latin-1) as another fallback
+    if (replacementCharCount > text.length * 0.01) {
+      try {
+        const latin1Decoder = new TextDecoder('iso-8859-1');
+        const latin1Text = latin1Decoder.decode(uint8Array);
+
+        const latin1ReplacementCount = (latin1Text.match(/�/g) || []).length;
+        if (latin1ReplacementCount < replacementCharCount) {
+          text = latin1Text;
+        }
+      } catch (e) {
+        // Stick with previous best attempt
+      }
+    }
+  }
+
+  return text;
+}
+
+/**
  * Parse uploaded file into raw data rows
  */
 async function parseFileToRows(file: File): Promise<Record<string, any>[]> {
   const buffer = await file.arrayBuffer();
-  
+
   if (file.name.toLowerCase().endsWith('.csv')) {
-    // Handle CSV files
-    const text = new TextDecoder().decode(buffer);
+    // Handle CSV files with encoding detection
+    const text = decodeBuffer(buffer);
     return parseCSVToRows(text);
   } else {
     // Handle Excel files
@@ -257,7 +357,8 @@ async function parseFileToRows(file: File): Promise<Record<string, any>[]> {
       if (rowNumber > 1) { // Skip header row
         const rowData: Record<string, any> = {};
         row.eachCell((cell, colNumber) => {
-          rowData[headers[colNumber - 1]] = cell.value;
+          // Extract text properly, handling rich text, hyperlinks, etc.
+          rowData[headers[colNumber - 1]] = extractCellText(cell.value);
         });
         jsonData.push(rowData);
       }

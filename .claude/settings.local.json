@@ -22,7 +22,8 @@
       "Bash(chmod:*)",
       "Bash(find:*)",
       "Bash(for dir in /Users/epsommer/projects/evangelo-sommer/.docs-private/*/)",
-      "Bash(do echo '=== $(basename $dir) ===' ls -1 $dir)"
+      "Bash(do echo '=== $(basename $dir) ===' ls -1 $dir)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

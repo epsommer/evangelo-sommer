@@ -18,25 +18,42 @@ import SidebarAnalytics from './SidebarAnalytics';
 import SidebarInsights from './SidebarInsights';
 import SidebarSchedule from './SidebarSchedule';
 import SidebarBilling from './SidebarBilling';
+import SidebarDraftAI from './SidebarDraftAI';
+import MasterTimelineDraftAI from './MasterTimelineDraftAI';
 
-export type SidebarTab = 'analytics' | 'insights' | 'schedule' | 'billing';
+export type SidebarTab = 'analytics' | 'insights' | 'schedule' | 'billing' | 'draft';
 
 interface ContextualSidebarProps {
   conversation: Conversation;
   client: Client;
+  conversationId: string;
+  selectedMessageId?: string | null;
+  onSelectMessage?: (messageId: string | null) => void;
   className?: string;
   onAutoDetails?: (message: Message, suggestion: BillingSuggestion) => void;
   onStateChange?: (isOpen: boolean, width: number) => void;
-  onDraftWithAI?: () => void;
+  // Master timeline specific props
+  isMasterTimeline?: boolean;
+  allConversations?: Conversation[];
+  allMessages?: (Message & { conversationId: string; conversationTitle: string })[];
+  selectedMessage?: (Message & { conversationId: string }) | null;
+  onRefresh?: () => void;
 }
 
 export default function ContextualSidebar({
   conversation,
   client,
+  conversationId,
+  selectedMessageId,
+  onSelectMessage,
   className = "",
   onAutoDetails,
   onStateChange,
-  onDraftWithAI
+  isMasterTimeline = false,
+  allConversations = [],
+  allMessages = [],
+  selectedMessage,
+  onRefresh
 }: ContextualSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -82,6 +99,14 @@ export default function ContextualSidebar({
   }, [isMobile]);
 
   const tabs = [
+    {
+      id: 'draft' as SidebarTab,
+      icon: Sparkles,
+      label: 'Draft AI',
+      color: 'text-[var(--neomorphic-accent)]',
+      bgColor: 'bg-[var(--neomorphic-accent)]/10',
+      count: null
+    },
     {
       id: 'analytics' as SidebarTab,
       icon: BarChart3,
@@ -139,6 +164,30 @@ export default function ContextualSidebar({
     if (!activeTab) return null;
 
     switch (activeTab) {
+      case 'draft':
+        // Use MasterTimelineDraftAI for master timeline, otherwise use regular SidebarDraftAI
+        if (isMasterTimeline) {
+          return (
+            <MasterTimelineDraftAI
+              conversations={allConversations}
+              allMessages={allMessages}
+              client={client}
+              selectedMessage={selectedMessage}
+              onMessageSent={() => {
+                onRefresh?.();
+              }}
+            />
+          );
+        }
+        return (
+          <SidebarDraftAI
+            conversation={conversation}
+            client={client}
+            conversationId={conversationId}
+            selectedMessageId={selectedMessageId}
+            onSelectMessage={onSelectMessage}
+          />
+        );
       case 'analytics':
         return (
           <SidebarAnalytics
@@ -245,22 +294,6 @@ export default function ContextualSidebar({
             );
           })}
         </div>
-
-        {/* Draft with AI Button */}
-        {onDraftWithAI && (
-          <div className="px-2 pb-4">
-            <button
-              onClick={onDraftWithAI}
-              className="neo-button-active w-full p-3 flex flex-col items-center justify-center gap-1"
-              title="Draft with AI"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span className="text-[9px] font-primary uppercase tracking-wide leading-tight">
-                AI
-              </span>
-            </button>
-          </div>
-        )}
 
         {/* Collapse Toggle (Desktop Only) */}
         {!isMobile && (

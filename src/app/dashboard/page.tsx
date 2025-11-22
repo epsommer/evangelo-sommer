@@ -9,6 +9,7 @@ import Link from 'next/link'
 import CRMLayout from '@/components/CRMLayout'
 import DailyPlannerWidget from '@/components/DailyPlannerWidget'
 import GoalsWidget from '@/components/GoalsWidget'
+import TestimonialsWidget from '@/components/TestimonialsWidget'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getAllServices } from '@/lib/service-config'
@@ -248,7 +249,7 @@ const Dashboard = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch">
           {/* Daily Planner Widget - BELONGS ON DASHBOARD */}
           <div className="xl:col-span-1 flex">
             <DailyPlannerWidget onViewAll={() => router.push('/time-manager')} />
@@ -257,6 +258,11 @@ const Dashboard = () => {
           {/* Goals Widget */}
           <div className="xl:col-span-1 flex">
             <GoalsWidget onViewAll={() => router.push('/goals')} />
+          </div>
+
+          {/* Testimonials Widget */}
+          <div className="xl:col-span-1 flex">
+            <TestimonialsWidget onViewAll={() => router.push('/testimonials')} />
           </div>
 
           {/* Services & Billing Widget */}

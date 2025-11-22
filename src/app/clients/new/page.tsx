@@ -9,6 +9,8 @@ import { getAllServices, getServiceById } from "../../../lib/service-config";
 import { clientManager } from "../../../lib/client-config";
 import { Client } from "../../../types/client";
 import CRMLayout from "../../../components/CRMLayout";
+import { formatPhoneNumberWithAreaCode, getPhoneLocationDescription } from "../../../lib/phone-formatter";
+import InteractiveServiceSelection, { type ServiceProject } from "../../../components/InteractiveServiceSelection";
 
 function NewClientPageContent() {
   const { status } = useSession();
@@ -55,6 +57,8 @@ function NewClientPageContent() {
   const [newTag, setNewTag] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [phoneLocationInfo, setPhoneLocationInfo] = useState<string>("");
+  const [serviceProjects, setServiceProjects] = useState<ServiceProject[]>([]);
 
   // Household/Account management
   const [createHousehold, setCreateHousehold] = useState(false);
@@ -108,9 +112,15 @@ function NewClientPageContent() {
     setError("");
 
     try {
-      // Only require name and service - everything else is optional
-      if (!formData.name.trim() || !formData.serviceId) {
-        setError("Please enter at least the client name and select a service");
+      // Only require name and at least one service project
+      if (!formData.name.trim()) {
+        setError("Please enter the client name");
+        setIsLoading(false);
+        return;
+      }
+
+      if (serviceProjects.length === 0) {
+        setError("Please add at least one service project");
         setIsLoading(false);
         return;
       }
@@ -124,13 +134,24 @@ function NewClientPageContent() {
 
       const clientId = clientManager.generateClientId();
 
-      // Prepare client data
+      // Prepare client data with service projects
       const clientData: any = {
         ...formData,
         id: clientId,
         name: formData.name.trim(),
+        // Use the first project's service as the primary service for backward compatibility
+        serviceId: serviceProjects[0]?.serviceId || "portfolio",
+        serviceTypes: serviceProjects[0]?.serviceTypes || [],
         metadata: {
           ...formData.metadata,
+          serviceProjects: serviceProjects.map(project => ({
+            serviceId: project.serviceId,
+            serviceName: project.serviceName,
+            projectName: project.projectName,
+            status: project.status,
+            serviceTypes: project.serviceTypes,
+          })),
+          // Legacy support
           ...(secondaryServices.length > 0 && { secondaryServices }),
           ...(Object.keys(secondaryServiceTypes).length > 0 && { secondaryServiceTypes }),
         },
@@ -182,6 +203,23 @@ function NewClientPageContent() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    const { formatted, areaCodeInfo } = formatPhoneNumberWithAreaCode(input);
+
+    setFormData((prev) => ({
+      ...prev,
+      phone: formatted,
+    }));
+
+    // Update location info
+    if (areaCodeInfo && formatted.length >= 5) {
+      setPhoneLocationInfo(getPhoneLocationDescription(formatted));
+    } else {
+      setPhoneLocationInfo("");
+    }
   };
 
   const handleAddressChange = (
@@ -351,10 +389,15 @@ function NewClientPageContent() {
                 <input
                   type="tel"
                   value={formData.phone || ""}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  onChange={handlePhoneInputChange}
                   className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
                   placeholder="(555) 123-4567 (optional)"
                 />
+                {phoneLocationInfo && (
+                  <p className="text-xs text-blue-600 mt-1 font-primary">
+                    📍 {phoneLocationInfo}
+                  </p>
+                )}
                 {formData.phone && formData.phone.length >= 10 && (
                   <p className="text-xs text-green-600 mt-1 font-primary">
                     ✓ Can receive text notifications
@@ -380,13 +423,16 @@ function NewClientPageContent() {
           {/* Household/Account Section */}
           <div className="neo-card p-6">
             <div className="flex items-start space-x-3 mb-4">
-              <input
-                type="checkbox"
-                id="createHousehold"
-                checked={createHousehold}
-                onChange={(e) => setCreateHousehold(e.target.checked)}
-                className="mt-1 rounded border-border text-accent focus:ring-accent cursor-pointer"
-              />
+              <div className="mt-1">
+                <input
+                  type="checkbox"
+                  id="createHousehold"
+                  checked={createHousehold}
+                  onChange={(e) => setCreateHousehold(e.target.checked)}
+                  className="neo-checkbox"
+                />
+                <label htmlFor="createHousehold"></label>
+              </div>
               <div className="flex-1">
                 <label htmlFor="createHousehold" className="block text-lg font-bold text-foreground font-primary uppercase tracking-wide cursor-pointer">
                   Create/Add to Household Account
@@ -459,13 +505,16 @@ function NewClientPageContent() {
                   </div>
 
                   <div className="flex items-center space-x-3 pt-6">
-                    <input
-                      type="checkbox"
-                      id="isPrimaryContact"
-                      checked={isPrimaryContact}
-                      onChange={(e) => setIsPrimaryContact(e.target.checked)}
-                      className="rounded border-border text-accent focus:ring-accent cursor-pointer"
-                    />
+                    <div>
+                      <input
+                        type="checkbox"
+                        id="isPrimaryContact"
+                        checked={isPrimaryContact}
+                        onChange={(e) => setIsPrimaryContact(e.target.checked)}
+                        className="neo-checkbox"
+                      />
+                      <label htmlFor="isPrimaryContact"></label>
+                    </div>
                     <div>
                       <label htmlFor="isPrimaryContact" className="block text-sm font-medium text-foreground font-primary uppercase tracking-wide cursor-pointer">
                         Primary Contact
@@ -491,10 +540,25 @@ function NewClientPageContent() {
             )}
           </div>
 
-          {/* Service & Project Details */}
+          {/* Service & Project Details - Interactive Selection */}
           <div className="neo-card p-6">
             <h2 className="text-xl font-bold mb-4 text-foreground font-primary uppercase tracking-wide">
               Service & Project Details
+            </h2>
+            <p className="text-sm text-muted-foreground font-primary mb-6">
+              Select service lines, add projects, and configure each project's status and services
+            </p>
+
+            <InteractiveServiceSelection
+              onServicesChange={setServiceProjects}
+              initialProjects={serviceProjects}
+            />
+          </div>
+
+          {/* Legacy Single Service Selection - Hidden but kept for backward compatibility */}
+          <div className="hidden neo-card p-6">
+            <h2 className="text-xl font-bold mb-4 text-foreground font-primary uppercase tracking-wide">
+              Service & Project Details (Legacy)
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -553,17 +617,22 @@ function NewClientPageContent() {
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto neo-container p-4">
                   {selectedService.serviceTypes.map((serviceType) => (
-                    <label key={serviceType} className="flex items-center font-primary cursor-pointer group">
+                    <div key={serviceType} className="flex items-center font-primary cursor-pointer group">
                       <input
                         type="checkbox"
+                        id={`primary-service-${serviceType}`}
                         checked={formData.serviceTypes.includes(serviceType)}
                         onChange={() => toggleServiceType(serviceType)}
-                        className="rounded border-border text-accent focus:ring-accent cursor-pointer"
+                        className="neo-checkbox"
                       />
-                      <span className="ml-2 text-sm text-foreground group-hover:text-accent transition-colors">
+                      <label htmlFor={`primary-service-${serviceType}`}></label>
+                      <span
+                        className="ml-3 text-sm text-foreground group-hover:text-accent transition-colors cursor-pointer"
+                        onClick={() => toggleServiceType(serviceType)}
+                      >
                         {serviceType}
                       </span>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -617,17 +686,22 @@ function NewClientPageContent() {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                               {service.serviceTypes.map((serviceType) => (
-                                <label key={serviceType} className="flex items-center text-xs cursor-pointer group">
+                                <div key={serviceType} className="flex items-center text-xs cursor-pointer group">
                                   <input
                                     type="checkbox"
+                                    id={`secondary-${serviceId}-${serviceType}`}
                                     checked={(secondaryServiceTypes[serviceId] || []).includes(serviceType)}
                                     onChange={() => toggleSecondaryServiceType(serviceId, serviceType)}
-                                    className="rounded border-border text-accent focus:ring-accent cursor-pointer"
+                                    className="neo-checkbox neo-checkbox-sm"
                                   />
-                                  <span className="ml-2 text-foreground font-primary group-hover:text-accent transition-colors">
+                                  <label htmlFor={`secondary-${serviceId}-${serviceType}`}></label>
+                                  <span
+                                    className="ml-2 text-foreground font-primary group-hover:text-accent transition-colors cursor-pointer"
+                                    onClick={() => toggleSecondaryServiceType(serviceId, serviceType)}
+                                  >
                                     {serviceType}
                                   </span>
-                                </label>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -738,10 +812,11 @@ function NewClientPageContent() {
                 <label className="block text-sm font-medium text-muted-foreground font-primary uppercase tracking-wide mb-2">
                   Automation Capabilities
                 </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
+                <div className="space-y-4">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
+                      id="auto-invoicing-new"
                       checked={
                         formData.contactPreferences?.autoInvoicing || false
                       }
@@ -752,16 +827,18 @@ function NewClientPageContent() {
                         )
                       }
                       disabled={!canAutomate}
-                      className="rounded border-border text-accent focus:ring-accent disabled:opacity-50"
+                      className="neo-checkbox"
                     />
-                    <span className="ml-2 text-sm text-foreground font-primary">
+                    <label htmlFor="auto-invoicing-new"></label>
+                    <label htmlFor="auto-invoicing-new" className="ml-3 text-sm text-foreground font-primary cursor-pointer">
                       Auto-send invoices {!canAutomate && "(requires email)"}
-                    </span>
-                  </label>
+                    </label>
+                  </div>
 
-                  <label className="flex items-center">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
+                      id="auto-receipts-new"
                       checked={
                         formData.contactPreferences?.autoReceipts || false
                       }
@@ -772,12 +849,13 @@ function NewClientPageContent() {
                         )
                       }
                       disabled={!canAutomate}
-                      className="rounded border-border text-accent focus:ring-accent disabled:opacity-50"
+                      className="neo-checkbox"
                     />
-                    <span className="ml-2 text-sm text-foreground font-primary">
+                    <label htmlFor="auto-receipts-new"></label>
+                    <label htmlFor="auto-receipts-new" className="ml-3 text-sm text-foreground font-primary cursor-pointer">
                       Auto-send receipts {!canAutomate && "(requires email)"}
-                    </span>
-                  </label>
+                    </label>
+                  </div>
                 </div>
 
                 {!canAutomate && (

@@ -53,6 +53,7 @@ export default function ConversationSidebarLayout({
         <ContextualSidebar
           conversation={conversation}
           client={client}
+          conversationId={conversation.id}
           onAutoDetails={handleAutoDetails}
           onStateChange={handleSidebarStateChange}
         />

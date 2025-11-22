@@ -333,6 +333,7 @@ model ClientRecord {
   followUps        FollowUp[]
   events           Event[]
   billingDocuments BillingDocument[]
+  testimonials     Testimonial[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1237,6 +1238,55 @@ model PasswordResetToken {
   @@index([token])
   @@index([userId])
   @@index([expiresAt])
+}
+
+// Testimonial Model - Client testimonials and reviews
+model Testimonial {
+  id            String   @id @default(cuid())
+
+  // Client relationship
+  clientId      String
+  client        ClientRecord @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Service relationship (optional - testimonial might be general)
+  serviceId     String?
+  serviceName   String?
+
+  // Testimonial content
+  rating        Int      // 1-5 stars
+  title         String?
+  content       String
+
+  // Status tracking
+  status        TestimonialStatus @default(PENDING)
+  isPublic      Boolean  @default(false)
+  isFeatured    Boolean  @default(false)
+
+  // Testimonial request tracking
+  requestSentAt DateTime?
+  submittedAt   DateTime?
+  approvedAt    DateTime?
+
+  // Metadata
+  source        String?  // "email", "form", "manual", etc.
+  metadata      Json?    // Additional data (photos, project details, etc.)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+  @@index([isPublic])
+  @@index([isFeatured])
+  @@index([rating])
+}
+
+enum TestimonialStatus {
+  PENDING       // Waiting for client to submit
+  SUBMITTED     // Client has submitted, waiting for approval
+  APPROVED      // Approved and can be displayed
+  REJECTED      // Not approved for display
+  DRAFT         // Started but not completed
 }
 
 // ============================================================================

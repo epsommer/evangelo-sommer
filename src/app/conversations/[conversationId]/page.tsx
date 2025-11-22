@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Pencil, Send, Sparkles } from "lucide-react";
+import { Pencil, Send, Sparkles, History } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
 import CRMLayout from "../../../components/CRMLayout";
@@ -37,14 +37,7 @@ export default function ConversationPage() {
     role: 'CLIENT' as 'CLIENT' | 'YOU',
     timestamp: ''
   });
-  const [showDraftModal, setShowDraftModal] = useState(false);
-  const [draftOptions, setDraftOptions] = useState({
-    tone: 'professional' as 'professional' | 'friendly' | 'formal' | 'casual',
-    messageType: 'response' as 'response' | 'follow-up' | 'inquiry',
-    specificInstructions: '',
-  });
-  const [draftedMessage, setDraftedMessage] = useState('');
-  const [isDrafting, setIsDrafting] = useState(false);
+  const [selectedMessageForDraft, setSelectedMessageForDraft] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -232,7 +225,9 @@ export default function ConversationPage() {
           <ContextualSidebar
             conversation={conversation}
             client={client}
-            onDraftWithAI={() => setShowDraftModal(true)}
+            conversationId={conversationId}
+            selectedMessageId={selectedMessageForDraft}
+            onSelectMessage={setSelectedMessageForDraft}
           />
         )}
 
@@ -285,6 +280,16 @@ export default function ConversationPage() {
             
             {/* Right side - Priority & Actions */}
             <div className="flex items-center space-x-3">
+              {client && (
+                <Link
+                  href={`/clients/${client.id}/master`}
+                  className="neo-button-active px-3 py-1 text-xs font-primary uppercase tracking-wide flex items-center gap-1 transition-transform hover:scale-[1.02]"
+                  title="View Master Timeline"
+                >
+                  <History className="w-3 h-3" />
+                  Master Timeline
+                </Link>
+              )}
               {conversation?.priority && (
                 <span
                   className={`neo-badge px-3 py-1 text-xs font-bold font-primary uppercase tracking-wide ${getPriorityColor(conversation.priority)}`}
@@ -354,9 +359,22 @@ export default function ConversationPage() {
                     className={`flex ${message.role === "YOU" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-2xl p-4 neo-container ${
+                      onClick={() => {
+                        if (message.role === 'CLIENT') {
+                          setSelectedMessageForDraft(
+                            selectedMessageForDraft === message.id ? null : message.id
+                          );
+                        }
+                      }}
+                      className={`max-w-2xl p-4 neo-container transition-all ${
                         message.role === "YOU"
                           ? "bg-accent/20"
+                          : message.role === "CLIENT"
+                          ? `cursor-pointer hover:ring-2 hover:ring-[var(--neomorphic-accent)]/50 ${
+                              selectedMessageForDraft === message.id
+                                ? "ring-2 ring-[var(--neomorphic-accent)] bg-[var(--neomorphic-accent)]/10"
+                                : ""
+                            }`
                           : ""
                       }`}
                     >
@@ -709,205 +727,6 @@ export default function ConversationPage() {
                 >
                   Save Changes
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* AI Draft Message Modal */}
-      {showDraftModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="neo-container max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-foreground font-primary uppercase tracking-wide flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-accent" />
-                  Draft Message with AI
-                </h2>
-                <span className="text-xs px-2 py-1 neo-badge-accent font-primary uppercase tracking-wide">
-                  Powered by Claude
-                </span>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                      Tone
-                    </label>
-                    <select
-                      value={draftOptions.tone}
-                      onChange={(e) => setDraftOptions({ ...draftOptions, tone: e.target.value as any })}
-                      className="neomorphic-input w-full"
-                      disabled={isDrafting}
-                    >
-                      <option value="professional">Professional</option>
-                      <option value="friendly">Friendly</option>
-                      <option value="formal">Formal</option>
-                      <option value="casual">Casual</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                      Message Type
-                    </label>
-                    <select
-                      value={draftOptions.messageType}
-                      onChange={(e) => setDraftOptions({ ...draftOptions, messageType: e.target.value as any })}
-                      className="neomorphic-input w-full"
-                      disabled={isDrafting}
-                    >
-                      <option value="response">Response</option>
-                      <option value="follow-up">Follow-up</option>
-                      <option value="inquiry">Inquiry</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                    Specific Instructions (Optional)
-                  </label>
-                  <textarea
-                    value={draftOptions.specificInstructions}
-                    onChange={(e) => setDraftOptions({ ...draftOptions, specificInstructions: e.target.value })}
-                    placeholder="E.g., Include pricing information, mention the next meeting date, etc."
-                    rows={3}
-                    className="neomorphic-input w-full resize-none"
-                    disabled={isDrafting}
-                  />
-                </div>
-              </div>
-
-              {!draftedMessage && !isDrafting && (
-                <div className="neo-card bg-accent/10 p-4 mb-6">
-                  <p className="text-sm text-foreground font-primary">
-                    AI will analyze the conversation history and draft an appropriate message based on your preferences.
-                  </p>
-                </div>
-              )}
-
-              {isDrafting && (
-                <div className="neo-container p-6 mb-6 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-                  <p className="text-sm text-muted-foreground font-primary uppercase tracking-wide">
-                    Drafting message with AI...
-                  </p>
-                </div>
-              )}
-
-              {draftedMessage && !isDrafting && (
-                <div className="space-y-4 mb-6">
-                  <label className="block text-sm font-semibold text-foreground font-primary uppercase tracking-wide">
-                    AI-Generated Draft
-                  </label>
-                  <textarea
-                    value={draftedMessage}
-                    onChange={(e) => setDraftedMessage(e.target.value)}
-                    rows={8}
-                    className="neomorphic-input w-full resize-none border-accent"
-                  />
-                  <p className="text-xs text-muted-foreground font-primary">
-                    You can edit the draft above before adding it to the conversation.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex space-x-3">
-                <button
-                  className="neo-button flex-1 font-primary uppercase tracking-wide"
-                  onClick={() => {
-                    setShowDraftModal(false);
-                    setDraftedMessage('');
-                    setDraftOptions({
-                      tone: 'professional',
-                      messageType: 'response',
-                      specificInstructions: '',
-                    });
-                  }}
-                  disabled={isDrafting}
-                >
-                  Cancel
-                </button>
-                {!draftedMessage ? (
-                  <button
-                    className="neo-button-active flex-1 font-primary uppercase tracking-wide flex items-center justify-center gap-2"
-                    onClick={async () => {
-                      if (!conversation) return;
-
-                      setIsDrafting(true);
-                      try {
-                        const response = await fetch('/api/ai/draft-message', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            conversationContext: conversation.messages.map(msg => ({
-                              role: msg.role === 'YOU' ? 'assistant' : 'user',
-                              content: msg.content,
-                            })),
-                            clientName: client?.name || 'Client',
-                            ...draftOptions,
-                          }),
-                        });
-
-                        if (!response.ok) {
-                          throw new Error('Failed to draft message');
-                        }
-
-                        const result = await response.json();
-                        if (result.success && result.draftedMessage) {
-                          setDraftedMessage(result.draftedMessage);
-                        } else {
-                          throw new Error(result.error || 'No drafted message received');
-                        }
-                      } catch (err) {
-                        console.error('Draft error:', err);
-                        alert('Failed to draft message with AI. Please try again.');
-                      } finally {
-                        setIsDrafting(false);
-                      }
-                    }}
-                    disabled={isDrafting}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Generate Draft
-                  </button>
-                ) : (
-                  <button
-                    className="neo-button-active flex-1 font-primary uppercase tracking-wide flex items-center justify-center gap-2"
-                    onClick={async () => {
-                      if (!conversation || !draftedMessage.trim()) return;
-
-                      try {
-                        const response = await fetch(`/api/conversations/${conversationId}/messages`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            content: draftedMessage,
-                            role: 'YOU',
-                            type: 'text',
-                            timestamp: new Date().toISOString(),
-                          }),
-                        });
-
-                        if (!response.ok) throw new Error('Failed to add message');
-
-                        const result = await response.json();
-
-                        // Reload conversation to show new message
-                        window.location.reload();
-                      } catch (err) {
-                        console.error('Add message error:', err);
-                        alert('Failed to add message to conversation');
-                      }
-                    }}
-                  >
-                    <Send className="w-4 h-4" />
-                    Add to Conversation
-                  </button>
-                )}
               </div>
             </div>
           </div>

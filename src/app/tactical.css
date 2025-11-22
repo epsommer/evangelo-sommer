@@ -272,7 +272,7 @@ div:not(.logo-button *):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
 }
 
 /* Force square corners on all elements EXCEPT neomorphic design and gallery UI */
-*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *) {
+*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *):not(input[type="checkbox"].neo-checkbox + label):not(input[type="checkbox"].neo-checkbox + label::after):not(input[type="radio"].neo-radio + label):not(input[type="radio"].neo-radio + label::after) {
   border-radius: 0 !important;
 }
 
@@ -874,14 +874,14 @@ button:disabled,
   color: var(--hud-text-secondary) !important;
 }
 
-/* Enhanced Button Dark Mode */
-[data-theme="dark"] button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
+/* Enhanced Button Dark Mode - Only in Tactical Mode */
+[data-theme="dark"].tactical-mode button:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
   background-color: var(--tactical-gold) !important;
   color: var(--tactical-grey-900) !important;
   border-color: var(--tactical-gold) !important;
 }
 
-[data-theme="dark"] button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
+[data-theme="dark"].tactical-mode button:hover:not(.btn-tactical):not(.btn-secondary):not(.btn-outline):not(.theme-toggle):not(.nav-button):not(.logo-button):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui button):not(.gallery-ui *):not(.password-toggle-btn):not(.forgot-password-btn):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
   background-color: var(--tactical-amber) !important;
   box-shadow: var(--hud-glow-secondary) !important;
 }

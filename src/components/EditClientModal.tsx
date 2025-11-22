@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Client } from "../types/client";
-import { isValidEmail, isValidPhone, formatPhoneNumber, cleanPhoneNumber } from "../lib/client-profile-utils";
+import { isValidEmail, isValidPhone } from "../lib/client-profile-utils";
+import { formatPhoneNumberWithAreaCode, getPhoneLocationDescription, cleanPhoneForStorage, isValidPhoneNumber } from "../lib/phone-formatter";
 
 interface EditClientModalProps {
   isOpen: boolean;
@@ -92,14 +93,16 @@ export default function EditClientModal({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeSection, setActiveSection] = useState("basic");
+  const [phoneLocationInfo, setPhoneLocationInfo] = useState<string>("");
 
   // Initialize form data when modal opens or client changes
   useEffect(() => {
     if (isOpen && client) {
+      const phoneNumber = client.phone || "";
       setFormData({
         name: client.name || "",
         email: client.email || "",
-        phone: client.phone || "",
+        phone: phoneNumber,
         company: client.company || "",
         status: client.status || "prospect",
         projectType: client.projectType || "",
@@ -121,6 +124,14 @@ export default function EditClientModal({
           autoReceipts: client.contactPreferences?.autoReceipts || false,
         },
       });
+
+      // Initialize phone location info if phone exists
+      if (phoneNumber && phoneNumber.length >= 5) {
+        setPhoneLocationInfo(getPhoneLocationDescription(phoneNumber));
+      } else {
+        setPhoneLocationInfo("");
+      }
+
       setErrors({});
       setActiveSection("basic");
     }
@@ -140,7 +151,7 @@ export default function EditClientModal({
     }
 
     // Phone validation (if provided)
-    if (formData.phone.trim() && !isValidPhone(formData.phone)) {
+    if (formData.phone.trim() && !isValidPhoneNumber(formData.phone)) {
       newErrors.phone = "Please enter a valid phone number";
     }
 
@@ -189,8 +200,16 @@ export default function EditClientModal({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const input = e.target.value;
+    const { formatted, areaCodeInfo } = formatPhoneNumberWithAreaCode(input);
     handleInputChange("phone", formatted);
+
+    // Update location info
+    if (areaCodeInfo && formatted.length >= 5) {
+      setPhoneLocationInfo(getPhoneLocationDescription(formatted));
+    } else {
+      setPhoneLocationInfo("");
+    }
   };
 
   const handleServiceTypeToggle = (serviceType: string) => {
@@ -216,7 +235,7 @@ export default function EditClientModal({
       const updateData: Partial<Client> = {
         name: formData.name.trim(),
         email: formData.email.trim() || undefined,
-        phone: formData.phone ? cleanPhoneNumber(formData.phone) : undefined,
+        phone: formData.phone ? cleanPhoneForStorage(formData.phone) : undefined,
         company: formData.company.trim() || undefined,
         status: formData.status,
         projectType: formData.projectType.trim() || undefined,
@@ -442,6 +461,11 @@ export default function EditClientModal({
                           placeholder="(123) 456-7890"
                           disabled={isSubmitting}
                         />
+                        {phoneLocationInfo && (
+                          <p className="text-xs text-blue-600 mt-1 font-primary">
+                            📍 {phoneLocationInfo}
+                          </p>
+                        )}
                         {errors.phone && (
                           <p className="text-sm text-red-600 mt-1 font-primary">{errors.phone}</p>
                         )}
@@ -550,21 +574,26 @@ export default function EditClientModal({
                       </label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {SERVICE_TYPE_OPTIONS.map((serviceType) => (
-                          <label
+                          <div
                             key={serviceType}
-                            className="flex items-center space-x-2 cursor-pointer neo-inset p-3 transition-all hover:scale-[1.02]"
+                            className="flex items-center space-x-3 cursor-pointer neo-inset p-3 transition-all hover:scale-[1.02]"
                           >
                             <input
                               type="checkbox"
+                              id={`service-type-${serviceType}`}
                               checked={formData.serviceTypes.includes(serviceType)}
                               onChange={() => handleServiceTypeToggle(serviceType)}
-                              className="rounded neo-checkbox"
+                              className="neo-checkbox"
                               disabled={isSubmitting}
                             />
-                            <span className="text-sm text-foreground capitalize font-primary font-medium">
+                            <label htmlFor={`service-type-${serviceType}`} className="w-0 h-0"></label>
+                            <span
+                              className="text-sm text-foreground capitalize font-primary font-medium cursor-pointer"
+                              onClick={() => handleServiceTypeToggle(serviceType)}
+                            >
                               {serviceType.replace('_', ' ')}
                             </span>
-                          </label>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -595,39 +624,47 @@ export default function EditClientModal({
                       <h4 className="text-sm font-bold text-foreground uppercase tracking-wide font-primary">Automation Settings</h4>
 
                       <div className="flex items-center justify-between neo-inset p-4">
-                        <div>
-                          <label className="text-sm font-bold text-foreground font-primary">
+                        <div className="flex-1">
+                          <label htmlFor="auto-invoicing" className="text-sm font-bold text-foreground font-primary cursor-pointer">
                             Auto-send Invoices
                           </label>
                           <p className="text-xs text-muted-foreground font-primary">
                             Automatically email invoices when generated
                           </p>
                         </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.contactPreferences.autoInvoicing}
-                          onChange={(e) => handleInputChange("contactPreferences.autoInvoicing", e.target.checked)}
-                          className="rounded neo-checkbox"
-                          disabled={isSubmitting || !formData.email.trim()}
-                        />
+                        <div>
+                          <input
+                            type="checkbox"
+                            id="auto-invoicing"
+                            checked={formData.contactPreferences.autoInvoicing}
+                            onChange={(e) => handleInputChange("contactPreferences.autoInvoicing", e.target.checked)}
+                            className="neo-checkbox"
+                            disabled={isSubmitting || !formData.email.trim()}
+                          />
+                          <label htmlFor="auto-invoicing"></label>
+                        </div>
                       </div>
 
                       <div className="flex items-center justify-between neo-inset p-4">
-                        <div>
-                          <label className="text-sm font-bold text-foreground font-primary">
+                        <div className="flex-1">
+                          <label htmlFor="auto-receipts" className="text-sm font-bold text-foreground font-primary cursor-pointer">
                             Auto-send Receipts
                           </label>
                           <p className="text-xs text-muted-foreground font-primary">
                             Automatically email receipts when payment received
                           </p>
                         </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.contactPreferences.autoReceipts}
-                          onChange={(e) => handleInputChange("contactPreferences.autoReceipts", e.target.checked)}
-                          className="rounded neo-checkbox"
-                          disabled={isSubmitting || !formData.email.trim()}
-                        />
+                        <div>
+                          <input
+                            type="checkbox"
+                            id="auto-receipts"
+                            checked={formData.contactPreferences.autoReceipts}
+                            onChange={(e) => handleInputChange("contactPreferences.autoReceipts", e.target.checked)}
+                            className="neo-checkbox"
+                            disabled={isSubmitting || !formData.email.trim()}
+                          />
+                          <label htmlFor="auto-receipts"></label>
+                        </div>
                       </div>
 
                       {!formData.email.trim() && (
