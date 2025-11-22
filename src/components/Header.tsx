@@ -275,17 +275,17 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
           </div>
         </button>
       </div>
-      <div className={`flex items-center space-x-2 md:space-x-6 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+      <div className={`flex items-center space-x-1 sm:space-x-2 md:space-x-6 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
         <button
-          className="neo-button flex items-center px-2 sm:px-4 py-2 group"
+          className="neo-button flex items-center px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 group"
           onClick={() => {
             // TODO: Implement CommandPalette toggle
             console.log('Command Palette triggered')
           }}
         >
-          <Command className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline text-sm">Commands</span>
-          <kbd className="ml-1 sm:ml-2 inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+          <span className="hidden sm:inline text-xs sm:text-sm">Commands</span>
+          <kbd className="ml-0.5 sm:ml-1 md:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
             <span className="text-xs hidden lg:inline">⌘</span>K
           </kbd>
         </button>
@@ -376,7 +376,7 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
           )}
         </div>
 
-        <div className="flex items-center space-x-2 md:space-x-4 relative">
+        <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 relative">
           <div className="text-right hidden md:block">
             <div className="text-muted-foreground text-xs">User</div>
             <div className="text-foreground text-sm font-medium">
@@ -386,7 +386,7 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
 
           <div className="relative group/avatar">
             <button
-              className="neo-button-circle w-10 h-10 md:w-12 md:h-12 font-bold text-sm md:text-base relative"
+              className="neo-button-circle w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 font-bold text-xs sm:text-sm md:text-base relative"
               data-dropdown-trigger
               onClick={() => {
                 setShowProfileDropdown(!showProfileDropdown);
@@ -477,7 +477,7 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
         {/* Mobile Menu Button - After Avatar */}
         <button
           onClick={onMobileMenuToggle}
-          className={`lg:hidden neo-button-sm p-2 transition-all duration-200 relative z-50 ${
+          className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-50 ${
             mobileMenuOpen
               ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
               : ''
@@ -485,9 +485,9 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
           aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
         >
           {mobileMenuOpen ? (
-            <X className="w-5 h-5 text-foreground" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
           ) : (
-            <Menu className="w-5 h-5 text-foreground" />
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
           )}
         </button>
       </div>

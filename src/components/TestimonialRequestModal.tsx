@@ -394,16 +394,16 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
               </div>
 
               {/* Message */}
-              <div className="neo-card p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-bold text-foreground font-primary uppercase tracking-wide">
+              <div className="neo-card p-3 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                  <label className="block text-xs sm:text-sm font-bold text-foreground font-primary uppercase tracking-wide">
                     Personal Message (Optional)
                   </label>
                   {(serviceId || serviceName) && (
                     <button
                       type="button"
                       onClick={insertTemplateMessage}
-                      className="neo-button-sm px-3 py-1 text-xs uppercase tracking-wide transition-transform hover:scale-[1.02]"
+                      className="neo-button-sm px-2 sm:px-3 py-1 text-xs uppercase tracking-wide transition-transform hover:scale-[1.02] whitespace-nowrap"
                       title="Insert template message for selected service"
                     >
                       Use Template
