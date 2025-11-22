@@ -243,7 +243,7 @@ export default function ConversationPage() {
         )}
 
         {/* Main Content Area */}
-        <div className="pr-16">
+        <div className="sm:pr-16">
           {/* Header with Navigation Buttons */}
           <div className="px-4 sm:px-6 pt-6 lg:pt-8 pb-4">
             <div className="max-w-4xl mx-auto lg:max-w-5xl flex items-center justify-between gap-4 flex-wrap">

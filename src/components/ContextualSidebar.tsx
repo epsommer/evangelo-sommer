@@ -571,7 +571,7 @@ export default function ContextualSidebar({
     <div
       ref={sidebarRef}
       className={`
-        fixed right-0 z-40 flex flex-row-reverse
+        fixed right-0 z-40 flex-row-reverse hidden sm:flex
         ${isMobile ? 'w-full' : 'w-auto'}
         ${className}
       `}
