@@ -90,7 +90,7 @@ const Sidebar = ({
       fixed
       left-0
       top-0
-      bottom-0
+      h-screen
       transition-all
       duration-300
       z-[60]

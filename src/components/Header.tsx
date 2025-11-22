@@ -473,24 +473,24 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
             </div>
           )}
         </div>
-
-        {/* Mobile Menu Button - After Avatar */}
-        <button
-          onClick={onMobileMenuToggle}
-          className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-50 ${
-            mobileMenuOpen
-              ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
-              : ''
-          }`}
-          aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
-        >
-          {mobileMenuOpen ? (
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-          ) : (
-            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-          )}
-        </button>
       </div>
+
+      {/* Mobile Menu Button - Positioned Outside to Avoid Opacity Overlay */}
+      <button
+        onClick={onMobileMenuToggle}
+        className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] ${
+          mobileMenuOpen
+            ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
+            : ''
+        }`}
+        aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+      >
+        {mobileMenuOpen ? (
+          <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+        ) : (
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+        )}
+      </button>
 
       {/* Account Settings Modal */}
       <AccountSettingsModal

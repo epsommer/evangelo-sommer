@@ -330,6 +330,7 @@ export default function ContextualSidebar({
       {/* Contextual Content Panel */}
       <div className={`
         neo-container border-l border-l-[var(--neomorphic-dark-shadow)]
+        bg-[var(--neomorphic-bg)]
         transition-all duration-300 ease-in-out overflow-hidden
         ${isExpanded && activeTab ?
           (isMobile ? 'w-96' : 'w-[28rem]') :
