@@ -10,8 +10,12 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  History,
+  Pencil,
+  ArrowLeft
 } from 'lucide-react';
+import Link from 'next/link';
 import { Conversation, Client, Message } from '../types/client';
 import { BillingSuggestion } from '../types/billing';
 import SidebarAnalytics from './SidebarAnalytics';
@@ -21,7 +25,7 @@ import SidebarBilling from './SidebarBilling';
 import SidebarDraftAI from './SidebarDraftAI';
 import MasterTimelineDraftAI from './MasterTimelineDraftAI';
 
-export type SidebarTab = 'analytics' | 'insights' | 'schedule' | 'billing' | 'draft';
+export type SidebarTab = 'analytics' | 'insights' | 'schedule' | 'billing' | 'draft' | 'conversation';
 
 interface ContextualSidebarProps {
   conversation: Conversation;
@@ -38,6 +42,9 @@ interface ContextualSidebarProps {
   allMessages?: (Message & { conversationId: string; conversationTitle: string })[];
   selectedMessage?: (Message & { conversationId: string }) | null;
   onRefresh?: () => void;
+  // Conversation header props
+  onEditClick?: () => void;
+  conversationSource?: string;
 }
 
 export default function ContextualSidebar({
@@ -53,13 +60,48 @@ export default function ContextualSidebar({
   allConversations = [],
   allMessages = [],
   selectedMessage,
-  onRefresh
+  onRefresh,
+  onEditClick,
+  conversationSource
 }: ContextualSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(80); // 20 * 4 = 80px (h-20)
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Editable conversation state
+  const [isEditingConversation, setIsEditingConversation] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
+  const [editedPriority, setEditedPriority] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Helper function for priority colors
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toUpperCase()) {
+      case 'HIGH':
+      case 'URGENT':
+        return 'bg-red-500/20 text-red-700 border-red-300';
+      case 'MEDIUM':
+        return 'bg-tactical-gold-muted text-tactical-brown-dark border-tactical-grey-300';
+      case 'LOW':
+        return 'bg-green-500/20 text-green-700 border-green-300';
+      default:
+        return 'bg-gray-500/20 text-gray-700 border-gray-300';
+    }
+  };
+
+  // Helper function for conversation source icon
+  const getSourceIcon = (source?: string) => {
+    if (!source) return '💬';
+    switch (source.toLowerCase()) {
+      case 'email': return '📧';
+      case 'phone': return '📱';
+      case 'sms': return '💬';
+      case 'whatsapp': return '💚';
+      default: return '💬';
+    }
+  };
 
   // Track header height based on scroll position
   useEffect(() => {
@@ -97,6 +139,47 @@ export default function ContextualSidebar({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobile]);
+
+  // Initialize edit state when conversation changes
+  useEffect(() => {
+    if (conversation) {
+      setEditedTitle(conversation.title || '');
+      setEditedPriority(conversation.priority || 'MEDIUM');
+    }
+  }, [conversation]);
+
+  // Handle saving conversation changes
+  const handleSaveConversation = async () => {
+    if (!conversation?.id) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/conversations/${conversation.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editedTitle,
+          priority: editedPriority.toUpperCase(),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save conversation');
+
+      // Refresh the page or call onRefresh if available
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        window.location.reload();
+      }
+
+      setIsEditingConversation(false);
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+      alert('Failed to save changes');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const tabs = [
     {
@@ -164,6 +247,147 @@ export default function ContextualSidebar({
     if (!activeTab) return null;
 
     switch (activeTab) {
+      case 'conversation':
+        return (
+          <div className="p-6 space-y-6">
+            {/* Back to Conversations */}
+            {!isMasterTimeline && (
+              <Link
+                href="/conversations"
+                className="flex items-center gap-2 text-[var(--neomorphic-accent)] hover:opacity-80 text-sm font-primary uppercase tracking-wide transition-opacity"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Conversations</span>
+              </Link>
+            )}
+
+            {/* Conversation Title & Source */}
+            <div className="neo-card p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl flex-shrink-0">
+                  {getSourceIcon(conversationSource)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  {/* Editable Title */}
+                  {isEditingConversation ? (
+                    <input
+                      type="text"
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      className="neo-input w-full text-sm font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide mb-2"
+                      placeholder="Conversation Title"
+                    />
+                  ) : (
+                    <h3
+                      className="text-lg font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide break-words mb-2 cursor-pointer hover:opacity-70 transition-opacity"
+                      onClick={() => setIsEditingConversation(true)}
+                      title="Click to edit"
+                    >
+                      {(conversation?.title || conversationSource || 'Conversation').toUpperCase()}
+                    </h3>
+                  )}
+
+                  {/* Client Link */}
+                  {client && (
+                    <Link
+                      href={`/clients/${client.id}`}
+                      className="text-sm text-[var(--neomorphic-accent)] hover:opacity-80 transition-opacity uppercase inline-flex items-center gap-1"
+                    >
+                      <span>Client:</span>
+                      <span className="font-bold">{client.name}</span>
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-4 text-sm text-[var(--neomorphic-icon)] font-primary uppercase pt-3 border-t border-[var(--neomorphic-dark-shadow)]">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  <span>{conversation?.messages?.length || 0} Messages</span>
+                </div>
+                <span>•</span>
+                <span>
+                  {conversation?.updatedAt
+                    ? new Date(conversation.updatedAt).toLocaleDateString()
+                    : 'N/A'}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Master Timeline Button */}
+              {client && !isMasterTimeline && (
+                <Link
+                  href={`/clients/${client.id}/master`}
+                  className="neo-button-active w-full px-4 py-3 text-sm font-primary uppercase tracking-wide flex items-center justify-center gap-2 transition-transform hover:scale-[1.02]"
+                  title="View Master Timeline"
+                >
+                  <History className="w-4 h-4" />
+                  <span>View Master Timeline</span>
+                </Link>
+              )}
+
+              {/* Editable Priority */}
+              <div className="neo-card p-4">
+                <div className="text-xs text-[var(--neomorphic-icon)] font-primary uppercase tracking-wide mb-2">
+                  Priority Level
+                </div>
+                {isEditingConversation ? (
+                  <select
+                    value={editedPriority}
+                    onChange={(e) => setEditedPriority(e.target.value)}
+                    className="neo-input w-full text-sm font-bold font-primary uppercase tracking-wide"
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                ) : (
+                  <div
+                    className={`neo-badge px-4 py-2 text-sm font-bold font-primary uppercase tracking-wide text-center cursor-pointer hover:opacity-80 transition-opacity ${getPriorityColor(conversation?.priority || 'MEDIUM')}`}
+                    onClick={() => setIsEditingConversation(true)}
+                    title="Click to edit"
+                  >
+                    {(conversation?.priority || 'MEDIUM').toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              {/* Save/Edit Button */}
+              <button
+                onClick={() => {
+                  if (isEditingConversation) {
+                    handleSaveConversation();
+                  } else {
+                    setIsEditingConversation(true);
+                  }
+                }}
+                disabled={isSaving}
+                className="neo-button w-full px-4 py-3 text-sm font-primary uppercase tracking-wide flex items-center justify-center gap-2"
+              >
+                <Pencil className="w-4 h-4" />
+                <span>{isEditingConversation ? (isSaving ? 'Saving...' : 'Save') : 'Edit Conversation'}</span>
+              </button>
+
+              {/* Cancel Button (only when editing) */}
+              {isEditingConversation && (
+                <button
+                  onClick={() => {
+                    setIsEditingConversation(false);
+                    setEditedTitle(conversation?.title || '');
+                    setEditedPriority(conversation?.priority || 'MEDIUM');
+                  }}
+                  className="neo-button-sm w-full px-4 py-2 text-xs font-primary uppercase tracking-wide"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        );
       case 'draft':
         // Use MasterTimelineDraftAI for master timeline, otherwise use regular SidebarDraftAI
         if (isMasterTimeline) {
@@ -226,7 +450,7 @@ export default function ContextualSidebar({
     <div
       ref={sidebarRef}
       className={`
-        fixed right-0 z-40 flex transition-all duration-300
+        fixed right-0 z-40 flex flex-row-reverse transition-all duration-300
         ${isMobile ? 'w-full' : 'w-auto'}
         ${className}
       `}
@@ -264,41 +488,25 @@ export default function ContextualSidebar({
               title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
             >
               {isExpanded ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
                 <ChevronLeft className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
               )}
             </button>
           </div>
         )}
 
-        {/* Conversation Actions Area */}
-        <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)] space-y-2">
-          {/* Master Timeline Link */}
-          {client && (
-            <button
-              onClick={() => window.location.href = `/clients/${client.id}/master`}
-              className="w-full neo-button-sm p-2 transition-all duration-200"
-              title="View Master Timeline"
-            >
-              <MessageSquare className="w-4 h-4 text-[var(--neomorphic-text)]" />
-            </button>
-          )}
-
-          {/* Priority Status Indicator */}
-          {conversation.priority && (
-            <div className={`w-full p-2 rounded flex items-center justify-center ${
-              conversation.priority === 'high' ? 'bg-red-500/20' :
-              conversation.priority === 'medium' ? 'bg-yellow-500/20' :
-              'bg-green-500/20'
-            }`}>
-              <div className={`w-2 h-2 rounded-full ${
-                conversation.priority === 'high' ? 'bg-red-500' :
-                conversation.priority === 'medium' ? 'bg-yellow-500' :
-                'bg-green-500'
-              }`} />
-            </div>
-          )}
+        {/* Conversation Info Button - Separate from tabs */}
+        <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)]">
+          <button
+            onClick={() => handleTabClick('conversation')}
+            className={`w-full p-3 flex items-center justify-center transition-all duration-200 ${
+              activeTab === 'conversation' ? 'neo-nav-button-active border-l-4 border-[var(--neomorphic-accent)]' : 'neo-nav-button'
+            }`}
+            title="Conversation Details"
+          >
+            <MessageSquare className="w-5 h-5 text-[var(--neomorphic-text)]" />
+          </button>
         </div>
 
         {/* Tab Navigation */}
@@ -315,7 +523,7 @@ export default function ContextualSidebar({
                   w-full p-3 mb-2 flex flex-col items-center justify-center
                   group relative transition-all duration-200
                   ${isActive ?
-                    'neo-nav-button-active border-r-4 border-[var(--neomorphic-accent)]' :
+                    'neo-nav-button-active border-l-4 border-[var(--neomorphic-accent)]' :
                     'neo-nav-button'
                   }
                 `}
@@ -339,7 +547,7 @@ export default function ContextualSidebar({
 
                 {/* Active Indicator */}
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-[var(--neomorphic-accent)] rounded-r-full" />
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-[var(--neomorphic-accent)] rounded-l-full" />
                 )}
               </button>
             );
@@ -349,7 +557,7 @@ export default function ContextualSidebar({
 
       {/* Contextual Content Panel */}
       <div className={`
-        neo-container border-l border-l-[var(--neomorphic-dark-shadow)]
+        neo-container border-r border-r-[var(--neomorphic-dark-shadow)]
         bg-[var(--neomorphic-bg)]
         transition-all duration-300 ease-in-out overflow-hidden
         ${isExpanded && activeTab ?

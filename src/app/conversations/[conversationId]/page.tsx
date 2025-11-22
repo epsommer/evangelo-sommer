@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { Pencil, Send, Sparkles, History } from "lucide-react";
+import { Pencil, Send, Sparkles } from "lucide-react";
 import { Conversation, Client, Message } from "../../../types/client";
 import { Button } from "../../../components/ui/button";
 import CRMLayout from "../../../components/CRMLayout";
@@ -228,92 +227,20 @@ export default function ConversationPage() {
             conversationId={conversationId}
             selectedMessageId={selectedMessageForDraft}
             onSelectMessage={setSelectedMessageForDraft}
+            onEditClick={() => {
+              setEditFormData({
+                title: conversation?.title || '',
+                priority: (conversation?.priority?.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') || 'MEDIUM',
+                status: (conversation?.status?.toUpperCase() as 'ACTIVE' | 'ARCHIVED' | 'COMPLETED') || 'ACTIVE'
+              });
+              setShowEditModal(true);
+            }}
+            conversationSource={conversation?.source}
           />
         )}
 
         {/* Main Content Area */}
         <div className="pr-16">
-          {/* Header */}
-          <div className={`neo-container sticky z-10 mb-6 transition-all duration-300 ${isScrolled ? 'top-14' : 'top-20'}`}>
-        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
-            {/* Left side - Navigation & Title */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0">
-              <Link
-                href="/conversations"
-                className="text-accent hover:text-accent/80 font-primary font-bold uppercase tracking-wide transition-colors text-xs sm:text-sm whitespace-nowrap"
-              >
-                ← Back
-              </Link>
-              <div className="hidden lg:block w-px h-6 bg-border"></div>
-              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                <div className="text-xl sm:text-2xl flex-shrink-0">
-                  {getSourceIcon(conversation?.source)}
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-foreground font-primary uppercase tracking-wide truncate">
-                    {(conversation?.title ||
-                      `${conversation?.source || 'Conversation'}`).toUpperCase()}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground font-primary uppercase tracking-wide">
-                    {client && (
-                      <>
-                        <span className="hidden xs:inline">WITH </span>
-                        <Link
-                          href={`/clients/${client.id}`}
-                          className="text-accent hover:text-accent/80 transition-colors duration-150 underline truncate max-w-[120px] sm:max-w-none"
-                        >
-                          {client.name.toUpperCase()}
-                        </Link>
-                      </>
-                    )}
-                    {client && <span>•</span>}
-                    <span>{conversation?.messages?.length || 0} MSG</span>
-                    <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline">
-                      {conversation?.updatedAt ? new Date(conversation.updatedAt).toLocaleDateString().toUpperCase() : 'N/A'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Right side - Priority & Actions */}
-            <div className="flex items-center space-x-3">
-              {client && (
-                <Link
-                  href={`/clients/${client.id}/master`}
-                  className="neo-button-active px-3 py-1 text-xs font-primary uppercase tracking-wide flex items-center gap-1 transition-transform hover:scale-[1.02]"
-                  title="View Master Timeline"
-                >
-                  <History className="w-3 h-3" />
-                  Master Timeline
-                </Link>
-              )}
-              {conversation?.priority && (
-                <span
-                  className={`neo-badge px-3 py-1 text-xs font-bold font-primary uppercase tracking-wide ${getPriorityColor(conversation.priority)}`}
-                >
-                  {conversation.priority.toUpperCase()}
-                </span>
-              )}
-              <button
-                className="neo-button text-xs font-primary uppercase tracking-wide"
-                onClick={() => {
-                  setEditFormData({
-                    title: conversation?.title || '',
-                    priority: (conversation?.priority?.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') || 'MEDIUM',
-                    status: (conversation?.status?.toUpperCase() as 'ACTIVE' | 'ARCHIVED' | 'COMPLETED') || 'ACTIVE'
-                  });
-                  setShowEditModal(true);
-                }}
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="px-4 sm:px-6 py-6 lg:py-8">
