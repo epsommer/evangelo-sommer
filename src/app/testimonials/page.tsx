@@ -71,7 +71,7 @@ const TestimonialsPage = () => {
       const data = await response.json()
 
       if (data.success) {
-        setTestimonials(data.testimonials)
+        setTestimonials(data.data || data.testimonials || [])
       }
     } catch (error) {
       console.error('Error loading testimonials:', error)
