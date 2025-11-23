@@ -58,10 +58,11 @@ echo ""
 # Commit
 if git commit -m "$commit_msg"; then
     echo -e "${GREEN}✓ Commit successful!${NC}"
-    git log -1 --oneline
+    git --no-pager log -1 --oneline
 
     # Ask about push
-    read -p "Push to remote? (y/n): " push_confirm
+    echo -n "Push to remote? (y/n): "
+    read -r push_confirm
     if [ "$push_confirm" = "y" ] || [ "$push_confirm" = "Y" ]; then
         current_branch=$(git branch --show-current)
         git push origin "$current_branch"

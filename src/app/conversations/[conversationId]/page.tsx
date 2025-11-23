@@ -694,6 +694,9 @@ export default function ConversationPage() {
           isOpen={showTestimonialModal}
           onClose={() => setShowTestimonialModal(false)}
           client={client}
+          onRequestSent={() => {
+            setShowTestimonialModal(false);
+          }}
         />
       )}
     </CRMLayout>

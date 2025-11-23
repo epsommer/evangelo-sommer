@@ -41,7 +41,8 @@ print_color "$BLUE" "Current repository status:"
 git status --short
 
 echo ""
-read -p "$(print_color $YELLOW "Stage all changes? (y/n/s for selective): ")${NC}" stage_option
+print_color "$YELLOW" "Stage all changes? (y/n/s for selective): "
+read -r stage_option
 
 case $stage_option in
     y|Y)
@@ -82,7 +83,8 @@ print_color "$CYAN" "6) test      - Tests"
 print_color "$CYAN" "7) chore     - Maintenance"
 print_color "$CYAN" "8) perf      - Performance"
 echo ""
-read -p "$(print_color $YELLOW "Select type (1-8): ")${NC}" type_choice
+print_color "$YELLOW" "Select type (1-8): "
+read -r type_choice
 
 case $type_choice in
     1) commit_type="feat" ;;
@@ -112,7 +114,8 @@ fi
 
 # Ask for commit body
 echo ""
-read -p "$(print_color $YELLOW "Add detailed description? (y/n): ")${NC}" add_body
+print_color "$YELLOW" "Add detailed description? (y/n): "
+read -r add_body
 
 commit_message="${commit_type}: ${subject}"
 
@@ -142,7 +145,8 @@ print_color "$BLUE" "Changes summary:"
 git --no-pager diff --cached --stat
 
 echo ""
-read -p "$(print_color $YELLOW "Proceed with commit? (y/n): ")${NC}" confirm
+print_color "$YELLOW" "Proceed with commit? (y/n): "
+read -r confirm
 
 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
     # Perform the commit
@@ -152,11 +156,12 @@ if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
         print_color "$GREEN" "✓ Commit successful!"
         echo ""
         print_color "$BLUE" "Latest commit:"
-        git log -1 --pretty=format:"%C(yellow)%h%Creset - %s %C(dim)(%cr)%Creset"
+        git --no-pager log -1 --pretty=format:"%C(yellow)%h%Creset - %s %C(dim)(%cr)%Creset"
         echo ""
         echo ""
 
-        read -p "$(print_color $YELLOW "Push to remote? (y/n): ")${NC}" push_confirm
+        print_color "$YELLOW" "Push to remote? (y/n): "
+        read -r push_confirm
 
         if [ "$push_confirm" = "y" ] || [ "$push_confirm" = "Y" ]; then
             current_branch=$(git branch --show-current)

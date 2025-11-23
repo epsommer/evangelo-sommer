@@ -14,6 +14,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if prisma client is available
+    if (!prisma) {
+      return NextResponse.json(
+        { success: false, error: 'Database connection not available' },
+        { status: 503 }
+      );
+    }
+
     // Fetch all households with member count
     const households = await prisma.household.findMany({
       select: {
