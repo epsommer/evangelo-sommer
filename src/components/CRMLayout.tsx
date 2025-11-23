@@ -129,10 +129,10 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
     <div className="min-h-screen relative" style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
       <Header onMobileMenuToggle={toggleMobileMenu} mobileMenuOpen={mobileMenuOpen} sidebarCollapsed={sidebarCollapsed} />
 
-      {/* Backdrop overlay for mobile */}
+      {/* Backdrop overlay for mobile - covers everything except sidebar */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-200"
           onClick={closeMobileMenu}
         />
       )}
@@ -146,7 +146,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
         mobileMenuOpen={mobileMenuOpen}
         onMobileMenuClose={closeMobileMenu}
       />
-      <main className={`min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10 ${isScrolled ? 'pt-14' : 'pt-20'}`} style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
+      <main className={`min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10 ${isScrolled ? 'pt-14' : 'pt-20'} ${mobileMenuOpen ? 'overflow-hidden lg:overflow-auto' : ''}`} style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
         {children}
       </main>
     </div>

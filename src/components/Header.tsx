@@ -225,11 +225,24 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
   return (
     <>
     <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-2 sm:px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-20'} ${mobileMenuOpen ? 'lg:opacity-100' : ''} ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
-      {/* Grey overlay when sidebar is open on mobile */}
-      {mobileMenuOpen && (
-        <div className="absolute inset-0 bg-black/30 lg:hidden pointer-events-none transition-opacity duration-200"></div>
-      )}
-      <div className={`flex items-center space-x-1 sm:space-x-2 md:space-x-8 relative z-[60] transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+      <div className={`flex items-center space-x-1 sm:space-x-2 md:space-x-8 relative z-[60] transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : 'opacity-100'}`}>
+        {/* Mobile Menu Toggle - Leftmost on Mobile */}
+        <button
+          onClick={onMobileMenuToggle}
+          className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] ${
+            mobileMenuOpen
+              ? 'opacity-100 pointer-events-auto'
+              : 'opacity-100'
+          }`}
+          aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+        >
+          {mobileMenuOpen ? (
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+          ) : (
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+          )}
+        </button>
+
         {/* ES Monogram - Mobile Only */}
         <button
           onClick={() => router.push('/select')}
@@ -275,31 +288,31 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
           </div>
         </button>
       </div>
-      <div className={`flex items-center gap-1 sm:gap-2 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+      <div className={`flex items-center gap-1 sm:gap-2 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : 'opacity-100'}`}>
         <button
-          className="neo-button flex items-center px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 group"
+          className="neo-button flex items-center px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 group"
           onClick={() => {
             // TODO: Implement CommandPalette toggle
             console.log('Command Palette triggered')
           }}
         >
-          <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
-          <span className="hidden sm:inline text-xs sm:text-sm">Commands</span>
-          <kbd className="ml-1 sm:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
+          <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+          <span className="hidden md:inline text-xs sm:text-sm">Commands</span>
+          <kbd className="ml-1 md:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
             <span className="text-xs hidden lg:inline">⌘</span>K
           </kbd>
         </button>
 
         {/* Notifications Dropdown */}
-        <div className="relative hidden md:block">
+        <div className="relative">
           <button
-            className="neo-button flex items-center px-4 py-2 relative"
+            className="neo-button flex items-center px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 relative"
             onClick={() => setShowScheduleDropdown(!showScheduleDropdown)}
           >
-            <Bell className="h-4 w-4 mr-2" />
-            <span className="hidden lg:inline text-sm">Notifications</span>
+            <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+            <span className="hidden md:inline text-xs sm:text-sm">Notifications</span>
             {scheduledServices.length > 0 && (
-              <div className="ml-2 neo-badge-accent px-2 py-0.5 text-xs rounded-full">
+              <div className="ml-1 md:ml-2 neo-badge-accent px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded-full">
                 {scheduledServices.length}
               </div>
             )}
@@ -473,23 +486,6 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
             </div>
           )}
         </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={onMobileMenuToggle}
-          className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] opacity-100 ${
-            mobileMenuOpen
-              ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
-              : ''
-          }`}
-          aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
-        >
-          {mobileMenuOpen ? (
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-          ) : (
-            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-          )}
-        </button>
       </div>
 
       {/* Account Settings Modal */}

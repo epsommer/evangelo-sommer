@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Receipt, LayoutGrid, Star } from "lucide-react"
+import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Receipt, LayoutGrid, Star, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
@@ -50,10 +50,13 @@ const Sidebar = ({
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isDark, setIsDark] = useState(false)
 
-  // Track theme changes for ES monogram styling
+  // Track current theme for ES monogram styling
+  const [currentTheme, setCurrentTheme] = useState<string>('light')
+
   useEffect(() => {
     const updateTheme = () => {
       const theme = localStorage.getItem('color-theme') || 'light'
+      setCurrentTheme(theme)
       const willBeDark = theme === 'true-night' || theme === 'mocha'
       setIsDark(willBeDark)
     }
@@ -100,6 +103,19 @@ const Sidebar = ({
     `}>
       {/* Header with ES Logo and Toggle */}
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border overflow-visible">
+        {/* Mobile Close Button - Top Right when menu is open */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden absolute top-2 right-2 z-50">
+            <button
+              onClick={onMobileMenuClose}
+              className="neo-button-sm p-2 transition-all duration-200"
+              aria-label="Close mobile menu"
+            >
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
+        )}
+
         {/* ES Logo - Always visible, smaller when collapsed */}
         <div className={`pt-4 pb-2 overflow-visible transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-4'}`}>
           <button
@@ -121,9 +137,11 @@ const Sidebar = ({
                   fill
                   className="object-contain"
                   style={{
-                    filter: isDark
-                      ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
-                      : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
+                    filter: currentTheme === 'gilded-meadow'
+                      ? "invert(0.5) saturate(2) hue-rotate(-10deg) brightness(0.9)"
+                      : isDark
+                        ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
+                        : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
                   }}
                 />
               </div>
