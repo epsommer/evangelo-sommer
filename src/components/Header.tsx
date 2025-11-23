@@ -275,9 +275,9 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
           </div>
         </button>
       </div>
-      <div className={`flex items-center space-x-1 sm:space-x-2 md:space-x-6 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
+      <div className={`flex items-center gap-1 sm:gap-2 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 lg:opacity-100' : 'opacity-100'}`}>
         <button
-          className="neo-button flex items-center px-1.5 sm:px-2 md:px-4 py-1.5 sm:py-2 group"
+          className="neo-button flex items-center px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 group"
           onClick={() => {
             // TODO: Implement CommandPalette toggle
             console.log('Command Palette triggered')
@@ -285,7 +285,7 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
         >
           <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
           <span className="hidden sm:inline text-xs sm:text-sm">Commands</span>
-          <kbd className="ml-0.5 sm:ml-1 md:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
+          <kbd className="ml-1 sm:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
             <span className="text-xs hidden lg:inline">⌘</span>K
           </kbd>
         </button>
@@ -376,7 +376,7 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
           )}
         </div>
 
-        <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 relative">
+        <div className="flex items-center gap-1 sm:gap-2 relative">
           <div className="text-right hidden md:block">
             <div className="text-muted-foreground text-xs">User</div>
             <div className="text-foreground text-sm font-medium">
@@ -473,24 +473,24 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
             </div>
           )}
         </div>
-      </div>
 
-      {/* Mobile Menu Button - Positioned Outside to Avoid Opacity Overlay */}
-      <button
-        onClick={onMobileMenuToggle}
-        className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] ${
-          mobileMenuOpen
-            ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
-            : ''
-        }`}
-        aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
-      >
-        {mobileMenuOpen ? (
-          <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-        ) : (
-          <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-        )}
-      </button>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={onMobileMenuToggle}
+          className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] opacity-100 ${
+            mobileMenuOpen
+              ? 'ring-2 ring-pink-500 dark:ring-pink-400 shadow-lg'
+              : ''
+          }`}
+          aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+        >
+          {mobileMenuOpen ? (
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+          ) : (
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+          )}
+        </button>
+      </div>
 
       {/* Account Settings Modal */}
       <AccountSettingsModal

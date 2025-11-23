@@ -230,20 +230,20 @@ export default function ClientsPage() {
 
   return (
     <CRMLayout>
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {/* Page Header */}
-        <div className="neo-container p-6 mb-6">
-          <div className="flex items-center justify-between">
+        <div className="neo-container p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground uppercase tracking-wide font-primary mb-2">
                 CLIENT MANAGEMENT
               </h1>
-              <p className="text-muted-foreground font-primary">
+              <p className="text-sm sm:text-base text-muted-foreground font-primary">
                 MANAGE YOUR CLIENT RELATIONSHIPS AND COMMUNICATIONS
               </p>
             </div>
             <button
-              className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2"
+              className="neo-button-active font-primary text-sm uppercase tracking-wide flex items-center gap-2 whitespace-nowrap"
               onClick={() => router.push('/clients/new')}
             >
               <Plus className="h-4 w-4" />
@@ -299,29 +299,33 @@ export default function ClientsPage() {
         {/* Batch Actions Bar */}
         {selectedClients.size > 0 && (
           <div className="neo-container p-4 mb-6 bg-accent/10 border-accent">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                 <span className="text-sm font-bold text-foreground font-primary uppercase tracking-wide">
                   {selectedClients.size} CLIENT(S) SELECTED
                 </span>
-                <button
-                  onClick={handleBatchDelete}
-                  className="neo-button bg-red-600 text-white hover:bg-red-700 font-primary text-sm uppercase tracking-wide"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  DELETE SELECTED
-                </button>
-                <button
-                  onClick={handleBatchSignup}
-                  className="neo-button bg-green-600 text-white hover:bg-green-700 font-primary text-sm uppercase tracking-wide"
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  SIGN UP FOR SERVICE
-                </button>
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={handleBatchDelete}
+                    className="neo-button bg-red-600 text-white hover:bg-red-700 font-primary text-xs sm:text-sm uppercase tracking-wide flex items-center justify-center gap-1"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">DELETE SELECTED</span>
+                    <span className="sm:hidden">DELETE</span>
+                  </button>
+                  <button
+                    onClick={handleBatchSignup}
+                    className="neo-button bg-green-600 text-white hover:bg-green-700 font-primary text-xs sm:text-sm uppercase tracking-wide flex items-center justify-center gap-1"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span className="hidden sm:inline">SIGN UP FOR SERVICE</span>
+                    <span className="sm:hidden">SIGN UP</span>
+                  </button>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedClients(new Set())}
-                className="neo-button text-muted-foreground font-primary text-sm uppercase tracking-wide"
+                className="neo-button text-muted-foreground font-primary text-xs sm:text-sm uppercase tracking-wide w-full sm:w-auto"
               >
                 CLEAR SELECTION
               </button>
@@ -330,54 +334,57 @@ export default function ClientsPage() {
         )}
 
         {/* Search and Filters */}
-        <div className="neo-container p-6 mb-6">
+        <div className="neo-container p-4 sm:p-6 mb-6">
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-3">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="SEARCH CLIENTS BY NAME, EMAIL, COMPANY, OR PHONE..."
+                  placeholder="SEARCH CLIENTS..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="neomorphic-input w-full pl-10 font-primary text-sm uppercase tracking-wide"
+                  className="neomorphic-input w-full pl-10 font-primary text-xs sm:text-sm uppercase tracking-wide"
                 />
               </div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
-              >
-                <option value="all">ALL STATUS</option>
-                <option value="active">ACTIVE</option>
-                <option value="prospect">PROSPECT</option>
-                <option value="completed">COMPLETED</option>
-                <option value="inactive">INACTIVE</option>
-              </select>
-              <select
-                value={filterService}
-                onChange={(e) => setFilterService(e.target.value)}
-                className="neomorphic-input px-4 py-2 font-primary text-sm uppercase tracking-wide"
-              >
-                <option value="all">ALL SERVICES</option>
-                {services.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.name.toUpperCase()}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="neomorphic-input px-3 py-2 font-primary text-xs sm:text-sm uppercase tracking-wide flex-1"
+                >
+                  <option value="all">ALL STATUS</option>
+                  <option value="active">ACTIVE</option>
+                  <option value="prospect">PROSPECT</option>
+                  <option value="completed">COMPLETED</option>
+                  <option value="inactive">INACTIVE</option>
+                </select>
+                <select
+                  value={filterService}
+                  onChange={(e) => setFilterService(e.target.value)}
+                  className="neomorphic-input px-3 py-2 font-primary text-xs sm:text-sm uppercase tracking-wide flex-1"
+                >
+                  <option value="all">ALL SERVICES</option>
+                  {services.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <label className="flex items-center">
                 <input
                   type="checkbox"
                   checked={showIncompleteOnly}
                   onChange={(e) => setShowIncompleteOnly(e.target.checked)}
-                  className="border border-border text-accent focus:ring-accent"
+                  className="border border-border text-accent focus:ring-accent flex-shrink-0"
                 />
-                <span className="ml-2 text-sm text-muted-foreground font-primary uppercase tracking-wide">
-                  SHOW ONLY CLIENTS WITH INCOMPLETE PROFILES
+                <span className="ml-2 text-xs sm:text-sm text-muted-foreground font-primary uppercase tracking-wide">
+                  <span className="hidden sm:inline">SHOW ONLY CLIENTS WITH INCOMPLETE PROFILES</span>
+                  <span className="sm:hidden">INCOMPLETE ONLY</span>
                 </span>
               </label>
               {clients.length > 0 && (
@@ -386,9 +393,9 @@ export default function ClientsPage() {
                     type="checkbox"
                     checked={selectedClients.size === clients.length && clients.length > 0}
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="border border-border text-accent focus:ring-accent"
+                    className="border border-border text-accent focus:ring-accent flex-shrink-0"
                   />
-                  <span className="ml-2 text-sm text-muted-foreground font-primary uppercase tracking-wide">
+                  <span className="ml-2 text-xs sm:text-sm text-muted-foreground font-primary uppercase tracking-wide">
                     SELECT ALL
                   </span>
                 </label>

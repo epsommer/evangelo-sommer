@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import CRMLayout from '@/components/CRMLayout';
 import { Client, Conversation, Message } from '@/types/client';
 import { BillingSuggestion } from '@/types/billing';
-import { ArrowLeft, Filter, MessageSquare, Mail, Phone, Calendar, Edit2, ListChecks } from 'lucide-react';
+import { ArrowLeft, Filter, MessageSquare, Mail, Phone, Calendar, Edit2, ListChecks, Star } from 'lucide-react';
 import ContextualSidebar from '@/components/ContextualSidebar';
 
 // Extended message type with source conversation info
@@ -13,6 +13,13 @@ interface MasterMessage extends Message {
   conversationId: string;
   conversationTitle: string;
   messageType: 'sms' | 'email' | 'phone' | 'other';
+}
+
+// Timeline item that can be either a message or testimonial
+interface TimelineItem {
+  type: 'message' | 'testimonial';
+  timestamp: string;
+  data: MasterMessage | any; // any for testimonial
 }
 
 type MessageTypeFilter = 'all' | 'sms' | 'email' | 'phone' | 'other';
@@ -25,6 +32,8 @@ export default function MasterConversationPage() {
   const [client, setClient] = useState<Client | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [mergedMessages, setMergedMessages] = useState<MasterMessage[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<MessageTypeFilter>('all');
@@ -57,6 +66,34 @@ export default function MasterConversationPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Merge messages and testimonials into timeline
+  useEffect(() => {
+    const items: TimelineItem[] = [];
+
+    // Add all messages
+    mergedMessages.forEach(msg => {
+      items.push({
+        type: 'message',
+        timestamp: msg.timestamp,
+        data: msg
+      });
+    });
+
+    // Add all testimonials
+    testimonials.forEach(testimonial => {
+      items.push({
+        type: 'testimonial',
+        timestamp: testimonial.createdAt || testimonial.requestedAt,
+        data: testimonial
+      });
+    });
+
+    // Sort by timestamp (newest first)
+    items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    setTimelineItems(items);
+  }, [mergedMessages, testimonials]);
 
   // Callback handlers for sidebar
   const handleAutoDetails = useCallback((message: Message, suggestion: BillingSuggestion) => {
@@ -171,6 +208,17 @@ export default function MasterConversationPage() {
         );
 
         setMergedMessages(allMessages);
+
+        // Fetch testimonials
+        try {
+          const testimonialsRes = await fetch(`/api/testimonials?clientId=${clientId}`);
+          if (testimonialsRes.ok) {
+            const testimonialsData = await testimonialsRes.json();
+            setTestimonials(testimonialsData.data || []);
+          }
+        } catch (err) {
+          console.error('Error fetching testimonials:', err);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -201,10 +249,13 @@ export default function MasterConversationPage() {
     return 'other';
   }
 
-  // Filter messages by type
-  const filteredMessages = typeFilter === 'all'
-    ? mergedMessages
-    : mergedMessages.filter(msg => msg.messageType === typeFilter);
+  // Filter timeline items by type
+  const filteredTimelineItems = typeFilter === 'all'
+    ? timelineItems
+    : timelineItems.filter(item => {
+        if (item.type === 'testimonial') return true; // Always show testimonials
+        return (item.data as MasterMessage).messageType === typeFilter;
+      });
 
   // Get type counts for filter badges
   const typeCounts = {
@@ -395,19 +446,126 @@ export default function MasterConversationPage() {
 
         {/* Timeline */}
         <div className="space-y-4">
-          {filteredMessages.length === 0 ? (
+          {filteredTimelineItems.length === 0 ? (
             <div className="neo-container p-8 text-center">
               <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground font-primary">
-                No messages found {typeFilter !== 'all' && `for ${typeFilter.toUpperCase()}`}
+                No items found {typeFilter !== 'all' && `for ${typeFilter.toUpperCase()}`}
               </p>
             </div>
           ) : (
-            filteredMessages.map((message, index) => {
-              const prevMessage = index > 0 ? filteredMessages[index - 1] : null;
-              const showDateDivider = !prevMessage ||
-                new Date(message.timestamp).toDateString() !== new Date(prevMessage.timestamp).toDateString();
+            filteredTimelineItems.map((item, index) => {
+              const prevItem = index > 0 ? filteredTimelineItems[index - 1] : null;
+              const showDateDivider = !prevItem ||
+                new Date(item.timestamp).toDateString() !== new Date(prevItem.timestamp).toDateString();
 
+              // Render testimonial
+              if (item.type === 'testimonial') {
+                const testimonial = item.data;
+                return (
+                  <div key={`testimonial-${testimonial.id}`}>
+                    {/* Date Divider */}
+                    {showDateDivider && (
+                      <div className="flex items-center gap-3 my-6">
+                        <div className="flex-1 h-px bg-[var(--neomorphic-dark-shadow)]"></div>
+                        <span className="text-xs font-primary uppercase tracking-wide text-muted-foreground px-3 py-1 neo-card">
+                          {isClient ? new Date(item.timestamp).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }) : 'Loading...'}
+                        </span>
+                        <div className="flex-1 h-px bg-[var(--neomorphic-dark-shadow)]"></div>
+                      </div>
+                    )}
+
+                    {/* Testimonial Card */}
+                    <div className="max-w-2xl mx-auto">
+                      <div className="neo-container p-6 border-l-4 border-yellow-500 bg-yellow-500/5">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-yellow-500/20">
+                              <Star className="w-5 h-5 text-yellow-600 fill-yellow-500" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold font-primary uppercase tracking-wide text-foreground">
+                                Testimonial {testimonial.status === 'PENDING' ? 'Request' : 'Received'}
+                              </h3>
+                              <p className="text-xs text-muted-foreground font-primary">
+                                {isClient ? new Date(item.timestamp).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                }) : 'Loading...'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {testimonial.status && (
+                            <span className={`px-2 py-1 rounded text-xs font-primary uppercase tracking-wide ${
+                              testimonial.status === 'APPROVED' ? 'bg-green-500/20 text-green-700 border border-green-500/30' :
+                              testimonial.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-700 border border-yellow-500/30' :
+                              'bg-gray-500/20 text-gray-700 border border-gray-500/30'
+                            }`}>
+                              {testimonial.status}
+                            </span>
+                          )}
+                        </div>
+
+                        {testimonial.content && (
+                          <div className="mb-4">
+                            <p className="text-sm text-foreground whitespace-pre-wrap italic">
+                              "{testimonial.content}"
+                            </p>
+                          </div>
+                        )}
+
+                        {testimonial.rating && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xs text-muted-foreground font-primary uppercase">Rating:</span>
+                            <div className="flex gap-1">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < testimonial.rating
+                                      ? 'text-yellow-500 fill-yellow-500'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs font-bold text-foreground">
+                              {testimonial.rating}/5
+                            </span>
+                          </div>
+                        )}
+
+                        {testimonial.requestMessage && testimonial.status === 'PENDING' && (
+                          <div className="text-xs text-muted-foreground font-primary border-t border-foreground/10 pt-3 mt-3">
+                            <strong>Request Message:</strong> {testimonial.requestMessage}
+                          </div>
+                        )}
+
+                        {testimonial.conversationId && (
+                          <div className="flex items-center justify-between border-t border-foreground/10 pt-3 mt-3">
+                            <button
+                              onClick={() => router.push(`/conversations/${testimonial.conversationId}`)}
+                              className="text-xs text-accent hover:underline font-primary flex items-center gap-1"
+                            >
+                              <MessageSquare className="w-3 h-3" />
+                              View Source Conversation
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Render message
+              const message = item.data as MasterMessage;
               return (
                 <div key={`${message.conversationId}-${message.id}`}>
                   {/* Date Divider */}

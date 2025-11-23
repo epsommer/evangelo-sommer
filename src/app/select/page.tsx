@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import "@/app/neomorphic.css";
 import { Palette, Box, Users, Edit, Eye, Grid3x3, List } from "lucide-react";
-import { SlidingThemeToggle } from "@/components/SlidingThemeToggle";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 
 interface StudioProject {
@@ -139,7 +138,7 @@ export default function SelectPage() {
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
-          opacity: isDark ? 0.2 : 0.5,
+          opacity: isDark ? 0.2 : 0.15,
           background: '#000000',
           mixBlendMode: 'multiply',
           filter: 'url(#noiseFilter)',
@@ -159,9 +158,6 @@ export default function SelectPage() {
 
       {/* Top Right Controls */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-3">
-        {/* Theme Toggle */}
-        <SlidingThemeToggle dayNightOnly={false} />
-
         {/* User Avatar with Dropdown */}
         <UserAvatarDropdown isDark={isDark} />
       </div>

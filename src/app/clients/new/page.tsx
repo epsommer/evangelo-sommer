@@ -62,6 +62,10 @@ function NewClientPageContent() {
 
   // Household/Account management
   const [createHousehold, setCreateHousehold] = useState(false);
+  const [householdMode, setHouseholdMode] = useState<'new' | 'existing'>('new');
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState<string>("");
+  const [existingHouseholds, setExistingHouseholds] = useState<Array<{id: string, name: string, accountType: string, memberCount: number}>>([]);
+  const [loadingHouseholds, setLoadingHouseholds] = useState(false);
   const [householdName, setHouseholdName] = useState("");
   const [householdType, setHouseholdType] = useState<'PERSONAL' | 'FAMILY' | 'BUSINESS' | 'ORGANIZATION'>('PERSONAL');
   const [isPrimaryContact, setIsPrimaryContact] = useState(true);
@@ -90,13 +94,35 @@ function NewClientPageContent() {
     }));
   }, [formData.email, formData.phone]);
 
+  // Load existing households when household checkbox is enabled
+  useEffect(() => {
+    const loadHouseholds = async () => {
+      if (createHousehold && existingHouseholds.length === 0) {
+        setLoadingHouseholds(true);
+        try {
+          const response = await fetch('/api/households');
+          const data = await response.json();
+          if (data.success) {
+            setExistingHouseholds(data.data || []);
+          }
+        } catch (error) {
+          console.error('Error loading households:', error);
+        } finally {
+          setLoadingHouseholds(false);
+        }
+      }
+    };
+
+    loadHouseholds();
+  }, [createHousehold, existingHouseholds.length]);
+
   // Auto-generate household name from client name
   useEffect(() => {
-    if (createHousehold && formData.name && !householdName) {
+    if (createHousehold && householdMode === 'new' && formData.name && !householdName) {
       const lastName = formData.name.split(' ').pop() || formData.name;
       setHouseholdName(`${lastName} Household`);
     }
-  }, [formData.name, createHousehold, householdName]);
+  }, [formData.name, createHousehold, householdMode, householdName]);
 
   if (status === "loading") {
     return (
@@ -126,10 +152,17 @@ function NewClientPageContent() {
       }
 
       // Validate household fields if household creation is enabled
-      if (createHousehold && !householdName.trim()) {
-        setError("Please enter a household name");
-        setIsLoading(false);
-        return;
+      if (createHousehold) {
+        if (householdMode === 'new' && !householdName.trim()) {
+          setError("Please enter a household name");
+          setIsLoading(false);
+          return;
+        }
+        if (householdMode === 'existing' && !selectedHouseholdId) {
+          setError("Please select an existing household");
+          setIsLoading(false);
+          return;
+        }
       }
 
       const clientId = clientManager.generateClientId();
@@ -159,13 +192,21 @@ function NewClientPageContent() {
 
       // Add household data if enabled
       if (createHousehold) {
-        clientData.household = {
-          name: householdName.trim(),
-          accountType: householdType,
-          address: formData.address,
-          isPrimaryContact: isPrimaryContact,
-          relationshipRole: relationshipRole,
-        };
+        if (householdMode === 'new') {
+          // Create new household
+          clientData.household = {
+            name: householdName.trim(),
+            accountType: householdType,
+            address: formData.address,
+            isPrimaryContact: isPrimaryContact,
+            relationshipRole: relationshipRole,
+          };
+        } else {
+          // Add to existing household
+          clientData.existingHouseholdId = selectedHouseholdId;
+          clientData.isPrimaryContact = isPrimaryContact;
+          clientData.relationshipRole = relationshipRole;
+        }
       }
 
       // Call API to create client (and household if specified)
@@ -445,41 +486,138 @@ function NewClientPageContent() {
 
             {createHousehold && (
               <div className="neo-container p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1 font-primary uppercase tracking-wide">
-                      Household Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={householdName}
-                      onChange={(e) => setHouseholdName(e.target.value)}
-                      className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
-                      placeholder="e.g., Smith Household"
-                      required={createHousehold}
-                    />
-                    <p className="text-xs text-muted-foreground font-primary mt-1">
-                      Auto-generated from client's last name. You can customize it.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1 font-primary uppercase tracking-wide">
-                      Account Type *
-                    </label>
-                    <select
-                      value={householdType}
-                      onChange={(e) => setHouseholdType(e.target.value as 'PERSONAL' | 'FAMILY' | 'BUSINESS' | 'ORGANIZATION')}
-                      className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
-                      required={createHousehold}
-                    >
-                      <option value="PERSONAL">Personal</option>
-                      <option value="FAMILY">Family</option>
-                      <option value="BUSINESS">Business</option>
-                      <option value="ORGANIZATION">Organization</option>
-                    </select>
-                  </div>
+                {/* Mode Selection: New or Existing Household */}
+                <div className="flex gap-4 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setHouseholdMode('new')}
+                    className={`flex-1 neo-button px-4 py-3 font-primary uppercase tracking-wide text-sm transition-all ${
+                      householdMode === 'new'
+                        ? 'ring-2 ring-accent bg-accent/10 border-accent text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Create New Household</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHouseholdMode('existing')}
+                    className={`flex-1 neo-button px-4 py-3 font-primary uppercase tracking-wide text-sm transition-all ${
+                      householdMode === 'existing'
+                        ? 'ring-2 ring-accent bg-accent/10 border-accent text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span>Add to Existing Household</span>
+                    </div>
+                  </button>
                 </div>
+
+                {/* New Household Form */}
+                {householdMode === 'new' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1 font-primary uppercase tracking-wide">
+                        Household Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={householdName}
+                        onChange={(e) => setHouseholdName(e.target.value)}
+                        className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
+                        placeholder="e.g., Smith Household"
+                        required={createHousehold && householdMode === 'new'}
+                      />
+                      <p className="text-xs text-muted-foreground font-primary mt-1">
+                        Auto-generated from client's last name. You can customize it.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1 font-primary uppercase tracking-wide">
+                        Account Type *
+                      </label>
+                      <select
+                        value={householdType}
+                        onChange={(e) => setHouseholdType(e.target.value as 'PERSONAL' | 'FAMILY' | 'BUSINESS' | 'ORGANIZATION')}
+                        className="neomorphic-input w-full px-3 py-2 focus:ring-2 focus:ring-accent font-primary"
+                        required={createHousehold && householdMode === 'new'}
+                      >
+                        <option value="PERSONAL">Personal</option>
+                        <option value="FAMILY">Family</option>
+                        <option value="BUSINESS">Business</option>
+                        <option value="ORGANIZATION">Organization</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Existing Household Selection */}
+                {householdMode === 'existing' && (
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2 font-primary uppercase tracking-wide">
+                      Select Household *
+                    </label>
+                    {loadingHouseholds ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                      </div>
+                    ) : existingHouseholds.length === 0 ? (
+                      <div className="neo-container p-4 text-center">
+                        <p className="text-sm text-muted-foreground font-primary">
+                          No existing households found. Create a new household instead.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setHouseholdMode('new')}
+                          className="neo-button-active mt-3 px-4 py-2 text-xs font-primary uppercase tracking-wide"
+                        >
+                          Create New Household
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {existingHouseholds.map((household) => (
+                          <button
+                            key={household.id}
+                            type="button"
+                            onClick={() => setSelectedHouseholdId(household.id)}
+                            className={`w-full text-left neo-button p-4 transition-all ${
+                              selectedHouseholdId === household.id
+                                ? 'ring-2 ring-accent bg-accent/10 border-accent'
+                                : 'hover:bg-accent/5'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="font-bold text-foreground font-primary text-sm">
+                                  {household.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground font-primary mt-1">
+                                  {household.accountType} • {household.memberCount} {household.memberCount === 1 ? 'member' : 'members'}
+                                </div>
+                              </div>
+                              {selectedHouseholdId === household.id && (
+                                <svg className="w-5 h-5 text-accent flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

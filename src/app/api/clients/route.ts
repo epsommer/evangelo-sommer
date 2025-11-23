@@ -159,12 +159,19 @@ export async function POST(request: NextRequest) {
     };
     const prismaStatus: ClientStatus = validatedData.status ? statusMap[validatedData.status.toLowerCase()] || ClientStatus.ACTIVE : ClientStatus.ACTIVE;
 
-    // Handle household creation if requested
+    // Handle household creation or assignment
     let householdId = null;
     let isPrimaryContact = false;
     let relationshipRole = null;
 
-    if (body.household) {
+    // Check if adding to existing household
+    if (body.existingHouseholdId) {
+      householdId = body.existingHouseholdId;
+      isPrimaryContact = body.isPrimaryContact || false;
+      relationshipRole = body.relationshipRole || null;
+    }
+    // Otherwise, create new household if requested
+    else if (body.household) {
       const householdData = body.household;
 
       // Create household first

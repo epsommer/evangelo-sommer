@@ -15,6 +15,12 @@ export default function AccountSettingsPage() {
   const [windowTheme, setWindowTheme] = useState<WindowTheme>('neomorphic');
   const [userName, setUserName] = useState<string>('User');
 
+  // Track original values for cancel/revert
+  const [originalColorTheme, setOriginalColorTheme] = useState<ColorTheme>('light');
+  const [originalGrainIntensity, setOriginalGrainIntensity] = useState<GrainIntensity>('medium');
+  const [originalWindowTheme, setOriginalWindowTheme] = useState<WindowTheme>('neomorphic');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   // Load settings from localStorage
   useEffect(() => {
     const loadedTheme = (localStorage.getItem('color-theme') as ColorTheme) || 'light';
@@ -24,6 +30,11 @@ export default function AccountSettingsPage() {
     setColorTheme(loadedTheme);
     setGrainIntensityState(loadedGrain);
     setWindowTheme(loadedWindow);
+
+    // Store original values
+    setOriginalColorTheme(loadedTheme);
+    setOriginalGrainIntensity(loadedGrain);
+    setOriginalWindowTheme(loadedWindow);
 
     // Apply theme classes to document
     applyTheme(loadedTheme);
@@ -61,19 +72,47 @@ export default function AccountSettingsPage() {
 
   const handleColorThemeChange = (theme: ColorTheme) => {
     setColorTheme(theme);
-    localStorage.setItem('color-theme', theme);
     applyTheme(theme);
+    setHasUnsavedChanges(true);
   };
 
   const handleGrainIntensityChange = (intensity: GrainIntensity) => {
     setGrainIntensityState(intensity);
     setGrainIntensity(intensity);
+    setHasUnsavedChanges(true);
   };
 
   const handleWindowThemeChange = (theme: WindowTheme) => {
     setWindowTheme(theme);
-    localStorage.setItem('window-theme', theme);
     applyWindowTheme(theme);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSave = () => {
+    localStorage.setItem('color-theme', colorTheme);
+    localStorage.setItem('window-theme', windowTheme);
+    setGrainIntensity(grainIntensity);
+
+    // Update original values
+    setOriginalColorTheme(colorTheme);
+    setOriginalGrainIntensity(grainIntensity);
+    setOriginalWindowTheme(windowTheme);
+
+    setHasUnsavedChanges(false);
+    alert('Settings saved successfully!');
+  };
+
+  const handleCancel = () => {
+    // Revert to original settings
+    setColorTheme(originalColorTheme);
+    setGrainIntensityState(originalGrainIntensity);
+    setWindowTheme(originalWindowTheme);
+
+    applyTheme(originalColorTheme);
+    applyWindowTheme(originalWindowTheme);
+    setGrainIntensity(originalGrainIntensity);
+
+    setHasUnsavedChanges(false);
   };
 
   const isDark = colorTheme === 'mocha' || colorTheme === 'true-night';
@@ -274,7 +313,7 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Additional Info */}
-        <div className="neo-container p-6">
+        <div className="neo-container p-6 mb-6">
           <div className="flex items-start gap-3">
             <div className="w-1 h-full bg-[var(--tactical-gold)]" />
             <div>
@@ -285,6 +324,38 @@ export default function AccountSettingsPage() {
                 These preferences are stored locally and will persist across sessions.
                 Window style preferences apply to both the Select page and CRM interface.
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Save/Cancel Footer */}
+        <div className="neo-container p-6">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-[var(--hud-text-secondary)] font-body">
+              {hasUnsavedChanges ? (
+                <span className="text-[var(--tactical-gold)]">You have unsaved changes</span>
+              ) : (
+                <span>Preview changes live. Click "Save Changes" to keep them.</span>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCancel}
+                disabled={!hasUnsavedChanges}
+                className="neo-button px-6 py-3 font-primary text-sm uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!hasUnsavedChanges}
+                className="neo-button-active px-6 py-3 font-primary text-sm uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Save Changes
+              </button>
             </div>
           </div>
         </div>

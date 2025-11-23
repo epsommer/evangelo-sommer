@@ -274,9 +274,9 @@
 /* True Night Theme - Pure Neutral Dark */
 .true-night-mode {
   --background: 0 0% 10%; /* Pure dark gray #1a1a1a */
-  --foreground: 0 0% 95%; /* Pure light gray #f2f2f2 */
+  --foreground: 0 0% 75%; /* Softer light gray #bfbfbf */
   --card: 0 0% 14%; /* Card background #242424 */
-  --card-foreground: 0 0% 95%;
+  --card-foreground: 0 0% 75%;
   --popover: 0 0% 10%;
   --popover-foreground: 0 0% 95%;
   --primary: 0 0% 65%; /* Neutral grey primary #a6a6a6 */

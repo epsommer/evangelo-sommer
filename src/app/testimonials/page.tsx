@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Star, Send, CheckCircle, Clock, XCircle, Eye, EyeOff, Award, Search, Filter, Plus } from 'lucide-react'
+import { Star, Send, CheckCircle, Clock, XCircle, Eye, EyeOff, Award, Search, Filter, Plus, History } from 'lucide-react'
 import CRMLayout from '@/components/CRMLayout'
 import TestimonialRequestModal from '@/components/TestimonialRequestModal'
 
@@ -452,7 +452,7 @@ const TestimonialsPage = () => {
                           {testimonial.title}
                         </h3>
                       )}
-                      <div className="flex items-center space-x-3 text-sm text-muted-foreground font-primary">
+                      <div className="flex items-center space-x-3 text-sm text-muted-foreground font-primary flex-wrap">
                         <button
                           onClick={() => router.push(`/clients/${testimonial.client.id}`)}
                           className="hover:text-foreground transition-colors"
@@ -471,6 +471,14 @@ const TestimonialsPage = () => {
                             <span>{testimonial.serviceName}</span>
                           </>
                         )}
+                        <span>•</span>
+                        <button
+                          onClick={() => router.push(`/clients/${testimonial.client.id}/master`)}
+                          className="hover:text-accent transition-colors flex items-center gap-1"
+                        >
+                          <History className="h-3 w-3" />
+                          <span>Master Timeline</span>
+                        </button>
                       </div>
                     </div>
                   </div>

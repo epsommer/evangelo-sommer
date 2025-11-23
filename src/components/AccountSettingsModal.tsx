@@ -81,8 +81,37 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   const [grainIntensity, setGrainIntensityState] = useState<GrainIntensity>('medium')
   const [windowTheme, setWindowTheme] = useState<WindowTheme>('neomorphic')
 
+  // Track original theme settings for cancel/revert
+  const [originalColorTheme, setOriginalColorTheme] = useState<ColorTheme>('light')
+  const [originalGrainIntensity, setOriginalGrainIntensity] = useState<GrainIntensity>('medium')
+  const [originalWindowTheme, setOriginalWindowTheme] = useState<WindowTheme>('neomorphic')
+
   const handleSave = () => {
+    // Save theme settings to localStorage when save is clicked
+    applyTheme(colorTheme, true) // true = save to localStorage
+    localStorage.setItem('window-theme', windowTheme)
+    setGrainIntensity(grainIntensity)
+
+    // Update original values so they match current
+    setOriginalColorTheme(colorTheme)
+    setOriginalGrainIntensity(grainIntensity)
+    setOriginalWindowTheme(windowTheme)
+
     onSave(settings)
+    onClose()
+  }
+
+  const handleCancel = () => {
+    // Revert to original theme settings
+    applyTheme(originalColorTheme)
+    applyWindowTheme(originalWindowTheme)
+    setGrainIntensity(originalGrainIntensity)
+
+    // Reset state to original values
+    setColorTheme(originalColorTheme)
+    setGrainIntensityState(originalGrainIntensity)
+    setWindowTheme(originalWindowTheme)
+
     onClose()
   }
 
@@ -107,19 +136,26 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     }))
   }
 
-  // Load Display & Theme settings from localStorage on mount
+  // Load Display & Theme settings from localStorage when modal opens
   useEffect(() => {
-    const loadedTheme = (localStorage.getItem('color-theme') as ColorTheme) || 'light'
-    const loadedGrain = getGrainIntensity()
-    const loadedWindow = (localStorage.getItem('window-theme') as WindowTheme) || 'neomorphic'
+    if (isOpen) {
+      const loadedTheme = (localStorage.getItem('color-theme') as ColorTheme) || 'light'
+      const loadedGrain = getGrainIntensity()
+      const loadedWindow = (localStorage.getItem('window-theme') as WindowTheme) || 'neomorphic'
 
-    setColorTheme(loadedTheme)
-    setGrainIntensityState(loadedGrain)
-    setWindowTheme(loadedWindow)
-  }, [])
+      setColorTheme(loadedTheme)
+      setGrainIntensityState(loadedGrain)
+      setWindowTheme(loadedWindow)
 
-  // Theme application logic
-  const applyTheme = (theme: ColorTheme) => {
+      // Store original values for cancel/revert
+      setOriginalColorTheme(loadedTheme)
+      setOriginalGrainIntensity(loadedGrain)
+      setOriginalWindowTheme(loadedWindow)
+    }
+  }, [isOpen])
+
+  // Theme application logic (for preview only, don't save to localStorage)
+  const applyTheme = (theme: ColorTheme, saveToStorage: boolean = false) => {
     const root = document.documentElement
     root.classList.remove('mocha-mode', 'overkast-mode', 'true-night-mode', 'gilded-meadow-mode')
 
@@ -143,7 +179,11 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     // Update data-color-theme attribute for consistency
     root.setAttribute('data-color-theme', theme)
 
-    localStorage.setItem('color-theme', theme)
+    // Only save to localStorage if explicitly requested (on save button click)
+    if (saveToStorage) {
+      localStorage.setItem('color-theme', theme)
+    }
+
     window.dispatchEvent(new Event('themechange'))
   }
 
@@ -752,11 +792,11 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
         {/* Footer */}
         <div className="neo-container-inner border-t border-border p-6 flex items-center justify-between">
           <div className="text-sm text-foreground/60 font-primary">
-            Changes will be saved to your profile and applied immediately.
+            Preview changes live. Click "Save Changes" to keep them, or "Cancel" to revert.
           </div>
           <div className="flex items-center space-x-3">
             <button
-              onClick={onClose}
+              onClick={handleCancel}
               className="neo-button px-6 py-2 font-bold uppercase tracking-wide font-primary transition-all duration-300"
             >
               Cancel

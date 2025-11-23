@@ -139,7 +139,7 @@ export default function SignIn() {
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
-          opacity: isDark ? 0.2 : 0.5,
+          opacity: isDark ? 0.2 : 0.15,
           background: '#000000',
           mixBlendMode: 'multiply',
           filter: 'url(#noiseFilter)',

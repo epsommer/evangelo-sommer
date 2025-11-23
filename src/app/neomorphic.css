@@ -44,9 +44,9 @@
 :root.true-night-mode,
 .true-night-mode {
   --neomorphic-bg: #1a1a1a;
-  --neomorphic-text: #f2f2f2;
+  --neomorphic-text: #bfbfbf; /* Softer light grey */
   --neomorphic-button-bg: #404040; /* Medium grey for button background */
-  --neomorphic-button-text: #f2f2f2; /* Light text for button */
+  --neomorphic-button-text: #bfbfbf; /* Softer light text for button */
   --neomorphic-icon: #a6a6a6;
   --neomorphic-dark-shadow: #0d0d0d;
   --neomorphic-light-shadow: rgba(255, 255, 255, 0.04); /* Reduced brightness */
@@ -115,7 +115,7 @@
   border-radius: 40px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
+  opacity: 0.15;
   background: #000000;
   mix-blend-mode: multiply;
   filter: url(#toggleNoiseFilter);
@@ -174,7 +174,7 @@
 /* Light mode grain */
 :root .neomorphic-toggle::before,
 .neomorphic-toggle::before {
-  opacity: 0.5;
+  opacity: 0.15;
   background: #000000;
   mix-blend-mode: multiply;
   filter: url(#toggleNoiseFilter);
@@ -352,7 +352,7 @@
   border-radius: 12px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
+  opacity: 0.15;
   background: #000000;
   mix-blend-mode: multiply;
   filter: url(#noiseFilter);
@@ -428,7 +428,7 @@
   border-radius: 12px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
+  opacity: 0.15;
   background: #000000;
   mix-blend-mode: multiply;
   filter: url(#toggleNoiseFilter);
@@ -509,7 +509,8 @@
   border-radius: inherit;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
+  opacity: 0.15;
+  background: #000000;
   mix-blend-mode: multiply;
   filter: url(#toggleNoiseFilter);
 }
@@ -527,6 +528,27 @@
 .neomorphic-logo > div {
   position: relative;
   z-index: 2;
+}
+
+/* Logo image filter for light mode */
+.neomorphic-logo img {
+  filter: invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95);
+}
+
+/* Logo image filter for dark modes - make it light grey */
+.true-night-mode .neomorphic-logo img,
+.mocha-mode .neomorphic-logo img {
+  filter: invert(0.75) saturate(0) brightness(0.95);
+}
+
+/* Logo image filter for overkast mode */
+.overkast-mode .neomorphic-logo img {
+  filter: invert(0.3) saturate(1) brightness(0.8);
+}
+
+/* Logo image filter for gilded meadow mode */
+.gilded-meadow-mode .neomorphic-logo img {
+  filter: invert(0.5) saturate(2) hue-rotate(-10deg) brightness(0.9);
 }
 
 /* Neomorphic Card */
@@ -554,8 +576,7 @@
   border-radius: 20px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
-  background: #000000;
+  opacity: 0.15;
   mix-blend-mode: multiply;
   filter: url(#toggleNoiseFilter);
 }
