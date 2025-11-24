@@ -297,12 +297,13 @@ const ClientDetailPage = () => {
                 {client.status}
               </span>
               <button
-                className="neo-button p-2 sm:px-4 sm:py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm flex items-center justify-center sm:gap-2 flex-shrink-0 aspect-square sm:aspect-auto"
+                className="neo-icon-button sm:neo-button sm:px-4 sm:py-2 sm:gap-2"
                 onClick={() => setShowEditModal(true)}
                 aria-label="Edit Client"
+                title="Edit Client"
               >
-                <Edit className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Edit Client</span>
+                <Edit className="h-4 w-4" />
+                <span className="hidden sm:inline sm:block uppercase tracking-wide text-xs sm:text-sm">Edit Client</span>
               </button>
             </div>
           </div>
