@@ -78,6 +78,20 @@ export default function EnhancedReceiptModal({
   const [error, setError] = useState<string | null>(null);
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   // Auto-fill form when autoFillData is provided
   useEffect(() => {
     if (autoFillData && isOpen) {
