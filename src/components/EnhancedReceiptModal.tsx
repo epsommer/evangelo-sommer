@@ -236,18 +236,18 @@ export default function EnhancedReceiptModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-dark-grey bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white border-2 border-dark-grey w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="neo-card w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b-2 border-hud-border bg-hud-background-secondary">
+        <div className="flex items-center justify-between p-4 border-b border-neomorphic-border">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold font-primary uppercase tracking-wide text-hud-text-primary">
+            <h2 className="text-xl font-bold font-primary uppercase tracking-wide text-foreground">
               Create Receipt
             </h2>
             {isAutoFilled && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-tactical-gold border border-hud-border-accent-dark">
-                <Sparkles className="w-4 h-4 text-hud-text-primary" />
-                <span className="text-xs font-primary font-bold uppercase tracking-wide text-hud-text-primary">
+              <div className="flex items-center gap-2 px-3 py-1 neo-button-active">
+                <Sparkles className="w-4 h-4 text-tactical-gold" />
+                <span className="text-xs font-primary font-bold uppercase tracking-wide text-foreground">
                   Auto-Drafted
                 </span>
               </div>
@@ -255,23 +255,23 @@ export default function EnhancedReceiptModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-light-grey transition-colors duration-150"
+            className="neo-icon-button"
             aria-label="Close receipt modal"
           >
-            <X className="w-6 h-6 text-medium-grey" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Auto-fill banner */}
         {isAutoFilled && autoFillData && (
-          <div className="p-3 bg-tactical-gold-light border-b border-hud-border-accent">
+          <div className="p-3 neo-inset border-b border-neomorphic-border">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-gold-dark mt-0.5" />
-              <div className="text-sm font-primary text-hud-text-primary">
+              <AlertCircle className="w-4 h-4 text-tactical-gold mt-0.5" />
+              <div className="text-sm font-primary text-foreground">
                 <div className="font-bold">AI Context Applied</div>
-                <div className="text-xs mt-1">
-                  Service: {autoFillData.serviceType.replace(/([A-Z])/g, ' $1')} • 
-                  Amount: ${autoFillData.suggestedAmount} • 
+                <div className="text-xs mt-1 text-muted-foreground">
+                  Service: {autoFillData.serviceType.replace(/([A-Z])/g, ' $1')} •
+                  Amount: ${autoFillData.suggestedAmount} •
                   Confidence: {autoFillData.confidence}
                 </div>
               </div>
@@ -282,11 +282,11 @@ export default function EnhancedReceiptModal({
         {/* Form Content */}
         <div className="p-6 space-y-6">
           {/* Client Info */}
-          <div className="p-4 bg-hud-background-secondary border border-hud-border">
-            <h3 className="font-primary font-bold uppercase tracking-wide text-hud-text-primary mb-2">
+          <div className="p-4 neo-inset rounded-lg">
+            <h3 className="font-primary font-bold uppercase tracking-wide text-foreground mb-2">
               Client Information
             </h3>
-            <div className="text-sm font-primary text-hud-text-primary">
+            <div className="text-sm font-primary text-foreground">
               <div><strong>Name:</strong> {client.name}</div>
               <div><strong>Email:</strong> {client.email || 'N/A'}</div>
               <div><strong>Service:</strong> {client.serviceId}</div>
@@ -295,26 +295,26 @@ export default function EnhancedReceiptModal({
 
           {/* Line Items */}
           <div>
-            <h3 className="font-primary font-bold uppercase tracking-wide text-hud-text-primary mb-4">
+            <h3 className="font-primary font-bold uppercase tracking-wide text-foreground mb-4">
               Services & Items
             </h3>
             <div className="space-y-3">
               {formData.items.map((item, index) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-5">
-                    <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-1">
+                    <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-1">
                       Description
                     </label>
                     <input
                       type="text"
                       value={item.description}
                       onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent"
+                      className="neomorphic-input w-full"
                       placeholder="Service description"
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-1">
+                    <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-1">
                       Qty
                     </label>
                     <input
@@ -322,11 +322,11 @@ export default function EnhancedReceiptModal({
                       min="1"
                       value={item.quantity}
                       onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                      className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent"
+                      className="neomorphic-input w-full"
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-1">
+                    <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-1">
                       Price
                     </label>
                     <input
@@ -335,14 +335,14 @@ export default function EnhancedReceiptModal({
                       step="0.01"
                       value={item.unitPrice}
                       onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent"
+                      className="neomorphic-input w-full"
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-1">
+                    <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-1">
                       Total
                     </label>
-                    <div className="p-2 bg-light-grey border border-hud-border font-primary text-hud-text-primary font-bold">
+                    <div className="p-2 neo-inset rounded font-primary text-foreground font-bold text-center">
                       ${item.totalPrice.toFixed(2)}
                     </div>
                   </div>
@@ -350,20 +350,20 @@ export default function EnhancedReceiptModal({
                     {formData.items.length > 1 && (
                       <button
                         onClick={() => removeItem(index)}
-                        className="w-full p-2 text-red-600 hover:bg-red-50 transition-colors duration-150"
+                        className="neo-icon-button w-full"
                         aria-label="Remove item"
                       >
-                        <X className="w-4 h-4 mx-auto" />
+                        <X className="w-4 h-4 mx-auto text-red-500" />
                       </button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
-            
+
             <button
               onClick={addItem}
-              className="mt-4 px-4 py-2 border border-hud-border text-medium-grey hover:bg-light-grey font-primary font-bold uppercase tracking-wide transition-colors duration-150"
+              className="neo-button mt-4"
             >
               + Add Item
             </button>
@@ -372,13 +372,13 @@ export default function EnhancedReceiptModal({
           {/* Payment Details */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-2">
+              <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-2">
                 Payment Method
               </label>
               <select
                 value={formData.paymentMethod}
                 onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as any }))}
-                className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent"
+                className="neomorphic-input w-full"
               >
                 <option value="cash">Cash</option>
                 <option value="card">Card</option>
@@ -387,59 +387,59 @@ export default function EnhancedReceiptModal({
                 <option value="other">Other</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-2">
+              <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-2">
                 Payment Date
               </label>
               <input
                 type="date"
                 value={formData.paymentDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, paymentDate: e.target.value }))}
-                className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent"
+                className="neomorphic-input w-full"
               />
             </div>
           </div>
 
           {/* Service Date */}
           <div>
-            <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-2">
+            <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-2">
               Service Date
             </label>
             <input
               type="date"
               value={formData.serviceDate}
               onChange={(e) => setFormData(prev => ({ ...prev, serviceDate: e.target.value }))}
-              className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent"
+              className="neomorphic-input w-full"
             />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-primary uppercase tracking-wide text-medium-grey mb-2">
+            <label className="block text-xs font-primary uppercase tracking-wide text-muted-foreground mb-2">
               Notes
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
-              className="w-full p-2 border border-hud-border font-primary text-hud-text-primary focus:outline-none focus:border-hud-border-accent resize-none"
+              className="neomorphic-input w-full resize-none"
               placeholder="Additional notes..."
             />
           </div>
 
           {/* Total Summary */}
-          <div className="p-4 bg-hud-background-secondary border border-hud-border">
+          <div className="p-4 neo-inset rounded-lg">
             <div className="space-y-2 font-primary">
-              <div className="flex justify-between text-hud-text-primary">
+              <div className="flex justify-between text-foreground">
                 <span>Subtotal:</span>
                 <span>${calculateSubtotal().toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-hud-text-primary">
+              <div className="flex justify-between text-foreground">
                 <span>Tax ({DEFAULT_TAX_CONFIG.rate > 0 ? `${(DEFAULT_TAX_CONFIG.rate * 100).toFixed(1)}%` : DEFAULT_TAX_CONFIG.name}):</span>
                 <span>{DEFAULT_TAX_CONFIG.rate > 0 ? `$${calculateTax().toFixed(2)}` : 'N/A'}</span>
               </div>
-              <div className="flex justify-between text-lg font-bold text-hud-text-primary border-t border-medium-grey pt-2">
+              <div className="flex justify-between text-lg font-bold text-foreground border-t border-neomorphic-border pt-2">
                 <span>Total:</span>
                 <span>${calculateTotal().toFixed(2)}</span>
               </div>
@@ -447,23 +447,23 @@ export default function EnhancedReceiptModal({
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 text-red-700 font-primary text-sm">
+            <div className="p-4 neo-inset rounded-lg border-2 border-red-500 text-red-700 font-primary text-sm">
               {error}
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-hud-border">
+          <div className="flex justify-end gap-3 pt-4 border-t border-neomorphic-border">
             <button
               onClick={onClose}
-              className="px-6 py-2 border border-medium-grey text-medium-grey hover:bg-light-grey font-primary font-bold uppercase tracking-wide transition-colors duration-150"
+              className="neo-button"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-tactical-gold hover:bg-tactical-gold-dark text-hud-text-primary font-primary font-bold uppercase tracking-wide transition-colors duration-150 disabled:opacity-50"
+              className="neo-button-submit disabled:opacity-50"
             >
               {isSubmitting ? 'Creating...' : 'Create Receipt'}
             </button>
