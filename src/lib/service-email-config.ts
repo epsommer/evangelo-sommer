@@ -96,3 +96,42 @@ export function isValidServiceId(serviceId?: string): boolean {
 export function getAllServiceIds(): string[] {
   return Object.keys(serviceEmailConfigs)
 }
+
+// Map service types to their parent service lines
+const serviceTypeToServiceLine: Record<string, string> = {
+  // Woodgreen Landscaping services
+  'lawn_care': 'woodgreen',
+  'landscaping': 'woodgreen',
+  'maintenance': 'woodgreen',
+  'tree_trimming': 'woodgreen',
+  'lawn_mowing': 'woodgreen',
+  'hedge_trimming': 'woodgreen',
+  'weeding': 'woodgreen',
+  'gardening': 'woodgreen',
+  'mulching': 'woodgreen',
+  'gutter_cleaning': 'woodgreen',
+  'leaf_removal': 'woodgreen',
+  'dethatching': 'woodgreen',
+
+  // White Knight Snow Service services
+  'snow_removal': 'whiteknight',
+  'snow_plowing': 'whiteknight',
+  'salting': 'whiteknight',
+  'ice_management': 'whiteknight',
+  'premium_salting': 'whiteknight',
+  'calcium_magnesium_mix': 'whiteknight',
+  'winter_maintenance': 'whiteknight',
+}
+
+// Resolve service type to service line ID
+export function resolveServiceLineId(serviceId?: string): string | undefined {
+  if (!serviceId) return undefined
+
+  // If it's already a service line ID, return it
+  if (serviceId in serviceEmailConfigs) {
+    return serviceId
+  }
+
+  // Otherwise, map service type to service line
+  return serviceTypeToServiceLine[serviceId]
+}

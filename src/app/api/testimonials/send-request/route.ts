@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import sgMail from '@sendgrid/mail'
-import { getServiceEmailConfig, ServiceEmailConfig } from '@/lib/service-email-config'
+import { getServiceEmailConfig, ServiceEmailConfig, resolveServiceLineId } from '@/lib/service-email-config'
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -65,8 +65,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Get service-specific email configuration
-    const serviceConfig = getServiceEmailConfig(serviceId)
+    // Resolve service type to service line (e.g., 'leaf_removal' -> 'woodgreen')
+    const serviceLineId = resolveServiceLineId(serviceId)
+
+    // Get service-specific email configuration using resolved service line
+    const serviceConfig = getServiceEmailConfig(serviceLineId)
 
     // Generate the testimonial form link pointing to service website
     const formLink = `${serviceConfig.websiteUrl}/testimonials/submit/${testimonial.id}`
