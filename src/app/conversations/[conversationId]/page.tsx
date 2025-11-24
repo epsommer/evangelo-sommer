@@ -746,7 +746,7 @@ export default function ConversationPage() {
             />
           }
           scheduleContent={
-            <SidebarSchedule client={client} />
+            <SidebarSchedule conversation={conversation} client={client} />
           }
           billingContent={
             <SidebarBilling conversation={conversation} client={client} />

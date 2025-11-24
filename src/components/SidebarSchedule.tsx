@@ -6,7 +6,7 @@ import { Conversation, Client, Message } from '../types/client';
 import { Button } from './ui/button';
 
 interface SidebarScheduleProps {
-  conversation: Conversation;
+  conversation?: Conversation;
   client: Client;
 }
 
@@ -26,7 +26,7 @@ export default function SidebarSchedule({ conversation, client }: SidebarSchedul
   const [showQuickSchedule, setShowQuickSchedule] = useState(false);
 
   const schedulingSuggestions = useMemo((): SchedulingSuggestion[] => {
-    const messages = conversation.messages || [];
+    const messages = conversation?.messages || [];
     const suggestions: SchedulingSuggestion[] = [];
     const now = new Date();
 

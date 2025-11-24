@@ -753,7 +753,7 @@ export default function MasterConversationPage() {
             />
           }
           scheduleContent={
-            <SidebarSchedule client={client} />
+            <SidebarSchedule conversation={masterConversation} client={client} />
           }
           billingContent={
             <SidebarBilling conversation={masterConversation} client={client} />
