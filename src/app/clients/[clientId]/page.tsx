@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Mail, Phone, AlertTriangle, Edit, FileText, Calculator, Receipt, ScrollText, MapPin, User, Building } from 'lucide-react'
+import { Mail, Phone, AlertTriangle, Edit, FileText, Calculator, Receipt, ScrollText, MapPin, User, Building, Plus, Trash2 } from 'lucide-react'
 import CRMLayout from '@/components/CRMLayout'
 import { getServiceById } from '@/lib/service-config'
 import { getServiceInfo } from '@/lib/service-constants'
@@ -253,13 +253,6 @@ const ClientDetailPage = () => {
   return (
     <CRMLayout>
       <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-        {/* Quick Actions */}
-        <ClientQuickActions
-          client={client}
-          onMessageClient={() => setShowQuickMessageModal(true)}
-          onScheduleService={handleScheduleService}
-        />
-
         {/* Client Header - BELONGS ON CLIENT PAGE */}
         <div className="neo-inset p-3 sm:p-6 transition-transform hover:scale-[1.01]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -309,6 +302,14 @@ const ClientDetailPage = () => {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <ClientQuickActions
+          client={client}
+          onMessageClient={() => setShowQuickMessageModal(true)}
+          onScheduleService={handleScheduleService}
+          onCreateReceipt={() => setShowReceiptModal(true)}
+        />
+
         {/* Incomplete Profile Warning - BELONGS ON CLIENT PAGE */}
         {isProfileIncomplete(client) && (
           <div className="neo-inset p-4 border-l-4 border-yellow-500">
@@ -336,9 +337,22 @@ const ClientDetailPage = () => {
         {/* Client Services Section */}
         <div className="neo-container transition-transform hover:scale-[1.01]">
           <div className="neo-inset border-b border-foreground/10 p-6">
-            <h3 className="text-lg font-bold text-foreground uppercase tracking-wide font-primary">
-              Services
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground uppercase tracking-wide font-primary">
+                Services
+              </h3>
+              <button
+                className="neo-button px-3 py-2 flex items-center gap-2 text-xs uppercase transition-transform hover:scale-[1.02]"
+                onClick={() => {
+                  // TODO: Add service functionality
+                  console.log('Add service clicked')
+                }}
+                title="Add Service"
+              >
+                <Plus className="h-4 w-4" />
+                Add Service
+              </button>
+            </div>
           </div>
           <div className="p-6">
             {(() => {
@@ -363,7 +377,7 @@ const ClientDetailPage = () => {
                     return (
                       <div key={serviceId} className="neo-inset p-4 rounded-lg transition-transform hover:scale-[1.01]">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-3 flex-1">
                             {getServiceIcon(serviceId)}
                             <div>
                               <div className="font-bold text-foreground font-primary uppercase">
@@ -376,9 +390,22 @@ const ClientDetailPage = () => {
                               )}
                             </div>
                           </div>
-                          <span className="neo-badge px-3 py-1 text-xs uppercase font-primary bg-green-600 text-white">
-                            Active
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="neo-badge px-3 py-1 text-xs uppercase font-primary bg-green-600 text-white">
+                              Active
+                            </span>
+                            <button
+                              className="neo-icon-button transition-transform hover:scale-[1.1]"
+                              onClick={() => {
+                                // TODO: Remove service functionality
+                                console.log('Remove service clicked:', serviceId)
+                              }}
+                              title="Remove Service"
+                              aria-label="Remove Service"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )

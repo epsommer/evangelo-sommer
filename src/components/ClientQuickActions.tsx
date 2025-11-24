@@ -1,14 +1,14 @@
 "use client"
 
 import React from 'react'
-import { MessageSquare, Calendar, Phone, Mail, FileText } from 'lucide-react'
+import { MessageSquare, Calendar, Receipt, Mail, FileText } from 'lucide-react'
 import { Client } from '@/types/client'
 
 interface ClientQuickActionsProps {
   client: Client
   onMessageClient: () => void
   onScheduleService: () => void
-  onPhoneCall?: () => void
+  onCreateReceipt?: () => void
   onEmail?: () => void
 }
 
@@ -16,7 +16,7 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
   client,
   onMessageClient,
   onScheduleService,
-  onPhoneCall,
+  onCreateReceipt,
   onEmail
 }) => {
   return (
@@ -52,25 +52,17 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
             </span>
           </button>
 
-          {/* Phone Call */}
-          {client.phone && (
-            <a
-              href={`tel:${client.phone}`}
-              onClick={(e) => {
-                if (onPhoneCall) {
-                  e.preventDefault()
-                  onPhoneCall()
-                }
-              }}
-              className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
-              title={`Call ${client.phone}`}
-            >
-              <Phone className="h-6 w-6 text-foreground" />
-              <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
-                Call
-              </span>
-            </a>
-          )}
+          {/* Create Receipt/Invoice */}
+          <button
+            onClick={onCreateReceipt}
+            className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
+            title="Create receipt or invoice"
+          >
+            <Receipt className="h-6 w-6 text-foreground" />
+            <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
+              Receipt
+            </span>
+          </button>
 
           {/* Email */}
           {client.email && (
