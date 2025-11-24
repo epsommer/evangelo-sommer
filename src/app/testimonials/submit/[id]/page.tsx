@@ -72,7 +72,7 @@ const TestimonialSubmitPage = () => {
       } else {
         setError(data.error || 'Failed to submit testimonial')
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while submitting your testimonial')
     } finally {
       setIsSubmitting(false)
@@ -145,7 +145,7 @@ const TestimonialSubmitPage = () => {
             Share Your Experience
           </h1>
           <p className="text-center text-muted-foreground font-primary mt-2">
-            We'd love to hear about your experience with our services
+            We&apos;d love to hear about your experience with our services
           </p>
         </div>
 
