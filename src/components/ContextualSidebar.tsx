@@ -576,26 +576,23 @@ export default function ContextualSidebar({
   };
 
   return (
-    <div
-      ref={sidebarRef}
-      className={`
-        fixed right-0 z-40 flex flex-row-reverse
-        ${isMobile ? 'w-full' : 'w-auto'}
-        ${className}
-      `}
-      style={{
-        top: `${headerHeight}px`,
-        height: `calc(100vh - ${headerHeight}px)`
-      }}
-    >
-      {/* Primary Navigation Sidebar */}
-      <div className={`
-        neo-sidebar
-        ${isMobile ? 'w-16' : 'w-16'}
-        ${isMobile && activeTab ? 'shadow-2xl' : ''}
-        transition-all duration-300 ease-in-out
-        flex flex-col
-      `}>
+    <>
+      {/* Primary Navigation Sidebar - Fixed on right */}
+      <div
+        className={`
+          fixed right-0 z-40
+          neo-sidebar
+          w-16
+          ${isMobile && activeTab ? 'shadow-2xl' : ''}
+          transition-all duration-300 ease-in-out
+          flex flex-col
+          ${className}
+        `}
+        style={{
+          top: `${headerHeight}px`,
+          height: `calc(100vh - ${headerHeight}px)`
+        }}
+      >
         {/* Collapse Toggle - Always at Top */}
         <div className="p-2 border-b border-b-[var(--neomorphic-dark-shadow)] flex justify-center">
           <button
@@ -705,17 +702,25 @@ export default function ContextualSidebar({
         </div>
       </div>
 
-      {/* Contextual Content Panel */}
-      <div className={`
-        neo-container border-r border-r-[var(--neomorphic-dark-shadow)]
-        bg-[var(--neomorphic-bg)]
-        transition-all duration-300 ease-in-out overflow-hidden
-        ${isExpanded && activeTab ?
-          (isMobile ? 'w-96' : 'w-[28rem]') :
-          'w-0'
-        }
-        ${isMobile ? 'shadow-2xl' : ''}
-      `}>
+      {/* Contextual Content Panel - Positioned to left of action buttons */}
+      <div
+        className={`
+          fixed z-40
+          neo-container border-r border-r-[var(--neomorphic-dark-shadow)]
+          bg-[var(--neomorphic-bg)]
+          transition-all duration-300 ease-in-out overflow-hidden
+          ${isExpanded && activeTab ?
+            (isMobile ? 'w-96' : 'w-[28rem]') :
+            'w-0'
+          }
+          ${isMobile ? 'shadow-2xl' : ''}
+        `}
+        style={{
+          top: `${headerHeight}px`,
+          height: `calc(100vh - ${headerHeight}px)`,
+          right: '64px' // Position to left of 64px (w-16) action buttons
+        }}
+      >
         {activeTab && (
           <div className="h-full flex flex-col">
             {/* Panel Header */}
@@ -755,7 +760,7 @@ export default function ContextualSidebar({
       {/* Mobile Overlay */}
       {isMobile && activeTab && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 -z-10"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30"
           onClick={() => {
             setActiveTab(null);
             setIsExpanded(false);
@@ -763,6 +768,6 @@ export default function ContextualSidebar({
           }}
         />
       )}
-    </div>
+    </>
   );
 }
