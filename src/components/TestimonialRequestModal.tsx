@@ -125,6 +125,11 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
       return
     }
 
+    if (!serviceId && !serviceName) {
+      setError('Please select a service to continue')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -338,7 +343,7 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
               {/* Service Selection with Dropdown + Custom */}
               <div className="neo-card p-5">
                 <label className="block text-sm font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
-                  Service (Optional)
+                  Service *
                 </label>
                 <select
                   value={serviceId || 'custom'}

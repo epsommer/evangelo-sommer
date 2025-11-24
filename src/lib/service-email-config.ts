@@ -1,0 +1,86 @@
+// Service-specific email configuration for testimonial requests
+// Each service line has its own feedback email and branding
+
+export interface ServiceEmailConfig {
+  id: string
+  name: string
+  domain: string
+  feedbackEmail: string
+  primaryColor: string
+  secondaryColor: string
+  description: string
+}
+
+export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
+  woodgreen: {
+    id: 'woodgreen',
+    name: 'WOODGREEN LANDSCAPING',
+    domain: 'woodgreenlawns.com',
+    feedbackEmail: 'feedback@woodgreenlawns.com',
+    primaryColor: '#059669', // Emerald Green
+    secondaryColor: '#6b7280', // Gray
+    description: 'Professional landscaping and lawn care services'
+  },
+  whiteknight: {
+    id: 'whiteknight',
+    name: 'White Knight Snow Service',
+    domain: 'whiteknightsnow.com',
+    feedbackEmail: 'feedback@whiteknightsnow.com',
+    primaryColor: '#6B7280', // Tactical Grey (per design system)
+    secondaryColor: '#9ca3af', // Light Gray
+    description: 'Reliable snow removal and ice management'
+  },
+  pupawalk: {
+    id: 'pupawalk',
+    name: 'PUPAWALK PET SERVICES',
+    domain: 'pupawalk.com',
+    feedbackEmail: 'feedback@pupawalk.com',
+    primaryColor: '#dc2626', // Red
+    secondaryColor: '#9ca3af', // Gray
+    description: 'Professional pet care and walking services'
+  },
+  creative: {
+    id: 'creative',
+    name: 'Evangelo Sommer Creative Development',
+    domain: 'evangelosommer.com',
+    feedbackEmail: 'feedback@evangelosommer.com',
+    primaryColor: '#D4AF37', // Tactical Gold
+    secondaryColor: '#64748b', // Slate Gray
+    description: 'Design and creative development services'
+  }
+}
+
+// Get service email configuration by service ID
+export function getServiceEmailConfig(serviceId?: string): ServiceEmailConfig {
+  if (!serviceId) {
+    // Default fallback to main Evangelo Sommer branding
+    return {
+      id: 'default',
+      name: 'Evangelo Sommer',
+      domain: 'evangelosommer.com',
+      feedbackEmail: 'feedback@evangelosommer.com',
+      primaryColor: '#D4AF37', // Tactical Gold
+      secondaryColor: '#64748b',
+      description: 'Professional services'
+    }
+  }
+
+  return serviceEmailConfigs[serviceId] || serviceEmailConfigs.creative
+}
+
+// Get feedback email by service ID
+export function getServiceFeedbackEmail(serviceId?: string): string {
+  const config = getServiceEmailConfig(serviceId)
+  return config.feedbackEmail
+}
+
+// Check if a service ID is valid
+export function isValidServiceId(serviceId?: string): boolean {
+  if (!serviceId) return false
+  return serviceId in serviceEmailConfigs
+}
+
+// Get all available service IDs
+export function getAllServiceIds(): string[] {
+  return Object.keys(serviceEmailConfigs)
+}

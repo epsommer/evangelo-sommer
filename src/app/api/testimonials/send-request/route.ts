@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import sgMail from '@sendgrid/mail'
+import { getServiceEmailConfig, ServiceEmailConfig } from '@/lib/service-email-config'
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -68,23 +69,27 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001'
     const formLink = `${baseUrl}/testimonials/submit/${testimonial.id}`
 
+    // Get service-specific email configuration
+    const serviceConfig = getServiceEmailConfig(serviceId)
+
     // Send email to client with testimonial form link
     try {
       const emailHtml = generateTestimonialRequestEmail(
         client.name,
-        serviceName || 'our services',
+        serviceName || serviceConfig.name,
         formLink,
-        message
+        message,
+        serviceConfig
       )
 
       await sgMail.send({
         to: client.email,
-        from: process.env.SENDGRID_FROM_EMAIL || 'admin@evangelosommer.com',
-        subject: `We'd love your feedback${serviceName ? ` on ${serviceName}` : ''}!`,
+        from: serviceConfig.feedbackEmail,
+        subject: `We'd love your feedback on ${serviceName || serviceConfig.name}!`,
         html: emailHtml,
       })
 
-      console.log(`Testimonial request email sent to ${client.email}`)
+      console.log(`Testimonial request email sent to ${client.email} from ${serviceConfig.feedbackEmail}`)
     } catch (emailError) {
       console.error('Error sending testimonial request email:', emailError)
       // Don't fail the request if email fails - the record is still created
@@ -111,13 +116,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Generate testimonial request email HTML
+// Generate testimonial request email HTML with service-specific branding
 function generateTestimonialRequestEmail(
   clientName: string,
   serviceName: string,
   formLink: string,
-  customMessage?: string
+  customMessage: string | undefined,
+  serviceConfig: ServiceEmailConfig
 ): string {
+  const headerColor = serviceConfig.primaryColor
+  const buttonColor = serviceConfig.primaryColor
+  const accentColor = '#D4AF37' // Unified Evangelo Sommer gold for footer
+
   return `
 <!DOCTYPE html>
 <html>
@@ -128,8 +138,8 @@ function generateTestimonialRequestEmail(
 </head>
 <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5;">
     <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <!-- Header -->
-        <div style="background-color: #D4AF37; color: white; padding: 30px 20px; text-align: center;">
+        <!-- Header with service-specific branding -->
+        <div style="background-color: ${headerColor}; color: white; padding: 30px 20px; text-align: center;">
             <h1 style="margin: 0; font-size: 28px;">We'd Love Your Feedback!</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Your experience matters to us</p>
         </div>
@@ -141,7 +151,7 @@ function generateTestimonialRequestEmail(
             </p>
 
             ${customMessage ? `
-            <div style="padding: 20px; background-color: #f8fafc; border-left: 4px solid #D4AF37; margin-bottom: 20px; border-radius: 4px;">
+            <div style="padding: 20px; background-color: #f8fafc; border-left: 4px solid ${buttonColor}; margin-bottom: 20px; border-radius: 4px;">
                 <p style="margin: 0; color: #475569; font-size: 15px; line-height: 1.6;">${customMessage}</p>
             </div>
             ` : `
@@ -154,28 +164,28 @@ function generateTestimonialRequestEmail(
                 We'd greatly appreciate it if you could take a moment to share your experience. Your feedback helps us continue to provide exceptional service to our valued clients.
             </p>
 
-            <!-- CTA Button -->
+            <!-- CTA Button with service-specific color -->
             <div style="text-align: center; margin: 30px 0;">
                 <a href="${formLink}"
-                   style="display: inline-block; padding: 16px 40px; background-color: #D4AF37; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);">
+                   style="display: inline-block; padding: 16px 40px; background-color: ${buttonColor}; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);">
                     Share Your Feedback
                 </a>
             </div>
 
             <p style="margin: 20px 0 0 0; color: #666; font-size: 14px; line-height: 1.6; text-align: center;">
                 Or copy and paste this link into your browser:<br>
-                <a href="${formLink}" style="color: #D4AF37; word-break: break-all;">${formLink}</a>
+                <a href="${formLink}" style="color: ${buttonColor}; word-break: break-all;">${formLink}</a>
             </p>
         </div>
 
-        <!-- Footer -->
+        <!-- Footer with unified Evangelo Sommer branding -->
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="margin: 0; color: #64748b; font-size: 14px;">
                 Thank you for your business!
             </p>
             <p style="margin: 10px 0 0 0; color: #94a3b8; font-size: 12px;">
-                Evangelo Sommer<br>
-                admin@evangelosommer.com
+                <strong style="color: ${accentColor};">Evangelo Sommer</strong><br>
+                ${serviceConfig.feedbackEmail}
             </p>
         </div>
     </div>
