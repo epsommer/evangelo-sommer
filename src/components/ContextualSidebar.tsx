@@ -14,7 +14,8 @@ import {
   Pencil,
   ArrowLeft,
   Info,
-  Star
+  Star,
+  StickyNote
 } from 'lucide-react';
 import Link from 'next/link';
 import { Conversation, Client, Message } from '../types/client';
@@ -47,6 +48,11 @@ interface ContextualSidebarProps {
   onEditClick?: () => void;
   conversationSource?: string;
   onTestimonialClick?: () => void;
+  // Quick action handlers
+  onMessageClient?: () => void;
+  onScheduleService?: () => void;
+  onCreateReceipt?: () => void;
+  onAddNote?: () => void;
 }
 
 export default function ContextualSidebar({
@@ -65,7 +71,11 @@ export default function ContextualSidebar({
   onRefresh,
   onEditClick,
   conversationSource,
-  onTestimonialClick
+  onTestimonialClick,
+  onMessageClient,
+  onScheduleService,
+  onCreateReceipt,
+  onAddNote
 }: ContextualSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -654,6 +664,63 @@ export default function ContextualSidebar({
               <Star className="w-5 h-5 text-[var(--neomorphic-text)]" />
             </button>
           )}
+        </div>
+
+        {/* Quick Actions - Divider */}
+        <div className="px-2">
+          <div className="border-t border-[var(--neomorphic-dark-shadow)]" />
+        </div>
+
+        {/* Quick Actions Buttons */}
+        <div className="p-2 space-y-2">
+          {/* Message Client */}
+          {onMessageClient && (
+            <button
+              onClick={onMessageClient}
+              className="w-full p-3 flex items-center justify-center transition-all duration-200 neo-nav-button"
+              title="Add incoming message from client"
+            >
+              <MessageSquare className="w-5 h-5 text-[var(--neomorphic-text)]" />
+            </button>
+          )}
+
+          {/* Schedule Service */}
+          {onScheduleService && (
+            <button
+              onClick={onScheduleService}
+              className="w-full p-3 flex items-center justify-center transition-all duration-200 neo-nav-button"
+              title="Schedule appointment or service"
+            >
+              <Calendar className="w-5 h-5 text-[var(--neomorphic-text)]" />
+            </button>
+          )}
+
+          {/* Create Receipt */}
+          {onCreateReceipt && (
+            <button
+              onClick={onCreateReceipt}
+              className="w-full p-3 flex items-center justify-center transition-all duration-200 neo-nav-button"
+              title="Create receipt or invoice"
+            >
+              <Receipt className="w-5 h-5 text-[var(--neomorphic-text)]" />
+            </button>
+          )}
+
+          {/* Add Note */}
+          {onAddNote && (
+            <button
+              onClick={onAddNote}
+              className="w-full p-3 flex items-center justify-center transition-all duration-200 neo-nav-button"
+              title="Add note or memo"
+            >
+              <StickyNote className="w-5 h-5 text-[var(--neomorphic-text)]" />
+            </button>
+          )}
+        </div>
+
+        {/* Tab Navigation - Divider */}
+        <div className="px-2">
+          <div className="border-t border-[var(--neomorphic-dark-shadow)]" />
         </div>
 
         {/* Tab Navigation */}
