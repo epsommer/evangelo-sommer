@@ -71,7 +71,9 @@ export function getServiceEmailConfig(serviceId?: string): ServiceEmailConfig {
       feedbackEmail: 'feedback@evangelosommer.com',
       primaryColor: '#D4AF37', // Tactical Gold
       secondaryColor: '#64748b',
-      description: 'Professional services'
+      description: 'Professional services',
+      websiteUrl: 'https://evangelosommer.com',
+      logoPath: '/EvangeloSommer-ES-Monogram.svg'
     }
   }
 
