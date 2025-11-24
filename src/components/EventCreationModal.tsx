@@ -104,6 +104,8 @@ interface EventCreationModalProps {
   initialDate?: Date
   initialTime?: string
   editingEvent?: UnifiedEvent
+  initialClientId?: string
+  initialClientName?: string
 }
 
 interface FormData {
@@ -190,7 +192,9 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
   onSave,
   initialDate,
   initialTime,
-  editingEvent
+  editingEvent,
+  initialClientId,
+  initialClientName
 }) => {
   const [formData, setFormData] = useState<FormData>({
     type: 'event',
@@ -238,17 +242,19 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     }
   }, [])
 
-  // Update form data when initialTime or initialDate changes for new events
+  // Update form data when initialTime, initialDate, or initialClient changes for new events
   useEffect(() => {
-    if (!editingEvent && (initialTime || initialDate)) {
+    if (!editingEvent && (initialTime || initialDate || initialClientId)) {
       setFormData(prev => ({
         ...prev,
         date: initialDate ? format(initialDate, 'yyyy-MM-dd') : prev.date,
         startTime: initialTime || prev.startTime,
         endDate: initialDate ? format(initialDate, 'yyyy-MM-dd') : prev.endDate,
+        clientId: initialClientId || prev.clientId,
+        clientName: initialClientName || prev.clientName,
       }))
     }
-  }, [initialTime, initialDate, editingEvent])
+  }, [initialTime, initialDate, initialClientId, initialClientName, editingEvent])
 
   // Initialize form when editing
   useEffect(() => {

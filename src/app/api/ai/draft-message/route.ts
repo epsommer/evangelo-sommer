@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
+  // Initialize Anthropic client inside the function to get fresh env vars
+  const apiKey = process.env.ANTHROPIC_API_KEY || '';
+
+  // Debug logging
+  console.log('=== API KEY DEBUG ===');
+  console.log('Raw API Key:', apiKey);
+  console.log('API Key length:', apiKey.length);
+  console.log('API Key starts with sk-ant:', apiKey.startsWith('sk-ant'));
+  console.log('====================');
+
+  if (!apiKey || apiKey === 'your-key-here' || !apiKey.startsWith('sk-ant')) {
+    return NextResponse.json(
+      { error: 'Anthropic API key is not configured correctly. Please set ANTHROPIC_API_KEY in .env.local' },
+      { status: 500 }
+    );
+  }
+
+  const anthropic = new Anthropic({
+    apiKey: apiKey,
+  });
   try {
     const {
       conversationContext,
@@ -42,7 +57,7 @@ Please draft an appropriate message that:
 Return ONLY the drafted message text, without any preamble or explanation.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       messages: [
         {

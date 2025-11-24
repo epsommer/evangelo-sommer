@@ -31,7 +31,8 @@ export default function RootLayout({
 
                   // Check if on unauthorized page (auth pages, root, etc.)
                   const isUnauthorizedPage = window.location.pathname === '/' ||
-                                             window.location.pathname.startsWith('/auth/');
+                                             window.location.pathname.startsWith('/auth/') ||
+                                             window.location.pathname.startsWith('/select');
 
                   // Define admin-only themes
                   const adminOnlyThemes = ['mocha', 'overkast', 'gilded-meadow'];

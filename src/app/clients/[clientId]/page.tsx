@@ -16,6 +16,8 @@ import QuoteModal from '@/components/QuoteModal'
 import ClientConversationsSection from '@/components/ClientConversationsSection'
 import ClientNotesSection from '@/components/ClientNotesSection'
 import ClientTestimonialsSection from '@/components/ClientTestimonialsSection'
+import ClientQuickActions from '@/components/ClientQuickActions'
+import QuickMessageModal from '@/components/QuickMessageModal'
 
 const ClientDetailPage = () => {
   const params = useParams()
@@ -28,6 +30,7 @@ const ClientDetailPage = () => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [showQuoteModal, setShowQuoteModal] = useState(false)
   const [selectedServiceLine, setSelectedServiceLine] = useState<{id: string, name: string, color: string} | null>(null)
+  const [showQuickMessageModal, setShowQuickMessageModal] = useState(false)
   const [transactions, setTransactions] = useState<any[]>([])
   const [billingData, setBillingData] = useState<{totalBilled: number, pendingAmount: number, lastServiceDate: string | null}>({
     totalBilled: 0,
@@ -117,6 +120,43 @@ const ClientDetailPage = () => {
       const updatedClient = { ...client, ...updatedData, updatedAt: new Date().toISOString() }
       setClient(updatedClient)
     }
+  }
+
+  const handleQuickMessage = async (conversation: any, scheduleAppointment?: boolean, isNewConversation?: boolean) => {
+    try {
+      // Save or update the conversation via API
+      const method = isNewConversation ? 'POST' : 'PUT'
+      const url = isNewConversation ? '/api/conversations' : `/api/conversations/${conversation.id}`
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(conversation),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${isNewConversation ? 'create' : 'update'} conversation`)
+      }
+
+      // Show success message
+      const action = isNewConversation ? 'created' : 'updated'
+      console.log(`Conversation ${action} successfully`)
+
+      // If scheduling appointment, redirect to time manager
+      if (scheduleAppointment) {
+        router.push(`/time-manager?client=${clientId}&schedule=true`)
+      }
+    } catch (error) {
+      console.error('Error saving quick message:', error)
+      alert('Failed to save message. Please try again.')
+    }
+  }
+
+  const handleScheduleService = () => {
+    // Redirect to time manager with client preselected
+    router.push(`/time-manager?client=${clientId}&schedule=true`)
   }
 
   const isProfileIncomplete = (client: Client) => {
@@ -213,6 +253,13 @@ const ClientDetailPage = () => {
   return (
     <CRMLayout>
       <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Quick Actions */}
+        <ClientQuickActions
+          client={client}
+          onMessageClient={() => setShowQuickMessageModal(true)}
+          onScheduleService={handleScheduleService}
+        />
+
         {/* Client Header - BELONGS ON CLIENT PAGE */}
         <div className="neo-inset p-3 sm:p-6 transition-transform hover:scale-[1.01]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -744,6 +791,14 @@ const ClientDetailPage = () => {
         onQuoteCreated={(quote) => {
           console.log('Quote created:', quote, 'for service line:', selectedServiceLine)
         }}
+      />
+
+      <QuickMessageModal
+        isOpen={showQuickMessageModal}
+        onClose={() => setShowQuickMessageModal(false)}
+        client={client}
+        onSave={handleQuickMessage}
+        onScheduleAppointment={handleScheduleService}
       />
     </CRMLayout>
   )

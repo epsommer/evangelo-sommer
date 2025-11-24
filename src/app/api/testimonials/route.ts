@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      testimonials,
+      data: testimonials,
     })
   } catch (error) {
     console.error('Error fetching testimonials:', error)

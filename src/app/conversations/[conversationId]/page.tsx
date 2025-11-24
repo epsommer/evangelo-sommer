@@ -9,6 +9,12 @@ import { Button } from "../../../components/ui/button";
 import CRMLayout from "../../../components/CRMLayout";
 import { useConversations } from "../../../hooks/useConversations";
 import ContextualSidebar from "../../../components/ContextualSidebar";
+import BottomActionBar from "../../../components/BottomActionBar";
+import SidebarDraftAndMessages from "../../../components/SidebarDraftAndMessages";
+import SidebarConversationDetails from "../../../components/SidebarConversationDetails";
+import SidebarInsights from "../../../components/SidebarInsights";
+import SidebarSchedule from "../../../components/SidebarSchedule";
+import SidebarBilling from "../../../components/SidebarBilling";
 import AutoDraftTrigger from "../../../components/AutoDraftTrigger";
 import AutoDraftPrompt from "../../../components/AutoDraftPrompt";
 import EnhancedReceiptModal from "../../../components/EnhancedReceiptModal";
@@ -222,7 +228,7 @@ export default function ConversationPage() {
   return (
     <CRMLayout>
       <div className="relative">
-        {/* Contextual Sidebar */}
+        {/* Contextual Sidebar - Desktop Only */}
         {client && (
           <ContextualSidebar
             conversation={conversation}
@@ -240,11 +246,12 @@ export default function ConversationPage() {
             }}
             conversationSource={conversation?.source}
             onTestimonialClick={() => setShowTestimonialModal(true)}
+            className="hidden lg:block"
           />
         )}
 
         {/* Main Content Area */}
-        <div className="pr-16">
+        <div className="lg:pr-16">
           {/* Header with Navigation Buttons */}
           <div className="px-4 sm:px-6 pt-6 lg:pt-8 pb-4">
             <div className="max-w-4xl mx-auto lg:max-w-5xl flex items-center justify-between gap-4 flex-wrap">
@@ -697,6 +704,53 @@ export default function ConversationPage() {
           onRequestSent={() => {
             setShowTestimonialModal(false);
           }}
+        />
+      )}
+
+      {/* Bottom Action Bar - Mobile Only */}
+      {client && conversation && (
+        <BottomActionBar
+          messagesContent={
+            <SidebarDraftAndMessages
+              conversation={conversation}
+              client={client}
+              conversationId={conversationId}
+              selectedMessageId={selectedMessageForDraft}
+              onSelectMessage={setSelectedMessageForDraft}
+              onMessageAdded={() => {
+                // Refresh conversation data
+                window.location.reload();
+              }}
+            />
+          }
+          detailsContent={
+            <SidebarConversationDetails
+              conversation={conversation}
+              client={client}
+              onEditClick={() => {
+                setEditFormData({
+                  title: conversation?.title || '',
+                  priority: (conversation?.priority?.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') || 'MEDIUM',
+                  status: (conversation?.status?.toUpperCase() as 'ACTIVE' | 'ARCHIVED' | 'COMPLETED') || 'ACTIVE'
+                });
+                setShowEditModal(true);
+              }}
+              onTestimonialClick={() => setShowTestimonialModal(true)}
+            />
+          }
+          insightsContent={
+            <SidebarInsights
+              conversation={conversation}
+              client={client}
+              onRequestTestimonial={() => setShowTestimonialModal(true)}
+            />
+          }
+          scheduleContent={
+            <SidebarSchedule client={client} />
+          }
+          billingContent={
+            <SidebarBilling conversation={conversation} client={client} />
+          }
         />
       )}
     </CRMLayout>

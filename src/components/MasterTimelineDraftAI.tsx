@@ -100,10 +100,10 @@ export default function MasterTimelineDraftAI({
         body: JSON.stringify({
           conversationId: targetConversationId,
           clientName: client.name,
-          conversationHistory: contextMessages,
+          conversationContext: contextMessages,
           tone,
           messageType,
-          customInstructions: customInstructions.trim() || undefined,
+          specificInstructions: customInstructions.trim() || undefined,
           replyToMessage: contextMode === 'reply' && selectedMessage ? selectedMessage.content : undefined
         })
       });
@@ -114,7 +114,7 @@ export default function MasterTimelineDraftAI({
       }
 
       const data = await response.json();
-      setDraftedMessage(data.draft || data.message || '');
+      setDraftedMessage(data.draftedMessage || '');
       setIsEditing(true);
     } catch (err) {
       console.error('Error generating draft:', err);

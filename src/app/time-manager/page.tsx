@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, Suspense } from 'react'
+import React, { useState, Suspense, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import CRMLayout from '@/components/CRMLayout'
 import DailyPlanner from '@/components/DailyPlanner'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
@@ -18,6 +19,7 @@ import { CalendarEvent } from '@/types/scheduling'
 import { conflictDetector, ConflictResult, ResolutionStrategy } from '@/lib/conflict-detector'
 
 const TimeManagerContent = () => {
+  const searchParams = useSearchParams()
   const { state, setCurrentView, setSelectedDate } = useViewManager()
   const [syncedEvents, setSyncedEvents] = useState<CalendarEvent[]>([])
   const [showEventModal, setShowEventModal] = useState(false)
@@ -27,17 +29,41 @@ const TimeManagerContent = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<UnifiedEvent | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [initialClientId, setInitialClientId] = useState<string | undefined>(undefined)
+  const [initialClientName, setInitialClientName] = useState<string | undefined>(undefined)
 
   // Conflict resolution state
   const [showConflictModal, setShowConflictModal] = useState(false)
   const [pendingEvent, setPendingEvent] = useState<UnifiedEvent | null>(null)
   const [conflicts, setConflicts] = useState<ConflictResult | null>(null)
   const [recentlyCreatedEvents, setRecentlyCreatedEvents] = useState<Set<string>>(new Set())
-  
+
   // Use unified events hook for global event management
   const { createEvent, updateEvent, deleteEvent } = useUnifiedEvents({
     refreshTrigger
   })
+
+  // Handle URL parameters for scheduling from client page
+  useEffect(() => {
+    const clientIdParam = searchParams.get('client')
+    const scheduleParam = searchParams.get('schedule')
+
+    if (clientIdParam && scheduleParam === 'true') {
+      // Load client info from localStorage
+      try {
+        const clients = JSON.parse(localStorage.getItem('clients') || '[]')
+        const client = clients.find((c: any) => c.id === clientIdParam)
+
+        if (client) {
+          setInitialClientId(client.id)
+          setInitialClientName(client.name)
+          setShowEventModal(true)
+        }
+      } catch (error) {
+        console.error('Error loading client for scheduling:', error)
+      }
+    }
+  }, [searchParams])
 
 
   // Helper function to get all existing events for conflict detection
@@ -632,11 +658,15 @@ const TimeManagerContent = () => {
           onClose={() => {
             setShowEventModal(false)
             setEditingEvent(null)
+            setInitialClientId(undefined)
+            setInitialClientName(undefined)
           }}
           onSave={handleEventCreate}
           initialDate={modalInitialDate}
           initialTime={modalInitialTime}
           editingEvent={editingEvent || undefined}
+          initialClientId={initialClientId}
+          initialClientName={initialClientName}
         />
 
         {/* Event Details Modal */}

@@ -119,15 +119,16 @@ export default function SidebarDraftAI({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           conversationContext,
-          contextMessage,
-          contextMode,
           clientName: client.name,
-          ...draftOptions,
+          tone: draftOptions.tone,
+          messageType: draftOptions.messageType,
+          specificInstructions: draftOptions.specificInstructions || undefined,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to draft message');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to draft message');
       }
 
       const result = await response.json();

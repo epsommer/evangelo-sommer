@@ -552,6 +552,7 @@ export default function ContextualSidebar({
           <SidebarInsights
             conversation={conversation}
             client={client}
+            onRequestTestimonial={onTestimonialClick}
           />
         );
       case 'schedule':

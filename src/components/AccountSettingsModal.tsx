@@ -243,30 +243,31 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
           </button>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Tabs */}
-          <div className="w-64 bg-background border-r border-border">
-            <div className="p-4">
-              <div className="space-y-2">
+        <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+          {/* Sidebar Tabs - Horizontal on mobile, vertical on desktop */}
+          <div className="md:w-64 bg-background border-b md:border-b-0 md:border-r border-border">
+            <div className="p-2 md:p-4">
+              <div className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 overflow-x-auto md:overflow-x-visible">
                 {[
-                  { id: 'profile', label: 'Profile Information', icon: User },
-                  { id: 'security', label: 'Security & Privacy', icon: Shield },
-                  { id: 'display', label: 'Display & Theme', icon: Palette },
-                  { id: 'preferences', label: 'Preferences', icon: Building }
+                  { id: 'profile', label: 'Profile Information', shortLabel: 'Profile', icon: User },
+                  { id: 'security', label: 'Security & Privacy', shortLabel: 'Security', icon: Shield },
+                  { id: 'display', label: 'Display & Theme', shortLabel: 'Display', icon: Palette },
+                  { id: 'preferences', label: 'Preferences', shortLabel: 'Prefs', icon: Building }
                 ].map(tab => {
                   const IconComponent = tab.icon
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 text-left font-medium text-sm font-primary uppercase tracking-wide transition-all duration-300 rounded-xl ${
+                      className={`flex-shrink-0 md:w-full flex items-center space-x-2 md:space-x-3 px-3 md:px-4 py-2 md:py-3 text-left font-medium text-xs md:text-sm font-primary uppercase tracking-wide transition-all duration-300 rounded-xl ${
                         activeTab === tab.id
                           ? 'neo-button-active text-foreground'
                           : 'neo-button text-foreground/70 hover:text-foreground'
                       }`}
                     >
-                      <IconComponent className="h-4 w-4" />
-                      <span>{tab.label}</span>
+                      <IconComponent className="h-4 w-4 flex-shrink-0" />
+                      <span className="hidden md:inline">{tab.label}</span>
+                      <span className="md:hidden">{tab.shortLabel}</span>
                     </button>
                   )
                 })}
@@ -506,85 +507,85 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     Choose your preferred color palette
                   </p>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                     {/* Light Theme */}
                     <button
                       onClick={() => handleColorThemeChange('light')}
-                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                      className={`neo-button p-3 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 relative ${
                         colorTheme === 'light' ? 'neo-button-active' : ''
                       }`}
                     >
                       {colorTheme === 'light' && (
-                        <div className="absolute top-2 right-2">
-                          <Check className="h-5 w-5 text-tactical-gold" />
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-tactical-gold" />
                         </div>
                       )}
-                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#EBECF0] to-[#d1d9e6] border-2 border-[#d1d9e6]" />
-                      <span className="font-primary text-xs uppercase tracking-wide">Light</span>
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-[#EBECF0] to-[#d1d9e6] border-2 border-[#d1d9e6]" />
+                      <span className="font-primary text-[10px] sm:text-xs uppercase tracking-wide">Light</span>
                     </button>
 
                     {/* Mocha Theme */}
                     <button
                       onClick={() => handleColorThemeChange('mocha')}
-                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                      className={`neo-button p-3 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 relative ${
                         colorTheme === 'mocha' ? 'neo-button-active' : ''
                       }`}
                     >
                       {colorTheme === 'mocha' && (
-                        <div className="absolute top-2 right-2">
-                          <Check className="h-5 w-5 text-tactical-gold" />
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-tactical-gold" />
                         </div>
                       )}
-                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#1c1917] to-[#44403c] border-2 border-[#78716c]" />
-                      <span className="font-primary text-xs uppercase tracking-wide">Mocha</span>
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-[#1c1917] to-[#44403c] border-2 border-[#78716c]" />
+                      <span className="font-primary text-[10px] sm:text-xs uppercase tracking-wide">Mocha</span>
                     </button>
 
                     {/* Overkast Theme */}
                     <button
                       onClick={() => handleColorThemeChange('overkast')}
-                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                      className={`neo-button p-3 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 relative ${
                         colorTheme === 'overkast' ? 'neo-button-active' : ''
                       }`}
                     >
                       {colorTheme === 'overkast' && (
-                        <div className="absolute top-2 right-2">
-                          <Check className="h-5 w-5 text-tactical-gold" />
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-tactical-gold" />
                         </div>
                       )}
-                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#B8B8B8] to-[#9A9A9A] border-2 border-[#808080]" />
-                      <span className="font-primary text-xs uppercase tracking-wide">Overkast</span>
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-[#B8B8B8] to-[#9A9A9A] border-2 border-[#808080]" />
+                      <span className="font-primary text-[10px] sm:text-xs uppercase tracking-wide">Overkast</span>
                     </button>
 
                     {/* True Night Theme */}
                     <button
                       onClick={() => handleColorThemeChange('true-night')}
-                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                      className={`neo-button p-3 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 relative ${
                         colorTheme === 'true-night' ? 'neo-button-active' : ''
                       }`}
                     >
                       {colorTheme === 'true-night' && (
-                        <div className="absolute top-2 right-2">
-                          <Check className="h-5 w-5 text-tactical-gold" />
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-tactical-gold" />
                         </div>
                       )}
-                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#1a1a1a] to-[#242424] border-2 border-[#333333]" />
-                      <span className="font-primary text-xs uppercase tracking-wide">True Night</span>
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-[#1a1a1a] to-[#242424] border-2 border-[#333333]" />
+                      <span className="font-primary text-[10px] sm:text-xs uppercase tracking-wide">True Night</span>
                     </button>
 
                     {/* Gilded Meadow Theme */}
                     <button
                       onClick={() => handleColorThemeChange('gilded-meadow')}
-                      className={`neo-button p-4 flex flex-col items-center gap-3 relative ${
+                      className={`neo-button p-3 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 relative ${
                         colorTheme === 'gilded-meadow' ? 'neo-button-active' : ''
                       }`}
                     >
                       {colorTheme === 'gilded-meadow' && (
-                        <div className="absolute top-2 right-2">
-                          <Check className="h-5 w-5 text-tactical-gold" />
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-tactical-gold" />
                         </div>
                       )}
-                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#F5F5DC] to-[#F0EAD6] border-2 border-[#D4C5A9]" />
-                      <span className="font-primary text-xs uppercase tracking-wide">Gilded Meadow</span>
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-[#F5F5DC] to-[#F0EAD6] border-2 border-[#D4C5A9]" />
+                      <span className="font-primary text-[10px] sm:text-xs uppercase tracking-wide">Gilded Meadow</span>
                     </button>
                   </div>
                 </div>

@@ -7,6 +7,11 @@ import { Client, Conversation, Message } from '@/types/client';
 import { BillingSuggestion } from '@/types/billing';
 import { ArrowLeft, Filter, MessageSquare, Mail, Phone, Calendar, Edit2, ListChecks, Star } from 'lucide-react';
 import ContextualSidebar from '@/components/ContextualSidebar';
+import BottomActionBar from '@/components/BottomActionBar';
+import SidebarConversationDetails from '@/components/SidebarConversationDetails';
+import SidebarInsights from '@/components/SidebarInsights';
+import SidebarSchedule from '@/components/SidebarSchedule';
+import SidebarBilling from '@/components/SidebarBilling';
 
 // Extended message type with source conversation info
 interface MasterMessage extends Message {
@@ -333,7 +338,7 @@ export default function MasterConversationPage() {
   return (
     <CRMLayout>
       <div className="min-h-screen bg-hud-background-secondary relative">
-        {/* Contextual Sidebar */}
+        {/* Contextual Sidebar - Desktop Only */}
         {client && (
           <ContextualSidebar
             conversation={masterConversation}
@@ -352,6 +357,7 @@ export default function MasterConversationPage() {
             allMessages={mergedMessages}
             selectedMessage={selectedMessage}
             onRefresh={refreshData}
+            className="hidden lg:block"
           />
         )}
 
@@ -362,7 +368,7 @@ export default function MasterConversationPage() {
             ${isMobile && sidebarState.isOpen ? 'opacity-50 pointer-events-none' : ''}
           `}
           style={{
-            paddingRight: !isMobile && sidebarState.isOpen ? `${sidebarState.width}px` : '64px'
+            paddingRight: !isMobile && sidebarState.isOpen ? `${sidebarState.width}px` : (isMobile ? '0px' : '64px')
           }}
         >
       <div className="container mx-auto px-4 py-6">
@@ -718,6 +724,42 @@ export default function MasterConversationPage() {
       </div>
         </div>
       </div>
+
+      {/* Bottom Action Bar - Mobile Only */}
+      {client && (
+        <BottomActionBar
+          detailsContent={
+            <SidebarConversationDetails
+              conversation={masterConversation}
+              client={client}
+              onEditClick={() => {
+                // Master timeline doesn't have edit functionality yet
+                console.log('Edit master timeline');
+              }}
+              onTestimonialClick={() => {
+                // Navigate to client page or open testimonial modal
+                router.push(`/clients/${clientId}`);
+              }}
+            />
+          }
+          insightsContent={
+            <SidebarInsights
+              conversation={masterConversation}
+              client={client}
+              onRequestTestimonial={() => {
+                // Navigate to client page or open testimonial modal
+                router.push(`/clients/${clientId}`);
+              }}
+            />
+          }
+          scheduleContent={
+            <SidebarSchedule client={client} />
+          }
+          billingContent={
+            <SidebarBilling conversation={masterConversation} client={client} />
+          }
+        />
+      )}
     </CRMLayout>
   );
 }
