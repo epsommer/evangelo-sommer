@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { MessageSquare, Calendar, Receipt, Mail, FileText } from 'lucide-react'
+import { MessageSquare, Calendar, Receipt, StickyNote } from 'lucide-react'
 import { Client } from '@/types/client'
 
 interface ClientQuickActionsProps {
@@ -9,7 +9,7 @@ interface ClientQuickActionsProps {
   onMessageClient: () => void
   onScheduleService: () => void
   onCreateReceipt?: () => void
-  onEmail?: () => void
+  onAddNote?: () => void
 }
 
 const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
@@ -17,7 +17,7 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
   onMessageClient,
   onScheduleService,
   onCreateReceipt,
-  onEmail
+  onAddNote
 }) => {
   return (
     <div className="neo-container transition-transform hover:scale-[1.01]">
@@ -64,25 +64,17 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
             </span>
           </button>
 
-          {/* Email */}
-          {client.email && (
-            <a
-              href={`mailto:${client.email}`}
-              onClick={(e) => {
-                if (onEmail) {
-                  e.preventDefault()
-                  onEmail()
-                }
-              }}
-              className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
-              title={`Email ${client.email}`}
-            >
-              <Mail className="h-6 w-6 text-foreground" />
-              <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
-                Email
-              </span>
-            </a>
-          )}
+          {/* Add Note */}
+          <button
+            onClick={onAddNote}
+            className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
+            title="Add note or memo"
+          >
+            <StickyNote className="h-6 w-6 text-foreground" />
+            <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
+              Note
+            </span>
+          </button>
         </div>
       </div>
     </div>

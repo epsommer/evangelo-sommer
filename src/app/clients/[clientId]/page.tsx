@@ -308,6 +308,10 @@ const ClientDetailPage = () => {
           onMessageClient={() => setShowQuickMessageModal(true)}
           onScheduleService={handleScheduleService}
           onCreateReceipt={() => setShowReceiptModal(true)}
+          onAddNote={() => {
+            // Open notes section or create a note - placeholder for now
+            console.log('Add note for client:', client.id)
+          }}
         />
 
         {/* Incomplete Profile Warning - BELONGS ON CLIENT PAGE */}
