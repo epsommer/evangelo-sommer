@@ -9,6 +9,8 @@ export interface ServiceEmailConfig {
   primaryColor: string
   secondaryColor: string
   description: string
+  websiteUrl: string
+  logoPath?: string
 }
 
 export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
@@ -19,7 +21,9 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
     feedbackEmail: 'feedback@woodgreenlawns.com',
     primaryColor: '#059669', // Emerald Green
     secondaryColor: '#6b7280', // Gray
-    description: 'Professional landscaping and lawn care services'
+    description: 'Professional landscaping and lawn care services',
+    websiteUrl: 'https://woodgreenlawns.com',
+    logoPath: '/woodgreen-landscaping-logo.svg'
   },
   whiteknight: {
     id: 'whiteknight',
@@ -28,7 +32,9 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
     feedbackEmail: 'feedback@whiteknightsnow.com',
     primaryColor: '#6B7280', // Tactical Grey (per design system)
     secondaryColor: '#9ca3af', // Light Gray
-    description: 'Reliable snow removal and ice management'
+    description: 'Reliable snow removal and ice management',
+    websiteUrl: 'https://whiteknightsnow.com',
+    logoPath: undefined // No logo yet
   },
   pupawalk: {
     id: 'pupawalk',
@@ -37,7 +43,9 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
     feedbackEmail: 'feedback@pupawalk.com',
     primaryColor: '#dc2626', // Red
     secondaryColor: '#9ca3af', // Gray
-    description: 'Professional pet care and walking services'
+    description: 'Professional pet care and walking services',
+    websiteUrl: 'https://pupawalk.com',
+    logoPath: undefined // No logo yet
   },
   creative: {
     id: 'creative',
@@ -46,7 +54,9 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
     feedbackEmail: 'feedback@evangelosommer.com',
     primaryColor: '#D4AF37', // Tactical Gold
     secondaryColor: '#64748b', // Slate Gray
-    description: 'Design and creative development services'
+    description: 'Design and creative development services',
+    websiteUrl: 'https://evangelosommer.com',
+    logoPath: '/EvangeloSommer-ES-Monogram.svg'
   }
 }
 

@@ -1,8 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
+// Allowed origins for CORS (service websites)
+const ALLOWED_ORIGINS = [
+  'https://woodgreenlawns.com',
+  'https://www.woodgreenlawns.com',
+  'https://whiteknightsnow.com',
+  'https://www.whiteknightsnow.com',
+  'https://pupawalk.com',
+  'https://www.pupawalk.com',
+  'https://evangelosommer.com',
+  'https://www.evangelosommer.com',
+  'http://localhost:3000', // Local development
+  'http://localhost:3001',
+  'http://localhost:3002',
+]
+
 // POST /api/testimonials/submit - Public endpoint for clients to submit testimonials
 export async function POST(request: NextRequest) {
+  // Handle CORS
+  const origin = request.headers.get('origin')
+  const corsHeaders: Record<string, string> = {}
+
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    corsHeaders['Access-Control-Allow-Origin'] = origin
+    corsHeaders['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    corsHeaders['Access-Control-Allow-Headers'] = 'Content-Type'
+  }
+
   try {
     const body = await request.json()
     const { testimonialId, rating, title, content } = body
@@ -63,12 +88,31 @@ export async function POST(request: NextRequest) {
         status: testimonial.status,
         submittedAt: testimonial.submittedAt,
       },
-    })
+    }, { headers: corsHeaders })
   } catch (error) {
     console.error('Error submitting testimonial:', error)
     return NextResponse.json(
       { error: 'Failed to submit testimonial' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     )
   }
+}
+
+// OPTIONS handler for CORS preflight
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
+
+  return new NextResponse(null, { status: 204 })
 }

@@ -65,12 +65,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Generate the testimonial form link
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001'
-    const formLink = `${baseUrl}/testimonials/submit/${testimonial.id}`
-
     // Get service-specific email configuration
     const serviceConfig = getServiceEmailConfig(serviceId)
+
+    // Generate the testimonial form link pointing to service website
+    const formLink = `${serviceConfig.websiteUrl}/testimonials/submit/${testimonial.id}`
 
     // Send email to client with testimonial form link
     try {
