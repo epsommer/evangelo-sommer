@@ -303,7 +303,7 @@ const ClientDetailPage = () => {
                 title="Edit Client"
               >
                 <Edit className="h-4 w-4" />
-                <span className="hidden sm:inline sm:block uppercase tracking-wide text-xs sm:text-sm">Edit Client</span>
+                <span className="hidden sm:inline uppercase tracking-wide text-xs sm:text-sm">Edit Client</span>
               </button>
             </div>
           </div>
