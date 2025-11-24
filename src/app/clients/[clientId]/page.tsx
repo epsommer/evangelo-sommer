@@ -18,6 +18,7 @@ import ClientNotesSection from '@/components/ClientNotesSection'
 import ClientTestimonialsSection from '@/components/ClientTestimonialsSection'
 import ClientQuickActions from '@/components/ClientQuickActions'
 import QuickMessageModal from '@/components/QuickMessageModal'
+import AppointmentModal from '@/components/AppointmentModal'
 
 const ClientDetailPage = () => {
   const params = useParams()
@@ -31,6 +32,7 @@ const ClientDetailPage = () => {
   const [showQuoteModal, setShowQuoteModal] = useState(false)
   const [selectedServiceLine, setSelectedServiceLine] = useState<{id: string, name: string, color: string} | null>(null)
   const [showQuickMessageModal, setShowQuickMessageModal] = useState(false)
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [transactions, setTransactions] = useState<any[]>([])
   const [billingData, setBillingData] = useState<{totalBilled: number, pendingAmount: number, lastServiceDate: string | null}>({
     totalBilled: 0,
@@ -154,9 +156,9 @@ const ClientDetailPage = () => {
     }
   }
 
-  const handleScheduleService = () => {
-    // Redirect to time manager with client preselected
-    router.push(`/time-manager?client=${clientId}&schedule=true`)
+  const handleScheduleAppointment = () => {
+    // Open appointment modal
+    setShowAppointmentModal(true)
   }
 
   const isProfileIncomplete = (client: Client) => {
@@ -306,7 +308,7 @@ const ClientDetailPage = () => {
         <ClientQuickActions
           client={client}
           onMessageClient={() => setShowQuickMessageModal(true)}
-          onScheduleService={handleScheduleService}
+          onScheduleAppointment={handleScheduleAppointment}
           onCreateReceipt={() => setShowReceiptModal(true)}
           onAddNote={() => {
             // Open notes section or create a note - placeholder for now
@@ -831,7 +833,13 @@ const ClientDetailPage = () => {
         onClose={() => setShowQuickMessageModal(false)}
         client={client}
         onSave={handleQuickMessage}
-        onScheduleAppointment={handleScheduleService}
+        onScheduleAppointment={handleScheduleAppointment}
+      />
+
+      <AppointmentModal
+        isOpen={showAppointmentModal}
+        onClose={() => setShowAppointmentModal(false)}
+        client={client}
       />
     </CRMLayout>
   )

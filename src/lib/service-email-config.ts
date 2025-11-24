@@ -11,6 +11,7 @@ export interface ServiceEmailConfig {
   description: string
   websiteUrl: string
   logoPath?: string
+  logoInversePath?: string // For use on dark backgrounds (like email headers)
 }
 
 export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
@@ -23,7 +24,8 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
     secondaryColor: '#6b7280', // Gray
     description: 'Professional landscaping and lawn care services',
     websiteUrl: 'https://woodgreenlandscaping.com',
-    logoPath: '/woodgreen-landscaping-logo.svg'
+    logoPath: '/woodgreen-landscaping-logo-palmette.svg',
+    logoInversePath: '/woodgreen-landscaping-palmette-inverse.png'
   },
   whiteknight: {
     id: 'whiteknight',

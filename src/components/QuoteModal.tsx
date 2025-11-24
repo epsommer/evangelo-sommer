@@ -1,7 +1,7 @@
 // src/components/QuoteModal.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Client } from '../types/client';
 import { QuoteItem, DEFAULT_BUSINESS_CONFIG } from '../types/billing';
 // Removed billingManager import - use API endpoints instead
@@ -90,6 +90,19 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   if (!isOpen) return null;
 
@@ -184,7 +197,7 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
   const serviceTemplates = ServiceTemplates[client.serviceId as keyof typeof ServiceTemplates] || ServiceTemplates.landscaping;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-tactical-grey-800">

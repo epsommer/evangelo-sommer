@@ -95,6 +95,19 @@ export default function EditClientModal({
   const [activeSection, setActiveSection] = useState("basic");
   const [phoneLocationInfo, setPhoneLocationInfo] = useState<string>("");
 
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
   // Initialize form data when modal opens or client changes
   useEffect(() => {
     if (isOpen && client) {
@@ -295,8 +308,6 @@ export default function EditClientModal({
     }
   };
 
-  if (!isOpen) return null;
-
   const sections = [
     { key: "basic", name: "Basic Info", icon: "👤" },
     { key: "contact", name: "Contact", icon: "📞" },
@@ -306,24 +317,31 @@ export default function EditClientModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex min-h-screen items-center justify-center p-4">
-          {/* Backdrop */}
+      {isOpen && (
+        <>
+          {/* Full viewport backdrop - covers everything including sidebar */}
           <motion.div
+            key="edit-client-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50"
+            className="fixed inset-0 bg-black bg-opacity-50 z-[100]"
             onClick={handleClose}
           />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative neo-container max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden"
+          {/* Modal container - centers properly accounting for sidebar on desktop */}
+          <div
+            key="edit-client-modal-container"
+            className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-center justify-center p-4 overflow-y-auto pointer-events-none"
           >
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative neo-container max-w-4xl w-full max-h-[90vh] overflow-hidden my-auto pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
             {/* Header */}
             <div className="neo-inset p-6 border-b border-foreground/10">
               <div className="flex items-center justify-between">
@@ -731,9 +749,10 @@ export default function EditClientModal({
                 </div>
               </div>
             </form>
-          </motion.div>
-        </div>
+        </motion.div>
       </div>
+        </>
+      )}
     </AnimatePresence>
   );
 }

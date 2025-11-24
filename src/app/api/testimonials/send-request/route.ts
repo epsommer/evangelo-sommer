@@ -130,6 +130,13 @@ function generateTestimonialRequestEmail(
   const buttonColor = serviceConfig.primaryColor
   const accentColor = '#D4AF37' // Unified Evangelo Sommer gold for footer
 
+  // Build absolute URL for logo (for email compatibility)
+  // Use inverse logo for dark header background, regular logo otherwise
+  const logoPath = serviceConfig.logoInversePath || serviceConfig.logoPath
+  const logoUrl = logoPath
+    ? `${serviceConfig.websiteUrl}${logoPath}`
+    : null
+
   return `
 <!DOCTYPE html>
 <html>
@@ -142,6 +149,11 @@ function generateTestimonialRequestEmail(
     <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <!-- Header with service-specific branding -->
         <div style="background-color: ${headerColor}; color: white; padding: 30px 20px; text-align: center;">
+            ${logoUrl ? `
+            <div style="margin-bottom: 20px;">
+                <img src="${logoUrl}" alt="${serviceConfig.name}" style="max-width: 200px; height: auto; display: inline-block;" />
+            </div>
+            ` : ''}
             <h1 style="margin: 0; font-size: 28px;">We'd Love Your Feedback!</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Your experience matters to us</p>
         </div>

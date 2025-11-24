@@ -465,6 +465,85 @@ body {
   border: none !important;
 }
 
+/* ========================================
+   NEOMORPHIC INPUT STYLES
+   Recessed/inset appearance for form inputs
+   ======================================== */
+
+/* Base neo-inset styling for inputs */
+.neo-inset,
+input.neo-inset,
+textarea.neo-inset,
+select.neo-inset {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground));
+  /* Inset shadow - creates recessed/indented appearance */
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+/* Focus state */
+.neo-inset:focus,
+input.neo-inset:focus,
+textarea.neo-inset:focus,
+select.neo-inset:focus {
+  outline: none;
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.15),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.08),
+    0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* Disabled state */
+.neo-inset:disabled,
+input.neo-inset:disabled,
+textarea.neo-inset:disabled,
+select.neo-inset:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: hsl(var(--muted));
+}
+
+/* Dark mode adjustments */
+.dark .neo-inset,
+.dark input.neo-inset,
+.dark textarea.neo-inset,
+.dark select.neo-inset,
+.mocha-mode .neo-inset,
+.mocha-mode input.neo-inset,
+.mocha-mode textarea.neo-inset,
+.mocha-mode select.neo-inset,
+.true-night-mode .neo-inset,
+.true-night-mode input.neo-inset,
+.true-night-mode textarea.neo-inset,
+.true-night-mode select.neo-inset {
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.03);
+}
+
+.dark .neo-inset:focus,
+.dark input.neo-inset:focus,
+.dark textarea.neo-inset:focus,
+.dark select.neo-inset:focus,
+.mocha-mode .neo-inset:focus,
+.mocha-mode input.neo-inset:focus,
+.mocha-mode textarea.neo-inset:focus,
+.mocha-mode select.neo-inset:focus,
+.true-night-mode .neo-inset:focus,
+.true-night-mode input.neo-inset:focus,
+.true-night-mode textarea.neo-inset:focus,
+.true-night-mode select.neo-inset:focus {
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.4),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.05),
+    0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
 /* Neo-inset input placeholder styling */
 .neo-inset::placeholder,
 input.neo-inset::placeholder,

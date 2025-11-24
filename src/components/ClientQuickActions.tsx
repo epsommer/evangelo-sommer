@@ -7,7 +7,7 @@ import { Client } from '@/types/client'
 interface ClientQuickActionsProps {
   client: Client
   onMessageClient: () => void
-  onScheduleService: () => void
+  onScheduleAppointment: () => void
   onCreateReceipt?: () => void
   onAddNote?: () => void
 }
@@ -15,7 +15,7 @@ interface ClientQuickActionsProps {
 const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
   client,
   onMessageClient,
-  onScheduleService,
+  onScheduleAppointment,
   onCreateReceipt,
   onAddNote
 }) => {
@@ -40,15 +40,15 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
             </span>
           </button>
 
-          {/* Schedule Service */}
+          {/* Schedule Appointment */}
           <button
-            onClick={onScheduleService}
+            onClick={onScheduleAppointment}
             className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
-            title="Schedule appointment or service"
+            title="Schedule appointment"
           >
             <Calendar className="h-6 w-6 text-foreground" />
             <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
-              Schedule
+              Appointment
             </span>
           </button>
 

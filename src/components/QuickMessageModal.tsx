@@ -35,6 +35,20 @@ const QuickMessageModal: React.FC<QuickMessageModalProps> = ({
     }
   }, [isOpen, client.id])
 
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Cleanup function to restore scroll on unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
   // Auto-detect message type from selected conversation
   useEffect(() => {
     if (selectedConversationId !== 'new') {
@@ -164,7 +178,7 @@ const QuickMessageModal: React.FC<QuickMessageModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
       <div className="neo-container max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="neo-inset border-b border-foreground/10 p-6 flex items-center justify-between">
