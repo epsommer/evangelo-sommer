@@ -263,11 +263,11 @@ const ClientDetailPage = () => {
         {/* Client Header - BELONGS ON CLIENT PAGE */}
         <div className="neo-inset p-3 sm:p-6 transition-transform hover:scale-[1.01]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
               <div className="w-12 h-12 sm:w-16 sm:h-16 neo-button-circle flex items-center justify-center text-foreground font-bold text-base sm:text-xl font-primary flex-shrink-0">
                 {client.name.split(' ').map(n => n[0]).join('')}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground uppercase tracking-wide font-primary truncate">
                   {client.name}
                 </h1>
@@ -290,18 +290,19 @@ const ClientDetailPage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className={`neo-badge px-2 sm:px-3 py-1 text-xs uppercase font-primary ${
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <span className={`neo-badge px-2 sm:px-3 py-1 text-xs uppercase font-primary flex-shrink-0 ${
                 client.status === 'active' ? 'bg-green-600 text-white' : ''
               }`}>
                 {client.status}
               </span>
               <button
-                className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm whitespace-nowrap"
+                className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0"
                 onClick={() => setShowEditModal(true)}
               >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Client
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="hidden xs:inline sm:inline">Edit Client</span>
+                <span className="xs:hidden">Edit</span>
               </button>
             </div>
           </div>
