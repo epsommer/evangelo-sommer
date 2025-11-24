@@ -44,10 +44,10 @@ const ClientTestimonialsSection: React.FC<ClientTestimonialsSectionProps> = ({ c
     try {
       setIsLoading(true)
       const response = await fetch(`/api/testimonials?clientId=${clientId}`)
-      const data = await response.json()
+      const result = await response.json()
 
-      if (data.success) {
-        setTestimonials(data.testimonials)
+      if (result.success) {
+        setTestimonials(result.data || [])
       }
     } catch (error) {
       console.error('Error loading testimonials:', error)
@@ -185,7 +185,7 @@ const ClientTestimonialsSection: React.FC<ClientTestimonialsSectionProps> = ({ c
         </div>
 
         <div className="p-6">
-          {testimonials.length === 0 ? (
+          {!testimonials || testimonials.length === 0 ? (
             <div className="text-center py-8">
               <Star className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
               <p className="text-muted-foreground font-primary mb-4">No testimonials yet</p>
