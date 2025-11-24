@@ -17,12 +17,12 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
   woodgreen: {
     id: 'woodgreen',
     name: 'WOODGREEN LANDSCAPING',
-    domain: 'woodgreenlawns.com',
-    feedbackEmail: 'feedback@woodgreenlawns.com',
+    domain: 'woodgreenlandscaping.com',
+    feedbackEmail: 'feedback@woodgreenlandscaping.com',
     primaryColor: '#059669', // Emerald Green
     secondaryColor: '#6b7280', // Gray
     description: 'Professional landscaping and lawn care services',
-    websiteUrl: 'https://woodgreenlawns.com',
+    websiteUrl: 'https://woodgreenlandscaping.com',
     logoPath: '/woodgreen-landscaping-logo.svg'
   },
   whiteknight: {

@@ -3,8 +3,8 @@ import prisma from '@/lib/prisma'
 
 // Allowed origins for CORS (service websites)
 const ALLOWED_ORIGINS = [
-  'https://woodgreenlawns.com',
-  'https://www.woodgreenlawns.com',
+  'https://woodgreenlandscaping.com',
+  'https://www.woodgreenlandscaping.com',
   'https://whiteknightsnow.com',
   'https://www.whiteknightsnow.com',
   'https://pupawalk.com',
