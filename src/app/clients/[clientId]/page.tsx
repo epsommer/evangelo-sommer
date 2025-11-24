@@ -303,7 +303,7 @@ const ClientDetailPage = () => {
                 title="Edit Client"
               >
                 <Edit className="h-4 w-4" />
-                <span className="hidden sm:inline">Edit Client</span>
+                <span className="sm:inline" style={{ display: 'none' }}>Edit Client</span>
               </button>
             </div>
           </div>
