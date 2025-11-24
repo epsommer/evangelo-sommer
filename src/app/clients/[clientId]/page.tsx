@@ -19,6 +19,7 @@ import ClientTestimonialsSection from '@/components/ClientTestimonialsSection'
 import ClientQuickActions from '@/components/ClientQuickActions'
 import QuickMessageModal from '@/components/QuickMessageModal'
 import AppointmentModal from '@/components/AppointmentModal'
+import NoteModal from '@/components/NoteModal'
 
 const ClientDetailPage = () => {
   const params = useParams()
@@ -33,6 +34,7 @@ const ClientDetailPage = () => {
   const [selectedServiceLine, setSelectedServiceLine] = useState<{id: string, name: string, color: string} | null>(null)
   const [showQuickMessageModal, setShowQuickMessageModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [showNoteModal, setShowNoteModal] = useState(false)
   const [transactions, setTransactions] = useState<any[]>([])
   const [billingData, setBillingData] = useState<{totalBilled: number, pendingAmount: number, lastServiceDate: string | null}>({
     totalBilled: 0,
@@ -310,10 +312,7 @@ const ClientDetailPage = () => {
           onMessageClient={() => setShowQuickMessageModal(true)}
           onScheduleAppointment={handleScheduleAppointment}
           onCreateReceipt={() => setShowReceiptModal(true)}
-          onAddNote={() => {
-            // Open notes section or create a note - placeholder for now
-            console.log('Add note for client:', client.id)
-          }}
+          onAddNote={() => setShowNoteModal(true)}
         />
 
         {/* Incomplete Profile Warning - BELONGS ON CLIENT PAGE */}
@@ -840,6 +839,15 @@ const ClientDetailPage = () => {
         isOpen={showAppointmentModal}
         onClose={() => setShowAppointmentModal(false)}
         client={client}
+      />
+
+      <NoteModal
+        isOpen={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        client={client}
+        onSave={(note) => {
+          console.log('Note saved:', note)
+        }}
       />
     </CRMLayout>
   )

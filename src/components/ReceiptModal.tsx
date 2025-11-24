@@ -234,40 +234,43 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-tactical-grey-800">
-            Create Receipt - {client.name}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-tactical-grey-500"
-            disabled={isSubmitting}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+      <div className="neo-container max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="neo-inset border-b border-foreground/10 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-foreground uppercase tracking-wide font-primary">
+              Create Receipt - {client.name}
+            </h2>
+            <button
+              onClick={onClose}
+              className="neo-icon-button transition-transform hover:scale-[1.1]"
+              disabled={isSubmitting}
+              aria-label="Close"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
           {/* Service Items Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-tactical-grey-800">Services Provided</h3>
+              <h3 className="text-lg font-bold text-foreground uppercase tracking-wide font-primary">Services Provided</h3>
               <div className="flex space-x-2">
                 <button
                   type="button"
                   onClick={() => setShowTemplates(!showTemplates)}
-                  className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+                  className="neo-button-sm px-3 py-2 text-xs uppercase font-bold font-primary transition-transform hover:scale-[1.02]"
                 >
                   📋 Templates
                 </button>
                 <button
                   type="button"
                   onClick={addLineItem}
-                  className="px-3 py-1 text-sm bg-tactical-gold-muted text-tactical-brown-dark rounded hover:bg-tactical-gold-light"
+                  className="neo-button-sm px-3 py-2 text-xs uppercase font-bold font-primary transition-transform hover:scale-[1.02]"
                 >
                   + Add Service
                 </button>
@@ -276,18 +279,18 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
 
             {/* Service Templates */}
             {showTemplates && (
-              <div className="mb-4 p-4 bg-tactical-grey-100 rounded-lg">
-                <h4 className="text-sm font-medium text-tactical-grey-600 mb-2">Quick Add Templates:</h4>
+              <div className="mb-4 p-4 neo-inset">
+                <h4 className="text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">Quick Add Templates:</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {getServiceTemplates().map((template, index) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => addTemplateItem(template)}
-                      className="text-left p-2 text-sm bg-white border rounded hover:bg-tactical-gold-muted hover:border-tactical-grey-400"
+                      className="neo-button text-left p-2 text-sm transition-transform hover:scale-[1.02]"
                     >
-                      <div className="font-medium">{template.description}</div>
-                      <div className="text-tactical-grey-500">${template.unitPrice}</div>
+                      <div className="font-bold font-primary">{template.description}</div>
+                      <div className="text-muted-foreground text-xs">${template.unitPrice}</div>
                     </button>
                   ))}
                 </div>
@@ -297,29 +300,29 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
             {/* Line Items */}
             <div className="space-y-3">
               {formData.items.map((item, index) => (
-                <div key={item.id} className="grid grid-cols-12 gap-3 items-end p-3 bg-tactical-grey-100 rounded-lg">
+                <div key={item.id} className="grid grid-cols-12 gap-3 items-end p-3 neo-inset">
                   <div className="col-span-4">
-                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
+                    <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wide font-primary">
                       Description *
                     </label>
                     <input
                       type="text"
                       value={item.description}
                       onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                      className="w-full px-3 py-2 text-sm font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50"
                       placeholder="Service description"
                       required
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
+                    <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wide font-primary">
                       Service Type
                     </label>
                     <select
                       value={item.serviceType}
                       onChange={(e) => updateLineItem(index, 'serviceType', e.target.value)}
-                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                      className="w-full px-3 py-2 text-sm font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                     >
                       <option value="landscaping">Landscaping</option>
                       <option value="snow_removal">Snow Removal</option>
@@ -332,7 +335,7 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
                   </div>
 
                   <div className="col-span-1">
-                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
+                    <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wide font-primary">
                       Qty *
                     </label>
                     <input
@@ -341,13 +344,13 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
                       step="0.1"
                       value={item.quantity}
                       onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                      className="w-full px-3 py-2 text-sm font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                       required
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
+                    <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wide font-primary">
                       Unit Price *
                     </label>
                     <input
@@ -356,17 +359,17 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
                       step="0.01"
                       value={item.unitPrice}
                       onChange={(e) => updateLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      className="w-full px-2 py-1 text-sm border border-tactical-grey-400 rounded focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                      className="w-full px-3 py-2 text-sm font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50"
                       placeholder="0.00"
                       required
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-tactical-grey-600 mb-1">
+                    <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wide font-primary">
                       Total
                     </label>
-                    <div className="px-2 py-1 text-sm bg-tactical-grey-200 border border-tactical-grey-400 rounded">
+                    <div className="px-3 py-2 text-sm font-primary neo-container font-bold">
                       ${item.totalPrice.toFixed(2)}
                     </div>
                   </div>
@@ -377,15 +380,15 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
                         type="checkbox"
                         checked={item.taxable}
                         onChange={(e) => updateLineItem(index, 'taxable', e.target.checked)}
-                        className="rounded border-tactical-grey-400 text-tactical-gold focus:ring-tactical-gold-500"
+                        className="w-4 h-4"
                       />
-                      <span className="ml-1 text-xs text-tactical-grey-500">Tax</span>
+                      <span className="ml-1 text-xs text-muted-foreground font-primary uppercase">Tax</span>
                     </label>
                     {formData.items.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeLineItem(index)}
-                        className="text-red-600 hover:text-red-800"
+                        className="neo-icon-button transition-transform hover:scale-[1.1]"
                       >
                         🗑️
                       </button>
@@ -398,16 +401,16 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
 
           {/* Payment Details */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-tactical-grey-800 mb-4">Payment Details</h3>
+            <h3 className="text-lg font-bold text-foreground mb-4 uppercase tracking-wide font-primary">Payment Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
+                <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                   Payment Method *
                 </label>
                 <select
                   value={formData.paymentMethod}
                   onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                  className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                   required
                 >
                   <option value="cash">Cash</option>
@@ -419,27 +422,27 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
+                <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                   Service Date *
                 </label>
                 <input
                   type="date"
                   value={formData.serviceDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, serviceDate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                  className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
+                <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
                   Payment Date *
                 </label>
                 <input
                   type="date"
                   value={formData.paymentDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, paymentDate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+                  className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
                   required
                 />
               </div>
@@ -448,8 +451,8 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
 
           {/* Totals Summary */}
           <div className="mb-6">
-            <div className="bg-tactical-grey-100 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-tactical-grey-800 mb-3">Receipt Summary</h3>
+            <div className="neo-inset p-4">
+              <h3 className="text-lg font-bold text-foreground mb-3 uppercase tracking-wide font-primary">Receipt Summary</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
@@ -469,14 +472,14 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
 
           {/* Notes */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-tactical-grey-600 mb-1">
+            <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
               Notes
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 border border-tactical-grey-400 rounded-lg focus:ring-2 focus:ring-tactical-gold-500 focus:border-tactical-gold-500"
+              className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
               placeholder="Additional notes or details..."
             />
           </div>
@@ -487,14 +490,14 @@ export default function ReceiptModal({ isOpen, onClose, client, onReceiptCreated
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-tactical-grey-600 bg-tactical-grey-200 rounded-lg hover:bg-tactical-grey-300 disabled:opacity-50"
+              className="neo-button px-6 py-3 uppercase tracking-wide font-bold font-primary transition-transform hover:scale-[1.02] disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-tactical-gold text-white rounded-lg hover:bg-tactical-gold-dark disabled:opacity-50"
+              className="neo-button-active px-6 py-3 uppercase tracking-wide font-bold font-primary transition-transform hover:scale-[1.02] disabled:opacity-50"
             >
               {isSubmitting ? 'Creating...' : 'Create & Send Receipt'}
             </button>

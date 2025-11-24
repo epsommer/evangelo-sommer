@@ -46,7 +46,8 @@ const TestimonialsWidget: React.FC<TestimonialsWidgetProps> = ({ onViewAll }) =>
       const data = await response.json()
 
       if (data.success) {
-        const allTestimonials = data.testimonials
+        // API returns testimonials in data.data, with fallback to empty array
+        const allTestimonials = Array.isArray(data.data) ? data.data : []
         setTestimonials(allTestimonials.slice(0, 3)) // Show only recent 3
 
         // Calculate stats
@@ -60,6 +61,8 @@ const TestimonialsWidget: React.FC<TestimonialsWidgetProps> = ({ onViewAll }) =>
       }
     } catch (error) {
       console.error('Error loading testimonials:', error)
+      // Set empty arrays on error to prevent undefined errors
+      setTestimonials([])
     } finally {
       setIsLoading(false)
     }

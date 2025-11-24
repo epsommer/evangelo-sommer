@@ -27,11 +27,11 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
         </h3>
       </div>
       <div className="p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
           {/* Message Client */}
           <button
             onClick={onMessageClient}
-            className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
+            className="neo-button aspect-square w-24 h-24 flex flex-col items-center justify-center gap-2 transition-transform hover:scale-[1.05]"
             title="Add incoming message from client"
           >
             <MessageSquare className="h-6 w-6 text-foreground" />
@@ -43,7 +43,7 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
           {/* Schedule Appointment */}
           <button
             onClick={onScheduleAppointment}
-            className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
+            className="neo-button aspect-square w-24 h-24 flex flex-col items-center justify-center gap-2 transition-transform hover:scale-[1.05]"
             title="Schedule appointment"
           >
             <Calendar className="h-6 w-6 text-foreground" />
@@ -55,7 +55,7 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
           {/* Create Receipt/Invoice */}
           <button
             onClick={onCreateReceipt}
-            className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
+            className="neo-button aspect-square w-24 h-24 flex flex-col items-center justify-center gap-2 transition-transform hover:scale-[1.05]"
             title="Create receipt or invoice"
           >
             <Receipt className="h-6 w-6 text-foreground" />
@@ -67,7 +67,7 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
           {/* Add Note */}
           <button
             onClick={onAddNote}
-            className="neo-button p-4 flex flex-col items-center justify-center space-y-2 transition-transform hover:scale-[1.05]"
+            className="neo-button aspect-square w-24 h-24 flex flex-col items-center justify-center gap-2 transition-transform hover:scale-[1.05]"
             title="Add note or memo"
           >
             <StickyNote className="h-6 w-6 text-foreground" />
