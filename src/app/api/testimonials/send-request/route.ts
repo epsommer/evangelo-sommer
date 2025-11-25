@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     const serviceConfig = getServiceEmailConfig(serviceLineId)
 
     // Generate the testimonial form link pointing to service website
+    // Each service site has its own testimonial form that proxies to the CRM
     const formLink = `${serviceConfig.websiteUrl}/testimonials/submit/${testimonial.id}`
 
     // Send email to client with testimonial form link
@@ -132,6 +133,7 @@ function generateTestimonialRequestEmail(
 
   // Build absolute URL for logo (for email compatibility)
   // Use inverse logo for dark header background, regular logo otherwise
+  // Logos are hosted on each service's website
   const logoPath = serviceConfig.logoInversePath || serviceConfig.logoPath
   const logoUrl = logoPath
     ? `${serviceConfig.websiteUrl}${logoPath}`

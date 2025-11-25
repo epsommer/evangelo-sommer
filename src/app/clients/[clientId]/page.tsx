@@ -35,6 +35,7 @@ const ClientDetailPage = () => {
   const [showQuickMessageModal, setShowQuickMessageModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showNoteModal, setShowNoteModal] = useState(false)
+  const [notesRefreshKey, setNotesRefreshKey] = useState(0)
   const [transactions, setTransactions] = useState<any[]>([])
   const [billingData, setBillingData] = useState<{totalBilled: number, pendingAmount: number, lastServiceDate: string | null}>({
     totalBilled: 0,
@@ -777,7 +778,7 @@ const ClientDetailPage = () => {
         <ClientTestimonialsSection clientId={clientId} client={client} />
 
         {/* Client Notes Section */}
-        <ClientNotesSection clientId={clientId} clientName={client.name} />
+        <ClientNotesSection key={notesRefreshKey} clientId={clientId} clientName={client.name} />
 
         {/* Client Conversations Section */}
         <ClientConversationsSection clientId={clientId} client={client} />
@@ -847,6 +848,8 @@ const ClientDetailPage = () => {
         client={client}
         onSave={(note) => {
           console.log('Note saved:', note)
+          // Trigger refresh of ClientNotesSection by changing its key
+          setNotesRefreshKey(prev => prev + 1)
         }}
       />
     </CRMLayout>
