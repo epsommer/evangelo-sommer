@@ -58,11 +58,22 @@ export default function PrivacyPolicyClient() {
         }}
       >
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">Becky CRM</p>
-            <h1 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              Privacy Policy
-            </h1>
+          <div className="flex items-center gap-3">
+            <Link href="/" className={`neomorphic-logo ${isDark ? "dark-mode" : ""}`} aria-label="Back to evangelosommer.com">
+              <div className="relative w-12 h-12">
+                <img
+                  src="/EvangeloSommer-ES-Monogram.svg"
+                  alt="ES Monogram"
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            </Link>
+            <div>
+              <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">Becky CRM</p>
+              <h1 className="mt-1 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                Privacy Policy
+              </h1>
+            </div>
           </div>
           <div className="neo-badge px-3 py-1 text-xs uppercase tracking-wide">
             Updated {new Date().toISOString().slice(0, 10)}
@@ -129,15 +140,15 @@ export default function PrivacyPolicyClient() {
             <h2 className="text-xl font-semibold text-foreground">Contact</h2>
             <p className="text-muted-foreground">
               For privacy questions or requests, email{" "}
-              <a className="font-medium text-indigo-700 hover:text-indigo-800" href="mailto:contact@evangelosommer.com">
-                contact@evangelosommer.com
+              <a className="font-medium text-indigo-700 hover:text-indigo-800" href="mailto:support@evangelosommer.com">
+                support@evangelosommer.com
               </a>.
             </p>
           </section>
 
           <section className="space-y-3 border-t border-foreground/10 pt-6">
             <p className="text-sm text-muted-foreground">Effective date: {new Date().toISOString().slice(0, 10)}</p>
-            <p className="text-sm text-muted-foreground">Becky CRM is published by Evangelos Sommer.</p>
+            <p className="text-sm text-muted-foreground">Becky CRM is published by Evangelo Sommer.</p>
             <div className="text-sm">
               <Link className="text-indigo-700 hover:text-indigo-800" href="/">
                 Back to evangelosommer.com
