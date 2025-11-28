@@ -30,9 +30,20 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const [isDark, setIsDark] = useState(false)
 
-  // Disable body scroll when modal is open
+  // Sync theme and disable body scroll when modal is open
   useEffect(() => {
+    const updateTheme = () => {
+      const theme = localStorage.getItem('color-theme') || 'light'
+      setIsDark(theme === 'true-night' || theme === 'mocha')
+    }
+
+    updateTheme()
+    const observer = new MutationObserver(() => updateTheme())
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] })
+    window.addEventListener('storage', updateTheme)
+
     if (isOpen) {
       lockScroll()
       loadNotifications()
@@ -42,6 +53,8 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
 
     return () => {
       unlockScroll()
+      observer.disconnect()
+      window.removeEventListener('storage', updateTheme)
     }
   }, [isOpen])
 
@@ -156,11 +169,28 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-[100]" onClick={onClose} />
+      <div className="fixed inset-0 z-[100]" onClick={onClose}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isDark
+              ? 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 35%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.05), transparent 30%), #0b0b0f'
+              : 'radial-gradient(circle at 20% 20%, rgba(0,0,0,0.04), transparent 35%), radial-gradient(circle at 80% 0%, rgba(0,0,0,0.05), transparent 30%), #f7f7fb'
+          }}
+        />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      </div>
 
       {/* Modal container - accounts for sidebar on desktop */}
       <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-start justify-center p-4 sm:p-6 md:p-8 overflow-y-auto pointer-events-none">
-        <div className="neo-container max-w-2xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-16rem)] mt-16 sm:mt-20 md:mt-16 mb-8 overflow-y-auto pointer-events-auto">
+        <div
+          className={`neo-container neomorphic-card ${isDark ? 'dark-mode' : ''} max-w-2xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-16rem)] mt-16 sm:mt-20 md:mt-16 mb-8 overflow-y-auto pointer-events-auto`}
+          style={{
+            background: isDark
+              ? 'linear-gradient(145deg, rgba(20,20,26,0.9), rgba(17,17,23,0.92))'
+              : 'linear-gradient(145deg, rgba(255,255,255,0.92), rgba(245,245,250,0.96))',
+          }}
+        >
           {/* Header */}
           <div className="neo-inset border-b border-foreground/10 p-6">
             <div className="flex items-center justify-between mb-4">
@@ -189,17 +219,17 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setFilter('all')}
-                  className={`neo-button-sm px-3 py-1.5 text-xs uppercase transition-transform hover:scale-[1.02] ${
+                  className={`neomorphic-button px-3 py-1.5 text-xs uppercase transition-transform hover:scale-[1.02] ${
                     filter === 'all' ? 'neo-button-active' : ''
-                  }`}
+                  } ${isDark ? 'dark-mode' : ''}`}
                 >
                   All ({notifications.length})
                 </button>
                 <button
                   onClick={() => setFilter('unread')}
-                  className={`neo-button-sm px-3 py-1.5 text-xs uppercase transition-transform hover:scale-[1.02] ${
+                  className={`neomorphic-button px-3 py-1.5 text-xs uppercase transition-transform hover:scale-[1.02] ${
                     filter === 'unread' ? 'neo-button-active' : ''
-                  }`}
+                  } ${isDark ? 'dark-mode' : ''}`}
                 >
                   Unread ({unreadCount})
                 </button>
@@ -234,7 +264,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                 {filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`neo-inset p-4 rounded-lg transition-all cursor-pointer hover:scale-[1.01] ${
+                    className={`neo-inset neomorphic-card ${isDark ? 'dark-mode' : ''} p-4 rounded-lg transition-all cursor-pointer hover:scale-[1.01] ${
                       !notification.isRead ? 'border-l-4 border-tactical-gold' : ''
                     }`}
                     onClick={() => handleNotificationClick(notification)}
