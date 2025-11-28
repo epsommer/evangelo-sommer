@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         clientId: receipt.clientId,
         clientName: receipt.client?.name,
         amount: receipt.totalAmount,
-        userId: session?.user?.email,
+        userId: session?.user?.email || undefined,
         userName: session?.user?.name || undefined,
       });
     } catch (logError) {
