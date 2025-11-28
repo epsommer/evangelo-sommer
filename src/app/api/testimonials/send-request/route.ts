@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           clientId,
           clientName: client.name,
           serviceName: serviceName || serviceConfig.name,
-          userId: session?.user?.email,
+          userId: session?.user?.email || undefined,
           userName: session?.user?.name || undefined,
         });
       } catch (logError) {
