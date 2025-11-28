@@ -589,7 +589,7 @@ export async function POST(
           clientId: updatedDocument.clientId,
           clientName: clientName,
           amount: receiptData.totalAmount || receiptDocument.amount || 0,
-          userId: session?.user?.email,
+          userId: session?.user?.email || undefined,
           userName: session?.user?.name || undefined,
         });
       } catch (logError) {
