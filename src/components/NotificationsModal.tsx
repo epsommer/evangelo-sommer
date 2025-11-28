@@ -128,8 +128,10 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
     }
   }
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp)
+  const formatTimestamp = (timestamp: string | Date | null | undefined) => {
+    if (!timestamp) return ''
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
+    if (isNaN(date.getTime())) return ''
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
