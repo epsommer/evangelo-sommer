@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { logTestimonialReceived } from '@/lib/activity-logger'
 
 // Allowed origins for CORS (service websites)
 const ALLOWED_ORIGINS = [
@@ -78,7 +79,23 @@ export async function POST(request: NextRequest) {
         status: 'SUBMITTED',
         submittedAt: new Date(),
       },
+      include: {
+        client: true,
+      },
     })
+
+    // Log activity for received testimonial
+    try {
+      await logTestimonialReceived({
+        testimonialId: testimonial.id,
+        clientId: testimonial.clientId,
+        clientName: testimonial.client?.name || 'Unknown Client',
+        rating: testimonial.rating,
+      });
+    } catch (logError) {
+      console.error('Failed to log testimonial received activity:', logError);
+      // Don't fail the request if activity logging fails
+    }
 
     return NextResponse.json({
       success: true,

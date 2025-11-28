@@ -44,6 +44,19 @@ const Dashboard = () => {
   const [allClients, setAllClients] = useState<Client[]>([])
   const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null)
   const [isLoadingMetrics, setIsLoadingMetrics] = useState(true)
+  const [derivedRevenue, setDerivedRevenue] = useState(0)
+  const [derivedPipeline, setDerivedPipeline] = useState(0)
+  const [recentTransactions, setRecentTransactions] = useState<Array<{
+    id: string
+    type: 'receipt' | 'invoice'
+    number: string
+    clientName: string
+    amount: number
+    status: string
+    date: number
+    serviceLine?: string | null
+  }>>([])
+  const [serviceLineTotals, setServiceLineTotals] = useState<Record<string, { revenue: number; active: number }>>({})
   const services = getAllServices()
 
   useEffect(() => {
@@ -62,13 +75,16 @@ const Dashboard = () => {
         ])
 
         // Handle clients data
+        let clientsList: Client[] = []
         if (clientsResponse.ok) {
           const data = await clientsResponse.json()
           console.log('📥 Dashboard fetched clients:', data)
 
           if (data.success && Array.isArray(data.data)) {
+            clientsList = data.data
             setAllClients(data.data)
           } else if (Array.isArray(data)) {
+            clientsList = data
             setAllClients(data)
           } else {
             console.error('Unexpected clients data format:', data)
@@ -80,15 +96,165 @@ const Dashboard = () => {
         }
 
         // Handle metrics data
+        let metricsValue: AnalyticsMetrics | null = null
         if (metricsResponse.ok) {
           const metricsData = await metricsResponse.json()
           console.log('📊 Dashboard fetched metrics:', metricsData)
 
           if (metricsData.success) {
-            setMetrics(metricsData.data)
+            metricsValue = metricsData.data
           }
         } else {
           console.error('Failed to fetch metrics for dashboard')
+        }
+
+        // Fetch receipts and invoices for revenue fallback + recent list
+        let receipts: any[] = []
+        let invoices: any[] = []
+        const normalizeServiceKey = (raw: any) => {
+          if (!raw) return 'unknown'
+          const cleaned = String(raw).trim().toLowerCase()
+          const compact = cleaned.replace(/[\s_-]+/g, '')
+          const match = services.find((s) => s.id === cleaned || s.id === compact)
+          if (match) return match.id
+          if (compact.includes('wood')) return 'woodgreen'
+          if (compact.includes('white')) return 'whiteknight'
+          if (compact.includes('pup')) return 'pupawalk'
+          if (compact.includes('creative') || compact.includes('evangelo') || compact.includes('studio') || compact.includes('tommy')) return 'creative'
+          return cleaned || 'unknown'
+        }
+
+        try {
+          const [receiptsRes, invoicesRes] = await Promise.all([
+            fetch('/api/billing/receipts'),
+            fetch('/api/billing/invoices'),
+          ])
+          if (receiptsRes.ok) {
+            const data = await receiptsRes.json()
+            receipts = Array.isArray(data) ? data : data.receipts || data.data || []
+          }
+          if (invoicesRes.ok) {
+            const data = await invoicesRes.json()
+            invoices = Array.isArray(data) ? data : data.invoices || data.data || []
+          }
+        } catch (err) {
+          console.error('Failed to fetch receipts/invoices for dashboard:', err)
+        }
+
+        // Map recent transactions from both receipts and invoices
+        const mappedReceipts = receipts.map((r: any) => ({
+          id: r.id,
+          type: 'receipt' as const,
+          number: r.receiptNumber || `REC-${(r.id || '').slice(-6).toUpperCase()}`,
+          clientName: r.client?.name || 'Client',
+          amount: r.totalAmount || r.amount || 0,
+          status: (r.status || '').toLowerCase(),
+          date: new Date(r.createdAt || r.serviceDate || Date.now()).getTime(),
+          serviceLine: normalizeServiceKey(
+            r.serviceLineId ||
+            r.serviceLine ||
+            r.serviceType ||
+            r.items?.[0]?.serviceType ||
+            r.items?.[0]?.serviceTitle
+          ),
+        }))
+
+        const mappedInvoices = invoices.map((inv: any) => ({
+          id: inv.id,
+          type: 'invoice' as const,
+          number: inv.invoiceNumber || `INV-${(inv.id || '').slice(-6).toUpperCase()}`,
+          clientName: inv.client?.name || 'Client',
+          amount: inv.totalAmount || inv.amount || 0,
+          status: (inv.status || '').toLowerCase(),
+          date: new Date(inv.createdAt || inv.dueDate || Date.now()).getTime(),
+          serviceLine: normalizeServiceKey(
+            inv.serviceLineId ||
+            inv.serviceLine ||
+            inv.serviceType ||
+            inv.items?.[0]?.serviceType ||
+            inv.items?.[0]?.serviceTitle
+          ),
+        }))
+
+        const combinedRecent = [...mappedReceipts, ...mappedInvoices]
+          .sort((a, b) => b.date - a.date)
+          .slice(0, 5)
+
+        setRecentTransactions(combinedRecent)
+
+        // Derive revenue/pipeline from receipts+invoices (always used for totals)
+        const paidTotal =
+          [...mappedReceipts, ...mappedInvoices]
+            .filter((t) => t.status === 'paid')
+            .reduce((sum, t) => sum + (t.amount || 0), 0)
+
+        const pipelineTotal =
+          [...mappedReceipts, ...mappedInvoices]
+            .filter((t) => t.status === 'sent' || t.status === 'draft')
+            .reduce((sum, t) => sum + (t.amount || 0), 0)
+
+        // Service-line totals from paid receipts/invoices
+        const serviceTotals: Record<string, { revenue: number; active: number }> = {}
+        ;[...mappedReceipts, ...mappedInvoices]
+          .filter((t) => t.status === 'paid')
+          .forEach((t) => {
+            const key = normalizeServiceKey((t as any).serviceLine)
+            if (!serviceTotals[key]) {
+              serviceTotals[key] = { revenue: 0, active: 0 }
+            }
+            serviceTotals[key].revenue += t.amount || 0
+            serviceTotals[key].active += 1
+          })
+        setServiceLineTotals(serviceTotals)
+
+        setDerivedRevenue(paidTotal)
+        setDerivedPipeline(pipelineTotal)
+
+        // Merge or create metrics with derived revenue
+        const totalClients = clientsList.length
+        const activeClients = clientsList.filter(c => c.status?.toLowerCase() === 'active').length
+        const prospects = clientsList.filter(c => c.status?.toLowerCase() === 'prospect').length
+
+        if (!metricsValue) {
+          metricsValue = {
+            revenue: {
+              total: paidTotal,
+              previous: 0,
+              pipeline: pipelineTotal,
+              growth: 0,
+            },
+            clients: {
+              total: totalClients,
+              active: activeClients,
+              prospects: prospects,
+              previous: 0,
+              growth: 0,
+            },
+            growth: {
+              rate: 0,
+              revenueGrowth: 0,
+              clientGrowth: 0,
+            },
+          }
+        } else {
+          metricsValue = {
+            ...metricsValue,
+            revenue: {
+              ...metricsValue.revenue,
+              total: paidTotal,
+              pipeline: pipelineTotal,
+            },
+            clients: {
+              ...metricsValue.clients,
+              total: totalClients,
+              active: activeClients,
+              prospects: prospects,
+            },
+          }
+        }
+
+        if (metricsValue) {
+          setMetrics(metricsValue)
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
@@ -118,9 +284,9 @@ const Dashboard = () => {
     return null
   }
 
-  // Use metrics data if available, otherwise fallback to client data
-  const totalRevenue = metrics?.revenue.total || 0
-  const pipelineValue = metrics?.revenue.pipeline || 0
+  // Use derived data primarily, fallback to metrics if missing
+  const totalRevenue = derivedRevenue || metrics?.revenue?.total || 0
+  const pipelineValue = derivedPipeline || metrics?.revenue?.pipeline || 0
   const activeClients = metrics?.clients.active || allClients.filter((c) => c.status === "active").length
   const totalClients = metrics?.clients.total || allClients.length
   const prospects = metrics?.clients.prospects || allClients.filter((c) => c.status === "prospect").length
@@ -151,79 +317,85 @@ const Dashboard = () => {
 
         {/* KPI Cards - 4 Primary Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Total Revenue */}
-          <div className="neo-card p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-muted-foreground">
-                Total Revenue
-              </span>
-              <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
-                <DollarSign className="h-4 w-4" />
+          {/* Total Revenue - Links to Billing Page */}
+          <Link href="/billing">
+            <div className="neo-card p-6 cursor-pointer hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-muted-foreground">
+                  Total Revenue
+                </span>
+                <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
+                  <DollarSign className="h-4 w-4" />
+                </div>
+              </div>
+              {isLoadingMetrics ? (
+                <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                  ---
+                </div>
+              ) : (
+                <div className={`text-3xl font-bold status-green mb-1`} title="Paid receipts + paid invoices">
+                  ${totalRevenue.toLocaleString()}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground">
+                ${pipelineValue.toLocaleString()} Pipeline
               </div>
             </div>
-            {isLoadingMetrics ? (
-              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
-                ---
-              </div>
-            ) : (
-              <div className={`text-3xl font-bold ${revenueColor.class} mb-1`} title={revenueColor.description}>
-                ${totalRevenue.toLocaleString()}
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              ${pipelineValue.toLocaleString()} Pipeline
-            </div>
-          </div>
+          </Link>
 
-          {/* Active Clients */}
-          <div className="neo-card p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-muted-foreground">
-                Active Clients
-              </span>
-              <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
-                <Users className="h-4 w-4" />
+          {/* Active Clients - Links to Clients Page */}
+          <Link href="/clients">
+            <div className="neo-card p-6 cursor-pointer hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-muted-foreground">
+                  Active Clients
+                </span>
+                <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
+                  <Users className="h-4 w-4" />
+                </div>
+              </div>
+              {isLoadingMetrics ? (
+                <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                  ---
+                </div>
+              ) : (
+                <div className={`text-3xl font-bold ${clientsColor.class} mb-1`} title={clientsColor.description}>
+                  {activeClients}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground">
+                of {totalClients} total
               </div>
             </div>
-            {isLoadingMetrics ? (
-              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
-                ---
-              </div>
-            ) : (
-              <div className={`text-3xl font-bold ${clientsColor.class} mb-1`} title={clientsColor.description}>
-                {activeClients}
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              of {totalClients} total
-            </div>
-          </div>
+          </Link>
 
-          {/* Prospects */}
-          <div className="neo-card p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-muted-foreground">
-                Prospects
-              </span>
-              <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
+          {/* Prospects - Links to Clients Page */}
+          <Link href="/clients">
+            <div className="neo-card p-6 cursor-pointer hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-muted-foreground">
+                  Prospects
+                </span>
+                <div className="neo-button-circle w-8 h-8 flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+              </div>
+              {isLoadingMetrics ? (
+                <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
+                  ---
+                </div>
+              ) : (
+                <div className={`text-3xl font-bold ${prospectsColor.class} mb-1`} title={prospectsColor.description}>
+                  {prospects}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground">
+                Potential Clients
               </div>
             </div>
-            {isLoadingMetrics ? (
-              <div className="text-3xl font-bold text-muted-foreground mb-1 animate-pulse">
-                ---
-              </div>
-            ) : (
-              <div className={`text-3xl font-bold ${prospectsColor.class} mb-1`} title={prospectsColor.description}>
-                {prospects}
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              Potential Clients
-            </div>
-          </div>
+          </Link>
 
-          {/* Growth Rate */}
+          {/* Growth Rate - Informational Only */}
           <div className="neo-card p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-muted-foreground">
@@ -248,93 +420,100 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch">
-          {/* Daily Planner Widget - BELONGS ON DASHBOARD */}
-          <div className="xl:col-span-1 flex">
+        
+        {/* Masonry layout for widgets */}
+        <div className="columns-1 md:columns-2 xl:columns-3 gap-6 space-y-6 [column-fill:_balance]">
+          <div className="break-inside-avoid-column mb-6">
             <DailyPlannerWidget onViewAll={() => router.push('/time-manager')} />
           </div>
-
-          {/* Goals Widget */}
-          <div className="xl:col-span-1 flex">
+          <div className="break-inside-avoid-column mb-6">
             <GoalsWidget onViewAll={() => router.push('/goals')} />
           </div>
-
-          {/* Testimonials Widget */}
-          <div className="xl:col-span-1 flex">
+          <div className="break-inside-avoid-column mb-6">
             <TestimonialsWidget onViewAll={() => router.push('/testimonials')} />
           </div>
-
-          {/* Services & Billing Widget */}
-          <div className="xl:col-span-1 flex">
+          <div className="break-inside-avoid-column mb-6">
             <div className="neo-card flex flex-col w-full">
               <div className="p-6 border-b border-border flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-foreground">
-                    Services & Billing
+                    Recent Transactions
                   </h3>
-                  <Link href="/services-billing">
+                  <Link href="/billing">
                     <button className="neo-button text-xs px-3 py-1">
-                      View All
+                      Go to Billing
                     </button>
                   </Link>
                 </div>
               </div>
               <div className="p-6 flex-grow flex flex-col">
                 <div className="space-y-4">
-                  {/* Overview Stats */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center neo-card p-3">
-                      <div className="text-2xl font-bold text-green-600">
-                        $1,250
-                      </div>
+                      {isLoadingMetrics ? (
+                        <div className="text-2xl font-bold text-muted-foreground animate-pulse">
+                          ---
+                        </div>
+                      ) : (
+                        <div className="text-2xl font-bold status-green">
+                          ${(metrics?.revenue.total || 0).toLocaleString()}
+                        </div>
+                      )}
                       <div className="text-xs text-muted-foreground">
                         Total Revenue
                       </div>
                     </div>
                     <div className="text-center neo-card p-3">
-                      <div className="text-2xl font-bold text-orange-600">
-                        3
-                      </div>
+                      {isLoadingMetrics ? (
+                        <div className="text-2xl font-bold text-muted-foreground animate-pulse">
+                          ---
+                        </div>
+                      ) : (
+                        <div className="text-2xl font-bold text-orange-600">
+                          ${(metrics?.revenue.pipeline || 0).toLocaleString()}
+                        </div>
+                      )}
                       <div className="text-xs text-muted-foreground">
-                        Pending Invoices
+                        Pipeline Value
                       </div>
                     </div>
                   </div>
 
-                  {/* Recent Transactions */}
                   <div className="space-y-2">
                     <h4 className="text-sm font-semibold text-foreground">
                       Recent Transactions
                     </h4>
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between p-3 neo-card">
-                        <div className="flex items-center space-x-2">
-                          <Receipt className="w-4 h-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-sm text-foreground">REC-001</div>
-                            <div className="text-xs text-muted-foreground">Evan Sommer</div>
-                          </div>
+                      {recentTransactions.length === 0 && (
+                        <div className="neo-card p-3 text-sm text-muted-foreground">
+                          No recent transactions
                         </div>
-                        <div className="text-sm font-bold text-green-600">$50</div>
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 neo-card">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="w-4 h-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-sm text-foreground">INV-001</div>
-                            <div className="text-xs text-muted-foreground">Evan Sommer</div>
+                      )}
+                      {recentTransactions.map((txn) => {
+                        const isPaid = txn.status === 'paid';
+                        const isSent = txn.status === 'sent';
+                        const statusClass = isPaid || isSent ? 'status-green' : 'text-orange-600';
+                        const Icon = txn.type === 'invoice' ? FileText : Receipt;
+                        return (
+                          <div key={txn.id} className="flex items-center justify-between p-3 neo-card">
+                            <div className="flex items-center space-x-2">
+                              <Icon className="w-4 h-4 text-muted-foreground" />
+                              <div>
+                                <div className="text-sm text-foreground">{txn.number}</div>
+                                <div className="text-xs text-muted-foreground">{txn.clientName}</div>
+                              </div>
+                            </div>
+                            <div className={`text-sm font-bold ${statusClass}`}>
+                              ${txn.amount.toLocaleString()}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-sm font-bold text-orange-600">$150</div>
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="space-y-2">
-                    <Link href="/services-billing">
+                    <Link href="/billing">
                       <button className="neo-button w-full text-xs py-2 flex items-center justify-start">
                         <ExternalLink className="w-3 h-3 mr-2" />
                         View Full Billing Page
@@ -349,9 +528,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Recent Activity */}
-          <div className="lg:col-span-2 xl:col-span-1 flex">
+          <div className="break-inside-avoid-column mb-6">
             <div className="neo-card flex flex-col w-full">
               <div className="p-6 border-b border-border flex-shrink-0">
                 <div className="flex items-center justify-between">
@@ -412,9 +589,9 @@ const Dashboard = () => {
                                 ${(client.budget || 0).toLocaleString()}
                               </div>
                               <div className={`text-xs font-semibold ${
-                                client.status === 'active' ? 'text-green-600' : 'text-muted-foreground'
+                                client.status === 'active' ? 'status-green' : 'text-muted-foreground'
                               }`}>
-                                {client.status}
+                                {client.status?.toUpperCase()}
                               </div>
                             </div>
                           </div>
@@ -426,46 +603,42 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </div>
+          <div className="break-inside-avoid-column mb-6">
+            <div className="neo-card">
+              <div className="p-6 border-b border-border">
+                <h3 className="text-lg font-bold text-foreground">
+                  Service Line Performance
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {services.map(service => {
+                    const totals = serviceLineTotals[service.id] || { revenue: 0, active: 0 }
+                    const averageServiceRevenue = totalRevenue / (services.length || 1)
+                    const serviceRevenueColor = getDataColor(totals.revenue, averageServiceRevenue)
 
-        {/* Service Performance */}
-        <div className="neo-card">
-          <div className="p-6 border-b border-border">
-            <h3 className="text-lg font-bold text-foreground">
-              Service Line Performance
-            </h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {services.map(service => {
-                const serviceClients = allClients.filter(c => c.serviceId === service.id)
-                const serviceRevenue = serviceClients.reduce((sum, c) => sum + (c.budget || 0), 0)
-                const activeServiceClients = serviceClients.filter(c => c.status === 'active').length
-
-                // Data-driven coloring for service performance
-                const averageServiceRevenue = totalRevenue / services.length
-                const serviceRevenueColor = getDataColor(serviceRevenue, averageServiceRevenue)
-
-                return (
-                  <div key={service.id} className="text-center neo-card p-4">
-                    <div
-                      className="w-4 h-4 mx-auto mb-3 rounded-full"
-                      style={{ backgroundColor: service.brand.primaryColor }}
-                    ></div>
-                    <h4 className="font-bold text-foreground text-sm mb-2">
-                      {service.name}
-                    </h4>
-                    <div className="space-y-1">
-                      <p className={`text-lg font-bold ${serviceRevenueColor.class}`} title={serviceRevenueColor.description}>
-                        ${serviceRevenue.toLocaleString()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {activeServiceClients} active clients
-                      </p>
-                    </div>
-                  </div>
-                )
-              })}
+                    return (
+                      <div key={service.id} className="text-center neo-card p-4">
+                        <div
+                          className="w-4 h-4 mx-auto mb-3 rounded-full"
+                          style={{ backgroundColor: service.brand.primaryColor }}
+                        ></div>
+                        <h4 className="font-bold text-foreground text-sm mb-2">
+                          {service.name}
+                        </h4>
+                        <div className="space-y-1">
+                          <p className={`text-lg font-bold ${serviceRevenueColor.class}`} title={serviceRevenueColor.description}>
+                            ${totals.revenue.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {totals.active} paid docs
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>

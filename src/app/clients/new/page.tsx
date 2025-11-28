@@ -755,20 +755,20 @@ function NewClientPageContent() {
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto neo-container p-4">
                   {selectedService.serviceTypes.map((serviceType) => (
-                    <div key={serviceType} className="flex items-center font-primary cursor-pointer group">
+                    <div key={serviceType.name} className="flex items-center font-primary cursor-pointer group">
                       <input
                         type="checkbox"
-                        id={`primary-service-${serviceType}`}
-                        checked={formData.serviceTypes.includes(serviceType)}
-                        onChange={() => toggleServiceType(serviceType)}
+                        id={`primary-service-${serviceType.name}`}
+                        checked={formData.serviceTypes.includes(serviceType.name)}
+                        onChange={() => toggleServiceType(serviceType.name)}
                         className="neo-checkbox"
                       />
-                      <label htmlFor={`primary-service-${serviceType}`}></label>
+                      <label htmlFor={`primary-service-${serviceType.name}`}></label>
                       <span
                         className="ml-3 text-sm text-foreground group-hover:text-accent transition-colors cursor-pointer"
-                        onClick={() => toggleServiceType(serviceType)}
+                        onClick={() => toggleServiceType(serviceType.name)}
                       >
-                        {serviceType}
+                        {serviceType.name}
                       </span>
                     </div>
                   ))}
@@ -824,20 +824,20 @@ function NewClientPageContent() {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                               {service.serviceTypes.map((serviceType) => (
-                                <div key={serviceType} className="flex items-center text-xs cursor-pointer group">
+                                <div key={serviceType.name} className="flex items-center text-xs cursor-pointer group">
                                   <input
                                     type="checkbox"
-                                    id={`secondary-${serviceId}-${serviceType}`}
-                                    checked={(secondaryServiceTypes[serviceId] || []).includes(serviceType)}
-                                    onChange={() => toggleSecondaryServiceType(serviceId, serviceType)}
+                                    id={`secondary-${serviceId}-${serviceType.name}`}
+                                    checked={(secondaryServiceTypes[serviceId] || []).includes(serviceType.name)}
+                                    onChange={() => toggleSecondaryServiceType(serviceId, serviceType.name)}
                                     className="neo-checkbox neo-checkbox-sm"
                                   />
-                                  <label htmlFor={`secondary-${serviceId}-${serviceType}`}></label>
+                                  <label htmlFor={`secondary-${serviceId}-${serviceType.name}`}></label>
                                   <span
                                     className="ml-2 text-foreground font-primary group-hover:text-accent transition-colors cursor-pointer"
-                                    onClick={() => toggleSecondaryServiceType(serviceId, serviceType)}
+                                    onClick={() => toggleSecondaryServiceType(serviceId, serviceType.name)}
                                   >
-                                    {serviceType}
+                                    {serviceType.name}
                                   </span>
                                 </div>
                               ))}

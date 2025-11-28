@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import { Invoice, InvoiceItem, CreateInvoiceData, DEFAULT_TAX_CONFIG } from "../types/billing";
 import { Client } from "../types/client";
+import { lockScroll, unlockScroll } from '../lib/modal-scroll-lock';
 
 interface InvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  client: Client;
+  client?: Client | null;
+  clients?: Client[];
   onInvoiceCreated?: (invoice: Invoice) => void;
+  onClientChange?: (client: Client | null) => void;
 }
 
 interface InvoiceFormData {
@@ -43,7 +46,14 @@ const ServiceTemplates = {
   ]
 };
 
-export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated }: InvoiceModalProps) {
+export default function InvoiceModal({
+  isOpen,
+  onClose,
+  client,
+  clients = [],
+  onInvoiceCreated,
+  onClientChange,
+}: InvoiceModalProps) {
   const [formData, setFormData] = useState<InvoiceFormData>({
     items: [createEmptyLineItem()],
     paymentTerms: 'net30',
@@ -53,19 +63,20 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(client || null);
 
   // Disable body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      lockScroll()
     } else {
-      document.body.style.overflow = 'unset';
+      unlockScroll()
     }
 
     // Cleanup on unmount
     return () => {
-      document.body.style.overflow = 'unset';
-    };
+      unlockScroll()
+    }
   }, [isOpen]);
 
   // Reset form when modal opens
@@ -79,8 +90,21 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
         notes: ''
       });
       setIsSubmitting(false);
+      // Default client selection if none passed
+      if (!client && clients.length > 0) {
+        setSelectedClient(clients[0]);
+      } else if (client) {
+        setSelectedClient(client);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, client, clients]);
+
+  // Keep selection in sync when parent passes a different client
+  useEffect(() => {
+    if (client) {
+      setSelectedClient(client);
+    }
+  }, [client]);
 
   // Update due date when payment terms change
   useEffect(() => {
@@ -199,8 +223,13 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
         return;
       }
 
+      if (!selectedClient) {
+        alert('Please select a client before creating an invoice.');
+        return;
+      }
+
       const createData: CreateInvoiceData = {
-        clientId: client.id,
+        clientId: selectedClient.id,
         items: formData.items.map(item => ({
           description: item.description,
           serviceType: item.serviceType,
@@ -246,7 +275,8 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
 
   const getServiceTemplates = () => {
     // Try to match client's service type to templates
-    const serviceId = client.serviceId;
+    const currentClient = selectedClient || client;
+    const serviceId = currentClient?.serviceId;
     if (serviceId === 'landscaping' || serviceId === 'lawn-care') {
       return ServiceTemplates.landscaping;
     } else if (serviceId === 'snow-removal') {
@@ -271,12 +301,19 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
 
   if (!isOpen) return null;
 
+  const currentClient = selectedClient || client || null;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-      <div className="neo-card max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]" onClick={onClose} />
+
+      {/* Modal container - accounts for sidebar on desktop */}
+      <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-start justify-center p-4 sm:p-6 md:p-8 overflow-y-auto pointer-events-none">
+        <div className="neo-card max-w-4xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-16rem)] mt-16 sm:mt-20 md:mt-16 mb-8 overflow-y-auto pointer-events-auto">
         <div className="flex items-center justify-between p-6 border-b border-neomorphic-border">
           <h2 className="text-xl font-bold font-primary uppercase tracking-wide text-foreground">
-            Create Invoice - {client.name}
+            Create Invoice{currentClient ? ` - ${currentClient.name}` : ''}
           </h2>
           <button
             onClick={onClose}
@@ -291,6 +328,30 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
+          {/* Client selection when opened standalone */}
+          {clients.length > 0 && (
+            <div className="mb-6">
+              <label className="text-sm font-semibold text-foreground block mb-2">
+                Client
+              </label>
+              <select
+                className="w-full neo-input"
+                value={currentClient?.id || ''}
+                onChange={(e) => {
+                  const nextClient = clients.find((c) => c.id === e.target.value) || null;
+                  setSelectedClient(nextClient);
+                  onClientChange?.(nextClient);
+                }}
+              >
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Service Items Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -531,5 +592,6 @@ export default function InvoiceModal({ isOpen, onClose, client, onInvoiceCreated
         </form>
       </div>
     </div>
+    </>
   );
 }

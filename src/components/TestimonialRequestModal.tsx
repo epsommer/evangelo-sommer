@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { X, Send, AlertCircle, CheckCircle, Search } from 'lucide-react'
+import { getServiceById } from '../lib/service-config'
+import { lockScroll, unlockScroll } from '../lib/modal-scroll-lock'
 
 interface Client {
   id: string
@@ -19,6 +21,26 @@ interface TestimonialRequestModalProps {
   onRequestSent: () => void
 }
 
+interface ServiceLineData {
+  id: string
+  name: string
+  route: string
+  slug: string
+}
+
+// Helper function to get services for a service line from service-config
+function getServicesForServiceLine(serviceLineSlug: string) {
+  const service = getServiceById(serviceLineSlug);
+  if (!service || !service.serviceTypes) return [];
+
+  // Return services with name and description template
+  return service.serviceTypes.map((serviceType, index) => ({
+    id: `${serviceLineSlug}_${index}`,
+    name: serviceType.name,
+    descriptionTemplate: serviceType.descriptionTemplate,
+  }));
+}
+
 const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
   isOpen,
   onClose,
@@ -28,71 +50,80 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
 }) => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(propClient || null)
   const [clientSearchQuery, setClientSearchQuery] = useState('')
-  const [serviceId, setServiceId] = useState('')
+  const [serviceLineSlug, setServiceLineSlug] = useState('')
+  const [selectedServiceId, setSelectedServiceId] = useState('')
   const [serviceName, setServiceName] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [formLink, setFormLink] = useState('')
+  const [serviceLines, setServiceLines] = useState<ServiceLineData[]>([])
 
-  // Generate template message based on service
-  const getTemplateMessage = (service: string): string => {
-    const templates: { [key: string]: string } = {
-      'woodgreen': `Thank you for choosing Woodgreen Landscaping! We'd greatly appreciate your feedback on our landscaping services. Your testimonial helps us continue to provide exceptional service to our valued clients.`,
-      'whiteknight': `Thank you for trusting White Knight Snow Service! We hope our snow removal services exceeded your expectations. Your feedback helps us maintain the highest standards of service.`,
-      'lawn_care': `Thank you for trusting us with your lawn care needs! We'd love to hear about your experience with our service. Your feedback helps us continue to deliver exceptional results.`,
-      'landscaping': `Thank you for choosing our landscaping services! We'd appreciate hearing about your experience. Your testimonial helps us serve our clients better.`,
-      'snow_removal': `Thank you for choosing our snow removal service! We hope we kept your property safe and accessible throughout the winter. We'd love to hear your feedback.`,
-      'maintenance': `Thank you for choosing our maintenance services! We'd appreciate your feedback on how we're keeping your property in top condition.`,
-      'tree_trimming': `Thank you for trusting us with your tree care! We'd love to hear about your experience with our tree trimming services.`,
-      'lawn_mowing': `Thank you for choosing our lawn mowing service! We'd appreciate hearing about your experience with our regular lawn care.`,
-      'hedge_trimming': `Thank you for choosing our hedge trimming service! We'd love to hear how we did keeping your hedges looking great.`,
-      'weeding': `Thank you for choosing our weeding service! We'd appreciate your feedback on our garden maintenance work.`,
-      'gardening': `Thank you for choosing our gardening and planting services! We'd love to hear about your experience with our horticultural expertise.`,
-      'mulching': `Thank you for choosing our mulching service! We'd appreciate hearing about your experience with our landscape enhancement work.`,
-      'gutter_cleaning': `Thank you for choosing our gutter cleaning service! We'd love to hear about your experience with our maintenance work.`,
-      'leaf_removal': `Thank you for choosing our leaf removal service! We'd appreciate your feedback on our seasonal cleanup work.`,
-      'snow_plowing': `Thank you for choosing our snow plowing service! We'd love to hear how we did keeping your property clear and safe.`,
-      'salting': `Thank you for choosing our premium salting service! We'd appreciate your feedback on our ice management and safety services.`,
-      'ice_management': `Thank you for choosing our ice management service! We'd love to hear about your experience with our winter safety solutions.`,
+  // Fetch service lines on mount
+  useEffect(() => {
+    const fetchServiceLines = async () => {
+      try {
+        const response = await fetch('/api/service-lines');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setServiceLines(data.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching service lines:', error);
+      }
+    };
+
+    fetchServiceLines();
+  }, []);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      lockScroll()
+    } else {
+      unlockScroll()
     }
-    return templates[service] || `Thank you for choosing our services! We'd greatly appreciate your feedback. Your testimonial helps us continue to provide exceptional service to our valued clients.`
-  }
 
-  const insertTemplateMessage = () => {
-    if (serviceId || serviceName) {
-      const template = getTemplateMessage(serviceId)
-      setMessage(template)
+    return () => {
+      unlockScroll()
     }
-  }
-
-  // Predefined services list
-  const predefinedServices = [
-    { id: 'woodgreen', name: 'Woodgreen Landscaping' },
-    { id: 'whiteknight', name: 'White Knight Snow Service' },
-    { id: 'lawn_care', name: 'Lawn Care' },
-    { id: 'landscaping', name: 'Landscaping' },
-    { id: 'snow_removal', name: 'Snow Removal' },
-    { id: 'maintenance', name: 'Maintenance' },
-    { id: 'tree_trimming', name: 'Tree Trimming' },
-    { id: 'lawn_mowing', name: 'Lawn Mowing' },
-    { id: 'hedge_trimming', name: 'Hedge Trimming' },
-    { id: 'weeding', name: 'Weeding' },
-    { id: 'gardening', name: 'Gardening & Planting' },
-    { id: 'mulching', name: 'Mulching' },
-    { id: 'gutter_cleaning', name: 'Gutter Cleaning' },
-    { id: 'leaf_removal', name: 'Leaf Removal' },
-    { id: 'snow_plowing', name: 'Snow Plowing' },
-    { id: 'salting', name: 'Premium Salting' },
-    { id: 'ice_management', name: 'Ice Management' },
-  ]
+  }, [isOpen])
 
   useEffect(() => {
     if (propClient) {
       setSelectedClient(propClient)
     }
   }, [propClient])
+
+  // Generate template message based on service line and service name
+  const getTemplateMessage = (): string => {
+    const serviceLineName = serviceLines.find(sl => sl.slug === serviceLineSlug)?.name || '';
+    if (serviceName && serviceLineName) {
+      return `Thank you for choosing ${serviceName} from ${serviceLineName}! We'd greatly appreciate your feedback. Your testimonial helps us continue to provide exceptional service to our valued clients.`;
+    }
+    return `Thank you for choosing our services! We'd greatly appreciate your feedback. Your testimonial helps us continue to provide exceptional service to our valued clients.`;
+  }
+
+  const insertTemplateMessage = () => {
+    if (serviceLineSlug && serviceName) {
+      const template = getTemplateMessage()
+      setMessage(template)
+    }
+  }
+
+  // Handle service selection
+  const handleServiceSelection = (serviceId: string) => {
+    const services = getServicesForServiceLine(serviceLineSlug);
+    const selectedService = services.find((s) => s.id === serviceId);
+
+    if (selectedService) {
+      setSelectedServiceId(serviceId);
+      setServiceName(selectedService.name);
+    }
+  }
 
   // Disable body scroll when modal is open
   useEffect(() => {
@@ -125,8 +156,8 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
       return
     }
 
-    if (!serviceId && !serviceName) {
-      setError('Please select a service to continue')
+    if (!serviceLineSlug || !serviceName) {
+      setError('Please select a service line and service to continue')
       return
     }
 
@@ -138,7 +169,7 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clientId: selectedClient.id,
-          serviceId,
+          serviceId: serviceLineSlug,
           serviceName,
           message,
         }),
@@ -169,7 +200,8 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
     if (!isSubmitting) {
       setSelectedClient(propClient || null)
       setClientSearchQuery('')
-      setServiceId('')
+      setServiceLineSlug('')
+      setSelectedServiceId('')
       setServiceName('')
       setMessage('')
       setError('')
@@ -185,23 +217,6 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
     }
   }
 
-  const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    if (value === 'custom') {
-      setServiceId('')
-      setServiceName('')
-    } else if (value) {
-      const service = predefinedServices.find(s => s.id === value)
-      if (service) {
-        setServiceId(service.id)
-        setServiceName(service.name)
-      }
-    } else {
-      setServiceId('')
-      setServiceName('')
-    }
-  }
-
   const filteredClients = clients.filter(c =>
     c.name.toLowerCase().includes(clientSearchQuery.toLowerCase()) ||
     c.email?.toLowerCase().includes(clientSearchQuery.toLowerCase()) ||
@@ -209,8 +224,8 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
   )
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start sm:items-center justify-center z-[100] px-2 sm:p-4 pt-16 sm:pt-4 overflow-y-auto">
-      <div className="neo-container max-w-2xl w-full max-h-[calc(100vh-4rem)] sm:max-h-[90vh] overflow-y-auto my-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start sm:items-center justify-center z-[100] px-2 sm:px-4 md:px-8 lg:pr-12 xl:pr-16 md:pl-16 lg:pl-64 xl:pl-72 pt-20 sm:pt-26 md:pt-30 lg:pt-38 xl:pt-42 pb-6 sm:pb-10 md:pb-12 lg:pb-8 overflow-hidden overscroll-none">
+      <div className="neo-container max-w-2xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-6rem)] md:max-h-[86vh] overflow-y-auto mb-12 sm:mb-20 md:mb-24 lg:mb-16 pb-2">
         {/* Header */}
         <div className="neo-inset border-b border-foreground/10 p-3 sm:p-6">
           <div className="flex items-center justify-between">
@@ -340,63 +355,70 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
                 </div>
               )}
 
-              {/* Service Selection with Dropdown + Custom */}
+              {/* Service Line Selection */}
               <div className="neo-card p-5">
                 <label className="block text-sm font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
-                  Service *
+                  1. Service Line *
                 </label>
                 <select
-                  value={serviceId || 'custom'}
-                  onChange={handleServiceChange}
-                  className="neo-input w-full mb-2"
+                  value={serviceLineSlug}
+                  onChange={(e) => {
+                    setServiceLineSlug(e.target.value)
+                    setSelectedServiceId('')
+                    setServiceName('')
+                  }}
+                  className="neo-input w-full"
                 >
-                  <option value="">Select a service...</option>
-                  {predefinedServices.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name}
-                    </option>
-                  ))}
-                  <option value="custom">Custom Service...</option>
+                  <option value="">Select a service line...</option>
+                  {serviceLines
+                    .filter((line) => getServiceById(line.slug))
+                    .map((line) => (
+                      <option key={line.id} value={line.slug}>
+                        {line.name}
+                      </option>
+                    ))}
                 </select>
-
-                {/* Custom Service Input */}
-                {(!serviceId || !predefinedServices.find(s => s.id === serviceId)) && (
-                  <input
-                    type="text"
-                    value={serviceName}
-                    onChange={(e) => {
-                      setServiceName(e.target.value)
-                      setServiceId('')
-                    }}
-                    placeholder="Enter custom service name..."
-                    className="neo-input w-full"
-                  />
-                )}
-
-                {/* Show Client's Service Contracts if available */}
-                {selectedClient?.serviceContracts && selectedClient.serviceContracts.length > 0 && (
-                  <div className="neo-inset p-3 rounded-lg mt-3">
-                    <div className="text-xs text-muted-foreground font-primary uppercase tracking-wide mb-2">
-                      Client's Services
-                    </div>
-                    <div className="space-y-1">
-                      {selectedClient.serviceContracts.slice(0, 3).map((contract: any, idx: number) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => {
-                            setServiceId(contract.serviceId || '')
-                            setServiceName(contract.serviceName || contract.serviceCategory || '')
-                          }}
-                          className="text-xs text-foreground hover:text-tactical-gold transition-colors font-primary"
-                        >
-                          • {contract.serviceName || contract.serviceCategory}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
+
+              {/* Specific Service Selection */}
+              {serviceLineSlug && (
+                <div className="neo-card p-5">
+                  <label className="block text-sm font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
+                    2. Select Service *
+                  </label>
+                  <select
+                    value={selectedServiceId}
+                    onChange={(e) => handleServiceSelection(e.target.value)}
+                    className="neo-input w-full"
+                  >
+                    <option value="">Choose a service...</option>
+                    {getServicesForServiceLine(serviceLineSlug).map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Show Client's Service Contracts if available */}
+                  {selectedClient?.serviceContracts && selectedClient.serviceContracts.length > 0 && (
+                    <div className="neo-inset p-3 rounded-lg mt-3">
+                      <div className="text-xs text-muted-foreground font-primary uppercase tracking-wide mb-2">
+                        Client's Services
+                      </div>
+                      <div className="space-y-1">
+                        {selectedClient.serviceContracts.slice(0, 3).map((contract: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="text-xs text-foreground font-primary"
+                          >
+                            • {contract.serviceName || contract.serviceCategory}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Message */}
               <div className="neo-card p-3 sm:p-5">
@@ -404,7 +426,7 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
                   <label className="block text-xs sm:text-sm font-bold text-foreground font-primary uppercase tracking-wide">
                     Personal Message (Optional)
                   </label>
-                  {(serviceId || serviceName) && (
+                  {(serviceLineSlug && serviceName) && (
                     <button
                       type="button"
                       onClick={insertTemplateMessage}
@@ -417,14 +439,14 @@ const TestimonialRequestModal: React.FC<TestimonialRequestModalProps> = ({
                 </div>
 
                 {/* Show template preview if service selected and message is empty */}
-                {(serviceId || serviceName) && !message && (
+                {(serviceLineSlug && serviceName) && !message && (
                   <div className="neo-inset p-3 rounded-lg mb-3">
                     <div className="text-xs text-muted-foreground font-primary uppercase tracking-wide mb-2 flex items-center">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       Template Preview
                     </div>
                     <p className="text-xs text-foreground font-primary italic">
-                      {getTemplateMessage(serviceId)}
+                      {getTemplateMessage()}
                     </p>
                   </div>
                 )}

@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { billingManager } from "../../../../lib/billing-manager";
 import { CreateReceiptData, Receipt } from "../../../../types/billing";
+import { logReceiptCreated } from "../../../../lib/activity-logger";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../lib/auth";
 
 // GET /api/billing/receipts - Get all receipts with optional filters
 export async function GET(request: NextRequest) {
@@ -38,10 +41,19 @@ export async function GET(request: NextRequest) {
 // POST /api/billing/receipts - Create new receipt
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Receipt API] Received POST request');
     const receiptData: CreateReceiptData = await request.json();
+    console.log('[Receipt API] Request data:', JSON.stringify({
+      clientId: receiptData.clientId,
+      itemCount: receiptData.items?.length,
+      paymentMethod: receiptData.paymentMethod,
+      paymentDate: receiptData.paymentDate,
+      serviceDate: receiptData.serviceDate
+    }));
 
     // Validate required fields
     if (!receiptData.clientId) {
+      console.error('[Receipt API] Validation error: Client ID missing');
       return NextResponse.json(
         { error: "Client ID is required" },
         { status: 400 }
@@ -49,6 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!receiptData.items || receiptData.items.length === 0) {
+      console.error('[Receipt API] Validation error: No items provided');
       return NextResponse.json(
         { error: "At least one item is required" },
         { status: 400 }
@@ -56,14 +69,34 @@ export async function POST(request: NextRequest) {
     }
 
     if (!receiptData.paymentMethod) {
+      console.error('[Receipt API] Validation error: Payment method missing');
       return NextResponse.json(
         { error: "Payment method is required" },
         { status: 400 }
       );
     }
 
+    console.log('[Receipt API] Calling billingManager.createReceipt');
     // Create the receipt
     const receipt = await billingManager.createReceipt(receiptData);
+    console.log('[Receipt API] Receipt created successfully:', receipt.id);
+
+    // Log activity
+    try {
+      const session = await getServerSession(authOptions);
+      await logReceiptCreated({
+        receiptId: receipt.id,
+        receiptNumber: receipt.receiptNumber,
+        clientId: receipt.clientId,
+        clientName: receipt.client?.name,
+        amount: receipt.totalAmount,
+        userId: session?.user?.email,
+        userName: session?.user?.name || undefined,
+      });
+    } catch (logError) {
+      console.error('[Receipt API] Failed to log activity:', logError);
+      // Don't fail the request if activity logging fails
+    }
 
     return NextResponse.json({
       success: true,
@@ -71,11 +104,12 @@ export async function POST(request: NextRequest) {
       message: "Receipt created successfully"
     });
   } catch (error) {
-    console.error("Error creating receipt:", error);
+    console.error("[Receipt API] Error creating receipt:", error);
+    console.error("[Receipt API] Error stack:", (error as Error).stack);
     return NextResponse.json(
-      { 
-        error: "Failed to create receipt", 
-        details: (error as Error).message 
+      {
+        error: "Failed to create receipt",
+        details: (error as Error).message
       },
       { status: 500 }
     );

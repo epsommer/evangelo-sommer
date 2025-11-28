@@ -3,6 +3,10 @@ import { getPrismaClient } from '../../../../../../lib/prisma';
 import { google } from 'googleapis';
 import { Resend } from 'resend';
 import nodemailer, { SendMailOptions } from 'nodemailer';
+import sgMail from '@sendgrid/mail';
+import { logReceiptSent } from '../../../../../../lib/activity-logger';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../../../../lib/auth';
 
 interface ReceiptItem {
   description: string;
@@ -20,17 +24,22 @@ interface ReceiptData {
 function getServiceEmail(serviceType?: string): string {
   const serviceEmails = {
     'landscaping': 'sales@woodgreenlandscaping.com',
-    'lawn_care': 'sales@woodgreenlandscaping.com', 
+    'woodgreen': 'sales@woodgreenlandscaping.com',
+    'lawn_care': 'sales@woodgreenlandscaping.com',
     'maintenance': 'sales@woodgreenlandscaping.com',
     'snow_removal': 'sales@whiteknightsnowservice.com',
+    'whiteknight': 'sales@whiteknightsnowservice.com',
     'hair_cutting': 'sales@pupawalk.com',  // Pet services
+    'pupawalk': 'sales@pupawalk.com',
+    'creative': 'sales@evangelosommer.com',
+    'portfolio': 'sales@evangelosommer.com',
     'creative_development': 'sales@evangelosommer.com',
     'consultation': 'sales@evangelosommer.com',
     'design': 'sales@evangelosommer.com',
     'installation': 'sales@evangelosommer.com',
     'emergency': 'sales@evangelosommer.com'
   };
-  
+
   return serviceEmails[serviceType as keyof typeof serviceEmails] || 'sales@evangelosommer.com';
 }
 
@@ -56,75 +65,105 @@ function getServiceSMTPConfig() {
 function getServiceName(serviceType?: string): string {
   const serviceNames = {
     'landscaping': 'Woodgreen Landscaping',
+    'woodgreen': 'Woodgreen Landscaping',
     'lawn_care': 'Woodgreen Landscaping',
-    'maintenance': 'Woodgreen Landscaping', 
+    'maintenance': 'Woodgreen Landscaping',
     'snow_removal': 'White Knight Snow Service',
+    'whiteknight': 'White Knight Snow Service',
     'hair_cutting': 'Pupawalk Pet Services',
+    'pupawalk': 'Pupawalk Pet Services',
+    'creative': 'Evangelo Sommer',
+    'portfolio': 'Evangelo Sommer',
     'creative_development': 'Evangelo Sommer',
     'consultation': 'Evangelo Sommer',
     'design': 'Evangelo Sommer',
     'installation': 'Evangelo Sommer',
     'emergency': 'Evangelo Sommer'
   };
-  
+
   return serviceNames[serviceType as keyof typeof serviceNames] || 'Evangelo Sommer';
 }
 
 function getServiceBrand(serviceType?: string): { name: string; email: string; color: string } {
   const serviceBrands = {
-    'landscaping': { 
-      name: 'Woodgreen Landscaping', 
+    'landscaping': {
+      name: 'Woodgreen Landscaping',
       email: 'sales@woodgreenlandscaping.com',
       color: '#22C55E' // Green
     },
-    'lawn_care': { 
-      name: 'Woodgreen Landscaping', 
+    'woodgreen': {
+      name: 'Woodgreen Landscaping',
       email: 'sales@woodgreenlandscaping.com',
       color: '#22C55E' // Green
     },
-    'maintenance': { 
-      name: 'Woodgreen Landscaping', 
+    'lawn_care': {
+      name: 'Woodgreen Landscaping',
       email: 'sales@woodgreenlandscaping.com',
       color: '#22C55E' // Green
     },
-    'snow_removal': { 
-      name: 'White Knight Snow Service', 
+    'maintenance': {
+      name: 'Woodgreen Landscaping',
+      email: 'sales@woodgreenlandscaping.com',
+      color: '#22C55E' // Green
+    },
+    'snow_removal': {
+      name: 'White Knight Snow Service',
       email: 'sales@whiteknightsnowservice.com',
       color: '#6B7280' // Tactical Grey (no blue for snow service)
     },
-    'hair_cutting': { 
-      name: 'Pupawalk Pet Services', 
+    'whiteknight': {
+      name: 'White Knight Snow Service',
+      email: 'sales@whiteknightsnowservice.com',
+      color: '#6B7280' // Tactical Grey
+    },
+    'hair_cutting': {
+      name: 'Pupawalk Pet Services',
       email: 'sales@pupawalk.com',
       color: '#F59E0B' // Orange
     },
-    'creative_development': { 
-      name: 'Evangelo Sommer', 
+    'pupawalk': {
+      name: 'Pupawalk Pet Services',
+      email: 'sales@pupawalk.com',
+      color: '#F59E0B' // Orange
+    },
+    'creative': {
+      name: 'Evangelo Sommer',
       email: 'sales@evangelosommer.com',
       color: '#D4AF37' // Gold
     },
-    'consultation': { 
-      name: 'Evangelo Sommer', 
+    'portfolio': {
+      name: 'Evangelo Sommer',
       email: 'sales@evangelosommer.com',
       color: '#D4AF37' // Gold
     },
-    'design': { 
-      name: 'Evangelo Sommer', 
+    'creative_development': {
+      name: 'Evangelo Sommer',
       email: 'sales@evangelosommer.com',
       color: '#D4AF37' // Gold
     },
-    'installation': { 
-      name: 'Evangelo Sommer', 
+    'consultation': {
+      name: 'Evangelo Sommer',
       email: 'sales@evangelosommer.com',
       color: '#D4AF37' // Gold
     },
-    'emergency': { 
-      name: 'Evangelo Sommer', 
+    'design': {
+      name: 'Evangelo Sommer',
+      email: 'sales@evangelosommer.com',
+      color: '#D4AF37' // Gold
+    },
+    'installation': {
+      name: 'Evangelo Sommer',
+      email: 'sales@evangelosommer.com',
+      color: '#D4AF37' // Gold
+    },
+    'emergency': {
+      name: 'Evangelo Sommer',
       email: 'sales@evangelosommer.com',
       color: '#D4AF37' // Gold
     }
   };
-  
-  return serviceBrands[serviceType as keyof typeof serviceBrands] || serviceBrands.creative_development;
+
+  return serviceBrands[serviceType as keyof typeof serviceBrands] || serviceBrands.creative;
 }
 
 function getServiceContact(serviceType?: string): { name: string; address: string; phone: string; email: string } {
@@ -196,15 +235,42 @@ function getServiceContact(serviceType?: string): { name: string; address: strin
 
 // Real email service using Resend or Nodemailer
 async function sendReceiptEmail(
-  clientEmail: string, 
-  clientName: string, 
+  clientEmail: string,
+  clientName: string,
   receiptData: ReceiptData
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     // Check if we should use real email or mock
-    const USE_REAL_EMAIL = process.env.GMAIL_CLIENT_ID || process.env.RESEND_API_KEY || process.env.SMTP_HOST;
-    
-    if (USE_REAL_EMAIL && process.env.GMAIL_CLIENT_ID) {
+    const USE_REAL_EMAIL = process.env.SENDGRID_API_KEY || process.env.GMAIL_CLIENT_ID || process.env.RESEND_API_KEY || process.env.SMTP_HOST;
+
+    if (USE_REAL_EMAIL && process.env.SENDGRID_API_KEY) {
+      // Use SendGrid API for multi-domain email sending
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+      const emailHtml = generateReceiptEmailHtml(receiptData, clientName);
+
+      // Determine the correct from email based on service type
+      const fromEmail = getServiceEmail(receiptData.serviceType);
+      const serviceName = getServiceName(receiptData.serviceType);
+
+      const msg = {
+        to: clientEmail,
+        from: {
+          email: fromEmail,
+          name: serviceName
+        },
+        subject: `Receipt ${receiptData.receiptNumber} - Thank you for your business`,
+        html: emailHtml,
+      };
+
+      const response = await sgMail.send(msg);
+
+      return {
+        success: true,
+        messageId: response[0].headers['x-message-id'] || 'sendgrid_success'
+      };
+
+    } else if (USE_REAL_EMAIL && process.env.GMAIL_CLIENT_ID) {
       
       const oauth2Client = new google.auth.OAuth2(
         process.env.GMAIL_CLIENT_ID,
@@ -512,8 +578,25 @@ export async function POST(
       }
     });
 
-    // If email was sent successfully, simulate delivery confirmation
+    // If email was sent successfully, log activity and simulate delivery confirmation
     if (emailResult.success) {
+      // Log activity
+      try {
+        const session = await getServerSession(authOptions);
+        await logReceiptSent({
+          receiptId,
+          receiptNumber: receiptData.receiptNumber || `REC-${receiptId.slice(-6).toUpperCase()}`,
+          clientId: updatedDocument.clientId,
+          clientName: clientName,
+          amount: receiptData.totalAmount || receiptDocument.amount || 0,
+          userId: session?.user?.email,
+          userName: session?.user?.name || undefined,
+        });
+      } catch (logError) {
+        console.error('Failed to log receipt sent activity:', logError);
+        // Don't fail the request if activity logging fails
+      }
+
       // In a real app, this would be handled by webhooks from your email service
       setTimeout(async () => {
         try {
@@ -522,7 +605,7 @@ export async function POST(
             emailStatus: 'delivered',
             emailDeliveredAt: new Date().toISOString()
           };
-          
+
           await prisma.document.update({
             where: { id: receiptId },
             data: {

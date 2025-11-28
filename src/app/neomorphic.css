@@ -542,7 +542,7 @@
 
 /* Logo image filter for overkast mode */
 .overkast-mode .neomorphic-logo img {
-  filter: invert(0.3) saturate(1) brightness(0.8);
+  filter: invert(0.22) saturate(1) brightness(0.65);
 }
 
 /* Logo image filter for gilded meadow mode */
@@ -621,6 +621,14 @@
 
 .neo-container-inner {
   background: transparent;
+}
+
+/* Billing filter tabs override global weight reset */
+.billing-tab-label {
+  font-weight: 500 !important;
+}
+.billing-tab-label-active {
+  font-weight: 800 !important;
 }
 
 /* Buttons */
@@ -747,6 +755,105 @@
   background-color: var(--neomorphic-bg);
   box-shadow: 2px 2px 4px -1px var(--neomorphic-dark-shadow),
               -2px -2px 4px -1px var(--neomorphic-light-shadow);
+}
+
+/* Theme-safe convex inputs for neomorphic design */
+.gilded-meadow-mode input,
+.gilded-meadow-mode select,
+.gilded-meadow-mode textarea,
+.gilded-meadow-mode .neo-inset {
+  background: var(--neomorphic-bg);
+  color: var(--neomorphic-text);
+  border: none;
+  box-shadow: 4px 4px 8px -1px var(--neomorphic-dark-shadow),
+              -3px -3px 8px -1px var(--neomorphic-light-shadow);
+}
+
+.overkast-mode input,
+.overkast-mode select,
+.overkast-mode textarea,
+.overkast-mode .neo-inset {
+  background: var(--neomorphic-bg);
+  color: var(--neomorphic-text);
+  border: none;
+  box-shadow: 4px 4px 8px -1px var(--neomorphic-dark-shadow),
+              -3px -3px 8px -1px var(--neomorphic-light-shadow);
+}
+
+/* Prevent headers in cards/modals from looking inset on gilded/overkast */
+.gilded-meadow-mode header,
+.overkast-mode header {
+  background: var(--neomorphic-bg);
+}
+
+/* Status green utility for better contrast on overkast */
+.status-green {
+  color: #166534; /* default dark green */
+}
+.overkast-mode .status-green {
+  color: #0f5132 !important;
+}
+.overkast-mode .status-green svg {
+  color: inherit;
+}
+
+/* Global grain overlay for neomorphic surfaces */
+html.neomorphic-window::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 0);
+  background-size: 3px 3px;
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+.true-night-mode.neomorphic-window::after,
+.mocha-mode.neomorphic-window::after {
+  opacity: 0.12;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 0);
+  mix-blend-mode: screen;
+}
+
+.overkast-mode.neomorphic-window::after {
+  opacity: 0.06;
+}
+
+.gilded-meadow-mode.neomorphic-window::after {
+  opacity: 0.08;
+}
+
+/* Theme-safe convex inputs for neomorphic design */
+.gilded-meadow-mode input,
+.gilded-meadow-mode select,
+.gilded-meadow-mode textarea,
+.gilded-meadow-mode .neo-inset {
+  background: var(--neomorphic-bg);
+  color: var(--neomorphic-text);
+  border: none;
+  box-shadow: 4px 4px 8px -1px var(--neomorphic-dark-shadow),
+              -3px -3px 8px -1px var(--neomorphic-light-shadow);
+}
+
+.overkast-mode input,
+.overkast-mode select,
+.overkast-mode textarea,
+.overkast-mode .neo-inset {
+  background: var(--neomorphic-bg);
+  color: var(--neomorphic-text);
+  border: none;
+  box-shadow: 4px 4px 8px -1px var(--neomorphic-dark-shadow),
+              -3px -3px 8px -1px var(--neomorphic-light-shadow);
+}
+
+/* Prevent headers in cards/modals from looking inset on gilded/overkast */
+.gilded-meadow-mode header,
+.overkast-mode header {
+  background: var(--neomorphic-bg);
 }
 
 /* Sidebar */

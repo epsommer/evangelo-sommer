@@ -30,12 +30,12 @@ export const serviceEmailConfigs: Record<string, ServiceEmailConfig> = {
   whiteknight: {
     id: 'whiteknight',
     name: 'White Knight Snow Service',
-    domain: 'whiteknightsnow.com',
-    feedbackEmail: 'feedback@whiteknightsnow.com',
+    domain: 'whiteknightsnowservice.com',
+    feedbackEmail: 'feedback@whiteknightsnowservice.com',
     primaryColor: '#6B7280', // Tactical Grey (per design system)
     secondaryColor: '#9ca3af', // Light Gray
     description: 'Reliable snow removal and ice management',
-    websiteUrl: 'https://whiteknightsnow.com',
+    websiteUrl: 'https://whiteknightsnowservice.com',
     logoPath: undefined // No logo yet
   },
   pupawalk: {

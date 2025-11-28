@@ -27,11 +27,13 @@ export interface Receipt {
 export interface ReceiptItem {
   id: string;
   description: string;
-  serviceType: 'landscaping' | 'snow_removal' | 'hair_cutting' | 'creative_development' | 'lawn_care' | 'maintenance' | 'consultation' | 'design' | 'installation' | 'emergency';
+  serviceType: string; // Service line slug (e.g., 'woodgreen', 'whiteknight', 'pupawalk', 'creative')
+  serviceTitle?: string; // Optional: stores the selected service name for display
   quantity: number;
   unitPrice: number;
   totalPrice: number;
   taxable: boolean;
+  billingMode?: 'quantity' | 'hours'; // Optional: defaults to 'quantity'
 }
 
 export interface Invoice {
@@ -57,11 +59,13 @@ export interface Invoice {
 export interface InvoiceItem {
   id: string;
   description: string;
-  serviceType: 'landscaping' | 'snow_removal' | 'hair_cutting' | 'creative_development' | 'lawn_care' | 'maintenance' | 'consultation' | 'design' | 'installation' | 'emergency';
+  serviceType: string; // Service line slug (e.g., 'woodgreen', 'whiteknight', 'pupawalk', 'creative')
+  serviceTitle?: string; // Optional: stores the selected service name for display
   quantity: number;
   unitPrice: number;
   totalPrice: number;
   taxable: boolean;
+  billingMode?: 'quantity' | 'hours'; // Optional: defaults to 'quantity'
 }
 
 export interface BillingSuggestion {
@@ -158,8 +162,8 @@ export const DEFAULT_BUSINESS_CONFIG: BusinessConfig = {
 
 // Default tax configuration for Ontario, Canada
 export const DEFAULT_TAX_CONFIG: TaxConfig = {
-  rate: 0.00, // 0% for unregistered business
-  name: "Tax Not Applicable",
+  rate: 0.13, // 13% HST for Ontario, Canada
+  name: "HST",
   applicableServices: [
     'landscaping',
     'snow_removal',
@@ -204,7 +208,7 @@ export interface Quote {
 export interface QuoteItem {
   id: string;
   description: string;
-  serviceCategory: 'landscaping' | 'snow_removal' | 'hair_cutting' | 'creative_development';
+  serviceCategory: string; // Service line slug (e.g., 'woodgreen', 'whiteknight', 'pupawalk', 'creative')
   quantity: number;
   unitPrice: number;
   totalPrice: number;

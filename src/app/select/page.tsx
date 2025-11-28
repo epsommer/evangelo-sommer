@@ -107,19 +107,19 @@ export default function SelectPage() {
 
   const selections = [
     {
-      id: "gallery",
-      title: "Gallery",
-      description: "Explore visual works and portfolio pieces",
+      id: "sammy",
+      title: "Sammy",
+      description: "Sample portfolio items, graphics, and finished creative",
       icon: Palette,
-      path: "/gallery",
+      path: "/sammy",
       color: "var(--neomorphic-accent)",
     },
     {
-      id: "studio",
-      title: "Studio",
-      description: "3D design and creative workspace",
+      id: "tommy",
+      title: "Tommy",
+      description: "3D environments, printing, character design, and animations",
       icon: Box,
-      path: "/studio",
+      path: "/tommy",
       color: "#8B4513",
     },
     {

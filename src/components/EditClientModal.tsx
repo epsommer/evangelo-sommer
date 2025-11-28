@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Client } from "../types/client";
 import { isValidEmail, isValidPhone } from "../lib/client-profile-utils";
 import { formatPhoneNumberWithAreaCode, getPhoneLocationDescription, cleanPhoneForStorage, isValidPhoneNumber } from "../lib/phone-formatter";
+import { lockScroll, unlockScroll } from "../lib/modal-scroll-lock";
+import { logClientUpdate } from "../lib/activity-logger-client";
 
 interface EditClientModalProps {
   isOpen: boolean;
@@ -37,6 +39,9 @@ interface EditClientFormData {
     autoInvoicing: boolean;
     autoReceipts: boolean;
   };
+  occupation: string;
+  hobbies: string[];
+  dateOfBirth: string;
 }
 
 interface FormErrors {
@@ -88,6 +93,9 @@ export default function EditClientModal({
       autoInvoicing: false,
       autoReceipts: false,
     },
+    occupation: "",
+    hobbies: [],
+    dateOfBirth: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -98,13 +106,13 @@ export default function EditClientModal({
   // Disable body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      lockScroll()
     } else {
-      document.body.style.overflow = 'unset'
+      unlockScroll()
     }
 
     return () => {
-      document.body.style.overflow = 'unset'
+      unlockScroll()
     }
   }, [isOpen])
 
@@ -136,6 +144,9 @@ export default function EditClientModal({
           autoInvoicing: client.contactPreferences?.autoInvoicing || false,
           autoReceipts: client.contactPreferences?.autoReceipts || false,
         },
+        occupation: client.occupation || "",
+        hobbies: client.hobbies || [],
+        dateOfBirth: client.dateOfBirth || "",
       });
 
       // Initialize phone location info if phone exists
@@ -257,6 +268,9 @@ export default function EditClientModal({
         serviceTypes: formData.serviceTypes,
         notes: formData.notes.trim() || undefined,
         contactPreferences: formData.contactPreferences,
+        occupation: formData.occupation.trim() || undefined,
+        hobbies: formData.hobbies.filter(h => h.trim()),
+        dateOfBirth: formData.dateOfBirth || undefined,
         updatedAt: new Date().toISOString(),
       };
 
@@ -287,9 +301,21 @@ export default function EditClientModal({
       // Parse response data
       const responseData = await response.json();
 
+      // Log activity
+      try {
+        await logClientUpdate({
+          clientId: client.id,
+          clientName: formData.name.trim(),
+          updates: updateData,
+        });
+      } catch (error) {
+        console.error('Failed to log client update activity:', error);
+        // Don't block the user flow if logging fails
+      }
+
       // Notify parent component of successful update
       onSave(updateData);
-      
+
       // Close modal
       onClose();
     } catch (error) {
@@ -332,14 +358,14 @@ export default function EditClientModal({
           {/* Modal container - centers properly accounting for sidebar on desktop */}
           <div
             key="edit-client-modal-container"
-            className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-center justify-center p-4 overflow-y-auto pointer-events-none"
+            className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-start justify-center p-4 sm:p-6 md:p-8 overflow-y-auto pointer-events-none"
           >
             {/* Modal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative neo-container max-w-4xl w-full max-h-[90vh] overflow-hidden my-auto pointer-events-auto"
+              className="relative neo-container max-w-4xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-16rem)] overflow-hidden my-8 sm:my-12 md:my-16 pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
             {/* Header */}
@@ -438,6 +464,93 @@ export default function EditClientModal({
                         <option value="completed">Completed</option>
                         <option value="inactive">Inactive</option>
                       </select>
+                    </div>
+
+                    {/* Personal Information */}
+                    <div className="pt-4 mt-4 border-t border-foreground/10">
+                      <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wide font-primary">
+                        Personal Information
+                      </h3>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
+                            Occupation
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.occupation}
+                            onChange={(e) => handleInputChange("occupation", e.target.value)}
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
+                            placeholder="e.g., Software Engineer, Teacher, Retired"
+                            disabled={isSubmitting}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
+                            Date of Birth (Optional)
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.dateOfBirth}
+                            onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                            className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
+                            disabled={isSubmitting}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1 font-primary">
+                            Useful for remembering birthdays or age-related conversations
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-foreground mb-2 uppercase tracking-wide font-primary">
+                            Hobbies & Interests
+                          </label>
+                          <div className="space-y-2">
+                            {formData.hobbies.map((hobby, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                <input
+                                  type="text"
+                                  value={hobby}
+                                  onChange={(e) => {
+                                    const newHobbies = [...formData.hobbies];
+                                    newHobbies[index] = e.target.value;
+                                    setFormData({ ...formData, hobbies: newHobbies });
+                                  }}
+                                  className="flex-1 px-4 py-2 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all placeholder:text-muted-foreground/50 placeholder:font-normal"
+                                  placeholder="e.g., Gardening, Golf, Reading"
+                                  disabled={isSubmitting}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newHobbies = formData.hobbies.filter((_, i) => i !== index);
+                                    setFormData({ ...formData, hobbies: newHobbies });
+                                  }}
+                                  className="neo-button-sm px-3 py-2 text-red-600 hover:bg-red-50 transition-transform hover:scale-[1.05]"
+                                  disabled={isSubmitting}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData({ ...formData, hobbies: [...formData.hobbies, ""] });
+                              }}
+                              className="neo-button px-4 py-2 w-full uppercase tracking-wide font-bold font-primary transition-transform hover:scale-[1.02]"
+                              disabled={isSubmitting}
+                            >
+                              + Add Hobby
+                            </button>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 font-primary">
+                            Track hobbies for conversation starters and personal connection
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

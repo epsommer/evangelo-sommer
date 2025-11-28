@@ -1041,12 +1041,43 @@ button:disabled,
 }
 
 /* Enhanced Selection and Focus States */
+/* Default/Light Theme Selection */
+::selection {
+  background-color: #D4AF37;
+  color: #1a1a1a;
+}
+
+/* Dark Theme Selection (Tactical) */
 [data-theme="dark"] ::selection {
   background-color: var(--tactical-gold);
   color: var(--tactical-grey-900);
 }
 
-[data-theme="dark"] *:focus:not(.neomorphic-toggle):not(.neomorphic-button):not([class*="neomorphic"]) {
+/* True Night Theme Selection - Light grey on dark */
+.true-night-mode ::selection {
+  background-color: #404040;
+  color: #e0e0e0;
+}
+
+/* Mocha Theme Selection - Lime green */
+.mocha-mode ::selection {
+  background-color: #84cc16;
+  color: #0a0908;
+}
+
+/* Overkast Theme Selection - Dark grey */
+.overkast-mode ::selection {
+  background-color: #5A5A5A;
+  color: #f5f5f5;
+}
+
+/* Gilded Meadow Theme Selection - Sage green */
+.gilded-meadow-mode ::selection {
+  background-color: #85854c;
+  color: #f5f5f0;
+}
+
+[data-theme="dark"] *:focus:not(.neomorphic-toggle):not(.neomorphic-button):not([class*="neomorphic"]):not([class*="neo-"]) {
   outline: 2px solid var(--tactical-gold) !important;
   outline-offset: 2px;
 }

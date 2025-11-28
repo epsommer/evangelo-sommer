@@ -89,7 +89,7 @@ export async function PUT(
   try {
     const { receiptId } = await context.params;
     const receiptData = await request.json();
-    
+
     // Use billing manager's update method
     const updatedReceipt = await billingManager.updateReceipt(receiptId, receiptData);
 
@@ -109,13 +109,21 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating receipt:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error'
       },
       { status: 500 }
     );
   }
+}
+
+// PATCH - Update a receipt (same as PUT)
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ receiptId: string }> }
+) {
+  return PUT(request, context);
 }
 
 // DELETE - Delete a receipt

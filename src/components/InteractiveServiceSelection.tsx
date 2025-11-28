@@ -238,28 +238,28 @@ export default function InteractiveServiceSelection({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {service.serviceTypes.map((serviceType) => (
                             <div
-                              key={serviceType}
+                              key={serviceType.name}
                               className="flex items-center space-x-3 cursor-pointer group"
                             >
                               <input
                                 type="checkbox"
-                                id={`project-${projectIndex}-service-${serviceType}`}
-                                checked={project.serviceTypes.includes(serviceType)}
+                                id={`project-${projectIndex}-service-${serviceType.name}`}
+                                checked={project.serviceTypes.includes(serviceType.name)}
                                 onChange={() =>
-                                  handleServiceTypeToggle(projectIndex, serviceType)
+                                  handleServiceTypeToggle(projectIndex, serviceType.name)
                                 }
                                 className="neo-checkbox neo-checkbox-sm"
                               />
                               <label
-                                htmlFor={`project-${projectIndex}-service-${serviceType}`}
+                                htmlFor={`project-${projectIndex}-service-${serviceType.name}`}
                               ></label>
                               <span
                                 className="text-sm text-foreground group-hover:text-accent transition-colors cursor-pointer font-primary"
                                 onClick={() =>
-                                  handleServiceTypeToggle(projectIndex, serviceType)
+                                  handleServiceTypeToggle(projectIndex, serviceType.name)
                                 }
                               >
-                                {serviceType}
+                                {serviceType.name}
                               </span>
                             </div>
                           ))}

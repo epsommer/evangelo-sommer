@@ -23,7 +23,17 @@
       "Bash(find:*)",
       "Bash(for dir in /Users/epsommer/projects/evangelo-sommer/.docs-private/*/)",
       "Bash(do echo '=== $(basename $dir) ===' ls -1 $dir)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(dig:*)",
+      "Bash(for domain in evangelosommer.com woodgreenlandscaping.com whiteknightsnowservice.com pupawalk.com)",
+      "Bash(do echo \"=== $domain ===\")",
+      "Bash(done)",
+      "Bash(node test-sendgrid.js:*)",
+      "Bash(./verify-dns.sh:*)",
+      "Bash(xargs:*)",
+      "Bash(cat:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

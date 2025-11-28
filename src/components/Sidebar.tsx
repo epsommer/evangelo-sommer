@@ -2,9 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import { Users, MessageSquare, Clock, Target, Briefcase, ChevronLeft, ChevronRight, Leaf, Snowflake, Dog, Palette, Receipt, LayoutGrid, Star, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
 
 interface SidebarProps {
   activeTab?: string
@@ -14,6 +12,7 @@ interface SidebarProps {
   onCollapseChange?: (collapsed: boolean) => void
   mobileMenuOpen?: boolean
   onMobileMenuClose?: () => void
+  headerCompact?: boolean
 }
 
 const navigationItems = [
@@ -27,12 +26,27 @@ const navigationItems = [
   { id: "service-lines", label: "Service Lines", icon: Briefcase },
 ]
 
-const serviceLines = [
-  { id: "woodgreen", name: "WOODGREEN LANDSCAPING", color: "service-landscaping", icon: Leaf, path: "/services/woodgreen" },
-  { id: "whiteknight", name: "White Knight Snow Removal", color: "service-snow-removal", icon: Snowflake, path: "/services/whiteknight" },
-  { id: "pupawalk", name: "PUPAWALK PET SERVICES", color: "service-hair-cutting", icon: Dog, path: "/services/pupawalk" },
-  { id: "creative", name: "Creative Development", color: "service-creative-development", icon: Palette, path: "/services/creative" },
-]
+// Helper function to map service line slug to icon and color
+const getServiceLineIcon = (slug: string) => {
+  const iconMap: Record<string, { icon: any; color: string }> = {
+    woodgreen: { icon: Leaf, color: "service-landscaping" },
+    landscaping: { icon: Leaf, color: "service-landscaping" },
+    whiteknight: { icon: Snowflake, color: "service-snow-removal" },
+    snow_removal: { icon: Snowflake, color: "service-snow-removal" },
+    pupawalk: { icon: Dog, color: "service-hair-cutting" },
+    pet_services: { icon: Dog, color: "service-hair-cutting" },
+    creative: { icon: Palette, color: "service-creative-development" },
+    creative_development: { icon: Palette, color: "service-creative-development" },
+  }
+  return iconMap[slug] || { icon: Briefcase, color: "bg-gray-500" }
+}
+
+interface ServiceLineData {
+  id: string
+  name: string
+  slug: string
+  route: string
+}
 
 const Sidebar = ({
   activeTab = "clients",
@@ -41,49 +55,62 @@ const Sidebar = ({
   onTitleClick,
   onCollapseChange,
   mobileMenuOpen = false,
-  onMobileMenuClose
+  onMobileMenuClose,
+  headerCompact = false
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [showServiceLinesSubmenu, setShowServiceLinesSubmenu] = useState(false)
   const [serviceLinesButtonRef, setServicesLinesButtonRef] = useState<HTMLButtonElement | null>(null)
   const [submenuPosition, setSubmenuPosition] = useState({ top: 0, left: 0 })
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [isDark, setIsDark] = useState(false)
+  const [serviceLines, setServiceLines] = useState<Array<{
+    id: string
+    name: string
+    slug: string
+    icon: any
+    color: string
+    path: string
+  }>>([])
 
-  // Track current theme for ES monogram styling
-  const [currentTheme, setCurrentTheme] = useState<string>('light')
-
+  // Fetch service lines from API
   useEffect(() => {
-    const updateTheme = () => {
-      const theme = localStorage.getItem('color-theme') || 'light'
-      setCurrentTheme(theme)
-      const willBeDark = theme === 'true-night' || theme === 'mocha'
-      setIsDark(willBeDark)
-    }
-
-    updateTheme()
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach(mutation => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-color-theme') {
-          updateTheme()
+    const fetchServiceLines = async () => {
+      try {
+        const response = await fetch('/api/service-lines')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.data) {
+            const mappedServiceLines = data.data.map((line: ServiceLineData) => {
+              const { icon, color } = getServiceLineIcon(line.slug)
+              return {
+                id: line.slug,
+                name: line.name,
+                slug: line.slug,
+                icon,
+                color,
+                path: line.route || `/services/${line.slug}`
+              }
+            })
+            setServiceLines(mappedServiceLines)
+          }
         }
-      })
-    })
-
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-theme'] })
-    window.addEventListener('storage', updateTheme)
-
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('storage', updateTheme)
+      } catch (error) {
+        console.error('Error fetching service lines:', error)
+      }
     }
+
+    fetchServiceLines()
   }, [])
 
   const handleTabChange = (tab: string) => {
     setActiveTab?.(tab)
     onMobileMenuClose?.() // Close mobile menu when tab is selected
   }
+
+  const headerTopClass = headerCompact ? 'top-12 sm:top-14' : 'top-14 sm:top-20'
+  const headerHeightClass = headerCompact
+    ? 'h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)]'
+    : 'h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-5rem)]'
 
   return (
     <>
@@ -92,8 +119,8 @@ const Sidebar = ({
       neo-sidebar
       fixed
       left-0
-      top-0
-      h-screen
+      ${headerTopClass}
+      ${headerHeightClass}
       transition-all
       duration-300
       z-[60]
@@ -116,38 +143,8 @@ const Sidebar = ({
           </div>
         )}
 
-        {/* ES Logo - Always visible, smaller when collapsed */}
-        <div className={`pt-4 pb-2 overflow-visible transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-4'}`}>
-          <button
-            onClick={onTitleClick}
-            className="group hover:opacity-80 transition-opacity w-full flex justify-center relative z-10"
-          >
-            <div
-              className={`neomorphic-logo ${isDark ? 'dark-mode' : ''} transition-all duration-300`}
-              style={{
-                width: isCollapsed ? '40px' : '80px',
-                height: isCollapsed ? '40px' : '80px',
-                borderRadius: isCollapsed ? '10px' : '20px'
-              }}
-            >
-              <div className={`relative transition-all duration-300 ${isCollapsed ? 'w-5 h-5' : 'w-10 h-10'}`}>
-                <Image
-                  src="/EvangeloSommer-ES-Monogram.svg"
-                  alt="ES Monogram"
-                  fill
-                  className="object-contain"
-                  style={{
-                    filter: currentTheme === 'gilded-meadow'
-                      ? "invert(0.5) saturate(2) hue-rotate(-10deg) brightness(0.9)"
-                      : isDark
-                        ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
-                        : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
-                  }}
-                />
-              </div>
-            </div>
-          </button>
-        </div>
+        {/* Spacer to align toggle */}
+        <div className={`${isCollapsed ? 'pt-2 pb-2 px-2' : 'pt-4 pb-2 px-4'}`} />
 
         {/* Desktop Toggle Button - Centered when collapsed */}
         <div className={`p-2 hidden lg:flex ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
@@ -177,7 +174,7 @@ const Sidebar = ({
                 key={item.id}
                 ref={isServiceLinesItem ? setServicesLinesButtonRef : undefined}
                 className={`neo-nav-button w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'space-x-3 px-4'} ${isCollapsed ? 'py-2' : 'py-3'} text-left font-medium text-sm transition-all duration-200 rounded-lg ${
-                  activeTab === item.id || (isServiceLinesItem && ['woodgreen', 'whiteknight', 'pupawalk', 'creative'].includes(activeTab))
+                  activeTab === item.id || (isServiceLinesItem && serviceLines.some(sl => sl.slug === activeTab))
                     ? 'neo-nav-button-active'
                     : ''
                 }`}

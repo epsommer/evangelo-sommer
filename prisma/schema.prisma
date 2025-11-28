@@ -1289,6 +1289,59 @@ enum TestimonialStatus {
   DRAFT         // Started but not completed
 }
 
+// Activity Log - Comprehensive activity tracking for the CRM
+model ActivityLog {
+  id            String   @id @default(cuid())
+
+  // Activity type and action
+  activityType  ActivityType
+  action        String   // e.g., "created", "updated", "deleted", "sent", "received"
+
+  // Entity references
+  entityType    String   // e.g., "client", "note", "testimonial", "appointment"
+  entityId      String?  // ID of the entity affected
+  clientId      String?  // Related client ID for filtering
+
+  // Activity details
+  description   String   // Human-readable description
+  metadata      Json?    // Additional structured data
+
+  // User tracking (for future multi-user support)
+  userId        String?  // User who performed the action
+  userName      String?  // Name of the user
+  userRole      String?  // Role of the user (e.g., "admin", "owner", "staff")
+
+  // Deployment and system events
+  deploymentInfo Json?   // Git commit info, deployment details
+
+  // Timestamps
+  createdAt     DateTime @default(now())
+
+  @@index([activityType])
+  @@index([action])
+  @@index([entityType])
+  @@index([clientId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  CLIENT_UPDATE       // Client profile updated
+  NOTE_CREATED        // Note added
+  TESTIMONIAL_RECEIVED // Testimonial submitted
+  APPOINTMENT_SCHEDULED // Appointment created
+  APPOINTMENT_UPDATED  // Appointment modified
+  MESSAGE_SENT        // Message sent to client
+  MESSAGE_RECEIVED    // Message received from client
+  RECEIPT_CREATED     // Receipt generated
+  INVOICE_CREATED     // Invoice generated
+  QUOTE_CREATED       // Quote created
+  DEPLOYMENT          // Website deployed
+  GIT_PUSH            // Git repository push
+  SYSTEM_EVENT        // General system event
+  TIME_TRACKED        // Time tracker entry
+}
+
 // ============================================================================
 // 3D STUDIO MODELS
 // ============================================================================

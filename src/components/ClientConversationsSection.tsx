@@ -393,13 +393,19 @@ interface MessageItemProps {
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, getMessageTypeIcon }) => (
-  <div className={`flex items-start space-x-3 p-3 neo-inset ${
-    (message.role === 'client' || message.role === 'CLIENT') ? '' : 'border-l-2 border-foreground/20'
-  }`}>
+  <div
+    className={`flex items-start space-x-3 p-3 rounded-lg ${
+      message.role === 'client' || message.role === 'CLIENT'
+        ? 'bg-[var(--neomorphic-accent)]/12 border-l-4 border-l-[var(--neomorphic-accent)]'
+        : 'bg-[var(--neomorphic-text)]/10 border-l-4 border-l-[var(--neomorphic-text)]'
+    } text-foreground`}
+  >
     <div className="flex items-center space-x-2">
       {getMessageTypeIcon(message.type)}
       <Badge className={`text-xs font-bold uppercase neo-badge ${
-        (message.role === 'client' || message.role === 'CLIENT') ? 'bg-muted-foreground/20 text-foreground' : 'bg-foreground/10 text-foreground'
+        (message.role === 'client' || message.role === 'CLIENT')
+          ? 'bg-[var(--neomorphic-accent)]/20 text-foreground'
+          : 'bg-[var(--neomorphic-text)]/20 text-foreground'
       }`}>
         {(message.role === 'client' || message.role === 'CLIENT') ? 'Client' : 'You'}
       </Badge>

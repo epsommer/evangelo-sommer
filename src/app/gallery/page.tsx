@@ -3,17 +3,6 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import dynamic from "next/dynamic";
-
-// Dynamically import Gallery3D with SSR disabled
-const Gallery3D = dynamic(() => import("@/components/gallery/Gallery3D"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-screen bg-black flex items-center justify-center">
-      <div className="text-white text-xl">Loading 3D Gallery...</div>
-    </div>
-  ),
-});
 
 export default function GalleryPage() {
   const { data: session, status } = useSession();
@@ -38,5 +27,10 @@ export default function GalleryPage() {
     return null;
   }
 
-  return <Gallery3D />;
+  // Redirect legacy gallery route to Sammy
+  useEffect(() => {
+    router.replace("/sammy");
+  }, [router]);
+
+  return null;
 }

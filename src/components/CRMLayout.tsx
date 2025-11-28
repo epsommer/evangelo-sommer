@@ -145,6 +145,7 @@ const CRMLayout: React.FC<CRMLayoutProps> = ({ children }) => {
         onCollapseChange={setSidebarCollapsed}
         mobileMenuOpen={mobileMenuOpen}
         onMobileMenuClose={closeMobileMenu}
+        headerCompact={isScrolled}
       />
       <main className={`min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} relative z-10 ${isScrolled ? 'pt-14' : 'pt-20'} ${mobileMenuOpen ? 'overflow-hidden lg:overflow-auto' : ''}`} style={{ backgroundColor: 'var(--neomorphic-bg)' }}>
         {children}

@@ -20,6 +20,7 @@ import ClientQuickActions from '@/components/ClientQuickActions'
 import QuickMessageModal from '@/components/QuickMessageModal'
 import AppointmentModal from '@/components/AppointmentModal'
 import NoteModal from '@/components/NoteModal'
+import TimeTrackerModal from '@/components/TimeTrackerModal'
 
 const ClientDetailPage = () => {
   const params = useParams()
@@ -35,6 +36,7 @@ const ClientDetailPage = () => {
   const [showQuickMessageModal, setShowQuickMessageModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showNoteModal, setShowNoteModal] = useState(false)
+  const [showTimeTrackerModal, setShowTimeTrackerModal] = useState(false)
   const [notesRefreshKey, setNotesRefreshKey] = useState(0)
   const [transactions, setTransactions] = useState<any[]>([])
   const [billingData, setBillingData] = useState<{totalBilled: number, pendingAmount: number, lastServiceDate: string | null}>({
@@ -314,6 +316,7 @@ const ClientDetailPage = () => {
           onScheduleAppointment={handleScheduleAppointment}
           onCreateReceipt={() => setShowReceiptModal(true)}
           onAddNote={() => setShowNoteModal(true)}
+          onTimeTracker={() => setShowTimeTrackerModal(true)}
         />
 
         {/* Incomplete Profile Warning - BELONGS ON CLIENT PAGE */}
@@ -495,6 +498,60 @@ const ClientDetailPage = () => {
                   <p className="text-foreground font-primary whitespace-pre-wrap">
                     {client.notes}
                   </p>
+                </div>
+              )}
+
+              {/* Personal Information */}
+              {(client.occupation || client.hobbies?.length || client.dateOfBirth) && (
+                <div className="mt-6 pt-6 border-t border-foreground/10">
+                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 font-primary">
+                    Personal Information
+                  </div>
+                  <div className="space-y-3">
+                    {client.occupation && (
+                      <div>
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 font-primary">
+                          Occupation
+                        </div>
+                        <div className="text-foreground font-primary">
+                          {client.occupation}
+                        </div>
+                      </div>
+                    )}
+
+                    {client.dateOfBirth && (
+                      <div>
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 font-primary">
+                          Date of Birth
+                        </div>
+                        <div className="text-foreground font-primary">
+                          {new Date(client.dateOfBirth).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {client.hobbies && client.hobbies.length > 0 && (
+                      <div>
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 font-primary">
+                          Hobbies & Interests
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {client.hobbies.map((hobby, index) => (
+                            <span
+                              key={index}
+                              className="neo-badge px-3 py-1 text-xs font-primary bg-tactical-gold/20 text-foreground"
+                            >
+                              {hobby}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -778,7 +835,7 @@ const ClientDetailPage = () => {
         <ClientTestimonialsSection clientId={clientId} client={client} />
 
         {/* Client Notes Section */}
-        <ClientNotesSection key={notesRefreshKey} clientId={clientId} clientName={client.name} />
+        <ClientNotesSection clientId={clientId} clientName={client.name} refreshTrigger={notesRefreshKey} />
 
         {/* Client Conversations Section */}
         <ClientConversationsSection clientId={clientId} client={client} />
@@ -801,6 +858,8 @@ const ClientDetailPage = () => {
         client={client}
         onReceiptCreated={(receipt) => {
           console.log('Receipt created:', receipt, 'for service line:', selectedServiceLine)
+          // Reload transactions to show the new receipt
+          loadTransactions()
         }}
       />
 
@@ -813,6 +872,8 @@ const ClientDetailPage = () => {
         client={client}
         onInvoiceCreated={(invoice) => {
           console.log('Invoice created:', invoice, 'for service line:', selectedServiceLine)
+          // Reload transactions in case invoices are included in billing data
+          loadTransactions()
         }}
       />
 
@@ -825,6 +886,8 @@ const ClientDetailPage = () => {
         client={client}
         onQuoteCreated={(quote) => {
           console.log('Quote created:', quote, 'for service line:', selectedServiceLine)
+          // Reload transactions in case quotes are included in billing data
+          loadTransactions()
         }}
       />
 
@@ -851,6 +914,13 @@ const ClientDetailPage = () => {
           // Trigger refresh of ClientNotesSection by changing its key
           setNotesRefreshKey(prev => prev + 1)
         }}
+      />
+
+      {/* Time Tracker Modal */}
+      <TimeTrackerModal
+        isOpen={showTimeTrackerModal}
+        onClose={() => setShowTimeTrackerModal(false)}
+        client={client}
       />
     </CRMLayout>
   )

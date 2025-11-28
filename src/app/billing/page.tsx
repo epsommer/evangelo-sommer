@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Receipt,
   DollarSign,
@@ -20,12 +22,15 @@ import {
   CheckCircle,
   XCircle,
   Send,
+  MoreVertical,
 } from "lucide-react";
 import Link from "next/link";
 import CRMLayout from "../../components/CRMLayout";
 import ReceiptDetailsModal from "../../components/ReceiptDetailsModal";
-import CreateReceiptModal from "../../components/CreateReceiptModal";
-import PunchClock from "../../components/PunchClock";
+import BillingReceiptModal from "../../components/BillingReceiptModal";
+import TimeTrackerModal from "../../components/TimeTrackerModal";
+import InvoiceModal from "../../components/InvoiceModal";
+import { Client } from "../../types/client";
 
 interface Transaction {
   id: string;
@@ -44,6 +49,7 @@ interface Transaction {
   conversationId?: string;
   isEditable?: boolean; // Receipt can only be edited if status is 'draft'
   isDuplicate?: boolean; // Indicates if this is a duplicate of a sent receipt
+  isTimed?: boolean; // True when created via time tracking (hours-based)
 }
 
 interface BillingAnalytics {
@@ -58,8 +64,12 @@ interface BillingAnalytics {
 interface BillingFilters {
   dateRange: string;
   clientId: string;
-  transactionType: "all" | "receipts" | "invoices";
+  transactionType: "all" | "receipts" | "invoices" | "timed";
   searchTerm: string;
+  paymentStatus: "all" | "paid" | "unpaid";
+  sentStatus: "all" | "sent" | "unsent";
+  minAmount: string;
+  maxAmount: string;
 }
 
 // Mock data for development - will be replaced with real API calls
@@ -186,36 +196,122 @@ function BillingOverviewCards({ analytics }: { analytics: BillingAnalytics }) {
 function FilteringControls({
   filters,
   onFiltersChange,
+  totalCount,
+  filteredCount,
 }: {
   filters: BillingFilters;
   onFiltersChange: (filters: Partial<BillingFilters>) => void;
+  totalCount: number;
+  filteredCount: number;
 }) {
+  const tabDefs = [
+    { id: "tab-all", label: "All", value: "all" as const },
+    { id: "tab-receipts", label: "Receipts", value: "receipts" as const },
+    { id: "tab-invoices", label: "Invoices", value: "invoices" as const },
+    { id: "tab-timed", label: "Timed", value: "timed" as const },
+  ];
+
   return (
-    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-      <div className="flex items-center space-x-3 neo-container px-4 py-2">
-        <Search className="w-4 h-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search transactions..."
-          value={filters.searchTerm}
-          onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
-          className="bg-transparent border-none outline-none focus:outline-none font-primary text-sm text-foreground placeholder:text-muted-foreground min-w-[200px]"
-        />
+    <div className="neo-container p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Receipt className="w-5 h-5 text-accent" />
+          <h3 className="font-primary font-bold text-foreground uppercase tracking-wide text-sm">
+            Filter Transactions
+          </h3>
+          <span className="text-xs text-muted-foreground font-primary">
+            ({filteredCount} of {totalCount})
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center space-x-3 neo-container px-4 py-2">
-        <Filter className="w-4 h-4 text-muted-foreground" />
-        <select
-          value={filters.transactionType}
-          onChange={(e) =>
-            onFiltersChange({ transactionType: e.target.value as any })
-          }
-          className="bg-transparent border-none outline-none focus:outline-none font-primary text-sm text-foreground cursor-pointer"
-        >
-          <option value="all">All Types</option>
-          <option value="receipts">Receipts</option>
-          <option value="invoices">Invoices</option>
-        </select>
+      <div className="space-y-3">
+        {/* Type Filter - Segmented control (full row) */}
+        <div className="w-full">
+          <div
+            className="relative w-full neo-card px-2 py-2 rounded-full border-0"
+            style={{ border: "none", ["--border" as any]: "transparent" }}
+          >
+            <div className="flex gap-1 justify-between">
+              {tabDefs.map((tab) => {
+                const isActive = filters.transactionType === tab.value;
+                return (
+                  <label
+                    key={tab.id}
+                    htmlFor={tab.id}
+                    className={`relative flex-1 flex items-center justify-center h-10 px-3 text-sm cursor-pointer rounded-full transition-all ${
+                      isActive ? "text-[var(--neomorphic-accent)]" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <input
+                      id={tab.id}
+                      type="radio"
+                      name="transactionType"
+                      className="sr-only"
+                      checked={isActive}
+                      onChange={() =>
+                        onFiltersChange({ transactionType: tab.value })
+                      }
+                    />
+                    <span className={`relative z-10 billing-tab-label ${isActive ? "billing-tab-label-active" : ""}`}>
+                      {tab.label}
+                    </span>
+                    {isActive && (
+                      <span className="absolute inset-0 rounded-full neo-inset pointer-events-none bg-[var(--neomorphic-bg)]/60 ring-1 ring-[var(--neomorphic-accent)]/30 z-0" />
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Second row of controls */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+          {/* Payment Status */}
+          <select
+            value={filters.paymentStatus}
+            onChange={(e) => onFiltersChange({ paymentStatus: e.target.value as any })}
+            className="neo-inset px-3 py-2 rounded font-primary text-sm text-foreground cursor-pointer w-full"
+          >
+            <option value="all">All Payment Status</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+          </select>
+
+          {/* Sent Status */}
+          <select
+            value={filters.sentStatus}
+            onChange={(e) => onFiltersChange({ sentStatus: e.target.value as any })}
+            className="neo-inset px-3 py-2 rounded font-primary text-sm text-foreground cursor-pointer w-full"
+          >
+            <option value="all">All Sent Status</option>
+            <option value="sent">Sent</option>
+            <option value="unsent">Unsent</option>
+          </select>
+
+          {/* Min Amount */}
+          <input
+            type="number"
+            placeholder="Min Amount"
+            value={filters.minAmount}
+            onChange={(e) => onFiltersChange({ minAmount: e.target.value })}
+            className="neo-inset px-3 py-2 rounded font-primary text-sm text-foreground placeholder:text-muted-foreground w-full"
+            step="0.01"
+            min="0"
+          />
+
+          {/* Max Amount */}
+          <input
+            type="number"
+            placeholder="Max Amount"
+            value={filters.maxAmount}
+            onChange={(e) => onFiltersChange({ maxAmount: e.target.value })}
+            className="neo-inset px-3 py-2 rounded font-primary text-sm text-foreground placeholder:text-muted-foreground w-full"
+            step="0.01"
+            min="0"
+          />
+        </div>
       </div>
     </div>
   );
@@ -228,6 +324,8 @@ function TransactionRow({
   onSendClick,
   onDeleteClick,
   onArchiveClick,
+  isSelected,
+  onSelect,
 }: {
   transaction: Transaction;
   onViewClick?: (transaction: Transaction) => void;
@@ -235,7 +333,10 @@ function TransactionRow({
   onSendClick?: (transaction: Transaction) => void;
   onDeleteClick?: (transaction: Transaction) => void;
   onArchiveClick?: (transaction: Transaction) => void;
+  isSelected?: boolean;
+  onSelect?: (id: string, selected: boolean) => void;
 }) {
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const getRowStyle = () => {
     if (transaction.status === "sent" && !transaction.isDuplicate) {
       return "border-b border-border opacity-60"; // Grey out sent receipts
@@ -246,14 +347,14 @@ function TransactionRow({
   const getSentStatus = () => {
     if (transaction.emailSentAt || transaction.status === "sent") {
       return (
-        <span className="flex items-center text-xs text-green-600">
+        <span className="flex items-center text-xs status-green">
           <CheckCircle className="w-3 h-3 mr-1" />
           Sent
         </span>
       );
     }
     return (
-      <span className="flex items-center text-xs text-tactical-grey-500">
+      <span className="flex items-center text-xs text-muted-foreground">
         <XCircle className="w-3 h-3 mr-1" />
         Not Sent
       </span>
@@ -263,7 +364,7 @@ function TransactionRow({
   const getPaidStatus = () => {
     if (transaction.status === "paid") {
       return (
-        <span className="flex items-center text-xs text-green-600">
+        <span className="flex items-center text-xs status-green">
           <CheckCircle className="w-3 h-3 mr-1" />
           Paid
         </span>
@@ -281,6 +382,14 @@ function TransactionRow({
 
   return (
     <tr className={getRowStyle()}>
+      <td className="px-4 py-4">
+        <input
+          type="checkbox"
+          checked={isSelected || false}
+          onChange={(e) => onSelect?.(transaction.id, e.target.checked)}
+          className="w-4 h-4 cursor-pointer"
+        />
+      </td>
       <td className="px-6 py-4 text-sm text-foreground font-primary">
         {new Date(transaction.date).toLocaleDateString("en-US", {
           year: "numeric",
@@ -310,95 +419,115 @@ function TransactionRow({
       <td className="px-6 py-4">{getSentStatus()}</td>
       <td className="px-6 py-4">{getPaidStatus()}</td>
       <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
+        <div className="relative">
           <button
-            onClick={() => onViewClick?.(transaction)}
-            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-            title="View Details"
+            onClick={() => setActionMenuOpen(prev => !prev)}
+            className="neo-button-sm p-2"
+            aria-haspopup="menu"
+            aria-expanded={actionMenuOpen}
           >
-            <Eye className="w-4 h-4" />
+            <MoreVertical className="w-4 h-4" />
           </button>
-          {transaction.conversationId && (
-            <Link
-              href={`/conversations/${transaction.conversationId}`}
-              className="p-1 text-accent hover:text-accent-dark transition-colors"
-              title="View Conversation"
-            >
-              💬
-            </Link>
-          )}
-          {!transaction.emailSentAt && transaction.status !== "sent" ? (
-            <div className="flex items-center space-x-2">
+          {actionMenuOpen && (
+            <div className="absolute right-0 mt-2 neo-card rounded-lg shadow-lg z-20 min-w-[180px]">
               <button
-                onClick={() => onEditClick?.(transaction)}
-                className="p-1 text-accent hover:text-accent-dark transition-colors"
-                title="Edit Receipt"
+                onClick={() => {
+                  onViewClick?.(transaction);
+                  setActionMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
               >
-                <Edit className="w-4 h-4" />
+                View Details
               </button>
-              {transaction.status === "paid" ? (
-                <button
-                  onClick={() => onSendClick?.(transaction)}
-                  className="p-1 text-green-600 hover:text-green-800 transition-colors"
-                  title="Send Receipt to Customer"
+              {transaction.conversationId && (
+                <Link
+                  href={`/conversations/${transaction.conversationId}`}
+                  className="block w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  onClick={() => setActionMenuOpen(false)}
                 >
-                  <Send className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="p-1 text-gray-400 cursor-not-allowed opacity-50"
-                  title="Cannot send unpaid receipts - Mark as paid first"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+                  View Conversation
+                </Link>
               )}
-              <button
-                onClick={() => onArchiveClick?.(transaction)}
-                className="p-1 text-orange-600 hover:text-orange-800 transition-colors"
-                title="Archive Receipt for Later Review"
-              >
-                <Archive className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => onDeleteClick?.(transaction)}
-                className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                title="Delete Receipt Permanently"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {!transaction.emailSentAt && transaction.status !== "sent" && (
+                <>
+                  <button
+                    onClick={() => {
+                      onEditClick?.(transaction);
+                      setActionMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  >
+                    Edit Receipt
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (transaction.status === "paid") {
+                        onSendClick?.(transaction);
+                        setActionMenuOpen(false);
+                      }
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      transaction.status === "paid"
+                        ? "hover:bg-muted status-green"
+                        : "text-muted-foreground cursor-not-allowed"
+                    }`}
+                    disabled={transaction.status !== "paid"}
+                  >
+                    Send Receipt
+                  </button>
+                  <button
+                    onClick={() => {
+                      onArchiveClick?.(transaction);
+                      setActionMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  >
+                    Archive
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDeleteClick?.(transaction);
+                      setActionMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors text-red-600"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+              {(transaction.emailSentAt || transaction.status === "sent") && (
+                <>
+                  <div className="px-3 py-2 text-xs text-muted-foreground">Sent</div>
+                  <button
+                    onClick={() => {
+                      onEditClick?.(transaction);
+                      setActionMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors status-green"
+                    title="Create corrected version - duplicate as draft"
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    onClick={() => {
+                      onArchiveClick?.(transaction);
+                      setActionMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  >
+                    Archive
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
+                    title="Cannot delete sent receipts - Archive instead"
+                    disabled
+                  >
+                    Delete (disabled)
+                  </button>
+                </>
+              )}
             </div>
-          ) : transaction.emailSentAt || transaction.status === "sent" ? (
-            <div className="flex items-center space-x-2">
-              <span
-                className="text-xs text-tactical-grey-500 bg-card px-2 py-1 rounded"
-                title="Receipt has already been sent. Editing is locked."
-              >
-                🔒 Sent
-              </span>
-              <button
-                onClick={() => onEditClick?.(transaction)}
-                className="p-1 text-green-600 hover:text-green-800 transition-colors"
-                title="Create corrected version - This will duplicate the receipt as a draft"
-              >
-                📋 Duplicate
-              </button>
-              <button
-                onClick={() => onArchiveClick?.(transaction)}
-                className="p-1 text-orange-600 hover:text-orange-800 transition-colors"
-                title="Archive Receipt for Later Review"
-              >
-                <Archive className="w-4 h-4" />
-              </button>
-              <button
-                disabled
-                className="p-1 text-gray-400 cursor-not-allowed opacity-50"
-                title="Cannot delete sent receipts - Archive instead"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ) : null}
+          )}
         </div>
       </td>
     </tr>
@@ -415,6 +544,15 @@ function TransactionsTable({
   isLoading = false,
   showViewAll = false,
   onViewAllClick,
+  selectedIds,
+  onSelectTransaction,
+  onSelectAll,
+  onBulkDelete,
+  onBulkSend,
+  filters,
+  onFiltersChange,
+  totalCount,
+  filteredCount,
 }: {
   transactions: Transaction[];
   onViewTransaction?: (transaction: Transaction) => void;
@@ -425,29 +563,89 @@ function TransactionsTable({
   isLoading?: boolean;
   showViewAll?: boolean;
   onViewAllClick?: () => void;
+  selectedIds?: Set<string>;
+  onSelectTransaction?: (id: string, selected: boolean) => void;
+  onSelectAll?: (selected: boolean) => void;
+  onBulkDelete?: () => void;
+  onBulkSend?: () => void;
+  filters: BillingFilters;
+  onFiltersChange: (filters: Partial<BillingFilters>) => void;
+  totalCount: number;
+  filteredCount: number;
 }) {
+  const allSelected = transactions.length > 0 && transactions.every(t => selectedIds?.has(t.id));
+  const selectedCount = selectedIds?.size || 0;
+
   return (
     <div className="neo-container overflow-hidden">
-      <div className="p-6 border-b border-border neo-inset">
-        <div className="flex items-center justify-between">
-          <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg">
-            Recent Transactions
-          </h2>
-          {showViewAll && (
-            <button
-              onClick={onViewAllClick}
-              className="neo-button text-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm transition-all"
-            >
-              View All History
-            </button>
-          )}
+      <div className="p-6 border-b border-border neo-inset space-y-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg">
+              Recent Transactions
+            </h2>
+            <div className="flex items-center space-x-2 neo-card px-3 py-2 rounded w-full max-w-xs">
+              <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={filters.searchTerm}
+                onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
+                className="bg-[var(--neomorphic-bg)] border-none outline-none focus:outline-none font-primary text-sm text-foreground placeholder:text-muted-foreground w-full rounded shadow-none focus:shadow-none appearance-none ring-0 focus:ring-0"
+                style={{ boxShadow: "none" }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {selectedCount > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground font-primary">
+                  {selectedCount} selected
+                </span>
+                <button
+                  onClick={onBulkSend}
+                  className="neo-button-sm px-3 py-1.5 text-xs uppercase transition-transform hover:scale-[1.02]"
+                >
+                  Send Selected
+                </button>
+                <button
+                  onClick={onBulkDelete}
+                  className="neo-button-sm px-3 py-1.5 text-xs uppercase text-red-600 transition-transform hover:scale-[1.02]"
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
+            {showViewAll && (
+              <button
+                onClick={onViewAllClick}
+                className="neo-button text-accent hover:bg-accent hover:text-foreground px-4 py-2 font-primary uppercase tracking-wide text-sm transition-all"
+              >
+                View All History
+              </button>
+            )}
+          </div>
         </div>
+        <FilteringControls
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          totalCount={totalCount}
+          filteredCount={filteredCount}
+        />
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border neo-inset">
+              <th className="px-4 py-4">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={(e) => onSelectAll?.(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer"
+                />
+              </th>
               <th className="px-6 py-4 text-left font-primary font-bold uppercase text-foreground text-xs tracking-wide">
                 Date
               </th>
@@ -500,6 +698,8 @@ function TransactionsTable({
                   onSendClick={onSendReceipt}
                   onDeleteClick={onDeleteTransaction}
                   onArchiveClick={onArchiveTransaction}
+                  isSelected={selectedIds?.has(transaction.id)}
+                  onSelect={onSelectTransaction}
                 />
               ))
             )}
@@ -511,6 +711,8 @@ function TransactionsTable({
 }
 
 export default function ServicesBillingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [analytics, setAnalytics] = useState<BillingAnalytics>(mockAnalytics);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<BillingFilters>({
@@ -518,12 +720,17 @@ export default function ServicesBillingPage() {
     clientId: "",
     transactionType: "all",
     searchTerm: "",
+    paymentStatus: "all",
+    sentStatus: "all",
+    minAmount: "",
+    maxAmount: "",
   });
   const [selectedReceipt, setSelectedReceipt] = useState<Transaction | null>(
     null,
   );
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingReceipt, setEditingReceipt] = useState<Transaction | null>(
     null,
@@ -532,6 +739,11 @@ export default function ServicesBillingPage() {
   const [showHeaderExportMenu, setShowHeaderExportMenu] = useState(false);
   const [sendingReceiptId, setSendingReceiptId] = useState<string | null>(null);
   const [showManualEntry, setShowManualEntry] = useState(false);
+  const [showTimeTracker, setShowTimeTracker] = useState(false);
+  const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(new Set());
+  const [clients, setClients] = useState<Client[]>([]);
+  const [clientsLoading, setClientsLoading] = useState(false);
+  const [invoiceClient, setInvoiceClient] = useState<Client | null>(null);
   const [manualEntryData, setManualEntryData] = useState({
     documentType: 'receipt' as 'receipt' | 'invoice' | 'quote' | 'estimate',
     serviceType: '',
@@ -541,9 +753,41 @@ export default function ServicesBillingPage() {
     clientId: '',
   });
 
+  // Check authentication
   useEffect(() => {
-    loadTransactions();
-  }, []);
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      loadTransactions();
+      loadClients();
+    }
+  }, [status]);
+
+  const loadClients = async () => {
+    if (clientsLoading) return;
+    setClientsLoading(true);
+    try {
+      const res = await fetch("/api/clients?limit=200");
+      if (res.ok) {
+        const data = await res.json();
+        const list: Client[] = Array.isArray(data)
+          ? data
+          : data.data || data.clients || [];
+        setClients(list);
+        if (!invoiceClient && list.length > 0) {
+          setInvoiceClient(list[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load clients for invoices", err);
+    } finally {
+      setClientsLoading(false);
+    }
+  };
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -591,6 +835,7 @@ export default function ServicesBillingPage() {
             conversationId: receipt.conversationId,
             isEditable: status === "draft",
             isDuplicate: receipt.isDuplicate || false,
+            isTimed: receipt.items?.some((i: any) => i?.billingMode === "hours" || i?.billingMode === "time"),
           };
         });
 
@@ -638,14 +883,48 @@ export default function ServicesBillingPage() {
   const filteredTransactions = useMemo(() => {
     let filtered = analytics.recentTransactions;
 
+    // Filter by transaction type
     if (filters.transactionType !== "all") {
+      if (filters.transactionType === "timed") {
+        filtered = filtered.filter((t) => t.type === "receipt" && t.isTimed);
+      } else {
+        filtered = filtered.filter((t) =>
+          filters.transactionType === "receipts"
+            ? t.type === "receipt"
+            : t.type === "invoice",
+        );
+      }
+    }
+
+    // Filter by payment status
+    if (filters.paymentStatus !== "all") {
       filtered = filtered.filter((t) =>
-        filters.transactionType === "receipts"
-          ? t.type === "receipt"
-          : t.type === "invoice",
+        filters.paymentStatus === "paid"
+          ? t.status === "paid"
+          : t.status !== "paid",
       );
     }
 
+    // Filter by sent status
+    if (filters.sentStatus !== "all") {
+      filtered = filtered.filter((t) =>
+        filters.sentStatus === "sent"
+          ? (t.emailSentAt || t.status === "sent")
+          : (!t.emailSentAt && t.status !== "sent"),
+      );
+    }
+
+    // Filter by amount range
+    if (filters.minAmount) {
+      const minAmt = parseFloat(filters.minAmount);
+      filtered = filtered.filter((t) => t.amount >= minAmt);
+    }
+    if (filters.maxAmount) {
+      const maxAmt = parseFloat(filters.maxAmount);
+      filtered = filtered.filter((t) => t.amount <= maxAmt);
+    }
+
+    // Filter by search term
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -771,6 +1050,19 @@ export default function ServicesBillingPage() {
     console.log("New receipt created:", newReceipt);
     // Refresh the transactions list to show the new receipt
     loadTransactions();
+  };
+
+  const handleInvoiceCreated = (newInvoice: any) => {
+    console.log("New invoice created:", newInvoice);
+    setShowInvoiceModal(false);
+    loadTransactions();
+  };
+
+  const openInvoiceModal = async () => {
+    if (!clients.length && !clientsLoading) {
+      await loadClients();
+    }
+    setShowInvoiceModal(true);
   };
 
   // Export functionality
@@ -986,6 +1278,115 @@ export default function ServicesBillingPage() {
     }
   };
 
+  // Bulk selection handlers
+  const handleSelectTransaction = (id: string, selected: boolean) => {
+    setSelectedTransactions(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedTransactions(new Set(displayedTransactions.map(t => t.id)));
+    } else {
+      setSelectedTransactions(new Set());
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTransactions.size === 0) return;
+
+    const confirmed = confirm(
+      `Are you sure you want to delete ${selectedTransactions.size} selected receipt(s)? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const deletePromises = Array.from(selectedTransactions).map(id =>
+        fetch(`/api/billing/receipts/${id}`, { method: 'DELETE' })
+      );
+
+      await Promise.all(deletePromises);
+      alert(`${selectedTransactions.size} receipt(s) deleted successfully`);
+      setSelectedTransactions(new Set());
+      loadTransactions();
+    } catch (error) {
+      console.error('Error bulk deleting receipts:', error);
+      alert('Failed to delete some receipts');
+    }
+  };
+
+  const handleBulkSend = async () => {
+    if (selectedTransactions.size === 0) return;
+
+    const selectedTxns = displayedTransactions.filter(t => selectedTransactions.has(t.id));
+    const unsentTxns = selectedTxns.filter(t => !t.emailSentAt && t.status !== 'sent');
+
+    if (unsentTxns.length === 0) {
+      alert('All selected receipts have already been sent.');
+      return;
+    }
+
+    const confirmed = confirm(
+      `Send ${unsentTxns.length} unsent receipt(s) to their respective clients?`
+    );
+    if (!confirmed) return;
+
+    try {
+      const sendPromises = unsentTxns.map(async (t) => {
+        // Fetch client email for each transaction
+        const response = await fetch(`/api/clients/${t.clientId}`);
+        if (!response.ok) return { success: false, id: t.id };
+
+        const clientData = await response.json();
+        const client =
+          clientData.data ||
+          clientData.client ||
+          clientData;
+
+        const clientEmail =
+          client?.email ||
+          client?.participant?.email ||
+          client?.contactEmail ||
+          client?.billingInfo?.email;
+
+        const clientName =
+          client?.name ||
+          client?.participant?.name ||
+          t.clientName;
+
+        if (!clientEmail) return { success: false, id: t.id };
+
+        const sendResponse = await fetch(`/api/billing/receipts/${t.id}/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientEmail,
+            clientName,
+          }),
+        });
+
+        return { success: sendResponse.ok, id: t.id };
+      });
+
+      const results = await Promise.all(sendPromises);
+      const successCount = results.filter(r => r.success).length;
+
+      alert(`${successCount} of ${unsentTxns.length} receipt(s) sent successfully`);
+      setSelectedTransactions(new Set());
+      loadTransactions();
+    } catch (error) {
+      console.error('Error bulk sending receipts:', error);
+      alert('Failed to send some receipts');
+    }
+  };
+
   // Send receipt functionality
   const handleSendReceipt = async (transaction: Transaction) => {
     if (transaction.emailSentAt || transaction.status === "sent") {
@@ -999,23 +1400,48 @@ export default function ServicesBillingPage() {
     if (!confirmed) return;
 
     try {
-      // Call API to send the receipt via email
+      // Fetch latest client data to get email
+      const clientRes = await fetch(`/api/clients/${transaction.clientId}`);
+      if (!clientRes.ok) {
+        throw new Error(`Client fetch failed (${clientRes.status})`);
+      }
+      const clientData = await clientRes.json();
+      const client =
+        clientData.data ||
+        clientData.client ||
+        clientData;
+
+      const clientEmail =
+        client?.email ||
+        client?.participant?.email ||
+        client?.contactEmail ||
+        client?.billingInfo?.email;
+
+      const clientName =
+        client?.name ||
+        client?.participant?.name ||
+        transaction.clientName;
+
+      if (!clientEmail) {
+        alert("Client has no email on file. Cannot send receipt.");
+        return;
+      }
+
       const response = await fetch(
         `/api/billing/receipts/${transaction.id}/send-email`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            clientEmail: "contact@evangelosommer.com", // Mock client email for testing
-            clientName: transaction.clientName,
+            clientEmail,
+            clientName,
           }),
         },
       );
 
       if (response.ok) {
-        alert(`Receipt sent successfully to ${transaction.clientName}!`);
-        // Refresh transactions to show updated status
-        await loadTransactions();
+        alert(`Receipt sent successfully to ${clientEmail}!`);
+        await loadTransactions(); // Refresh status
       } else {
         const errorData = await response.json();
         console.error("Send receipt API error:", errorData);
@@ -1030,9 +1456,27 @@ export default function ServicesBillingPage() {
       alert(
         `Failed to send receipt: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
-      console.error("Full error details:", error);
     }
   };
+
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <CRMLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-foreground/20 border-t-transparent animate-spin mx-auto mb-4 rounded-full"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </CRMLayout>
+    );
+  }
+
+  // Don't render anything if unauthenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   return (
     <CRMLayout>
@@ -1102,309 +1546,138 @@ export default function ServicesBillingPage() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div>
-          {/* Overview Cards */}
-          <BillingOverviewCards analytics={analytics} />
-
-          {/* Time Tracker and Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Punch Clock */}
+        {/* Main Content - Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+          {/* Left Column - Main Content */}
+          <div className="space-y-6">
+            {/* Recent Transactions - Moved to Top */}
             <div>
-              <PunchClock />
-            </div>
+              <TransactionsTable
+                transactions={displayedTransactions}
+                onViewTransaction={handleViewReceipt}
+                onEditTransaction={handleEditReceipt}
+                onSendReceipt={handleSendReceipt}
+                onDeleteTransaction={handleDeleteReceipt}
+                onArchiveTransaction={handleArchiveReceipt}
+                isLoading={isLoading}
+                showViewAll={
+                  !showAllTransactions && filteredTransactions.length > 5
+                }
+                onViewAllClick={() => setShowAllTransactions(true)}
+                selectedIds={selectedTransactions}
+                onSelectTransaction={handleSelectTransaction}
+                onSelectAll={handleSelectAll}
+                onBulkDelete={handleBulkDelete}
+                onBulkSend={handleBulkSend}
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                totalCount={analytics.recentTransactions.length}
+                filteredCount={filteredTransactions.length}
+              />
 
-            {/* Quick Actions */}
-            <div className="space-y-6">
-              <div className="neo-container p-6">
-                <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg mb-4">
-                  Quick Actions
-                </h2>
-                <div className="space-y-2">
+              {/* Show Less Button */}
+              {showAllTransactions && filteredTransactions.length > 5 && (
+                <div className="text-center mt-6">
                   <button
-                    onClick={() => setShowAllTransactions(true)}
-                    className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
+                    onClick={() => setShowAllTransactions(false)}
+                    className="neo-button text-accent hover:bg-accent hover:text-foreground px-6 py-3 font-primary uppercase tracking-wide text-sm transition-all"
                   >
-                    <TrendingUp className="w-4 h-4 text-accent" />
-                    <span>View All History</span>
-                  </button>
-                  <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
-                  >
-                    <Receipt className="w-4 h-4 text-accent" />
-                    <span>Create Custom Invoice</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      const punchClockElement = document.querySelector('[data-punch-clock]');
-                      if (punchClockElement) {
-                        punchClockElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }
-                    }}
-                    className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm"
-                  >
-                    <Clock className="w-4 h-4 text-accent" />
-                    <span>Time Tracker</span>
+                    Show Recent Only
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
+              )}
 
-          {/* Manual Entry Form */}
-          <div className="mb-8">
-            <div className="neo-container p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg">
-                  Quick Entry
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowManualEntry(!showManualEntry);
-                    // Auto-fill from punch clock if available
-                    if (!showManualEntry) {
-                      const punchClockData = sessionStorage.getItem('punchClockReceipt');
-                      if (punchClockData) {
-                        try {
-                          const data = JSON.parse(punchClockData);
-                          setManualEntryData({
-                            ...manualEntryData,
-                            serviceType: data.serviceType || '',
-                            amount: data.amount || '',
-                            description: data.description || '',
-                            date: data.date || new Date().toISOString().slice(0, 10),
-                            clientId: data.clientId || '',
-                          });
-                          sessionStorage.removeItem('punchClockReceipt');
-                        } catch (error) {
-                          console.error('Failed to parse punch clock data:', error);
-                        }
-                      }
-                    }
-                  }}
-                  className="neo-button text-sm px-4 py-2 flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  {showManualEntry ? 'Close Form' : 'Manual Entry'}
-                </button>
-              </div>
-
-              {showManualEntry && (
-                <div className="neo-inset p-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                        Document Type
-                      </label>
-                      <select
-                        value={manualEntryData.documentType}
-                        onChange={(e) => setManualEntryData({ ...manualEntryData, documentType: e.target.value as any })}
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
-                      >
-                        <option value="receipt">Receipt</option>
-                        <option value="invoice">Invoice</option>
-                        <option value="quote">Quote</option>
-                        <option value="estimate">Estimate</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                        Service Type
-                      </label>
-                      <input
-                        type="text"
-                        value={manualEntryData.serviceType}
-                        onChange={(e) => setManualEntryData({ ...manualEntryData, serviceType: e.target.value })}
-                        placeholder="e.g., Consultation, Review, Analysis"
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                        Amount (USD)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={manualEntryData.amount}
-                        onChange={(e) => setManualEntryData({ ...manualEntryData, amount: e.target.value })}
-                        placeholder="0.00"
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                        Date
-                      </label>
-                      <input
-                        type="date"
-                        value={manualEntryData.date}
-                        onChange={(e) => setManualEntryData({ ...manualEntryData, date: e.target.value })}
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                        Client ID (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={manualEntryData.clientId}
-                        onChange={(e) => setManualEntryData({ ...manualEntryData, clientId: e.target.value })}
-                        placeholder="Enter client ID or leave blank"
-                        className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-2 font-primary uppercase tracking-wide">
-                      Description
-                    </label>
-                    <textarea
-                      value={manualEntryData.description}
-                      onChange={(e) => setManualEntryData({ ...manualEntryData, description: e.target.value })}
-                      placeholder="Brief description of the service..."
-                      rows={3}
-                      className="w-full px-4 py-3 font-primary neo-inset focus:ring-2 focus:ring-foreground/20 transition-all resize-none"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() => {
-                        setShowManualEntry(false);
-                        setManualEntryData({
-                          documentType: 'receipt',
-                          serviceType: '',
-                          amount: '',
-                          description: '',
-                          date: new Date().toISOString().slice(0, 10),
-                          clientId: '',
-                        });
-                      }}
-                      className="neo-button px-6 py-3 font-primary"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={async () => {
-                        try {
-                          if (!manualEntryData.amount || parseFloat(manualEntryData.amount) <= 0) {
-                            alert('Please enter a valid amount');
-                            return;
-                          }
-
-                          const response = await fetch('/api/billing/receipts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              clientId: manualEntryData.clientId || undefined,
-                              documentType: manualEntryData.documentType,
-                              items: [{
-                                description: manualEntryData.description || manualEntryData.serviceType,
-                                serviceType: manualEntryData.serviceType || 'general',
-                                quantity: 1,
-                                unitPrice: parseFloat(manualEntryData.amount),
-                                totalPrice: parseFloat(manualEntryData.amount),
-                                taxable: false,
-                              }],
-                              subtotal: parseFloat(manualEntryData.amount),
-                              taxAmount: 0,
-                              totalAmount: parseFloat(manualEntryData.amount),
-                              paymentMethod: 'cash',
-                              paymentDate: manualEntryData.date,
-                              serviceDate: manualEntryData.date,
-                              status: 'draft',
-                              notes: manualEntryData.description,
-                            })
-                          });
-
-                          if (response.ok) {
-                            setShowManualEntry(false);
-                            setManualEntryData({
-                              documentType: 'receipt',
-                              serviceType: '',
-                              amount: '',
-                              description: '',
-                              date: new Date().toISOString().slice(0, 10),
-                              clientId: '',
-                            });
-                            alert(`${manualEntryData.documentType.charAt(0).toUpperCase() + manualEntryData.documentType.slice(1)} created successfully!`);
-                            loadTransactions();
-                          } else {
-                            const error = await response.json();
-                            alert(`Failed to create ${manualEntryData.documentType}: ${error.message || 'Unknown error'}`);
-                          }
-                        } catch (err) {
-                          console.error(`Error creating ${manualEntryData.documentType}:`, err);
-                          alert(`Error creating ${manualEntryData.documentType}`);
-                        }
-                      }}
-                      className="neo-button-active px-6 py-3 font-primary flex items-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Create {manualEntryData.documentType.charAt(0).toUpperCase() + manualEntryData.documentType.slice(1)}
-                    </button>
-                  </div>
+              {filteredTransactions.length === 0 && !isLoading && (
+                <div className="neo-container text-center py-16 mt-4">
+                  <div className="text-6xl mb-6">📊</div>
+                  <h3 className="text-xl font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
+                    No Transactions Found
+                  </h3>
+                  <p className="text-muted-foreground font-primary text-sm">
+                    {filters.searchTerm || filters.transactionType !== "all"
+                      ? "Try adjusting your filters to see more results."
+                      : "Create your first receipt or invoice to get started."}
+                  </p>
                 </div>
               )}
             </div>
+
+            {/* Overview Cards - Moved Below Transactions */}
+            <BillingOverviewCards analytics={analytics} />
           </div>
 
-          {/* Filtering & Search */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-            <FilteringControls
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-            />
+          {/* Right Sidebar - Quick Actions */}
+          <div className="space-y-6">
+            {/* Quick Actions Card */}
+            <div className="neo-container p-6 sticky top-6">
+              <h2 className="font-primary font-bold text-foreground uppercase tracking-wide text-lg mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-accent" />
+                Quick Actions
+              </h2>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="w-full neo-button-active text-left px-4 py-3 flex items-center gap-3 text-sm transition-transform hover:scale-[1.02]"
+                >
+                  <Receipt className="w-5 h-5" />
+                  <span>Create Receipt</span>
+                </button>
+                <button
+                  onClick={openInvoiceModal}
+                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm transition-transform hover:scale-[1.02]"
+                >
+                  <FileText className="w-5 h-5 text-accent" />
+                  <span>Create Invoice</span>
+                </button>
+                <button
+                  onClick={() => setShowTimeTracker(true)}
+                  className="w-full neo-button text-left px-4 py-3 flex items-center gap-3 text-sm transition-transform hover:scale-[1.02]"
+                >
+                  <Clock className="w-5 h-5 text-accent" />
+                  <span>Time Tracker</span>
+                </button>
+              </div>
+
+              {/* KPI Summary in Sidebar */}
+              <div className="mt-6 pt-6 border-t border-border">
+                <h3 className="font-primary font-bold text-foreground uppercase tracking-wide text-sm mb-3">
+                  KPI Summary
+                </h3>
+                <div className="space-y-3">
+                  <div className="neo-inset p-3 rounded">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-muted-foreground font-primary uppercase">Total Revenue</span>
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div className="text-xl font-bold text-foreground font-primary">
+                      ${analytics.totalRevenue.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="neo-inset p-3 rounded">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-muted-foreground font-primary uppercase">Pending</span>
+                      <FileText className="w-4 h-4 text-orange-600" />
+                    </div>
+                    <div className="text-xl font-bold text-foreground font-primary">
+                      {analytics.pendingInvoices}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-primary">
+                      ${analytics.pendingAmount.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="neo-inset p-3 rounded">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-muted-foreground font-primary uppercase">This Month</span>
+                      <TrendingUp className="w-4 h-4 text-accent" />
+                    </div>
+                    <div className="text-xl font-bold text-foreground font-primary">
+                      ${analytics.currentMonthRevenue.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {/* Transactions Table */}
-          <TransactionsTable
-            transactions={displayedTransactions}
-            onViewTransaction={handleViewReceipt}
-            onEditTransaction={handleEditReceipt}
-            onSendReceipt={handleSendReceipt}
-            onDeleteTransaction={handleDeleteReceipt}
-            onArchiveTransaction={handleArchiveReceipt}
-            isLoading={isLoading}
-            showViewAll={
-              !showAllTransactions && filteredTransactions.length > 5
-            }
-            onViewAllClick={() => setShowAllTransactions(true)}
-          />
-
-          {/* Show Less Button for All Transactions View */}
-          {showAllTransactions && filteredTransactions.length > 5 && (
-            <div className="text-center mt-6">
-              <button
-                onClick={() => setShowAllTransactions(false)}
-                className="neo-button text-accent hover:bg-accent hover:text-foreground px-6 py-3 font-primary uppercase tracking-wide text-sm transition-all"
-              >
-                Show Recent Only
-              </button>
-            </div>
-          )}
-
-          {filteredTransactions.length === 0 && !isLoading && (
-            <div className="neo-container text-center py-16 mt-4">
-              <div className="text-6xl mb-6">📊</div>
-              <h3 className="text-xl font-bold text-foreground mb-3 font-primary uppercase tracking-wide">
-                No Transactions Found
-              </h3>
-              <p className="text-muted-foreground font-primary text-sm">
-                {filters.searchTerm || filters.transactionType !== "all"
-                  ? "Try adjusting your filters to see more results."
-                  : "Create your first receipt or invoice to get started."}
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Receipt Details Modal */}
@@ -1483,7 +1756,7 @@ export default function ServicesBillingPage() {
         )}
 
         {/* Create Receipt Modal */}
-        <CreateReceiptModal
+        <BillingReceiptModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onReceiptCreated={handleReceiptCreated}
@@ -1491,19 +1764,34 @@ export default function ServicesBillingPage() {
 
         {/* Edit Receipt Modal */}
         {showEditModal && editingReceipt && (
-          <CreateReceiptModal
+          <BillingReceiptModal
             isOpen={showEditModal}
             onClose={() => {
               setShowEditModal(false);
               setEditingReceipt(null);
             }}
             onReceiptCreated={handleReceiptUpdate}
-            editMode={true}
             existingReceiptId={editingReceipt.id}
+            initialClientId={editingReceipt.clientId}
           />
         )}
+
+        {/* Create Invoice Modal */}
+        <InvoiceModal
+          isOpen={showInvoiceModal}
+          onClose={() => setShowInvoiceModal(false)}
+          client={invoiceClient}
+          clients={clients}
+          onClientChange={setInvoiceClient}
+          onInvoiceCreated={handleInvoiceCreated}
+        />
+
+        {/* Time Tracker Modal */}
+        <TimeTrackerModal
+          isOpen={showTimeTracker}
+          onClose={() => setShowTimeTracker(false)}
+        />
       </div>
     </CRMLayout>
   );
 }
-

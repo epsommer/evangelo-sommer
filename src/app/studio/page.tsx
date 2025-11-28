@@ -9,6 +9,7 @@ import Toolbar from "./components/Toolbar";
 import PropertiesPanel from "./components/PropertiesPanel";
 import { useStudioStore } from "./hooks/useStudioStore";
 import "@/app/neomorphic.css";
+import AppPageLayout from "@/components/AppPageLayout";
 
 // Dynamically import ThreeScene with SSR disabled (Three.js doesn't work on server)
 const ThreeScene = dynamic(() => import("./components/ThreeScene"), {
@@ -182,31 +183,25 @@ export default function StudioPage() {
   }
 
   return (
-    <div
-      className={`min-h-screen ${isDark ? 'dark-mode' : ''}`}
+    <AppPageLayout
       style={{
         backgroundColor: isDark ? "#1c1917" : "#EBECF0",
         transition: "background-color 300ms ease-in-out"
       }}
+      contentClassName=""
     >
-      {/* Header */}
-      <header className="absolute top-0 left-0 right-0 z-10 p-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1
-            className="text-2xl font-bold font-space-grotesk uppercase"
-            style={{
-              color: isDark ? '#d1d5db' : '#6C7587',
-              transition: 'color 300ms ease-in-out'
-            }}
-          >
-            3D Studio
-          </h1>
-        </div>
-
-        {/* Transform Mode Selector with Icons */}
+      <div
+        className={`min-h-screen ${isDark ? 'dark-mode' : ''}`}
+        style={{
+          backgroundColor: isDark ? "#1c1917" : "#EBECF0",
+          transition: "background-color 300ms ease-in-out"
+        }}
+      >
+      {/* Secondary Controls */}
+      <div className="flex items-center justify-between px-6 pb-4">
         <div className="flex items-center gap-2">
           <span
-            className="text-sm font-space-grotesk mr-2"
+            className="text-sm font-space-grotesk"
             style={{ color: isDark ? '#9ca3af' : '#8992A5' }}
           >
             Mode:
@@ -246,7 +241,6 @@ export default function StudioPage() {
           ))}
         </div>
 
-        {/* Hamburger Menu Button */}
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
@@ -349,10 +343,10 @@ export default function StudioPage() {
             </div>
           )}
         </div>
-      </header>
+      </div>
 
       {/* Main Layout */}
-      <div className="flex h-screen pt-20">
+      <div className="flex h-[calc(100vh-5rem)]">
         {/* Left Toolbar */}
         <aside className="w-16 p-2">
           <Toolbar isDark={isDark} />
@@ -606,6 +600,7 @@ export default function StudioPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AppPageLayout>
   );
 }

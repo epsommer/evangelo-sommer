@@ -27,18 +27,25 @@ class BillingManager {
 
   // Receipt Management
   async createReceipt(data: CreateReceiptData): Promise<Receipt> {
+    console.log('[BillingManager] createReceipt called with clientId:', data.clientId);
+
     // CRITICAL: Always fetch latest client data
+    console.log('[BillingManager] Fetching client data...');
     const client = await this.getClientById(data.clientId);
-    
+
     if (!client) {
+      console.error('[BillingManager] Client not found for ID:', data.clientId);
       throw new Error('Client not found');
     }
-    
+    console.log('[BillingManager] Client found:', { id: client.id, name: client.name, email: client.email });
+
     // Verify client has required info for receipt
     if (!client.email || !client.name) {
+      console.error('[BillingManager] Client missing required info:', { hasEmail: !!client.email, hasName: !!client.name });
       throw new Error('Client missing required information for receipt generation');
     }
 
+    console.log('[BillingManager] Generating receipt items...');
     // Generate receipt items with IDs
     const items: ReceiptItem[] = data.items.map(item => ({
       ...item,
@@ -49,10 +56,15 @@ class BillingManager {
     const subtotal = this.calculateSubtotal(items);
     const taxAmount = this.calculateTax(items);
     const totalAmount = subtotal + taxAmount;
-    
+    console.log('[BillingManager] Calculated totals:', { subtotal, taxAmount, totalAmount });
+
+    console.log('[BillingManager] Generating receipt number...');
+    const receiptNumber = await this.generateReceiptNumber();
+    console.log('[BillingManager] Receipt number:', receiptNumber);
+
     const receipt: Receipt = {
       id: this.generateId(),
-      receiptNumber: await this.generateReceiptNumber(),
+      receiptNumber: receiptNumber,
       clientId: data.clientId,
       client: client, // Use fresh client data
       conversationId: data.conversationId,
@@ -68,8 +80,12 @@ class BillingManager {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
-    return await this.saveReceipt(receipt);
+
+    console.log('[BillingManager] Saving receipt to database...');
+    const savedReceipt = await this.saveReceipt(receipt);
+    console.log('[BillingManager] Receipt saved successfully:', savedReceipt.id);
+
+    return savedReceipt;
   }
 
   async createInvoice(data: CreateInvoiceData): Promise<Invoice> {
@@ -606,14 +622,18 @@ class BillingManager {
 
   // Data persistence (mock implementation - replace with actual database)
   private async saveReceipt(receipt: Receipt): Promise<Receipt> {
+    console.log('[BillingManager] saveReceipt called for receipt:', receipt.receiptNumber);
     try {
       // Only use Prisma on server-side
       if (typeof window === 'undefined') {
+        console.log('[BillingManager] Running on server-side, importing Prisma...');
         // Import Prisma client dynamically to avoid circular dependencies
         const { getPrismaClient } = await import('./prisma');
         const prisma = getPrismaClient();
-      
+        console.log('[BillingManager] Prisma client available:', !!prisma);
+
       if (prisma) {
+        console.log('[BillingManager] Creating document in database...');
         // Save to database as a Document with type RECEIPT
         const savedDocument = await prisma.document.create({
           data: {
@@ -639,23 +659,30 @@ class BillingManager {
             metadata: undefined
           }
         });
-        
+
+        console.log('[BillingManager] Document created successfully, ID:', savedDocument.id);
           // Update receipt with database ID
           receipt.id = savedDocument.id;
+        console.log('[BillingManager] Receipt ID updated to:', receipt.id);
         }
       }
     } catch (error) {
-      console.error('Failed to save receipt to database:', error);
+      console.error('[BillingManager] Failed to save receipt to database:', error);
+      console.error('[BillingManager] Error stack:', (error as Error).stack);
       // Fall back to in-memory storage
     }
-    
+
+    console.log('[BillingManager] Saving to in-memory storage...');
     // Also save to memory for backward compatibility
     const existingIndex = this.receipts.findIndex(r => r.id === receipt.id);
     if (existingIndex >= 0) {
       this.receipts[existingIndex] = receipt;
+      console.log('[BillingManager] Updated existing in-memory receipt');
     } else {
       this.receipts.push(receipt);
+      console.log('[BillingManager] Added new in-memory receipt');
     }
+    console.log('[BillingManager] Receipt save complete, returning receipt');
     return receipt;
   }
 
@@ -669,21 +696,66 @@ class BillingManager {
     return invoice;
   }
 
-  // Client data fetching - integrates with clientManager
+  // Client data fetching - directly from database to avoid auth issues
   private async getClientById(clientId: string): Promise<Client | null> {
     try {
-      // Import clientManager dynamically to avoid circular dependencies
-      const { clientManager } = await import('./client-config');
-      const client = await clientManager.getClient(clientId);
-      
-      if (!client) {
-        console.error(`Client with ID ${clientId} not found`);
-        return null;
+      console.log('[BillingManager] Fetching client directly from database...');
+
+      // Only use Prisma on server-side
+      if (typeof window === 'undefined') {
+        const { getPrismaClient } = await import('./prisma');
+        const { transformClientRecordForResponse } = await import('./json-fields');
+        const prisma = getPrismaClient();
+
+        if (!prisma) {
+          console.error('[BillingManager] Prisma client not available');
+          return null;
+        }
+
+        console.log('[BillingManager] Querying database for client:', clientId);
+        const clientRecord = await prisma.clientRecord.findUnique({
+          where: { id: clientId },
+          include: {
+            participant: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                role: true
+              }
+            },
+            serviceHistory: {
+              take: 10,
+              orderBy: { serviceDate: 'desc' }
+            },
+            serviceContracts: {
+              orderBy: [
+                { isPrimary: 'desc' },
+                { isActive: 'desc' },
+                { createdAt: 'asc' }
+              ]
+            }
+          }
+        });
+
+        if (!clientRecord) {
+          console.error(`[BillingManager] Client with ID ${clientId} not found in database`);
+          return null;
+        }
+
+        console.log('[BillingManager] Client record found, transforming...');
+        const client = transformClientRecordForResponse(clientRecord);
+        console.log('[BillingManager] Client transformed:', { id: client.id, name: client.name, email: client.email });
+
+        return client;
       }
-      
-      return client;
+
+      console.error('[BillingManager] Cannot fetch client on client-side');
+      return null;
     } catch (error) {
-      console.error('Error fetching client:', error);
+      console.error('[BillingManager] Error fetching client:', error);
+      console.error('[BillingManager] Error stack:', (error as Error).stack);
       return null;
     }
   }
@@ -871,14 +943,29 @@ class BillingManager {
         totalAmount: totalAmount
       };
 
+      // Determine the new document status based on receipt status
+      let newDocStatus = existingDoc.status;
+      let newPaidDate = existingDoc.paidDate;
+
+      if (updateData.status === 'paid') {
+        newDocStatus = 'PAID';
+        newPaidDate = new Date();
+      } else if (updateData.status === 'draft') {
+        newDocStatus = 'DRAFT';
+        newPaidDate = null;
+      } else if (updateData.status === 'sent') {
+        newDocStatus = 'SENT';
+        newPaidDate = null;
+      }
+
       // Update the document
       const updatedDoc = await prisma.document.update({
         where: { id: receiptId },
         data: {
           content: JSON.stringify(updatedReceiptData),
           amount: totalAmount,
-          status: updateData.status === 'paid' ? 'PAID' : existingDoc.status,
-          paidDate: updateData.status === 'paid' ? new Date() : (updateData.status === 'issued' ? null : existingDoc.paidDate),
+          status: newDocStatus,
+          paidDate: newPaidDate,
           updatedAt: new Date()
         },
         include: { client: true }

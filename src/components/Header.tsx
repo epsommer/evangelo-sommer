@@ -1,15 +1,17 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { Search, Calendar, Clock, User, Settings, LogOut, Command, Menu, Heart, X, Bell } from "lucide-react"
+import React, { useState, useEffect, useMemo } from "react"
+import { Search, Calendar, Clock, User, Settings, LogOut, Command, Menu, Heart, X, Bell, Activity, Palette, Box, Users, PiggyBank, Megaphone, Sparkles, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import AccountSettingsModal, { AccountSettings } from "@/components/AccountSettingsModal"
 import PreferencesModal, { SystemPreferences } from "@/components/PreferencesModal"
 import UserStatusIndicator, { StatusSelector } from "@/components/UserStatusIndicator"
+import ActivityLogModal from "@/components/ActivityLogModal"
+import NotificationsModal from "@/components/NotificationsModal"
 import Image from "next/image"
 
 const CURRENT_VERSION = "v1.2.0"
@@ -18,6 +20,17 @@ const deployments = [
   { id: "production", name: "Production", url: "https://evangelosommer.com", status: "active" },
   { id: "staging", name: "Staging", url: "https://staging.evangelosommer.com", status: "active" },
   { id: "development", name: "Development", url: "http://localhost:3001", status: "active" },
+]
+
+const appLinks = [
+  { id: 'sammy', name: 'Sammy', description: 'Samples, portfolio, graphics & finished creative', icon: Palette, href: '/sammy', color: 'var(--neomorphic-accent)', background: 'rgba(212, 175, 55, 0.16)' },
+  { id: 'tommy', name: 'Tommy', description: '3D environments, printing, character design & animations', icon: Box, href: '/tommy', color: '#8B4513', background: 'rgba(139, 69, 19, 0.16)' },
+  { id: 'crm', name: 'B.E.C.K.Y. CRM', description: 'Business Engagement & Client Knowledge Yield', icon: Users, href: '/dashboard', color: '#4A5568', background: 'rgba(74, 85, 104, 0.16)' },
+  { id: 'mrs-finster', name: 'M.R.S. Finster', description: 'Money Resilience Suite — Financial Insights, Navigation, Tracking, Expense Reporting', icon: PiggyBank, href: '/mrs-finster', color: '#0D9488', background: 'rgba(13, 148, 136, 0.16)' },
+  { id: 'sully', name: 'S.U.L.L.Y.', description: 'Sales Utility for Leads, Loyalty, and Yield', icon: Megaphone, href: '/sully', color: '#DC2626', background: 'rgba(220, 38, 38, 0.16)' },
+  { id: 'oracle', name: 'O.R.A.C.L.E.', description: 'Observational Relationship Astrology & Cosmology Lifecycle Engine', icon: Sparkles, href: '/oracle', color: '#2563EB', background: 'rgba(37, 99, 235, 0.16)' },
+  { id: 'buck', name: 'B.U.C.K.', description: 'Business Upside & Capital Knowledge', icon: Target, href: '/buck', color: '#7C3AED', background: 'rgba(124, 58, 237, 0.16)' },
+  { id: 'marcia', name: 'M.A.R.C.I.A.', description: 'Marketing, Advertising, Reach, Campaigns, Insights & Avatars', icon: Megaphone, href: '/marcia', color: '#0EA5E9', background: 'rgba(14, 165, 233, 0.16)' },
 ]
 
 interface ScheduledService {
@@ -34,14 +47,30 @@ interface HeaderProps {
   onMobileMenuToggle?: () => void;
   mobileMenuOpen?: boolean;
   sidebarCollapsed?: boolean;
+  hideCommands?: boolean;
+  hideNotifications?: boolean;
+  hidePreferences?: boolean;
+  hideMobileMenuToggle?: boolean;
 }
 
-const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed = false }: HeaderProps) => {
+const Header = ({
+  onMobileMenuToggle,
+  mobileMenuOpen = false,
+  sidebarCollapsed = false,
+  hideCommands = false,
+  hideNotifications = false,
+  hidePreferences = false,
+  hideMobileMenuToggle = false
+}: HeaderProps) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([]);
   const [showScheduleDropdown, setShowScheduleDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  
+  const [showActivityLog, setShowActivityLog] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,6 +79,72 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
   const [showWordmarkTooltip, setShowWordmarkTooltip] = useState(false);
   const [showVersionTooltip, setShowVersionTooltip] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [showAppMenu, setShowAppMenu] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("light");
+  const currentApp = useMemo(() => {
+    const path = pathname || '';
+    const matchId =
+      (path.startsWith('/sammy') && 'sammy') ||
+      (path.startsWith('/tommy') && 'tommy') ||
+      (path.startsWith('/gallery') && 'sammy') || // legacy path
+      (path.startsWith('/studio') && 'tommy') || // legacy path
+      (path.startsWith('/mrs-finster') && 'mrs-finster') ||
+      (path.startsWith('/sully') && 'sully') ||
+      (path.startsWith('/oracle') && 'oracle') ||
+      (path.startsWith('/buck') && 'buck') ||
+      (path.startsWith('/marcia') && 'marcia') ||
+      (
+        (
+          path.startsWith('/dashboard') ||
+          path.startsWith('/clients') ||
+          path.startsWith('/conversations') ||
+          path.startsWith('/billing') ||
+          path.startsWith('/time-manager') ||
+          path.startsWith('/goals') ||
+          path.startsWith('/service-lines') ||
+          path.startsWith('/services') ||
+          path.startsWith('/crm') ||
+          path.startsWith('/planner') ||
+          path.startsWith('/security')
+        ) && 'crm'
+      ) ||
+      'crm';
+
+    const fallback = {
+      id: 'crm',
+      name: 'B.E.C.K.Y. CRM',
+      description: 'Business Engagement & Client Knowledge Yield',
+      icon: Heart,
+      href: '/dashboard',
+      color: '#4A5568',
+      background: 'rgba(74, 85, 104, 0.16)',
+    };
+
+    return appLinks.find(app => app.id === matchId) || fallback;
+  }, [pathname]);
+
+  // Fetch notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const response = await fetch('/api/notifications?limit=1');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setNotificationCount(data.unreadCount || 0);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch notification count:', error);
+      }
+    };
+
+    fetchNotificationCount();
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Track theme changes for ES monogram styling
   useEffect(() => {
@@ -57,6 +152,7 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
       const theme = localStorage.getItem('color-theme') || 'light';
       const willBeDark = theme === 'true-night' || theme === 'mocha';
       setIsDark(willBeDark);
+      setCurrentTheme(theme);
     };
 
     updateTheme();
@@ -77,24 +173,25 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
       window.removeEventListener('storage', updateTheme);
     };
   }, []);
-  
+
   // Click outside to close dropdown handler
   useEffect(() => {
-    if (showProfileDropdown || showScheduleDropdown) {
+    if (showProfileDropdown || showScheduleDropdown || showAppMenu) {
       const handleClickOutside = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
-        const clickedInDropdown = target.closest('.modal-tactical') || target.closest('[data-dropdown-trigger]');
+        const clickedInDropdown = target.closest('.modal-tactical') || target.closest('[data-dropdown-trigger]') || target.closest('[data-app-menu]');
         
         if (!clickedInDropdown) {
           setShowScheduleDropdown(false);
           setShowProfileDropdown(false);
+          setShowAppMenu(false);
         }
       };
       
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [showProfileDropdown, showScheduleDropdown]);
+  }, [showProfileDropdown, showScheduleDropdown, showAppMenu]);
   
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -222,57 +319,121 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
     }
   };
 
+  const getLogoFilter = () => {
+    if (currentTheme === 'overkast') {
+      return "invert(0.35) saturate(1.2) brightness(0.65)";
+    }
+    if (currentTheme === 'gilded-meadow') {
+      return "invert(0.5) saturate(2) hue-rotate(-10deg) brightness(0.9)";
+    }
+    if (isDark) {
+      return "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)";
+    }
+    return "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)";
+  };
+
   return (
     <>
-    <header className={`fixed top-0 left-0 right-0 z-50 neo-container flex items-center justify-between px-2 sm:px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-20'} ${mobileMenuOpen ? 'lg:opacity-100' : ''} ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-[70] neo-container flex items-center justify-between px-2 sm:px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-20'} ${mobileMenuOpen ? 'lg:opacity-100' : ''}`}>
       <div className={`flex items-center space-x-1 sm:space-x-2 md:space-x-8 relative z-[60] transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : 'opacity-100'}`}>
         {/* Mobile Menu Toggle - Leftmost on Mobile */}
-        <button
-          onClick={onMobileMenuToggle}
-          className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] ${
-            mobileMenuOpen
-              ? 'opacity-100 pointer-events-auto'
-              : 'opacity-100'
-          }`}
-          aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
-        >
-          {mobileMenuOpen ? (
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-          ) : (
-            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-          )}
-        </button>
+        {!hideMobileMenuToggle && (
+          <button
+            onClick={onMobileMenuToggle}
+            className={`lg:hidden neo-button-sm p-1.5 sm:p-2 transition-all duration-200 relative z-[70] ${
+              mobileMenuOpen
+                ? 'opacity-100 pointer-events-auto'
+                : 'opacity-100'
+            }`}
+            aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+          >
+            {mobileMenuOpen ? (
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+            ) : (
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+            )}
+          </button>
+        )}
 
-        {/* ES Monogram - Mobile Only */}
-        <button
-          onClick={() => router.push('/select')}
-          className="lg:hidden flex items-center hover:opacity-80 transition-opacity cursor-pointer"
-        >
-          <div className={`neomorphic-logo ${isDark ? 'dark-mode' : ''}`} style={{ width: '32px', height: '32px' }}>
-            <div className="relative w-4 h-4">
-              <Image
-                src="/EvangeloSommer-ES-Monogram.svg"
-                alt="ES Monogram"
-                fill
-                className="object-contain"
-                style={{
-                  filter: isDark
-                    ? "invert(0.7) saturate(2) hue-rotate(-10deg) brightness(1)"
-                    : "invert(0.6) saturate(2) hue-rotate(-10deg) brightness(0.95)",
-                }}
-              />
+        {/* ES Monogram & App Switcher */}
+        <div className="relative" data-app-menu>
+          <button
+            onClick={() => setShowAppMenu(prev => !prev)}
+            className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
+            data-dropdown-trigger
+            aria-haspopup="menu"
+            aria-expanded={showAppMenu}
+          >
+            <div className={`neomorphic-logo ${isDark ? 'dark-mode' : ''}`} style={{ width: '32px', height: '32px' }}>
+              <div className="relative w-4 h-4">
+                <Image
+                  src="/EvangeloSommer-ES-Monogram.svg"
+                  alt="ES Monogram"
+                  fill
+                  className="object-contain"
+                  style={{
+                    filter: getLogoFilter(),
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
 
-        {/* B.E.C.K.Y. Wordmark - Mobile and Desktop */}
+          {showAppMenu && (
+            <div
+              className="neo-dropdown absolute left-0 mt-3 w-72 sm:w-80 z-[70] rounded-xl p-3 shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-semibold text-foreground">Switch App</div>
+                <div className="text-[11px] text-muted-foreground">evangelosommer.com</div>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {appLinks.map(app => {
+                  const Icon = app.icon;
+                  return (
+                    <button
+                      key={app.id}
+                      className="neo-button-menu w-full flex items-center gap-3 p-3 rounded-lg text-left"
+                      onClick={() => {
+                        setShowAppMenu(false);
+                        router.push(app.href);
+                      }}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: app.background }}
+                      >
+                        <Icon className="h-5 w-5" style={{ color: app.color }} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-foreground">{app.name}</div>
+                        <div className="text-xs text-muted-foreground">{app.description}</div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Wordmark - Mobile and Desktop */}
         <button
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push(currentApp.href)}
           className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4 hover:opacity-80 transition-opacity cursor-pointer"
         >
-          <Heart className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-pink-500 dark:text-pink-400 flex-shrink-0" />
+          {(() => {
+            const Icon = currentApp.icon || Heart;
+            return (
+              <Icon
+                className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 flex-shrink-0"
+                style={{ color: currentApp.color || 'var(--neomorphic-accent)' }}
+              />
+            );
+          })()}
           <div className="tk-lores-9-wide text-xs sm:text-sm lg:text-lg font-bold text-foreground tracking-wide">
-            B.E.C.K.Y.
+            {currentApp.name}
           </div>
         </button>
 
@@ -289,105 +450,37 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
         </button>
       </div>
       <div className={`flex items-center gap-1 sm:gap-2 relative z-10 transition-opacity duration-200 ${mobileMenuOpen ? 'opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : 'opacity-100'}`}>
-        <button
-          className="neo-button flex items-center px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 group"
-          onClick={() => {
-            // TODO: Implement CommandPalette toggle
-            console.log('Command Palette triggered')
-          }}
-        >
-          <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
-          <span className="hidden md:inline text-xs sm:text-sm">Commands</span>
-          <kbd className="ml-1 md:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
-            <span className="text-xs hidden lg:inline">⌘</span>K
-          </kbd>
-        </button>
+        {!hideCommands && (
+          <button
+            className="neo-button flex items-center px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 group"
+            onClick={() => {
+              // TODO: Implement CommandPalette toggle
+              console.log('Command Palette triggered')
+            }}
+          >
+            <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+            <span className="hidden md:inline text-xs sm:text-sm">Commands</span>
+            <kbd className="ml-1 md:ml-2 inline-flex h-4 sm:h-5 select-none items-center gap-0.5 sm:gap-1 rounded border bg-muted px-1 sm:px-1.5 font-mono text-[9px] sm:text-[10px] font-medium text-muted-foreground opacity-100">
+              <span className="text-xs hidden lg:inline">⌘</span>K
+            </kbd>
+          </button>
+        )}
 
-        {/* Notifications Dropdown */}
-        <div className="relative">
+        {/* Notifications Button */}
+        {!hideNotifications && (
           <button
             className="neo-button flex items-center px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 relative"
-            onClick={() => setShowScheduleDropdown(!showScheduleDropdown)}
+            onClick={() => setShowNotifications(true)}
           >
             <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
             <span className="hidden md:inline text-xs sm:text-sm">Notifications</span>
-            {scheduledServices.length > 0 && (
-              <div className="ml-1 md:ml-2 neo-badge-accent px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded-full">
-                {scheduledServices.length}
-              </div>
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </span>
             )}
           </button>
-
-          {showScheduleDropdown && (
-            <div className="neo-dropdown absolute right-0 top-full mt-2 w-96 z-[60] rounded-xl">
-              <div className="p-4 bg-background border-b border-border">
-                <h3 className="text-sm font-semibold text-foreground mb-0">
-                  Notifications
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Events, reminders, drafts & more
-                </p>
-              </div>
-              <div className="max-h-80 overflow-y-auto bg-background">
-                {scheduledServices.length > 0 ? (
-                  scheduledServices.map(service => (
-                    <div key={service.id} className="neo-card m-2 p-3 hover:shadow-lg transition-all duration-300">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-foreground text-sm font-medium">
-                          {service.service}
-                        </span>
-                        <div className={`px-2 py-1 text-xs rounded-full ${
-                          service.priority === 'high' ? 'bg-red-500/20 text-red-600 dark:text-red-400' :
-                          service.priority === 'medium' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' :
-                          'bg-green-500/20 text-green-600 dark:text-green-400'
-                        }`}>
-                          {service.priority.charAt(0).toUpperCase() + service.priority.slice(1)}
-                        </div>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {format(new Date(service.scheduledDate), 'MMM dd, HH:mm')}
-                          </span>
-                        </div>
-                        <div className="text-xs">
-                          Client: {service.clientName}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-6 text-center">
-                    <div className="text-center p-4">
-                      <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-50" />
-                      <div className="text-muted-foreground text-sm">
-                        No notifications
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        You're all caught up!
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              {scheduledServices.length > 0 && (
-                <div className="p-4 bg-background border-t border-border">
-                  <button
-                    onClick={() => {
-                      // TODO: Navigate to notifications page
-                      setShowScheduleDropdown(false);
-                    }}
-                    className="neo-button w-full text-xs py-2 flex items-center justify-center"
-                  >
-                    View All Notifications
-                    <Bell className="w-3 h-3 ml-2" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        )}
 
         <div className="flex items-center gap-1 sm:gap-2 relative">
           <div className="text-right hidden md:block">
@@ -453,16 +546,30 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
                   <User className="h-4 w-4" />
                   <span className="font-medium">Account Settings</span>
                 </button>
+                {!hidePreferences && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePreferences();
+                    }}
+                    className="neo-button-menu w-full flex items-center space-x-3 p-3 rounded-lg"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span className="font-medium">System Preferences</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handlePreferences();
+                    setShowProfileDropdown(false);
+                    setShowActivityLog(true);
                   }}
                   className="neo-button-menu w-full flex items-center space-x-3 p-3 rounded-lg"
                 >
-                  <Settings className="h-4 w-4" />
-                  <span className="font-medium">System Preferences</span>
+                  <Activity className="h-4 w-4" />
+                  <span className="font-medium">Activity Log</span>
                 </button>
 
                 <div className="h-px bg-border my-2"></div>
@@ -500,6 +607,18 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen = false, sidebarCollapsed =
         isOpen={showPreferences}
         onClose={() => setShowPreferences(false)}
         onSave={handlePreferencesSave}
+      />
+
+      {/* Activity Log Modal */}
+      <ActivityLogModal
+        isOpen={showActivityLog}
+        onClose={() => setShowActivityLog(false)}
+      />
+
+      {/* Notifications Modal */}
+      <NotificationsModal
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
       />
 
       {/* Deployments Dropdown */}

@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Star, Send, CheckCircle, Clock, XCircle, Eye, EyeOff, Award, Search, Filter, Plus, History } from 'lucide-react'
+import { Star, Send, CheckCircle, Clock, XCircle, Eye, EyeOff, Award, Search, Filter, Plus, History, Upload, Download } from 'lucide-react'
 import CRMLayout from '@/components/CRMLayout'
 import TestimonialRequestModal from '@/components/TestimonialRequestModal'
+import ImportTestimonialModal from '@/components/ImportTestimonialModal'
 
 interface Testimonial {
   id: string
@@ -46,6 +47,7 @@ const TestimonialsPage = () => {
   const [ratingFilter, setRatingFilter] = useState<number>(0)
   const [visibilityFilter, setVisibilityFilter] = useState<string>('all')
   const [showRequestModal, setShowRequestModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [clients, setClients] = useState<Client[]>([])
 
@@ -279,13 +281,24 @@ const TestimonialsPage = () => {
               Manage client testimonials and reviews
             </p>
           </div>
-          <button
-            className="neo-button px-2 sm:px-4 py-2 uppercase tracking-wide transition-transform hover:scale-[1.02] text-xs sm:text-sm whitespace-nowrap"
-            onClick={() => setShowRequestModal(true)}
-          >
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden xs:inline">Request </span>Testimonial
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              className="neo-button h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 leading-none transition-transform hover:scale-[1.02] flex items-center justify-center"
+              style={{ padding: '12px' }}
+              onClick={() => setShowImportModal(true)}
+              aria-label="Import testimonials"
+            >
+              <Download className="h-6 w-6 sm:h-7 sm:w-7" />
+            </button>
+            <button
+              className="neo-button-active h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 leading-none transition-transform hover:scale-[1.02] flex items-center justify-center"
+              style={{ padding: '12px' }}
+              onClick={() => setShowRequestModal(true)}
+              aria-label="Request testimonial"
+            >
+              <Plus className="h-6 w-6 sm:h-7 sm:w-7" />
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -569,6 +582,13 @@ const TestimonialsPage = () => {
         client={selectedClient}
         clients={clients}
         onRequestSent={loadTestimonials}
+      />
+
+      <ImportTestimonialModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        clients={clients}
+        onImported={loadTestimonials}
       />
     </CRMLayout>
   )

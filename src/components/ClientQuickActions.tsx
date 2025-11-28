@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { MessageSquare, Calendar, Receipt, StickyNote } from 'lucide-react'
+import { MessageSquare, Calendar, Receipt, StickyNote, Clock } from 'lucide-react'
 import { Client } from '@/types/client'
 
 interface ClientQuickActionsProps {
@@ -10,6 +10,7 @@ interface ClientQuickActionsProps {
   onScheduleAppointment: () => void
   onCreateReceipt?: () => void
   onAddNote?: () => void
+  onTimeTracker?: () => void
 }
 
 const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
@@ -17,7 +18,8 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
   onMessageClient,
   onScheduleAppointment,
   onCreateReceipt,
-  onAddNote
+  onAddNote,
+  onTimeTracker
 }) => {
   return (
     <div className="neo-container transition-transform hover:scale-[1.01]">
@@ -73,6 +75,18 @@ const ClientQuickActions: React.FC<ClientQuickActionsProps> = ({
             <StickyNote className="h-6 w-6 text-foreground" />
             <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
               Note
+            </span>
+          </button>
+
+          {/* Time Tracker */}
+          <button
+            onClick={onTimeTracker}
+            className="neo-button aspect-square w-24 h-24 flex flex-col items-center justify-center gap-2 transition-transform hover:scale-[1.05]"
+            title="Track time for this client"
+          >
+            <Clock className="h-6 w-6 text-foreground" />
+            <span className="text-xs font-bold uppercase tracking-wide font-primary text-foreground">
+              Timer
             </span>
           </button>
         </div>

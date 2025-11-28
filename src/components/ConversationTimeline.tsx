@@ -81,16 +81,17 @@ export function ConversationTimeline({
   };
 
   const getRoleColor = (role: Message['role']) => {
-    switch (role) {
-      case 'client':
-        return 'border-l-gold bg-tactical-gold-light';
-      case 'you':
-        return 'border-l-dark-grey bg-hud-background-secondary';
-      case 'ai-draft':
-        return 'border-l-medium-grey bg-tactical-grey-100';
-      default:
-        return 'border-l-light-grey bg-white';
+    const normalized = (role || '').toLowerCase();
+    if (normalized === 'client') {
+      return 'border-l-4 border-l-[#15803d] bg-[#f0f7f2] dark:bg-[#0f2d1f] text-foreground';
     }
+    if (normalized === 'you') {
+      return 'border-l-4 border-l-[#1d4ed8] bg-[#e4ecff] dark:bg-[#0f172a] text-foreground';
+    }
+    if (normalized === 'ai-draft') {
+      return 'border-l-4 border-l-[#6b7280] bg-[#f4f4f5] dark:bg-[#111827] text-foreground';
+    }
+    return 'border-l-4 border-l-border bg-background text-foreground';
   };
 
   return (

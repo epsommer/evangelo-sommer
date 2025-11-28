@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { format } from 'date-fns'
 import { Plus, Edit, Trash2, Calendar, Clock } from 'lucide-react'
 
@@ -14,26 +14,34 @@ interface ClientNote {
 interface ClientNotesSectionProps {
   clientId: string
   clientName: string
+  refreshTrigger?: number
 }
 
-const ClientNotesSection: React.FC<ClientNotesSectionProps> = ({ clientId, clientName }) => {
+const ClientNotesSection: React.FC<ClientNotesSectionProps> = ({ clientId, clientName, refreshTrigger }) => {
   const [notes, setNotes] = useState<ClientNote[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [editingNote, setEditingNote] = useState<ClientNote | null>(null)
   const [newNoteContent, setNewNoteContent] = useState('')
   const [newNoteDate, setNewNoteDate] = useState('')
   const [newNoteTime, setNewNoteTime] = useState('')
+  const isInitialMount = useRef(true)
 
-  // Load notes from localStorage on mount
+  // Load notes from localStorage on mount and when refreshTrigger changes
   useEffect(() => {
     const storedNotes = localStorage.getItem(`client_notes_${clientId}`)
     if (storedNotes) {
       setNotes(JSON.parse(storedNotes))
+    } else {
+      setNotes([])
     }
-  }, [clientId])
+  }, [clientId, refreshTrigger])
 
-  // Save notes to localStorage whenever they change
+  // Save notes to localStorage whenever they change (but skip initial mount)
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
     localStorage.setItem(`client_notes_${clientId}`, JSON.stringify(notes))
   }, [notes, clientId])
 

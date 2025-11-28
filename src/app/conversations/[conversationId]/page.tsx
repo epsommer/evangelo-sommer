@@ -328,17 +328,25 @@ export default function ConversationPage() {
                           );
                         }
                       }}
-                      className={`max-w-2xl p-4 neo-container transition-all ${
+                      className={`max-w-2xl p-4 rounded-xl border transition-all ${
                         message.role === "YOU"
-                          ? "bg-accent/20"
+                          ? "neo-card text-foreground"
                           : message.role === "CLIENT"
-                          ? `cursor-pointer hover:ring-2 hover:ring-[var(--neomorphic-accent)]/50 ${
+                          ? `neo-card text-foreground cursor-pointer ${
                               selectedMessageForDraft === message.id
-                                ? "ring-2 ring-[var(--neomorphic-accent)] bg-[var(--neomorphic-accent)]/10"
+                                ? "ring-2 ring-[var(--neomorphic-accent)]"
                                 : ""
                             }`
-                          : ""
+                          : "neo-card text-foreground"
                       }`}
+                      style={{
+                        backgroundColor:
+                          message.role === "CLIENT"
+                            ? "rgba(34, 197, 94, 0.08)"
+                            : message.role === "YOU"
+                              ? "rgba(59, 130, 246, 0.08)"
+                              : undefined,
+                      }}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">

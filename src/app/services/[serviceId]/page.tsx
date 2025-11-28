@@ -172,7 +172,7 @@ export default function ServiceDashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {service.serviceTypes.map((serviceType, index) => {
               const typeClients = clients.filter((c) =>
-                c.serviceTypes.includes(serviceType),
+                c.serviceTypes.includes(serviceType.name),
               );
               return (
                 <div
@@ -184,7 +184,7 @@ export default function ServiceDashboard() {
                     style={{ backgroundColor: service.brand.primaryColor }}
                   />
                   <div className="font-bold text-foreground font-primary uppercase tracking-wide text-sm">
-                    {serviceType.toUpperCase()}
+                    {serviceType.name.toUpperCase()}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1 font-primary">
                     {typeClients.length} CLIENTS

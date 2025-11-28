@@ -16,7 +16,7 @@ export class ClientManager {
   // ===== CLIENT METHODS =====
   async getClients(): Promise<Client[]> {
     try {
-      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
       const response = await fetch(`${baseUrl}/api/clients`);
       if (!response.ok) {
         console.error('Failed to fetch clients:', response.status);
@@ -32,23 +32,41 @@ export class ClientManager {
 
   async getClient(id: string): Promise<Client | null> {
     try {
-      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
-      const response = await fetch(`${baseUrl}/api/clients/${id}`);
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
+      const url = `${baseUrl}/api/clients/${id}`;
+      console.log('[ClientManager] Fetching client from:', url);
+
+      const response = await fetch(url);
+      console.log('[ClientManager] Response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        console.error(`Failed to fetch client ${id}:`, response.status);
+        const errorText = await response.text();
+        console.error(`[ClientManager] Failed to fetch client ${id}:`, response.status, errorText);
         return null;
       }
+
       const result = await response.json();
+      console.log('[ClientManager] Fetch result:', { success: result.success, hasData: !!result.data });
+
+      if (result.success && result.data) {
+        console.log('[ClientManager] Client data:', {
+          id: result.data.id,
+          name: result.data.name,
+          email: result.data.email
+        });
+      }
+
       return result.success ? result.data : null;
     } catch (error) {
-      console.error(`Error fetching client ${id}:`, error);
+      console.error(`[ClientManager] Error fetching client ${id}:`, error);
+      console.error('[ClientManager] Error stack:', (error as Error).stack);
       return null;
     }
   }
 
   async saveClient(client: Client): Promise<Client | null> {
     try {
-      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
 
       // Try to create new client first (most common case)
       const createResponse = await fetch(`${baseUrl}/api/clients`, {
@@ -93,7 +111,7 @@ export class ClientManager {
 
   async deleteClient(id: string): Promise<boolean> {
     try {
-      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3002';
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
       const response = await fetch(`${baseUrl}/api/clients/${id}`, {
         method: 'DELETE'
       });

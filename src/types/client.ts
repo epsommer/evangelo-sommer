@@ -75,6 +75,11 @@ export interface Client {
     autoInvoicing: boolean; // Whether they can receive auto-generated invoices
     autoReceipts: boolean; // Whether they can receive auto-generated receipts
   };
+
+  // Personal information
+  occupation?: string;
+  hobbies?: string[]; // Array of hobby strings
+  dateOfBirth?: string; // ISO date string (optional)
 }
 
 // Enhanced Document interface

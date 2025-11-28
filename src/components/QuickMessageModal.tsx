@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, MessageSquare, Calendar, Clock, Plus } from 'lucide-react'
 import { Client, Message, Conversation } from '@/types/client'
+import { lockScroll, unlockScroll } from '@/lib/modal-scroll-lock'
 
 interface QuickMessageModalProps {
   isOpen: boolean
@@ -38,14 +39,14 @@ const QuickMessageModal: React.FC<QuickMessageModalProps> = ({
   // Disable body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      lockScroll()
     } else {
-      document.body.style.overflow = 'unset'
+      unlockScroll()
     }
 
     // Cleanup function to restore scroll on unmount
     return () => {
-      document.body.style.overflow = 'unset'
+      unlockScroll()
     }
   }, [isOpen])
 
@@ -178,8 +179,13 @@ const QuickMessageModal: React.FC<QuickMessageModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-      <div className="neo-container max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 z-[100]" onClick={onClose} />
+
+      {/* Modal container - accounts for sidebar on desktop */}
+      <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-start justify-center p-4 sm:p-6 md:p-8 overflow-y-auto pointer-events-none">
+        <div className="neo-container max-w-2xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-16rem)] mt-16 sm:mt-20 md:mt-16 mb-8 overflow-y-auto pointer-events-auto">
         {/* Header */}
         <div className="neo-inset border-b border-foreground/10 p-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -355,6 +361,7 @@ const QuickMessageModal: React.FC<QuickMessageModalProps> = ({
         </form>
       </div>
     </div>
+    </>
   )
 }
 

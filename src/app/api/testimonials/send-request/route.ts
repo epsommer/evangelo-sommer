@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import sgMail from '@sendgrid/mail'
 import { getServiceEmailConfig, ServiceEmailConfig, resolveServiceLineId } from '@/lib/service-email-config'
+import { logTestimonialRequested } from '@/lib/activity-logger'
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -93,6 +94,21 @@ export async function POST(request: NextRequest) {
       })
 
       console.log(`Testimonial request email sent to ${client.email} from ${serviceConfig.feedbackEmail}`)
+
+      // Log activity after successful email send
+      try {
+        await logTestimonialRequested({
+          testimonialId: testimonial.id,
+          clientId,
+          clientName: client.name,
+          serviceName: serviceName || serviceConfig.name,
+          userId: session?.user?.email,
+          userName: session?.user?.name || undefined,
+        });
+      } catch (logError) {
+        console.error('Failed to log testimonial request activity:', logError);
+        // Don't fail the request if activity logging fails
+      }
     } catch (emailError) {
       console.error('Error sending testimonial request email:', emailError)
       // Don't fail the request if email fails - the record is still created

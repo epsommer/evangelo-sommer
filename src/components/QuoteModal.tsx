@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Client } from '../types/client';
 import { QuoteItem, DEFAULT_BUSINESS_CONFIG } from '../types/billing';
+import { lockScroll, unlockScroll } from '../lib/modal-scroll-lock';
 // Removed billingManager import - use API endpoints instead
 
 interface QuoteModalProps {
@@ -94,13 +95,13 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
   // Disable body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      lockScroll()
     } else {
-      document.body.style.overflow = 'unset'
+      unlockScroll()
     }
 
     return () => {
-      document.body.style.overflow = 'unset'
+      unlockScroll()
     }
   }, [isOpen])
 
@@ -197,8 +198,13 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
   const serviceTemplates = ServiceTemplates[client.serviceId as keyof typeof ServiceTemplates] || ServiceTemplates.landscaping;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]" onClick={onClose} />
+
+      {/* Modal container - accounts for sidebar on desktop */}
+      <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[101] flex items-start justify-center p-4 sm:p-6 md:p-8 overflow-y-auto pointer-events-none">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-16rem)] mt-16 sm:mt-20 md:mt-16 mb-8 overflow-y-auto pointer-events-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-tactical-grey-800">
             Create Quote - {client.name}
@@ -484,5 +490,6 @@ export default function QuoteModal({ isOpen, onClose, client, onQuoteCreated }: 
         </form>
       </div>
     </div>
+    </>
   );
 }
