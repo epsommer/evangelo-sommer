@@ -271,8 +271,8 @@ div:not(.logo-button *):not(.tk-lores-9-wide):not(.tk-lores-9-wide *) {
   box-shadow: none;
 }
 
-/* Force square corners on all elements EXCEPT neomorphic design and gallery UI */
-*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui):not(.gallery-ui *):not(input[type="checkbox"].neo-checkbox + label):not(input[type="checkbox"].neo-checkbox + label::after):not(input[type="radio"].neo-radio + label):not(input[type="radio"].neo-radio + label::after) {
+/* Force square corners on most elements except neomorphic design */
+*:not(.neomorphic-button):not(.neomorphic-toggle):not(.neomorphic-toggle__indicator):not(.neomorphic-input):not(.neomorphic-submit):not(.neomorphic-logo):not(.neomorphic-card):not(.neomorphic-rounded):not(.neomorphic-rounded-lg):not(.neomorphic-rounded-full):not([class*="neomorphic"]):not([class*="neo-"]) {
   border-radius: 0 !important;
 }
 
@@ -362,8 +362,8 @@ textarea:focus:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui t
   box-shadow: none;
 }
 
-input::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
-textarea::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
+input:not([class*="neomorphic"]):not([class*="neo-"])::placeholder,
+textarea:not([class*="neomorphic"]):not([class*="neo-"])::placeholder {
   color: var(--text-secondary);
   font-family: var(--font-primary);                /* FF Utility Web Pro */
 }
@@ -869,8 +869,8 @@ button:disabled,
   box-shadow: var(--hud-glow-primary) !important;
 }
 
-[data-theme="dark"] input::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui input):not(.gallery-ui *),
-[data-theme="dark"] textarea::placeholder:not([class*="neomorphic"]):not([class*="neo-"]):not(.gallery-ui textarea):not(.gallery-ui *) {
+[data-theme="dark"] input:not([class*="neomorphic"]):not([class*="neo-"])::placeholder,
+[data-theme="dark"] textarea:not([class*="neomorphic"]):not([class*="neo-"])::placeholder {
   color: var(--hud-text-secondary) !important;
 }
 
