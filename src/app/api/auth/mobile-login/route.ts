@@ -69,17 +69,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
       );
     }
 
-    // Find user in database
-    // Note: Adjust this query based on your actual User model
-    const user = await prisma.participant.findUnique({
+    // Find admin user in database with hashed password
+    const user = await prisma.adminUser.findUnique({
       where: { email: email.toLowerCase() },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        // Add password field if you have it in your schema
-        // password: true,
+        passwordHash: true,
+        isActive: true,
       },
     });
 
@@ -93,36 +92,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
       );
     }
 
-    // Use same environment variables as web app
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
-    // Validate required environment variables
-    if (!ADMIN_PASSWORD) {
-      console.error('[Mobile Login] ADMIN_PASSWORD environment variable not set');
+    // Check if user is active
+    if (!user.isActive) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Server configuration error',
-        },
-        { status: 500 }
-      );
-    }
-
-    // Optionally restrict to admin email only
-    if (ADMIN_EMAIL && email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-      console.log(`[Mobile Login] Access denied for ${email} - not admin`);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid credentials',
+          error: 'Account is disabled',
         },
         { status: 401 }
       );
     }
 
-    // Verify password matches environment variable
-    if (password !== ADMIN_PASSWORD) {
+    // Verify password with bcrypt
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
       console.log('[Mobile Login] Invalid password');
       return NextResponse.json(
         {
@@ -217,14 +200,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<AuthRespon
       role: string;
     };
 
-    // Fetch user from database
-    const user = await prisma.participant.findUnique({
+    // Fetch admin user from database
+    const user = await prisma.adminUser.findUnique({
       where: { id: decoded.userId },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        isActive: true,
       },
     });
 
@@ -235,6 +219,17 @@ export async function GET(request: NextRequest): Promise<NextResponse<AuthRespon
           error: 'User not found',
         },
         { status: 404 }
+      );
+    }
+
+    // Check if user is still active
+    if (!user.isActive) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Account is disabled',
+        },
+        { status: 401 }
       );
     }
 
