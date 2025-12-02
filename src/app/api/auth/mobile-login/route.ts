@@ -12,6 +12,10 @@ import jwt from 'jsonwebtoken';
 
 const prisma = getPrismaClient();
 
+if (!prisma) {
+  throw new Error('Prisma client not initialized');
+}
+
 // JWT secret - should be in environment variables
 const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-change-in-production';
 const JWT_EXPIRY = '7d'; // 7 days
