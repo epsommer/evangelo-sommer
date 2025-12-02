@@ -67,7 +67,7 @@ async function verifyMobileToken(authHeader: string | null): Promise<AuthToken |
 
   try {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    const jwtSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || '';
+    const jwtSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-change-in-production';
     const secret = new TextEncoder().encode(jwtSecret);
 
     const { payload } = await jwtVerify(token, secret);
