@@ -11,7 +11,10 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 // JWT secret - should be in environment variables
-const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET
+  || process.env.NEXTAUTH_SECRET
+  || process.env.NEXTAUTH_JWT_SECRET
+  || 'fallback-secret-change-in-production';
 const JWT_EXPIRY = '7d'; // 7 days
 
 interface LoginRequest {
