@@ -93,25 +93,37 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
       );
     }
 
-    // TODO: Verify password with bcrypt
-    // This assumes you have a password field in your Participant model
-    // If you're using NextAuth only, you might need to adapt this
-    //
-    // const isValidPassword = await bcrypt.compare(password, user.password);
-    // if (!isValidPassword) {
-    //   return NextResponse.json(
-    //     {
-    //       success: false,
-    //       error: 'Invalid credentials',
-    //     },
-    //     { status: 401 }
-    //   );
-    // }
+    // Use same environment variables as web app
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-    // For now, we'll create a placeholder password check
-    // REPLACE THIS with actual password verification
-    const DEMO_PASSWORD = process.env.DEMO_MOBILE_PASSWORD || 'demo123';
-    if (password !== DEMO_PASSWORD) {
+    // Validate required environment variables
+    if (!ADMIN_PASSWORD) {
+      console.error('[Mobile Login] ADMIN_PASSWORD environment variable not set');
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Server configuration error',
+        },
+        { status: 500 }
+      );
+    }
+
+    // Optionally restrict to admin email only
+    if (ADMIN_EMAIL && email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      console.log(`[Mobile Login] Access denied for ${email} - not admin`);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid credentials',
+        },
+        { status: 401 }
+      );
+    }
+
+    // Verify password matches environment variable
+    if (password !== ADMIN_PASSWORD) {
+      console.log('[Mobile Login] Invalid password');
       return NextResponse.json(
         {
           success: false,
