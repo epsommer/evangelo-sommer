@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { jwtVerify } from 'jose';
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -50,6 +51,34 @@ function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
   return forwarded?.split(',')[0] || realIp || 'unknown';
+}
+
+// Verify mobile JWT token from Authorization header
+async function verifyMobileToken(authHeader: string | null): Promise<{ sub: string; email: string; role: string } | null> {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  try {
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || '');
+
+    const { payload } = await jwtVerify(token, secret);
+
+    // Check if token has required fields
+    if (payload.userId && payload.email && payload.role) {
+      return {
+        sub: payload.userId as string,
+        email: payload.email as string,
+        role: payload.role as string,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[Middleware] Mobile token verification failed:', error);
+    return null;
+  }
 }
 
 // Check and update rate limit
@@ -142,13 +171,19 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Get the token from the request
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  // Check for mobile JWT token first (Authorization header)
+  const authHeader = request.headers.get('authorization');
+  let token = await verifyMobileToken(authHeader);
 
-  // If no token, handle based on route type
+  // If no mobile token, try NextAuth session token
+  if (!token) {
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+  }
+
+  // If no token from either method, handle based on route type
   if (!token) {
     if (isProtectedPageRoute) {
       // Redirect to signin for page routes
