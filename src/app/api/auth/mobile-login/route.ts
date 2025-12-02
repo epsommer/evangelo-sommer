@@ -10,12 +10,6 @@ import { getPrismaClient } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const prisma = getPrismaClient();
-
-if (!prisma) {
-  throw new Error('Prisma client not initialized');
-}
-
 // JWT secret - should be in environment variables
 const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-change-in-production';
 const JWT_EXPIRY = '7d'; // 7 days
@@ -49,6 +43,18 @@ interface AuthResponse {
  */
 export async function POST(request: NextRequest): Promise<NextResponse<AuthResponse>> {
   try {
+    const prisma = getPrismaClient();
+
+    if (!prisma) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database connection not available',
+        },
+        { status: 503 }
+      );
+    }
+
     const body: LoginRequest = await request.json();
     const { email, password } = body;
 
@@ -166,6 +172,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
  */
 export async function GET(request: NextRequest): Promise<NextResponse<AuthResponse>> {
   try {
+    const prisma = getPrismaClient();
+
+    if (!prisma) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database connection not available',
+        },
+        { status: 503 }
+      );
+    }
+
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
