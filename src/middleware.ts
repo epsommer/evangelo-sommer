@@ -204,9 +204,10 @@ export async function middleware(request: NextRequest) {
   });
   console.log('[Middleware] All headers:', JSON.stringify(allHeaders));
 
-  const authHeader = request.headers.get('authorization');
-  console.log('[Middleware] Authorization header present:', !!authHeader);
-  console.log('[Middleware] Authorization header value:', authHeader ? authHeader.substring(0, 20) + '...' : 'null');
+  // Check both x-authorization (mobile) and authorization (standard)
+  const authHeader = request.headers.get('x-authorization') || request.headers.get('authorization');
+  console.log('[Middleware] Auth header present:', !!authHeader);
+  console.log('[Middleware] Auth header value:', authHeader ? authHeader.substring(0, 20) + '...' : 'null');
 
   const mobileToken = await verifyMobileToken(authHeader);
   console.log('[Middleware] Mobile token result:', mobileToken ? 'valid' : 'null');
