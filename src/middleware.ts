@@ -173,15 +173,13 @@ export async function middleware(request: NextRequest) {
 
   // Check for mobile JWT token first (Authorization header)
   const authHeader = request.headers.get('authorization');
-  let token = await verifyMobileToken(authHeader);
+  const mobileToken = await verifyMobileToken(authHeader);
 
   // If no mobile token, try NextAuth session token
-  if (!token) {
-    token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-  }
+  const token = mobileToken || await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
 
   // If no token from either method, handle based on route type
   if (!token) {
