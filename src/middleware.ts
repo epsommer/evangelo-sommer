@@ -5,12 +5,6 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { jwtVerify } from 'jose';
 
-type AuthToken = {
-  sub?: string | null;
-  email?: string | null;
-  role?: string | null;
-};
-
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_REQUESTS_PER_WINDOW = 100; // 100 requests per 15 minutes
@@ -60,18 +54,14 @@ function getClientIp(request: NextRequest): string {
 }
 
 // Verify mobile JWT token from Authorization header
-async function verifyMobileToken(authHeader: string | null): Promise<AuthToken | null> {
+async function verifyMobileToken(authHeader: string | null): Promise<{ sub: string; email: string; role: string } | null> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
   }
 
   try {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    const jwtSecret = process.env.JWT_SECRET
-      || process.env.NEXTAUTH_SECRET
-      || process.env.NEXTAUTH_JWT_SECRET
-      || 'fallback-secret-change-in-production';
-    const secret = new TextEncoder().encode(jwtSecret);
+    const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || '');
 
     const { payload } = await jwtVerify(token, secret);
 
@@ -183,18 +173,18 @@ export async function middleware(request: NextRequest) {
 
   // Check for mobile JWT token first (Authorization header)
   const authHeader = request.headers.get('authorization');
-  let token: AuthToken | null = await verifyMobileToken(authHeader);
+  let token = await verifyMobileToken(authHeader);
 
   // If no mobile token, try NextAuth session token
   if (!token) {
     token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
-    }) as AuthToken | null;
+    });
   }
 
   // If no token from either method, handle based on route type
-  if (!token || !token.sub || !token.email || !token.role) {
+  if (!token) {
     if (isProtectedPageRoute) {
       // Redirect to signin for page routes
       const signInUrl = new URL('/auth/signin', request.url);
