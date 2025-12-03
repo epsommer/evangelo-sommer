@@ -196,8 +196,17 @@ export async function middleware(request: NextRequest) {
 
   // Check for mobile JWT token first (Authorization header)
   console.log('[Middleware] Checking authentication for:', pathname);
+
+  // Debug: Log all headers to see what's arriving
+  const allHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    allHeaders[key] = value.substring(0, 50); // Truncate for logging
+  });
+  console.log('[Middleware] All headers:', JSON.stringify(allHeaders));
+
   const authHeader = request.headers.get('authorization');
   console.log('[Middleware] Authorization header present:', !!authHeader);
+  console.log('[Middleware] Authorization header value:', authHeader ? authHeader.substring(0, 20) + '...' : 'null');
 
   const mobileToken = await verifyMobileToken(authHeader);
   console.log('[Middleware] Mobile token result:', mobileToken ? 'valid' : 'null');
