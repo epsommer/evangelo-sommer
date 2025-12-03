@@ -56,22 +56,39 @@ function getClientIp(request: NextRequest): string {
 // Verify mobile JWT token from Authorization header
 async function verifyMobileToken(authHeader: string | null): Promise<{ sub: string; email: string; role: string } | null> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('[Middleware] No Authorization header or invalid format');
     return null;
   }
 
   try {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    console.log('[Middleware] Attempting to verify mobile JWT token...');
+
     // Use same secret hierarchy as mobile-login endpoint
     const jwtSecret = process.env.JWT_SECRET
       || process.env.NEXTAUTH_SECRET
       || process.env.NEXTAUTH_JWT_SECRET
       || 'fallback-secret-change-in-production';
+
+    console.log('[Middleware] Using secret from:',
+      process.env.JWT_SECRET ? 'JWT_SECRET' :
+      process.env.NEXTAUTH_SECRET ? 'NEXTAUTH_SECRET' :
+      process.env.NEXTAUTH_JWT_SECRET ? 'NEXTAUTH_JWT_SECRET' :
+      'fallback');
+
     const secret = new TextEncoder().encode(jwtSecret);
 
     const { payload } = await jwtVerify(token, secret);
 
+    console.log('[Middleware] JWT verified successfully, payload:', {
+      userId: !!payload.userId,
+      email: !!payload.email,
+      role: !!payload.role
+    });
+
     // Check if token has required fields
     if (payload.userId && payload.email && payload.role) {
+      console.log('[Middleware] Mobile token valid for user:', payload.email);
       return {
         sub: payload.userId as string,
         email: payload.email as string,
@@ -79,6 +96,7 @@ async function verifyMobileToken(authHeader: string | null): Promise<{ sub: stri
       };
     }
 
+    console.warn('[Middleware] Mobile token missing required fields');
     return null;
   } catch (error) {
     console.error('[Middleware] Mobile token verification failed:', error);
@@ -177,17 +195,23 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check for mobile JWT token first (Authorization header)
+  console.log('[Middleware] Checking authentication for:', pathname);
   const authHeader = request.headers.get('authorization');
+  console.log('[Middleware] Authorization header present:', !!authHeader);
+
   const mobileToken = await verifyMobileToken(authHeader);
+  console.log('[Middleware] Mobile token result:', mobileToken ? 'valid' : 'null');
 
   // If no mobile token, try NextAuth session token
   const token = mobileToken || await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
+  console.log('[Middleware] Final token:', token ? 'present' : 'null');
 
   // If no token from either method, handle based on route type
   if (!token) {
+    console.log('[Middleware] No valid token found, returning 401');
     if (isProtectedPageRoute) {
       // Redirect to signin for page routes
       const signInUrl = new URL('/auth/signin', request.url);
