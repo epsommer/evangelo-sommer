@@ -6,11 +6,7 @@ import prisma from '@/lib/prisma'
 // GET /api/testimonials - Get testimonials with optional filtering
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    // Authentication is handled by middleware
     const { searchParams } = new URL(request.url)
     const clientId = searchParams.get('clientId')
     const status = searchParams.get('status')
@@ -68,11 +64,7 @@ export async function GET(request: NextRequest) {
 // POST /api/testimonials - Create a new testimonial (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    // Authentication is handled by middleware
     const body = await request.json()
     const {
       clientId,

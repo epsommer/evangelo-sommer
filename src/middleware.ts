@@ -20,6 +20,7 @@ const protectedApiRoutes = [
   '/api/participants',
   '/api/services',
   '/api/billing',
+  '/api/testimonials',
   '/api/follow-ups',
   '/api/time-entries',
   '/api/calendar',
