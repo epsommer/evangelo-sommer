@@ -212,16 +212,14 @@ const ClientServicesBilling: React.FC<ClientServicesBillingProps> = ({ clientId 
   const loadTransactions = async () => {
     setLoadingTransactions(true);
     try {
-      const response = await fetch('/api/billing/receipts');
+      // Fetch receipts filtered by clientId on the server side
+      const response = await fetch(`/api/billing/receipts?clientId=${clientId}`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const receiptsData = await response.json();
-      const receipts = Array.isArray(receiptsData) ? receiptsData : (receiptsData.data || receiptsData.receipts || []);
-      
-      // Filter receipts for this specific client
-      const clientReceipts = receipts.filter((receipt: any) => receipt.clientId === clientId);
+      const clientReceipts = Array.isArray(receiptsData) ? receiptsData : (receiptsData.data || receiptsData.receipts || []);
       
       // Transform receipts to Transaction format
       const clientTransactions: Transaction[] = clientReceipts.map((receipt: any) => {

@@ -829,7 +829,74 @@ class BillingManager {
     );
   }
 
-  getReceiptsByClientId(clientId: string): Receipt[] {
+  async getReceiptsByClientId(clientId: string): Promise<Receipt[]> {
+    console.log('[BillingManager] getReceiptsByClientId called with clientId:', clientId);
+    try {
+      // Only use Prisma on server-side
+      if (typeof window === 'undefined') {
+        const { getPrismaClient } = await import('./prisma');
+        const prisma = getPrismaClient();
+
+        if (prisma) {
+          console.log('[BillingManager] Querying database for receipts with clientId:', clientId);
+          const documents = await prisma.document.findMany({
+            where: {
+              type: 'RECEIPT',
+              clientId: clientId
+            },
+            include: { client: true },
+            orderBy: { createdAt: 'desc' }
+          });
+
+          console.log('[BillingManager] Database returned', documents.length, 'documents');
+          if (documents.length > 0) {
+            console.log('[BillingManager] First document clientId:', documents[0].clientId);
+          }
+
+          // Transform database documents to Receipt format
+          const receipts: Receipt[] = documents.map(doc => {
+            const receiptData = typeof doc.content === 'string' ? JSON.parse(doc.content) : doc.content;
+            return {
+              id: doc.id,
+              receiptNumber: receiptData.receiptNumber || `REC-${doc.id.slice(-6).toUpperCase()}`,
+              clientId: doc.clientId,
+              client: {
+                id: doc.client.participantId,
+                name: doc.client.name,
+                email: doc.client.email || undefined,
+                phone: doc.client.phone || undefined,
+                company: doc.client.company || undefined
+              },
+              items: receiptData.items || [],
+              subtotal: receiptData.subtotal || doc.amount || 0,
+              taxAmount: receiptData.taxAmount || 0,
+              totalAmount: receiptData.totalAmount || doc.amount || 0,
+              paymentMethod: receiptData.paymentMethod || 'cash',
+              paymentDate: receiptData.paymentDate ? new Date(receiptData.paymentDate) : doc.paidDate || new Date(),
+              serviceDate: receiptData.serviceDate ? new Date(receiptData.serviceDate) : doc.createdAt,
+              status: doc.status === 'PAID' ? 'paid' : (receiptData.emailSentAt ? 'sent' : 'draft'),
+              emailStatus: receiptData.emailStatus || null,
+              emailSentAt: receiptData.emailSentAt ? new Date(receiptData.emailSentAt) : undefined,
+              emailDeliveredAt: receiptData.emailDeliveredAt ? new Date(receiptData.emailDeliveredAt) : undefined,
+              emailError: receiptData.emailError || undefined,
+              notes: receiptData.notes || '',
+              archived: receiptData.archived || false,
+              archivedAt: receiptData.archivedAt ? new Date(receiptData.archivedAt) : undefined,
+              createdAt: doc.createdAt,
+              updatedAt: doc.updatedAt,
+              conversationId: receiptData.conversationId
+            } as Receipt;
+          });
+
+          // Filter out archived receipts
+          return receipts.filter(receipt => !receipt.archived);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch receipts from database for clientId:', clientId, error);
+    }
+
+    // Fall back to in-memory receipts
     return this.receipts.filter(r => r.clientId === clientId);
   }
 

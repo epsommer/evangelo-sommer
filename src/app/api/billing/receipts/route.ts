@@ -13,16 +13,21 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get('clientId');
     const conversationId = searchParams.get('conversationId');
     const includeArchived = searchParams.get('archived') === 'true';
-    
+
+    console.log('[Receipt API GET] Request params:', { clientId, conversationId, includeArchived });
+
     let receipts: Receipt[];
-    
+
     if (clientId) {
-      receipts = billingManager.getReceiptsByClientId(clientId);
+      console.log('[Receipt API GET] Fetching receipts for clientId:', clientId);
+      receipts = await billingManager.getReceiptsByClientId(clientId);
+      console.log('[Receipt API GET] Found', receipts.length, 'receipts for clientId:', clientId);
     } else if (conversationId) {
       receipts = billingManager.getReceiptsByConversationId(conversationId);
     } else {
       // Return all receipts
       receipts = await billingManager.getAllReceipts(includeArchived);
+      console.log('[Receipt API GET] Found', receipts.length, 'total receipts');
     }
 
     return NextResponse.json({
@@ -30,7 +35,8 @@ export async function GET(request: NextRequest) {
       receipts: receipts
     });
   } catch (error) {
-    console.error("Error fetching receipts:", error);
+    console.error("[Receipt API GET] Error fetching receipts:", error);
+    console.error("[Receipt API GET] Error stack:", (error as Error).stack);
     return NextResponse.json(
       { error: "Failed to fetch receipts" },
       { status: 500 }
