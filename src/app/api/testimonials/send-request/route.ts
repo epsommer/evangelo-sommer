@@ -14,8 +14,17 @@ if (process.env.SENDGRID_API_KEY) {
 // POST /api/testimonials/send-request - Send testimonial request to client
 export async function POST(request: NextRequest) {
   try {
+    // Authentication is handled by middleware (supports both session and JWT)
+    // Middleware sets these headers: x-user-id, x-user-email, x-user-role
+    const userEmail = request.headers.get('x-user-email')
+    const userName = request.headers.get('x-user-name')
+
+    // Fallback to session for web app compatibility
     const session = await getServerSession(authOptions)
-    if (!session?.user) {
+    const effectiveUserEmail = userEmail || session?.user?.email
+    const effectiveUserName = userName || session?.user?.name
+
+    if (!effectiveUserEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -102,8 +111,8 @@ export async function POST(request: NextRequest) {
           clientId,
           clientName: client.name,
           serviceName: serviceName || serviceConfig.name,
-          userId: session?.user?.email || undefined,
-          userName: session?.user?.name || undefined,
+          userId: effectiveUserEmail || undefined,
+          userName: effectiveUserName || undefined,
         });
       } catch (logError) {
         console.error('Failed to log testimonial request activity:', logError);
