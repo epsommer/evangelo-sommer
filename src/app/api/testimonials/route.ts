@@ -16,10 +16,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const isPublic = searchParams.get('isPublic')
 
+    console.log('[Testimonials API GET] Request params:', { clientId, status, isPublic })
+
     const whereClause: any = {}
 
     if (clientId) {
       whereClause.clientId = clientId
+      console.log('[Testimonials API GET] Filtering by clientId:', clientId)
     }
 
     if (status) {
@@ -47,12 +50,14 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    console.log('[Testimonials API GET] Found', testimonials.length, 'testimonials')
+
     return NextResponse.json({
       success: true,
       data: testimonials,
     })
   } catch (error) {
-    console.error('Error fetching testimonials:', error)
+    console.error('[Testimonials API GET] Error fetching testimonials:', error)
     return NextResponse.json(
       { error: 'Failed to fetch testimonials' },
       { status: 500 }
