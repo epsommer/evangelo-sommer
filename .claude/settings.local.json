@@ -33,7 +33,8 @@
       "Bash(./verify-dns.sh:*)",
       "Bash(xargs:*)",
       "Bash(cat:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
