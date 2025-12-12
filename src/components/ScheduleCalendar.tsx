@@ -150,14 +150,14 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const getUpcomingEvents = () => {
     const now = new Date();
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
+
     // Combine local scheduled services and Google Calendar events
     const upcomingServices = scheduledServices
       .filter(service => {
         const serviceDate = new Date(service.scheduledDate);
         return serviceDate >= now && serviceDate <= thirtyDaysFromNow;
       })
-      .map(service => ({ ...service, source: 'local' }));
+      .map(service => ({ ...service, startDateTime: service.scheduledDate, source: 'local' }));
 
     const upcomingGoogleEvents = googleCalendarEvents
       .filter(event => {
@@ -170,6 +170,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         service: event.summary,
         clientName: event.description || 'Google Calendar Event',
         scheduledDate: event.start?.dateTime || event.start?.date,
+        startDateTime: event.start?.dateTime || event.start?.date,
         priority: 'medium',
         status: 'scheduled',
         duration: event.duration || 60,
@@ -177,12 +178,28 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         source: 'google'
       }));
 
-    // Combine and sort by date
-    const allEvents = [...upcomingServices, ...upcomingGoogleEvents];
-    return allEvents.sort((a, b) => {
+    // Include unified events (from database)
+    const upcomingUnifiedEvents = unifiedEvents
+      .filter(event => {
+        const eventDate = new Date(event.startDateTime);
+        return eventDate >= now && eventDate <= thirtyDaysFromNow;
+      })
+      .map(event => ({
+        ...event,
+        scheduledDate: event.startDateTime, // For backwards compatibility
+        source: 'database'
+      }));
+
+    // Combine and sort by date, deduplicating by ID
+    const allEvents = [...upcomingServices, ...upcomingGoogleEvents, ...upcomingUnifiedEvents];
+    const uniqueEvents = allEvents.filter((event, index, array) =>
+      array.findIndex(e => e.id === event.id) === index
+    );
+
+    return uniqueEvents.sort((a, b) => {
       try {
-        const dateA = new Date(a.scheduledDate);
-        const dateB = new Date(b.scheduledDate);
+        const dateA = new Date(a.startDateTime || a.scheduledDate);
+        const dateB = new Date(b.startDateTime || b.scheduledDate);
         const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
         const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
         return timeA - timeB;
@@ -335,7 +352,9 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
                   {/* Show services for this day - Enhanced density handling */}
                   <div className="space-y-1">
-                    {dayServices.slice(0, 3).map((service, index) => {
+                    {dayServices.slice(0, 3).map((serviceItem, index) => {
+                      // Cast to any to handle both ScheduledService and UnifiedEvent types
+                      const service = serviceItem as any;
                       const servicePriority = safeString(service.priority, 'medium');
                       const priorityColor = servicePriority === 'high' ? 'bg-red-100 border-red-200 text-red-800' :
                                            servicePriority === 'medium' ? 'bg-yellow-100 border-yellow-200 text-yellow-800' :
@@ -353,16 +372,20 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                             
                             // Also trigger the parent's onEventView if provided
                             if (onEventView) {
+                              // Handle both scheduled services (scheduledDate) and unified events (startDateTime)
+                              const startDateTime = service.startDateTime || service.scheduledDate;
+                              const endDateTime = service.endDateTime || service.scheduledDate;
                               const eventData = {
                                 id: service.id,
-                                type: 'event' as const,
+                                type: service.type || 'event' as const,
                                 title: safeString(service.title || service.service, 'Event'),
-                                description: service.notes,
-                                startDateTime: service.scheduledDate,
-                                endDateTime: service.scheduledDate,
+                                description: service.description || service.notes,
+                                startDateTime: startDateTime,
+                                endDateTime: endDateTime,
                                 duration: service.duration || 60,
                                 priority: service.priority || 'medium',
                                 clientId: service.clientId,
+                                clientName: service.clientName,
                                 location: service.location,
                                 notes: service.notes,
                                 status: service.status
@@ -373,30 +396,32 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                           onDoubleClick={(e) => {
                             e.stopPropagation();
                             if (onEventEdit) {
-                              // Convert to UnifiedEvent format for editing
+                              // Handle both scheduled services (scheduledDate) and unified events (startDateTime)
+                              const startDateTime = service.startDateTime || service.scheduledDate;
                               const eventData = {
                                 id: service.id,
-                                type: 'event' as const,
+                                type: service.type || 'event' as const,
                                 title: safeString(service.title || service.service, 'Event'),
-                                description: service.notes,
-                                startDateTime: service.scheduledDate,
+                                description: service.description || service.notes,
+                                startDateTime: startDateTime,
+                                endDateTime: service.endDateTime || startDateTime,
                                 duration: service.duration || 60,
                                 priority: service.priority as any,
                                 clientName: safeString(service.clientName, 'Client'),
                                 notes: service.notes,
-                                createdAt: new Date().toISOString(),
-                                updatedAt: new Date().toISOString()
+                                createdAt: service.createdAt || new Date().toISOString(),
+                                updatedAt: service.updatedAt || new Date().toISOString()
                               };
                               onEventEdit(eventData);
                             }
                           }}
-                          title={`${safeString(service.service, 'Service')} - ${safeString(service.clientName, 'Client')} at ${safeFormatDate(service.scheduledDate, 'HH:mm')}`}
+                          title={`${safeString(service.title || service.service, 'Event')} - ${safeString(service.clientName, 'Client')} at ${safeFormatDate(service.startDateTime || service.scheduledDate, 'HH:mm')}`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="font-medium truncate flex-1">
                               {(() => {
-                                const serviceName = safeString(service.service, 'Service');
-                                return serviceName.length > 15 ? serviceName.substring(0, 15) + '...' : serviceName;
+                                const eventName = safeString(service.title || service.service, 'Event');
+                                return eventName.length > 15 ? eventName.substring(0, 15) + '...' : eventName;
                               })()}
                             </div>
                             <div className="flex items-center space-x-1">
@@ -415,18 +440,20 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                                     ...(onEventEdit ? [{
                                       label: 'Edit',
                                       onClick: () => {
+                                        const startDateTime = service.startDateTime || service.scheduledDate;
                                         const eventData = {
                                           id: service.id,
-                                          type: 'event' as const,
+                                          type: service.type || 'event' as const,
                                           title: safeString(service.title || service.service, 'Event'),
-                                          description: service.notes,
-                                          startDateTime: service.scheduledDate,
+                                          description: service.description || service.notes,
+                                          startDateTime: startDateTime,
+                                          endDateTime: service.endDateTime || startDateTime,
                                           duration: service.duration || 60,
                                           priority: service.priority as any,
                                           clientName: safeString(service.clientName, 'Client'),
                                           notes: service.notes,
-                                          createdAt: new Date().toISOString(),
-                                          updatedAt: new Date().toISOString()
+                                          createdAt: service.createdAt || new Date().toISOString(),
+                                          updatedAt: service.updatedAt || new Date().toISOString()
                                         };
                                         onEventEdit(eventData);
                                       },
@@ -462,7 +489,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                             })()}
                           </div>
                           <div className="text-xs opacity-60 flex items-center justify-between mt-0.5">
-                            <span>{safeFormatDate(service.scheduledDate, 'HH:mm')}</span>
+                            <span>{safeFormatDate(service.startDateTime || service.scheduledDate, 'HH:mm')}</span>
                             {service.duration && (
                               <span className="text-xs">{service.duration}min</span>
                             )}
@@ -533,13 +560,18 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 <div
                   key={event.id}
                   className="p-4 border border-border rounded neo-card cursor-pointer hover:bg-card/80 transition-colors"
-                  onClick={() => setViewingSchedule(event)}
+                  onClick={() => {
+                    // Only set viewing schedule for items that have 'service' property (ScheduledService)
+                    if ('service' in event && event.service) {
+                      setViewingSchedule(event as ScheduledService);
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <h5 className="font-bold text-foreground font-primary">{event.title || event.service}</h5>
                       <p className="text-sm text-muted-foreground font-primary">
-                        {safeFormatDate(event.scheduledDate, 'EEEE, MMM d')} at {safeFormatDate(event.scheduledDate, 'h:mm a')}
+                        {safeFormatDate(event.startDateTime || event.scheduledDate, 'EEEE, MMM d')} at {safeFormatDate(event.startDateTime || event.scheduledDate, 'h:mm a')}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -555,12 +587,12 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                       }`}>
                         {event.priority?.toUpperCase() || 'MEDIUM'}
                       </Badge>
-                      {enableEditing && event.source !== 'google' && (
+                      {enableEditing && event.source !== 'google' && 'service' in event && event.service && (
                         <>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEditSchedule(event);
+                              handleEditSchedule(event as ScheduledService);
                             }}
                             className="p-1 text-accent hover:text-accent/80"
                             title="Edit schedule"
