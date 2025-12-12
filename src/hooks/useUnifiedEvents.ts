@@ -441,10 +441,32 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
     console.log('🔥 getEventsForDate DEBUG - Generated dateStr:', dateStr)
 
     const filteredEvents = events.filter(event => {
-      const eventDateStr = event.startDateTime.split('T')[0]
+      // Parse the event date properly, handling both UTC (Z suffix) and local formats
+      let eventLocalDate: Date
+
+      if (event.startDateTime.endsWith('Z') || event.startDateTime.includes('+') || /T\d{2}:\d{2}:\d{2}\.\d{3}Z?$/.test(event.startDateTime)) {
+        // UTC or ISO format - convert to local time
+        eventLocalDate = new Date(event.startDateTime)
+      } else {
+        // Already local format (YYYY-MM-DDTHH:MM:SS) - parse without timezone conversion
+        const [datePart, timePart] = event.startDateTime.split('T')
+        if (datePart && timePart) {
+          const [year, month, day] = datePart.split('-').map(Number)
+          const [hour, minute] = timePart.split(':').map(Number)
+          eventLocalDate = new Date(year, month - 1, day, hour, minute)
+        } else {
+          eventLocalDate = new Date(event.startDateTime)
+        }
+      }
+
+      // Compare using local date components
+      const eventDateStr = `${eventLocalDate.getFullYear()}-${(eventLocalDate.getMonth() + 1).toString().padStart(2, '0')}-${eventLocalDate.getDate().toString().padStart(2, '0')}`
       const matches = eventDateStr === dateStr
+
       console.log('🔥 getEventsForDate DEBUG - Event comparison:', {
         eventTitle: event.title,
+        rawStartDateTime: event.startDateTime,
+        parsedLocalDate: eventLocalDate.toString(),
         eventDateStr,
         targetDateStr: dateStr,
         matches
