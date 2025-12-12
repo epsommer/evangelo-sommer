@@ -47,17 +47,57 @@ function convertToUnifiedEvent(dbEvent: any): UnifiedEvent {
   } as UnifiedEvent
 }
 
+// Helper function to map event type to valid Prisma EventType enum
+function mapToValidEventType(type: string | undefined): EventType {
+  if (!type) return 'EVENT' as EventType
+
+  const normalizedType = type.toUpperCase()
+
+  // Valid Prisma EventType values: EVENT, TASK, GOAL, MILESTONE
+  const validTypes = ['EVENT', 'TASK', 'GOAL', 'MILESTONE']
+
+  if (validTypes.includes(normalizedType)) {
+    return normalizedType as EventType
+  }
+
+  // Map common alternative names to valid types
+  const typeMapping: Record<string, EventType> = {
+    'APPOINTMENT': 'EVENT' as EventType,
+    'MEETING': 'EVENT' as EventType,
+    'REMINDER': 'TASK' as EventType,
+    'TODO': 'TASK' as EventType,
+  }
+
+  return typeMapping[normalizedType] || ('EVENT' as EventType)
+}
+
+// Helper function to map priority to valid Prisma Priority enum
+function mapToValidPriority(priority: string | undefined): Priority {
+  if (!priority) return 'MEDIUM' as Priority
+
+  const normalizedPriority = priority.toUpperCase()
+
+  // Valid Prisma Priority values: LOW, MEDIUM, HIGH, URGENT
+  const validPriorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+
+  if (validPriorities.includes(normalizedPriority)) {
+    return normalizedPriority as Priority
+  }
+
+  return 'MEDIUM' as Priority
+}
+
 // Helper function to convert UnifiedEvent to Prisma Event format
 function convertToPrismaEvent(event: UnifiedEvent): any {
   return {
     id: event.id,
-    type: event.type.toUpperCase() as EventType,
+    type: mapToValidEventType(event.type),
     title: event.title,
     description: event.description,
     startDateTime: event.startDateTime,
     endDateTime: event.endDateTime,
-    duration: event.duration,
-    priority: event.priority.toUpperCase() as Priority,
+    duration: event.duration || 60, // Default to 60 minutes if not provided
+    priority: mapToValidPriority(event.priority),
     clientId: event.clientId,
     clientName: event.clientName,
     location: event.location,
