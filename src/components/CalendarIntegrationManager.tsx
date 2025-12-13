@@ -196,48 +196,48 @@ export default function CalendarIntegrationManager({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header with Tabs */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-6 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <button
               onClick={() => setActiveTab('integrations')}
-              className={`text-lg font-semibold pb-2 border-b-2 transition-colors ${
+              className={`neo-button px-4 py-2 text-sm font-primary uppercase tracking-wide transition-all ${
                 activeTab === 'integrations'
-                  ? 'text-gold border-hud-border-accent'
-                  : 'text-tactical-grey-500 border-transparent hover:text-tactical-grey-600'
+                  ? 'neo-button-active'
+                  : ''
               }`}
             >
               Calendar Integration
             </button>
             <button
               onClick={() => setActiveTab('recurring')}
-              className={`text-lg font-semibold pb-2 border-b-2 transition-colors ${
+              className={`neo-button px-4 py-2 text-sm font-primary uppercase tracking-wide transition-all ${
                 activeTab === 'recurring'
-                  ? 'text-gold border-hud-border-accent'
-                  : 'text-tactical-grey-500 border-transparent hover:text-tactical-grey-600'
+                  ? 'neo-button-active'
+                  : ''
               }`}
             >
               Recurring Events
             </button>
           </div>
-          <p className="text-sm text-tactical-grey-500">
-            {activeTab === 'integrations' 
+          <p className="text-sm text-[var(--neomorphic-text)] opacity-70 font-primary">
+            {activeTab === 'integrations'
               ? 'Connect your calendar services to sync events and appointments'
               : 'Manage recurring appointments and automatic event generation'}
           </p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-tactical-grey-500">
+          <div className="text-sm text-[var(--neomorphic-text)] opacity-70">
             {activeTab === 'integrations' && (
               <>
-                <div>{`${integrations.filter((i) => i.isActive).length} of ${providers.length} connected`}</div>
+                <div className="font-primary">{`${integrations.filter((i) => i.isActive).length} of ${providers.length} connected`}</div>
                 <button
                   onClick={() => {
                     calendarService.clearAllIntegrations();
                     setIntegrations([]);
                     onIntegrationChange?.([]);
                   }}
-                  className="text-xs text-red-500 hover:text-red-700 mt-1"
+                  className="text-xs text-red-500 hover:text-red-700 mt-1 font-primary"
                 >
                   Clear All (Debug)
                 </button>
@@ -258,14 +258,14 @@ export default function CalendarIntegrationManager({
 
       {/* Integration Status */}
       {integrations.length > 0 && (
-        <div className="bg-tactical-gold-muted border border-tactical-grey-300 rounded-lg p-4">
+        <div className="neo-card p-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm font-medium text-tactical-brown-dark">
-              Calendar integrations are active
+            <div className="w-3 h-3 bg-green-500 rounded-full shadow-lg animate-pulse"></div>
+            <span className="text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+              Calendar integrations active
             </span>
           </div>
-          <div className="text-sm text-tactical-brown-dark">
+          <div className="text-sm text-[var(--neomorphic-text)] opacity-70 font-primary">
             Last sync:{" "}
             {integrations.find((i) => i.lastSyncAt)?.lastSyncAt
               ? new Date(
@@ -288,33 +288,31 @@ export default function CalendarIntegrationManager({
           return (
             <div
               key={provider.id}
-              className={`border-2 rounded-lg p-6 transition-all ${
-                isConnected
-                  ? "border-green-200 bg-green-50"
-                  : "border-tactical-grey-300 hover:border-tactical-grey-400"
+              className={`neo-card p-6 transition-all ${
+                isConnected ? "ring-2 ring-green-500/30" : ""
               }`}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div
-                    className={`w-10 h-10 rounded-lg ${provider.color} flex items-center justify-center text-white text-xl`}
+                    className={`w-12 h-12 rounded-xl ${provider.color} flex items-center justify-center text-white text-xl shadow-lg`}
                   >
                     {provider.icon}
                   </div>
                   <div>
-                    <h3 className="font-medium text-tactical-grey-800">
+                    <h3 className="font-semibold text-[var(--neomorphic-text)] font-primary">
                       {provider.name}
                     </h3>
-                    <p className="text-sm text-tactical-grey-500">
+                    <p className="text-sm text-[var(--neomorphic-text)] opacity-60 font-primary">
                       {provider.description}
                     </p>
                   </div>
                 </div>
 
                 {isConnected && (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-green-700 font-medium">
+                  <div className="neo-badge px-3 py-1 flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-600 font-semibold font-primary uppercase tracking-wide">
                       Connected
                     </span>
                   </div>
@@ -324,16 +322,16 @@ export default function CalendarIntegrationManager({
               {integration && isConnected ? (
                 <div className="space-y-4">
                   {/* Integration Details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm neo-inset rounded-lg p-3">
                     <div>
-                      <div className="text-tactical-grey-500">Account</div>
-                      <div className="font-medium text-tactical-grey-800 truncate">
+                      <div className="text-[var(--neomorphic-text)] opacity-60 text-xs font-primary uppercase tracking-wide mb-1">Account</div>
+                      <div className="font-medium text-[var(--neomorphic-text)] truncate font-primary">
                         {integration.accountId}
                       </div>
                     </div>
                     <div>
-                      <div className="text-tactical-grey-500">Sync Direction</div>
-                      <div className="font-medium text-tactical-grey-800 capitalize">
+                      <div className="text-[var(--neomorphic-text)] opacity-60 text-xs font-primary uppercase tracking-wide mb-1">Sync Direction</div>
+                      <div className="font-medium text-[var(--neomorphic-text)] capitalize font-primary">
                         {integration.syncSettings.syncDirection.replace(
                           "-",
                           " ",
@@ -343,49 +341,45 @@ export default function CalendarIntegrationManager({
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-3">
-                    <Button
+                  <div className="flex gap-3">
+                    <button
                       onClick={() => handleSync(integration.id)}
                       disabled={currentSyncStatus === "syncing"}
-                      variant="outline"
-                      size="sm"
-                      className={`flex-1 ${
+                      className={`neo-button flex-1 px-4 py-2 text-sm font-primary uppercase tracking-wide transition-all ${
                         currentSyncStatus === "syncing"
-                          ? "bg-tactical-grey-200 text-gray-400 cursor-not-allowed"
+                          ? "opacity-50 cursor-not-allowed"
                           : currentSyncStatus === "success"
-                            ? "bg-green-100 text-green-700 hover:bg-green-200 border-green-300"
+                            ? "!bg-green-100 !text-green-700"
                             : currentSyncStatus === "error"
-                              ? "bg-red-100 text-red-700 hover:bg-red-200 border-red-300"
-                              : "border-tactical-grey-400 text-tactical-brown-dark hover:bg-tactical-gold-muted"
+                              ? "!bg-red-100 !text-red-700"
+                              : ""
                       }`}
                     >
-                      {currentSyncStatus === "syncing" && "🔄 Syncing..."}
-                      {currentSyncStatus === "success" && "✅ Synced"}
-                      {currentSyncStatus === "error" && "❌ Failed"}
-                      {currentSyncStatus === "idle" && "🔄 Sync Now"}
-                    </Button>
+                      {currentSyncStatus === "syncing" && "Syncing..."}
+                      {currentSyncStatus === "success" && "Synced"}
+                      {currentSyncStatus === "error" && "Failed"}
+                      {currentSyncStatus === "idle" && "Sync Now"}
+                    </button>
 
-                    <Button
+                    <button
                       onClick={() => handleDisconnect(integration.id)}
-                      variant="outline"
-                      size="sm"
-                      className="px-4 text-red-600 border-red-200 hover:bg-red-50"
+                      className="neo-button px-4 py-2 text-sm font-primary uppercase tracking-wide text-red-600 hover:text-red-700"
                     >
                       Disconnect
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ) : (
                 /* Connection Button */
-                <Button
+                <button
                   onClick={() => handleConnect(provider.id)}
                   disabled={isConnecting === provider.id || !['google', 'notion'].includes(provider.id)}
-                  className={`w-full ${
+                  className={`w-full py-3 text-sm font-primary uppercase tracking-wide font-semibold transition-all ${
                     !['google', 'notion'].includes(provider.id)
-                      ? "bg-gray-300 text-tactical-grey-500 cursor-not-allowed"
+                      ? "neo-button opacity-50 cursor-not-allowed"
                       : isConnecting === provider.id
-                        ? "bg-tactical-grey-200 text-gray-400 cursor-not-allowed"
-                        : "bg-tactical-gold text-hud-text-primary hover:bg-tactical-gold/90"
+                        ? "neo-button opacity-50 cursor-not-allowed"
+                        : "neo-button-active"
                   }`}
                 >
                   {isConnecting === provider.id
@@ -393,7 +387,7 @@ export default function CalendarIntegrationManager({
                     : !['google', 'notion'].includes(provider.id)
                       ? "Coming Soon"
                       : `Connect ${provider.name}`}
-                </Button>
+                </button>
               )}
             </div>
           );
@@ -402,8 +396,8 @@ export default function CalendarIntegrationManager({
 
       {/* Events Summary */}
       {allEvents.length > 0 && (
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="font-medium text-tactical-grey-800 mb-4">
+        <div className="neo-card p-6">
+          <h3 className="font-semibold text-[var(--neomorphic-text)] mb-4 font-primary uppercase tracking-wide">
             Synchronized Events ({allEvents.length})
           </h3>
           <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -417,7 +411,7 @@ export default function CalendarIntegrationManager({
               .map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between p-3 bg-tactical-grey-100 rounded-lg"
+                  className="flex items-center justify-between p-3 neo-inset rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="text-lg">
@@ -430,16 +424,16 @@ export default function CalendarIntegrationManager({
                             : "🔔"}
                     </div>
                     <div>
-                      <div className="font-medium text-tactical-grey-800 text-sm">
+                      <div className="font-medium text-[var(--neomorphic-text)] text-sm font-primary">
                         {event.title}
                       </div>
-                      <div className="text-tactical-grey-500 text-xs">
+                      <div className="text-[var(--neomorphic-text)] opacity-60 text-xs font-primary">
                         {new Date(event.startTime).toLocaleDateString()} •{" "}
                         {event.type}
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs text-tactical-grey-500 capitalize">
+                  <div className="neo-badge text-xs px-2 py-1 capitalize font-primary">
                     {integrations.find(i => i.id === event.metadata?.integrationId)?.provider || 'local'}
                   </div>
                 </div>
@@ -449,8 +443,8 @@ export default function CalendarIntegrationManager({
       )}
 
       {/* Help Text */}
-      <div className="text-center text-sm text-tactical-grey-500">
-        <p>
+      <div className="text-center">
+        <p className="text-sm text-[var(--neomorphic-text)] opacity-60 font-primary">
           Currently supporting Google Calendar and Notion. More integrations coming soon!
         </p>
       </div>
