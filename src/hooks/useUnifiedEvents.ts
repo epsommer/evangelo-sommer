@@ -1,6 +1,7 @@
 // React Hook for Unified Events Management
 
 import { useState, useEffect, useCallback } from 'react'
+import { isSameDay } from 'date-fns'
 import { UnifiedEventsManager } from '@/lib/unified-events'
 import type { UnifiedEvent, EventType, Priority, GoalTimeframe } from '@/components/EventCreationModal'
 
@@ -435,46 +436,12 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
   }, [events])
   
   const getEventsForDate = useCallback((date: Date): UnifiedEvent[] => {
-    // Create date string in local timezone format (YYYY-MM-DD)
-    const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
-    console.log('🔥 getEventsForDate DEBUG - Input date:', date)
-    console.log('🔥 getEventsForDate DEBUG - Generated dateStr:', dateStr)
-
+    // Use isSameDay from date-fns for reliable timezone-aware date comparison
     const filteredEvents = events.filter(event => {
-      // Parse the event date properly, handling both UTC (Z suffix) and local formats
-      let eventLocalDate: Date
-
-      if (event.startDateTime.endsWith('Z') || event.startDateTime.includes('+') || /T\d{2}:\d{2}:\d{2}\.\d{3}Z?$/.test(event.startDateTime)) {
-        // UTC or ISO format - convert to local time
-        eventLocalDate = new Date(event.startDateTime)
-      } else {
-        // Already local format (YYYY-MM-DDTHH:MM:SS) - parse without timezone conversion
-        const [datePart, timePart] = event.startDateTime.split('T')
-        if (datePart && timePart) {
-          const [year, month, day] = datePart.split('-').map(Number)
-          const [hour, minute] = timePart.split(':').map(Number)
-          eventLocalDate = new Date(year, month - 1, day, hour, minute)
-        } else {
-          eventLocalDate = new Date(event.startDateTime)
-        }
-      }
-
-      // Compare using local date components
-      const eventDateStr = `${eventLocalDate.getFullYear()}-${(eventLocalDate.getMonth() + 1).toString().padStart(2, '0')}-${eventLocalDate.getDate().toString().padStart(2, '0')}`
-      const matches = eventDateStr === dateStr
-
-      console.log('🔥 getEventsForDate DEBUG - Event comparison:', {
-        eventTitle: event.title,
-        rawStartDateTime: event.startDateTime,
-        parsedLocalDate: eventLocalDate.toString(),
-        eventDateStr,
-        targetDateStr: dateStr,
-        matches
-      })
-      return matches
+      const eventDate = new Date(event.startDateTime)
+      return isSameDay(eventDate, date)
     })
 
-    console.log('🔥 getEventsForDate DEBUG - Filtered results:', filteredEvents.length, 'events')
     return filteredEvents
   }, [events])
   
