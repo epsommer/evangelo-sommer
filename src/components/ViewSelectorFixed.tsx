@@ -72,7 +72,6 @@ const ViewSelectorFixed: React.FC<ViewSelectorProps> = ({
   const formatDateForView = (date: Date, view: TimeManagerView) => {
     switch (view) {
       case 'day':
-      case 'agenda':
         return format(date, 'EEEE, MMMM do, yyyy')
       case 'week':
         const weekStart = new Date(date)
@@ -137,7 +136,6 @@ const ViewSelectorFixed: React.FC<ViewSelectorProps> = ({
   const getContextualButtonLabel = (view: TimeManagerView): string => {
     switch (view) {
       case 'day':
-      case 'agenda':
         return 'Today'
       case 'week':
         return 'This Week'
@@ -153,7 +151,6 @@ const ViewSelectorFixed: React.FC<ViewSelectorProps> = ({
   const getQuickNavigationLabels = (view: TimeManagerView): { previous: string; next: string } => {
     switch (view) {
       case 'day':
-      case 'agenda':
         return { previous: 'Yesterday', next: 'Tomorrow' }
       case 'week':
         return { previous: 'Last Week', next: 'Next Week' }

@@ -10,7 +10,7 @@ const VIEW_CONFIGS = {
   day: {
     label: 'Day',
     icon: Clock,
-    description: 'Daily timeline view',
+    description: 'Daily planner with timeline, agenda & objectives',
     category: 'calendar'
   },
   week: {
@@ -30,12 +30,6 @@ const VIEW_CONFIGS = {
     icon: Grid3x3,
     description: 'Year overview',
     category: 'calendar'
-  },
-  agenda: {
-    label: 'Mission Objectives',
-    icon: List,
-    description: 'Mission objectives and priorities',
-    category: 'planning'
   },
 } as const
 
@@ -72,7 +66,6 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
   const formatDateForView = (date: Date, view: TimeManagerView) => {
     switch (view) {
       case 'day':
-      case 'agenda':
         return format(date, 'EEEE, MMMM do, yyyy')
       case 'week':
         const weekStart = new Date(date)
@@ -141,7 +134,6 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
   const getContextualButtonLabel = (view: TimeManagerView): string => {
     switch (view) {
       case 'day':
-      case 'agenda':
         return 'Today'
       case 'week':
         return 'This Week'
@@ -157,7 +149,6 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
   const getQuickNavigationLabels = (view: TimeManagerView): { previous: string; next: string } => {
     switch (view) {
       case 'day':
-      case 'agenda':
         return { previous: 'Yesterday', next: 'Tomorrow' }
       case 'week':
         return { previous: 'Last Week', next: 'Next Week' }

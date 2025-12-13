@@ -3,13 +3,11 @@
 import React, { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import CRMLayout from '@/components/CRMLayout'
-import DailyPlanner from '@/components/DailyPlanner'
+import UnifiedDailyPlanner from '@/components/UnifiedDailyPlanner'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
 import TimeManagerNavigation from '@/components/TimeManagerNavigation'
 import WeekView from '@/components/WeekView'
 import YearView from '@/components/YearView'
-import AgendaView from '@/components/AgendaView'
-import EnhancedMissionObjectives from '@/components/EnhancedMissionObjectives'
 import EventCreationModal, { UnifiedEvent } from '@/components/EventCreationModal'
 import EventDetailsModal from '@/components/EventDetailsModal'
 import ConflictResolutionModal from '@/components/ConflictResolutionModal'
@@ -521,16 +519,19 @@ const TimeManagerContent = () => {
   const renderCurrentView = () => {
     switch (state.currentView) {
       case 'day':
-        return <DailyPlanner
-          date={state.selectedDate}
-          onEventView={handleEventView}
-          refreshTrigger={refreshTrigger}
-          onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
-          onTaskStatusChange={handleTaskStatusChange}
-          onConflictClick={handleExistingEventConflictClick}
-          activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
-          excludeFromConflictDetection={recentlyCreatedEvents}
-        />
+        return (
+          <UnifiedDailyPlanner
+            date={state.selectedDate}
+            onEventView={handleEventView}
+            refreshTrigger={refreshTrigger}
+            onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
+            onTaskStatusChange={handleTaskStatusChange}
+            onConflictClick={handleExistingEventConflictClick}
+            activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
+            excludeFromConflictDetection={recentlyCreatedEvents}
+            onTimeSlotClick={handleTimeSlotClick}
+          />
+        )
       case 'week':
         return (
           <WeekView 
@@ -589,39 +590,20 @@ const TimeManagerContent = () => {
             refreshTrigger={refreshTrigger}
           />
         )
-      case 'agenda':
-        return (
-          <AgendaView 
-            onItemClick={(item) => console.log('Agenda item clicked:', item)}
-            onEventView={handleEventView}
-            onAddEvent={() => {
-              setModalInitialDate(state.selectedDate)
-              setModalInitialTime('09:00')
-              setEditingEvent(null)
-              setShowEventModal(true)
-            }}
-            viewRange="week"
-            refreshTrigger={refreshTrigger}
-          />
-        )
-      case 'objectives':
-        return (
-          <EnhancedMissionObjectives
-            date={state.selectedDate}
-            onObjectiveComplete={(objective) => {
-              console.log('Objective completed:', objective)
-            }}
-            onObjectiveCreate={(objective) => {
-              console.log('Objective created:', objective)
-            }}
-          />
-        )
       default:
-        return <DailyPlanner
-          date={state.selectedDate}
-          onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
-          excludeFromConflictDetection={recentlyCreatedEvents}
-        />
+        return (
+          <UnifiedDailyPlanner
+            date={state.selectedDate}
+            onEventView={handleEventView}
+            refreshTrigger={refreshTrigger}
+            onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
+            onTaskStatusChange={handleTaskStatusChange}
+            onConflictClick={handleExistingEventConflictClick}
+            activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
+            excludeFromConflictDetection={recentlyCreatedEvents}
+            onTimeSlotClick={handleTimeSlotClick}
+          />
+        )
     }
   }
 
