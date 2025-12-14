@@ -182,7 +182,13 @@ export function calculateResizePreviewStyles(
   // Visual feedback styling
   styles.transition = 'none'
   styles.zIndex = 1000
-  styles.border = '2px dashed #f59e0b'
+  // Use non-shorthand border properties to avoid React warning about mixing shorthand/non-shorthand
+  styles.borderTopWidth = '2px'
+  styles.borderRightWidth = '2px'
+  styles.borderBottomWidth = '2px'
+  styles.borderLeftWidth = '2px'
+  styles.borderStyle = 'dashed'
+  styles.borderColor = '#f59e0b'
   styles.backgroundColor = 'rgba(245, 158, 11, 0.15)'
 
   return styles
