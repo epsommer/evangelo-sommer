@@ -85,7 +85,7 @@
   
   /* Data Visualization Color Spectrum */
   --data-red-severe: #8B0000;      /* Dark Red - severe decrease */
-  --data-red-major: #DC143C;       /* Crimson - major decrease */  
+  --data-red-major: #DC143C;       /* Crimson - major decrease */
   --data-orange: #FF8C00;          /* Orange - average decrease */
   --data-yellow: #FFD700;          /* Yellow - mild decrease */
   --data-green-mild: #32CD32;      /* Lime Green - mild increase */
@@ -96,6 +96,67 @@
   --data-violet: #8A2BE2;          /* Violet - outstanding increase */
   --data-pink: #FF1493;            /* Deep Pink - exceptional increase */
   --data-crimson: #DC143C;         /* Bright Crimson - most excellent */
+
+  /* ========================================
+     CALENDAR EVENT COLORS - Light Mode
+     Theme-aware event colors with WCAG AA contrast
+     ======================================== */
+
+  /* Default/Personal Events - Primary brand color */
+  --event-default-bg: 220 15% 95%;        /* Very light blue-grey background */
+  --event-default-fg: 220 15% 25%;        /* Dark text for contrast */
+  --event-default-border: 220 15% 55%;    /* Medium blue-grey border (primary) */
+  --event-default-hover: 220 15% 92%;     /* Slightly darker on hover */
+
+  /* Meeting/Appointment Events - Blue tones */
+  --event-meeting-bg: 217 91% 95%;        /* Light blue background */
+  --event-meeting-fg: 217 91% 20%;        /* Dark blue text */
+  --event-meeting-border: 217 91% 50%;    /* Medium blue border */
+  --event-meeting-hover: 217 91% 92%;     /* Slightly darker on hover */
+
+  /* Task/Deadline Events - Orange/amber tones */
+  --event-task-bg: 38 92% 95%;            /* Light orange background */
+  --event-task-fg: 38 92% 20%;            /* Dark orange text */
+  --event-task-border: 38 92% 50%;        /* Medium orange border */
+  --event-task-hover: 38 92% 92%;         /* Slightly darker on hover */
+
+  /* Blocked/Busy Events - Gray tones */
+  --event-blocked-bg: 0 0% 93%;           /* Light gray background */
+  --event-blocked-fg: 0 0% 20%;           /* Dark gray text */
+  --event-blocked-border: 0 0% 45%;       /* Medium gray border */
+  --event-blocked-hover: 0 0% 90%;        /* Slightly darker on hover */
+
+  /* External Calendar Events - Purple tones */
+  --event-external-bg: 271 76% 95%;       /* Light purple background */
+  --event-external-fg: 271 76% 20%;       /* Dark purple text */
+  --event-external-border: 271 76% 50%;   /* Medium purple border */
+  --event-external-hover: 271 76% 92%;    /* Slightly darker on hover */
+
+  /* Priority-based event colors */
+  --event-urgent-bg: 0 84% 95%;           /* Light red background */
+  --event-urgent-fg: 0 84% 25%;           /* Dark red text */
+  --event-urgent-border: 0 84% 60%;       /* Medium red border */
+  --event-urgent-hover: 0 84% 92%;        /* Slightly darker on hover */
+
+  --event-high-bg: 38 92% 95%;            /* Light orange background */
+  --event-high-fg: 38 92% 25%;            /* Dark orange text */
+  --event-high-border: 38 92% 55%;        /* Medium orange border */
+  --event-high-hover: 38 92% 92%;         /* Slightly darker on hover */
+
+  --event-medium-bg: 217 91% 95%;         /* Light blue background */
+  --event-medium-fg: 217 91% 25%;         /* Dark blue text */
+  --event-medium-border: 217 91% 55%;     /* Medium blue border */
+  --event-medium-hover: 217 91% 92%;      /* Slightly darker on hover */
+
+  --event-low-bg: 142 71% 95%;            /* Light green background */
+  --event-low-fg: 142 71% 20%;            /* Dark green text */
+  --event-low-border: 142 71% 45%;        /* Medium green border */
+  --event-low-hover: 142 71% 92%;         /* Slightly darker on hover */
+
+  /* Event state colors */
+  --event-past-opacity: 0.6;              /* Opacity for past events */
+  --event-active-glow: 220 15% 55%;       /* Glow color for active/dragging */
+  --event-selected-border: 220 15% 35%;   /* Border color for selected events */
 
   /* Legacy Support */
   --gold: hsl(var(--accent));
@@ -260,6 +321,67 @@
   --status-warning-border: #78350f;
   --status-warning-text: #fcd34d;
   --status-warning-icon: #fbbf24;
+
+  /* ========================================
+     CALENDAR EVENT COLORS - Dark Mode (Mocha)
+     Richer, more saturated colors for dark backgrounds
+     ======================================== */
+
+  /* Default/Personal Events - Warmer tones for mocha */
+  --event-default-bg: 28 25% 18%;         /* Darker warm background */
+  --event-default-fg: 35 22% 85%;         /* Light warm text */
+  --event-default-border: 35 22% 66%;     /* Warm stone grey border */
+  --event-default-hover: 28 25% 22%;      /* Slightly lighter on hover */
+
+  /* Meeting/Appointment Events - Richer blue */
+  --event-meeting-bg: 217 60% 20%;        /* Darker blue background */
+  --event-meeting-fg: 217 80% 85%;        /* Light blue text */
+  --event-meeting-border: 217 70% 60%;    /* Medium blue border */
+  --event-meeting-hover: 217 60% 25%;     /* Slightly lighter on hover */
+
+  /* Task/Deadline Events - Richer orange */
+  --event-task-bg: 38 70% 22%;            /* Darker orange background */
+  --event-task-fg: 38 85% 85%;            /* Light orange text */
+  --event-task-border: 38 80% 60%;        /* Medium orange border */
+  --event-task-hover: 38 70% 28%;         /* Slightly lighter on hover */
+
+  /* Blocked/Busy Events - Warmer grays */
+  --event-blocked-bg: 28 15% 20%;         /* Warm dark gray */
+  --event-blocked-fg: 0 0% 80%;           /* Light gray text */
+  --event-blocked-border: 28 10% 50%;     /* Warm medium gray border */
+  --event-blocked-hover: 28 15% 25%;      /* Slightly lighter on hover */
+
+  /* External Calendar Events - Richer purple */
+  --event-external-bg: 271 50% 22%;       /* Darker purple background */
+  --event-external-fg: 271 70% 85%;       /* Light purple text */
+  --event-external-border: 271 60% 60%;   /* Medium purple border */
+  --event-external-hover: 271 50% 28%;    /* Slightly lighter on hover */
+
+  /* Priority-based event colors - Dark mode */
+  --event-urgent-bg: 0 60% 25%;           /* Darker red background */
+  --event-urgent-fg: 0 80% 85%;           /* Light red text */
+  --event-urgent-border: 0 70% 65%;       /* Medium red border */
+  --event-urgent-hover: 0 60% 30%;        /* Slightly lighter on hover */
+
+  --event-high-bg: 38 65% 25%;            /* Darker orange background */
+  --event-high-fg: 38 80% 85%;            /* Light orange text */
+  --event-high-border: 38 75% 65%;        /* Medium orange border */
+  --event-high-hover: 38 65% 30%;         /* Slightly lighter on hover */
+
+  --event-medium-bg: 217 55% 22%;         /* Darker blue background */
+  --event-medium-fg: 217 75% 85%;         /* Light blue text */
+  --event-medium-border: 217 65% 62%;     /* Medium blue border */
+  --event-medium-hover: 217 55% 28%;      /* Slightly lighter on hover */
+
+  --event-low-bg: 142 45% 22%;            /* Darker green background */
+  --event-low-fg: 142 65% 85%;            /* Light green text */
+  --event-low-border: 142 55% 55%;        /* Medium green border */
+  --event-low-hover: 142 45% 28%;         /* Slightly lighter on hover */
+
+  /* Event state colors - Dark mode */
+  --event-past-opacity: 0.5;              /* More muted past events in dark mode */
+  --event-active-glow: 35 22% 66%;        /* Warm glow for active/dragging */
+  --event-selected-border: 35 22% 80%;    /* Lighter border for selected */
 }
 
 /* Overkast Theme */
@@ -369,6 +491,67 @@
   --status-warning-border: #4a3820;
   --status-warning-text: #e0c080;
   --status-warning-icon: #d0a050;
+
+  /* ========================================
+     CALENDAR EVENT COLORS - True Night Mode
+     Pure neutral colors with high contrast
+     ======================================== */
+
+  /* Default/Personal Events - Neutral tones */
+  --event-default-bg: 0 0% 16%;           /* Pure dark gray */
+  --event-default-fg: 0 0% 85%;           /* Light gray text */
+  --event-default-border: 0 0% 65%;       /* Medium gray border */
+  --event-default-hover: 0 0% 20%;        /* Slightly lighter on hover */
+
+  /* Meeting/Appointment Events - Cooler blue-gray */
+  --event-meeting-bg: 217 15% 18%;        /* Dark blue-gray */
+  --event-meeting-fg: 217 30% 85%;        /* Light blue-gray text */
+  --event-meeting-border: 217 25% 60%;    /* Medium blue-gray border */
+  --event-meeting-hover: 217 15% 24%;     /* Slightly lighter on hover */
+
+  /* Task/Deadline Events - Warm amber */
+  --event-task-bg: 38 25% 18%;            /* Dark amber background */
+  --event-task-fg: 38 45% 85%;            /* Light amber text */
+  --event-task-border: 38 40% 60%;        /* Medium amber border */
+  --event-task-hover: 38 25% 24%;         /* Slightly lighter on hover */
+
+  /* Blocked/Busy Events - Pure neutral gray */
+  --event-blocked-bg: 0 0% 18%;           /* Pure dark gray */
+  --event-blocked-fg: 0 0% 75%;           /* Light gray text */
+  --event-blocked-border: 0 0% 50%;       /* Medium gray border */
+  --event-blocked-hover: 0 0% 23%;        /* Slightly lighter on hover */
+
+  /* External Calendar Events - Purple-gray */
+  --event-external-bg: 271 20% 20%;       /* Dark purple-gray */
+  --event-external-fg: 271 35% 85%;       /* Light purple-gray text */
+  --event-external-border: 271 30% 60%;   /* Medium purple-gray border */
+  --event-external-hover: 271 20% 26%;    /* Slightly lighter on hover */
+
+  /* Priority-based event colors - True Night */
+  --event-urgent-bg: 0 40% 22%;           /* Dark red background */
+  --event-urgent-fg: 0 60% 85%;           /* Light red text */
+  --event-urgent-border: 0 55% 65%;       /* Medium red border */
+  --event-urgent-hover: 0 40% 28%;        /* Slightly lighter on hover */
+
+  --event-high-bg: 38 40% 22%;            /* Dark orange background */
+  --event-high-fg: 38 60% 85%;            /* Light orange text */
+  --event-high-border: 38 55% 65%;        /* Medium orange border */
+  --event-high-hover: 38 40% 28%;         /* Slightly lighter on hover */
+
+  --event-medium-bg: 217 30% 20%;         /* Dark blue background */
+  --event-medium-fg: 217 50% 85%;         /* Light blue text */
+  --event-medium-border: 217 45% 62%;     /* Medium blue border */
+  --event-medium-hover: 217 30% 26%;      /* Slightly lighter on hover */
+
+  --event-low-bg: 142 30% 20%;            /* Dark green background */
+  --event-low-fg: 142 50% 85%;            /* Light green text */
+  --event-low-border: 142 45% 55%;        /* Medium green border */
+  --event-low-hover: 142 30% 26%;         /* Slightly lighter on hover */
+
+  /* Event state colors - True Night */
+  --event-past-opacity: 0.45;             /* More muted past events */
+  --event-active-glow: 0 0% 65%;          /* Neutral glow for active/dragging */
+  --event-selected-border: 0 0% 80%;      /* Lighter border for selected */
 }
 
 /* Gilded Meadow Theme - Light Yellow with Dark Grey */
@@ -895,6 +1078,117 @@ input[type="radio"].neo-radio:disabled + label::after {
   box-shadow:
     inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.4),
     inset -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   CALENDAR EVENT COLOR UTILITY CLASSES
+   Apply event colors via CSS classes
+   ======================================== */
+
+/* Event type classes */
+.event-type-default {
+  background-color: hsl(var(--event-default-bg));
+  color: hsl(var(--event-default-fg));
+  border-left-color: hsl(var(--event-default-border));
+}
+
+.event-type-default:hover {
+  background-color: hsl(var(--event-default-hover));
+}
+
+.event-type-meeting {
+  background-color: hsl(var(--event-meeting-bg));
+  color: hsl(var(--event-meeting-fg));
+  border-left-color: hsl(var(--event-meeting-border));
+}
+
+.event-type-meeting:hover {
+  background-color: hsl(var(--event-meeting-hover));
+}
+
+.event-type-task {
+  background-color: hsl(var(--event-task-bg));
+  color: hsl(var(--event-task-fg));
+  border-left-color: hsl(var(--event-task-border));
+}
+
+.event-type-task:hover {
+  background-color: hsl(var(--event-task-hover));
+}
+
+.event-type-blocked {
+  background-color: hsl(var(--event-blocked-bg));
+  color: hsl(var(--event-blocked-fg));
+  border-left-color: hsl(var(--event-blocked-border));
+}
+
+.event-type-blocked:hover {
+  background-color: hsl(var(--event-blocked-hover));
+}
+
+.event-type-external {
+  background-color: hsl(var(--event-external-bg));
+  color: hsl(var(--event-external-fg));
+  border-left-color: hsl(var(--event-external-border));
+}
+
+.event-type-external:hover {
+  background-color: hsl(var(--event-external-hover));
+}
+
+/* Priority-based event classes */
+.event-priority-urgent {
+  background-color: hsl(var(--event-urgent-bg));
+  color: hsl(var(--event-urgent-fg));
+  border-left-color: hsl(var(--event-urgent-border));
+}
+
+.event-priority-urgent:hover {
+  background-color: hsl(var(--event-urgent-hover));
+}
+
+.event-priority-high {
+  background-color: hsl(var(--event-high-bg));
+  color: hsl(var(--event-high-fg));
+  border-left-color: hsl(var(--event-high-border));
+}
+
+.event-priority-high:hover {
+  background-color: hsl(var(--event-high-hover));
+}
+
+.event-priority-medium {
+  background-color: hsl(var(--event-medium-bg));
+  color: hsl(var(--event-medium-fg));
+  border-left-color: hsl(var(--event-medium-border));
+}
+
+.event-priority-medium:hover {
+  background-color: hsl(var(--event-medium-hover));
+}
+
+.event-priority-low {
+  background-color: hsl(var(--event-low-bg));
+  color: hsl(var(--event-low-fg));
+  border-left-color: hsl(var(--event-low-border));
+}
+
+.event-priority-low:hover {
+  background-color: hsl(var(--event-low-hover));
+}
+
+/* Event state classes */
+.event-past {
+  opacity: var(--event-past-opacity);
+}
+
+.event-active,
+.event-dragging {
+  box-shadow: 0 0 0 2px hsl(var(--event-active-glow));
+}
+
+.event-selected {
+  box-shadow: 0 0 0 2px hsl(var(--event-selected-border));
 }
 
 /* ========================================

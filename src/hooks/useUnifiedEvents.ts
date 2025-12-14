@@ -274,29 +274,43 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
     }
   }, [])
   
-  // Update existing event with database-first approach
+  // Update existing event with database-first approach and optimistic updates
   const updateEvent = useCallback(async (id: string, updates: Partial<UnifiedEvent>): Promise<UnifiedEvent | null> => {
     setError(null)
+
+    // Store original event for rollback
+    const originalEvent = events.find(e => e.id === id)
+    if (!originalEvent) {
+      throw new Error('Event not found')
+    }
+
+    // Create optimistic update
+    const optimisticEvent: UnifiedEvent = {
+      ...originalEvent,
+      ...updates,
+      updatedAt: new Date().toISOString()
+    }
 
     try {
       // Validate updates if they affect critical fields
       if (updates.title !== undefined || updates.startDateTime !== undefined || updates.endDateTime !== undefined) {
-        const currentEvent = events.find(e => e.id === id)
-        if (!currentEvent) {
-          throw new Error('Event not found')
-        }
-
-        const updatedEventData = { ...currentEvent, ...updates }
-        const validation = UnifiedEventsManager.validateEvent(updatedEventData)
+        const validation = UnifiedEventsManager.validateEvent(optimisticEvent)
         if (!validation.isValid) {
           throw new Error(validation.errors.join(', '))
         }
       }
 
       console.log('🔄 ========== UPDATE EVENT API CALL STARTED ==========')
-      console.log('🔄 Updating event via database-first API...')
+      console.log('🔄 Optimistically updating event in UI...')
       console.log('🔄 Event ID:', id)
       console.log('🔄 Updates payload:', updates)
+
+      // Apply optimistic update immediately to prevent UI bounce-back
+      setEvents(prev => {
+        const optimisticEvents = prev.map(event => event.id === id ? optimisticEvent : event)
+        console.log('✅ Optimistic update applied to local state')
+        return optimisticEvents
+      })
 
       // Try API first
       try {
@@ -318,9 +332,10 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
             const updatedEvent = result.event
             console.log('🔄 Updated event from API:', updatedEvent)
 
+            // Update with server response (may have additional fields)
             setEvents(prev => {
               const newEvents = prev.map(event => event.id === id ? updatedEvent : event)
-              console.log('🔄 Local events updated, count:', newEvents.length)
+              console.log('🔄 Local events synced with server response')
               console.log('🔄 Updated event in local state:', newEvents.find(e => e.id === id))
               return newEvents
             })
@@ -335,25 +350,37 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
             return updatedEvent
           } else {
             console.error('❌ API returned success=false:', result)
+            // Rollback optimistic update
+            setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
+            throw new Error(result.error || 'Failed to update event')
           }
         } else {
           const errorText = await response.text()
           console.error('❌ API response not ok:', response.status, errorText)
+          // Rollback optimistic update
+          setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
+          throw new Error(`API error: ${response.status}`)
         }
       } catch (apiError) {
-        console.error('❌ API update failed, falling back to localStorage:', apiError)
-      }
+        console.error('❌ API update failed, attempting localStorage fallback:', apiError)
 
-      // Fallback to localStorage
-      const updatedEvent = UnifiedEventsManager.updateEvent(id, updates)
-      if (updatedEvent) {
-        setEvents(prev => prev.map(event => event.id === id ? updatedEvent : event))
-        setError('Warning: Event updated locally only - database may be unavailable')
+        // Try localStorage fallback
+        const localUpdatedEvent = UnifiedEventsManager.updateEvent(id, updates)
+        if (localUpdatedEvent) {
+          // Keep the optimistic update (already applied)
+          setError('Warning: Event updated locally only - database may be unavailable')
+          return localUpdatedEvent
+        } else {
+          // Rollback if localStorage also failed
+          setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
+          throw apiError
+        }
       }
-
-      return updatedEvent
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update event'
+      console.error('❌ Update error:', errorMessage)
+      // Ensure rollback happened
+      setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
       setError(errorMessage)
       throw new Error(errorMessage)
     }

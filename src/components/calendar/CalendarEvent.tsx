@@ -101,6 +101,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   }
 
   // Use resize hook for smooth resize behavior
+  // Disable auto-persistence - let parent handle it via onResizeEnd callback and confirmation modal
   const {
     resizeState,
     isResizing: hookIsResizing,
@@ -110,6 +111,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   } = useEventResize({
     pixelsPerHour,
     snapMinutes: 15,
+    enablePersistence: false, // Parent handles persistence via confirmation modal
     onResizeStart: (evt, handle) => {
       onResizeStart?.(evt, handle)
     },
@@ -143,20 +145,107 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Check if this event is currently being dragged
   const isDragging = externalIsDragging || (dragDropContext?.dragState.isDragging && dragDropContext?.dragState.draggedEvent?.id === event.id)
 
-  // Priority-based colors - light theme friendly
-  const getPriorityColor = (priority: Priority): string => {
+  // Get event type/priority-based colors using CSS variables
+  const getEventTypeClass = (event: UnifiedEvent): string => {
+    // Determine event type category
+    const eventType = event.type || 'event'
+
+    // Map event types to color classes
+    // Tasks map to task colors
+    if (eventType === 'task') {
+      return 'event-type-task'
+    }
+    // Goals and milestones map to meeting colors (blue) for distinction
+    if (eventType === 'goal' || eventType === 'milestone') {
+      return 'event-type-meeting'
+    }
+
+    // For regular events, use priority-based colors
+    const priority = event.priority
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-l-red-500 hover:bg-red-200 dark:hover:bg-red-900/40'
+        return 'event-priority-urgent'
       case 'high':
-        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-l-orange-500 hover:bg-orange-200 dark:hover:bg-orange-900/40'
+        return 'event-priority-high'
       case 'medium':
-        return 'bg-blue-100 dark:bg-accent/20 text-blue-800 dark:text-accent border-l-blue-500 dark:border-l-accent hover:bg-blue-200 dark:hover:bg-accent/30'
+        return 'event-priority-medium'
       case 'low':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-l-green-500 hover:bg-green-200 dark:hover:bg-green-900/40'
+        return 'event-priority-low'
       default:
-        return 'bg-gray-100 dark:bg-muted/50 text-gray-800 dark:text-muted-foreground border-l-gray-400 dark:border-l-muted-foreground hover:bg-gray-200 dark:hover:bg-muted/60'
+        return 'event-type-default'
     }
+  }
+
+  // Get inline styles for event colors
+  const getEventColorStyles = (event: UnifiedEvent): React.CSSProperties => {
+    const eventClass = getEventTypeClass(event)
+
+    // Map class names to CSS variable keys
+    const colorMap: Record<string, { bg: string; fg: string; border: string; hover: string }> = {
+      'event-type-meeting': {
+        bg: 'var(--event-meeting-bg)',
+        fg: 'var(--event-meeting-fg)',
+        border: 'var(--event-meeting-border)',
+        hover: 'var(--event-meeting-hover)'
+      },
+      'event-type-task': {
+        bg: 'var(--event-task-bg)',
+        fg: 'var(--event-task-fg)',
+        border: 'var(--event-task-border)',
+        hover: 'var(--event-task-hover)'
+      },
+      'event-type-blocked': {
+        bg: 'var(--event-blocked-bg)',
+        fg: 'var(--event-blocked-fg)',
+        border: 'var(--event-blocked-border)',
+        hover: 'var(--event-blocked-hover)'
+      },
+      'event-type-external': {
+        bg: 'var(--event-external-bg)',
+        fg: 'var(--event-external-fg)',
+        border: 'var(--event-external-border)',
+        hover: 'var(--event-external-hover)'
+      },
+      'event-priority-urgent': {
+        bg: 'var(--event-urgent-bg)',
+        fg: 'var(--event-urgent-fg)',
+        border: 'var(--event-urgent-border)',
+        hover: 'var(--event-urgent-hover)'
+      },
+      'event-priority-high': {
+        bg: 'var(--event-high-bg)',
+        fg: 'var(--event-high-fg)',
+        border: 'var(--event-high-border)',
+        hover: 'var(--event-high-hover)'
+      },
+      'event-priority-medium': {
+        bg: 'var(--event-medium-bg)',
+        fg: 'var(--event-medium-fg)',
+        border: 'var(--event-medium-border)',
+        hover: 'var(--event-medium-hover)'
+      },
+      'event-priority-low': {
+        bg: 'var(--event-low-bg)',
+        fg: 'var(--event-low-fg)',
+        border: 'var(--event-low-border)',
+        hover: 'var(--event-low-hover)'
+      },
+      'event-type-default': {
+        bg: 'var(--event-default-bg)',
+        fg: 'var(--event-default-fg)',
+        border: 'var(--event-default-border)',
+        hover: 'var(--event-default-hover)'
+      }
+    }
+
+    const colors = colorMap[eventClass] || colorMap['event-type-default']
+
+    return {
+      backgroundColor: `hsl(${colors.bg})`,
+      color: `hsl(${colors.fg})`,
+      borderLeftColor: `hsl(${colors.border})`,
+      '--hover-bg': `hsl(${colors.hover})`
+    } as React.CSSProperties
   }
 
   // Format time display
@@ -309,7 +398,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Use a wrapper div for HTML5 drag, motion.div for animations
   return (
     <div
-      className="group"
+      className="group overflow-visible relative"
       draggable={effectiveViewMode !== 'month'}
       onDragStart={handleDragStartHTML5}
       onDragEnd={handleDragEndHTML5}
@@ -320,13 +409,17 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         data-event-id={event.id}
         className={`
           relative cursor-pointer select-none
-          ${getPriorityColor(event.priority)}
-          border-l-4 rounded-r-md shadow-sm
+          border-l-4 rounded-r-md shadow-sm transition-colors
+          ${getEventTypeClass(event)}
           ${isEffectivelyCompact ? 'p-2' : 'p-3'}
-          ${isDragging ? 'opacity-50 ring-2 ring-accent' : ''}
+          ${isDragging ? 'opacity-50 ring-2' : ''}
           ${className}
         `}
-        style={eventStyle}
+        style={{
+          ...eventStyle,
+          borderLeftWidth: '4px',
+          opacity: isDragging ? 0.5 : 1
+        }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleClick}
@@ -336,12 +429,14 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         animate={{
           scale: isDragging ? 1.02 : 1,
           boxShadow: isDragging
-            ? '0 10px 25px rgba(0,0,0,0.3)'
+            ? `0 10px 25px rgba(0,0,0,0.3), 0 0 0 2px hsl(var(--event-active-glow))`
             : isHovered
               ? '0 4px 12px rgba(0,0,0,0.15)'
               : '0 1px 3px rgba(0,0,0,0.1)'
         }}
-        whileHover={{ scale: 1.01 }}
+        whileHover={{
+          scale: 1.01
+        }}
         whileTap={{ scale: 0.99 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         layout

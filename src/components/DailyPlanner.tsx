@@ -25,6 +25,7 @@ import ConflictResolutionModal from '@/components/ConflictResolutionModal'
 import { conflictDetector, ConflictResult, ResolutionStrategy } from '@/lib/conflict-detector'
 import { eventDebugger } from '@/lib/event-debugger'
 import DebugPanel from '@/components/DebugPanel'
+import { calculateDragDropTimes } from '@/utils/calendar'
 import { 
   mockTasks, 
   calculatePlannerStats, 
@@ -849,16 +850,24 @@ const DailyPlanner: React.FC<DailyPlannerProps> = ({ date = createLocalDate(), o
   }
 
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
+    console.log('🎯 [DailyPlanner] handleEventResize CALLED (via DragDropProvider)')
+    console.log('🎯 [DailyPlanner] Event:', event.title, event.id)
+    console.log('🎯 [DailyPlanner] New times:', { newStartTime, newEndTime })
+
+    const updates = {
+      startDateTime: newStartTime,
+      endDateTime: newEndTime,
+      duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
+    }
+
+    console.log('🎯 [DailyPlanner] Calling updateEvent with:', updates)
+
     try {
-      const updates = {
-        startDateTime: newStartTime,
-        endDateTime: newEndTime,
-        duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
-      }
-      await updateEvent(event.id, updates)
-      console.log('✅ Event resized:', event.title)
+      const result = await updateEvent(event.id, updates)
+      console.log('🎯 [DailyPlanner] updateEvent result:', result)
+      console.log('✅ [DailyPlanner] Event resized successfully:', event.title)
     } catch (error) {
-      console.error('❌ Error resizing event:', error)
+      console.error('❌ [DailyPlanner] Error resizing event:', error)
     }
   }
 
@@ -882,67 +891,23 @@ const DailyPlanner: React.FC<DailyPlannerProps> = ({ date = createLocalDate(), o
         console.log('🎯 Target event details:', { id: targetEvent.id, title: targetEvent.title, startDateTime: targetEvent.startDateTime })
       }
 
-      // Calculate new start and end times based on the new slot
-      console.log('🎯 TIMEZONE DEBUG - Input data:', {
-        toSlotDate: data.toSlot.date,
-        toSlotHour: data.toSlot.hour,
-        originalStartDateTime: data.event.startDateTime
-      })
+      // Use the new drag calculation utility for accurate time mapping
+      const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
+        data.event,
+        data.fromSlot,
+        data.toSlot
+      )
 
-      // Parse the original event start time to preserve timezone handling
-      const originalStart = new Date(data.event.startDateTime)
-      const originalDuration = data.event.duration
-
-      console.log('🎯 TIMEZONE DEBUG - Parsed original start:', {
-        originalStart: originalStart.toISOString(),
-        originalStartLocal: originalStart.toString(),
-        originalHour: originalStart.getHours(),
-        originalMinutes: originalStart.getMinutes()
-      })
-
-      // Create the new start time by preserving the date format from original event
-      // but updating the hour and keeping the same timezone context
-      const newStart = new Date(originalStart)
-
-      // Parse the target date and set the new date components
-      const targetDate = new Date(data.toSlot.date + 'T00:00:00')
-      newStart.setFullYear(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
-      newStart.setHours(data.toSlot.hour)
-      // Keep original minutes
-      newStart.setMinutes(originalStart.getMinutes())
-
-      const newEnd = new Date(newStart.getTime() + originalDuration * 60000)
-
-      console.log('🎯 TIMEZONE DEBUG - Calculated new times:', {
-        newStart: newStart.toISOString(),
-        newStartLocal: newStart.toString(),
-        newEnd: newEnd.toISOString(),
-        newEndLocal: newEnd.toString()
-      })
-
-      // Format dates in local timezone to avoid UTC conversion issues
-      const formatToLocalISOString = (date: Date) => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        const seconds = String(date.getSeconds()).padStart(2, '0')
-        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
-      }
-
-      const newStartString = formatToLocalISOString(newStart)
-      const newEndString = formatToLocalISOString(newEnd)
-
-      console.log('🎯 TIMEZONE DEBUG - Formatted strings (local timezone):', {
-        newStartString,
-        newEndString,
+      console.log('🎯 Calculated new times:', {
+        originalStart: data.event.startDateTime,
+        newStart: newStartDateTime,
+        newEnd: newEndDateTime,
         targetHour: data.toSlot.hour
       })
 
       const updates = {
-        startDateTime: newStartString,
-        endDateTime: newEndString,
+        startDateTime: newStartDateTime,
+        endDateTime: newEndDateTime,
         notes: data.reason ?
           `${data.event.notes || ''}
 
@@ -950,7 +915,6 @@ Rescheduled: ${data.reason}`.trim() :
           data.event.notes
       }
 
-      console.log('🎯 Calculated new times:', { originalStart: data.event.startDateTime, newStart: newStartString, newEnd: newEndString })
       console.log('🎯 Calling updateEvent with updates:', updates)
       console.log('🎯 updateEvent function type:', typeof updateEvent)
 
@@ -978,8 +942,8 @@ Rescheduled: ${data.reason}`.trim() :
             // Create the new event object with updated times
             const newEvent: UnifiedEvent = {
               ...data.event,
-              startDateTime: typeof newStart === 'string' ? newStart : newStart.toISOString(),
-              endDateTime: typeof newEnd === 'string' ? newEnd : newEnd.toISOString(),
+              startDateTime: newStartDateTime,
+              endDateTime: newEndDateTime,
               updatedAt: new Date().toISOString()
             }
 
@@ -1258,8 +1222,8 @@ Resized: ${data.reason}`.trim() :
               </div>
               
               {/* Events for this hour - using continuous blocks */}
-              <div className="col-span-10">
-                <div style={{ height: `${pixelsPerHour}px` }}>
+              <div className="col-span-10 overflow-visible">
+                <div style={{ height: `${pixelsPerHour}px` }} className="overflow-visible">
                   <DropZone
                     date={format(date, 'yyyy-MM-dd')}
                     hour={hour}
@@ -1456,15 +1420,20 @@ Resized: ${data.reason}`.trim() :
                                   console.log('Resize started:', event.title, handle)
                                 }}
                                 onResizeEnd={async (event, newStart, newEnd) => {
-                                  console.log('🎯 Resize ended - showing confirmation modal:', event.title, newStart, newEnd)
+                                  console.log('🎯 [DailyPlanner CalendarEvent] onResizeEnd CALLED')
+                                  console.log('🎯 [DailyPlanner CalendarEvent] Event:', event.title, event.id)
+                                  console.log('🎯 [DailyPlanner CalendarEvent] New times:', { newStart, newEnd })
 
                                   // Determine which handle was used
                                   const originalStart = event.startDateTime
                                   const originalEnd = event.endDateTime || new Date(new Date(event.startDateTime).getTime() + event.duration * 60000).toISOString().slice(0, 19)
+                                  console.log('🎯 [DailyPlanner CalendarEvent] Original times:', { originalStart, originalEnd })
 
                                   const handle = originalStart !== newStart ? 'top' : 'bottom'
+                                  console.log('🎯 [DailyPlanner CalendarEvent] Detected handle:', handle)
 
                                   // Show resize confirmation modal
+                                  console.log('🎯 [DailyPlanner CalendarEvent] Setting resize data and showing modal...')
                                   setResizeData({
                                     event,
                                     originalStart,
@@ -1474,6 +1443,7 @@ Resized: ${data.reason}`.trim() :
                                     handle
                                   })
                                   setShowResizeModal(true)
+                                  console.log('🎯 [DailyPlanner CalendarEvent] Modal should now be visible')
                                 }}
                                 showResizeHandles={true}
                                 className="mb-2"

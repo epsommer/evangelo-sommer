@@ -19,6 +19,7 @@ import DropZone from '@/components/DropZone'
 import RescheduleConfirmationModal from '@/components/RescheduleConfirmationModal'
 import DragVisualFeedback from '@/components/DragVisualFeedback'
 import EventDetailsModal from '@/components/EventDetailsModal'
+import { calculateDragDropTimes } from '@/utils/calendar'
 
 interface ScheduledService {
   id: string
@@ -257,33 +258,48 @@ const WeekView: React.FC<WeekViewProps> = ({
   }
 
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
+    console.log('🎯 [WeekView] handleEventResize CALLED')
+    console.log('🎯 [WeekView] Event:', event.title, event.id)
+    console.log('🎯 [WeekView] New times:', { newStartTime, newEndTime })
+
+    const updates = {
+      startDateTime: newStartTime,
+      endDateTime: newEndTime,
+      duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
+    }
+
+    console.log('🎯 [WeekView] Calling updateEvent with:', updates)
+
     try {
-      const updates = {
-        startDateTime: newStartTime,
-        endDateTime: newEndTime,
-        duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
-      }
-      await updateEvent(event.id, updates)
-      console.log('✅ Event resized:', event.title)
+      const result = await updateEvent(event.id, updates)
+      console.log('🎯 [WeekView] updateEvent result:', result)
+      console.log('✅ [WeekView] Event resized successfully:', event.title)
     } catch (error) {
-      console.error('❌ Error resizing event:', error)
+      console.error('❌ [WeekView] Error resizing event:', error)
     }
   }
 
   const handleRescheduleConfirm = async (data: RescheduleData, notifyParticipants: boolean) => {
     try {
-      // Calculate new start and end times based on the new slot
-      const newDate = new Date(data.toSlot.date + 'T00:00:00')
-      newDate.setHours(data.toSlot.hour)
-      
-      const originalStart = new Date(data.event.startDateTime)
-      const originalDuration = data.event.duration
-      
-      // Preserve the minutes from original time
-      newDate.setMinutes(originalStart.getMinutes())
-      
-      const newStart = newDate.toISOString().slice(0, 19)
-      const newEnd = new Date(newDate.getTime() + originalDuration * 60000).toISOString().slice(0, 19)
+      console.group('🎯 [WeekView] handleRescheduleConfirm')
+      console.log('Reschedule data:', {
+        eventTitle: data.event.title,
+        eventId: data.event.id,
+        fromSlot: data.fromSlot,
+        toSlot: data.toSlot,
+        originalStartDateTime: data.event.startDateTime,
+        originalDuration: data.event.duration
+      })
+
+      // Use the new drag calculation utility for accurate time mapping
+      const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
+        data.event,
+        data.fromSlot,
+        data.toSlot
+      )
+
+      const newStart = newStartDateTime
+      const newEnd = newEndDateTime
       
       const updates = {
         startDateTime: newStart,
@@ -295,9 +311,15 @@ Rescheduled: ${data.reason}`.trim() :
           data.event.notes
       }
       
+      console.log('Applying updates to event:', updates)
       await updateEvent(data.event.id, updates)
-      
-      console.log('✅ Event rescheduled:', data.event.title)
+
+      console.log('✅ Event rescheduled successfully:', {
+        eventTitle: data.event.title,
+        newStartDateTime: newStart,
+        newEndDateTime: newEnd
+      })
+      console.groupEnd()
       
       // Send notifications to participants if requested
       if (notifyParticipants) {
@@ -518,8 +540,9 @@ Rescheduled: ${data.reason}`.trim() :
                               currentDate={format(day, 'yyyy-MM-dd')}
                               currentHour={hour}
                               onClick={(e) => handleShowEventDetails(e)}
-                              showResizeHandles={false}
-                              isCompact={true}
+                              onResizeEnd={handleEventResize}
+                              showResizeHandles={true}
+                              isCompact={false}
                               className="text-xs p-1 md:p-2 rounded border hover:shadow-sm transition-all"
                             />
                           )

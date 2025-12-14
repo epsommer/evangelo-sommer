@@ -15,7 +15,9 @@ import MultiEventCreationModal from '@/components/MultiEventCreationModal'
 import { createLocalDate } from '@/lib/timezone-utils'
 import { DragDropProvider } from '@/components/DragDropContext'
 import DropZone from '@/components/DropZone'
+import CalendarEvent from '@/components/calendar/CalendarEvent'
 import { eventCategorizer } from '@/lib/event-categorizer'
+import { calculateDragDropTimes } from '@/utils/calendar'
 
 // Types
 interface MissionObjective {
@@ -232,6 +234,66 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
     setShowEventModal(true)
   }
 
+  // Handle event resize
+  const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
+    console.log('🎯 [UnifiedDailyPlanner] handleEventResize CALLED')
+    console.log('🎯 [UnifiedDailyPlanner] Event:', event.title, event.id)
+    console.log('🎯 [UnifiedDailyPlanner] New times:', { newStartTime, newEndTime })
+
+    const updates = {
+      startDateTime: newStartTime,
+      endDateTime: newEndTime,
+      duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
+    }
+
+    console.log('🎯 [UnifiedDailyPlanner] Calling updateEvent with:', updates)
+
+    try {
+      await updateEvent(event.id, updates)
+      console.log('✅ [UnifiedDailyPlanner] Event resized successfully:', event.title)
+      onRefreshTrigger?.()
+    } catch (error) {
+      console.error('❌ [UnifiedDailyPlanner] Error resizing event:', error)
+    }
+  }
+
+  // Handle event drop (drag and drop)
+  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
+    console.group('🎯 [UnifiedDailyPlanner] handleEventDrop')
+    console.log('Event:', event.title, event.id)
+    console.log('From slot:', fromSlot)
+    console.log('To slot:', toSlot)
+    console.log('Original times:', {
+      startDateTime: event.startDateTime,
+      endDateTime: event.endDateTime,
+      duration: event.duration
+    })
+
+    try {
+      // Use the new drag calculation utility for accurate time mapping
+      const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
+        event,
+        fromSlot,
+        toSlot
+      )
+
+      const updates = {
+        startDateTime: newStartDateTime,
+        endDateTime: newEndDateTime,
+        duration
+      }
+
+      console.log('Applying updates:', updates)
+      await updateEvent(event.id, updates)
+      console.log('✅ Event moved successfully:', event.title)
+      console.groupEnd()
+      onRefreshTrigger?.()
+    } catch (error) {
+      console.error('❌ Error moving event:', error)
+      console.groupEnd()
+    }
+  }
+
   // Filter events
   const filteredEvents = useMemo(() => {
     let filtered = todaysEvents
@@ -315,31 +377,19 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
                 onTimeSlotClick={() => handleTimeSlotClick(hour)}
               >
                 {hourEvents.map(event => (
-                  <div
+                  <CalendarEvent
                     key={event.id}
-                    className="neo-card p-2 mb-1 cursor-pointer hover:bg-accent/5 transition-colors"
+                    event={event}
+                    viewMode="day"
+                    currentDate={format(date, 'yyyy-MM-dd')}
+                    currentHour={hour}
+                    pixelsPerHour={50}
                     onClick={() => onEventView?.(event)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className={`w-1 h-8 rounded ${PRIORITY_COLORS[event.priority as keyof typeof PRIORITY_COLORS] || 'bg-blue-500'}`} />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{event.title}</div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-2">
-                          <span>{format(new Date(event.startDateTime), 'h:mm a')}</span>
-                          {event.duration && <span>({event.duration}min)</span>}
-                          {event.clientName && (
-                            <span className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {event.clientName}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-[10px]">
-                        {event.type}
-                      </Badge>
-                    </div>
-                  </div>
+                    onResizeEnd={handleEventResize}
+                    showResizeHandles={true}
+                    isCompact={false}
+                    className="mb-1"
+                  />
                 ))}
               </DropZone>
             </div>
@@ -521,7 +571,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   )
 
   return (
-    <DragDropProvider onEventDrop={() => {}} onEventResize={() => {}}>
+    <DragDropProvider onEventDrop={handleEventDrop} onEventResize={handleEventResize}>
       <div ref={containerRef} className="h-full flex flex-col">
         {/* Header */}
         <div className="p-4 border-b">

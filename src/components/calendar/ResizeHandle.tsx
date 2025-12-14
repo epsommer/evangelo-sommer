@@ -30,9 +30,9 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
     const baseClasses = `
       absolute transition-all duration-200 z-50
       ${isCompact
-        ? 'opacity-0 hover:opacity-80 group-hover:opacity-50'
-        : 'opacity-20 hover:opacity-100 group-hover:opacity-60'}
-      bg-accent/70 hover:bg-accent
+        ? 'opacity-40 hover:opacity-100 group-hover:opacity-70'
+        : 'opacity-60 hover:opacity-100 group-hover:opacity-80'}
+      bg-accent hover:bg-accent
       ${className}
     `
 

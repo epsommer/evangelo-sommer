@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useRef, useCallback } from 'react'
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react'
 import { UnifiedEvent } from '@/components/EventCreationModal'
 
 export interface DragState {
@@ -77,6 +77,19 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
 
   const [showDropZones, setShowDropZones] = useState(false)
 
+  // Use refs to always have access to the latest state in callbacks
+  const dragStateRef = useRef<DragState>(dragState)
+  const dropZoneStateRef = useRef<DropZoneState>(dropZoneState)
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    dragStateRef.current = dragState
+  }, [dragState])
+
+  useEffect(() => {
+    dropZoneStateRef.current = dropZoneState
+  }, [dropZoneState])
+
   const startDrag = useCallback((
     event: UnifiedEvent,
     offset: { x: number; y: number },
@@ -94,33 +107,41 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
   }, [])
 
   const endDrag = useCallback(() => {
+    // Use refs to get the LATEST state (avoids stale closure issues)
+    const currentDragState = dragStateRef.current
+    const currentDropZoneState = dropZoneStateRef.current
+
     console.log('🎯 DragDropContext.endDrag called')
-    console.log('🎯 Current dragState:', dragState)
-    console.log('🎯 Current dropZoneState:', dropZoneState)
+    console.log('🎯 Current dragState (from ref):', currentDragState)
+    console.log('🎯 Current dropZoneState (from ref):', currentDropZoneState)
 
     // If we have an active drop zone, trigger the drop callback
-    if (dragState.originalSlot && dropZoneState.activeDropZone && dragState.draggedEvent) {
+    if (currentDragState.originalSlot && currentDropZoneState.activeDropZone && currentDragState.draggedEvent) {
       const isSameSlot = (
-        dragState.originalSlot.date === dropZoneState.activeDropZone.date &&
-        dragState.originalSlot.hour === dropZoneState.activeDropZone.hour
+        currentDragState.originalSlot.date === currentDropZoneState.activeDropZone.date &&
+        currentDragState.originalSlot.hour === currentDropZoneState.activeDropZone.hour
       )
 
       console.log('🎯 Drop zone conditions:', {
-        hasOriginalSlot: !!dragState.originalSlot,
-        hasActiveDropZone: !!dropZoneState.activeDropZone,
-        hasDraggedEvent: !!dragState.draggedEvent,
+        hasOriginalSlot: !!currentDragState.originalSlot,
+        hasActiveDropZone: !!currentDropZoneState.activeDropZone,
+        hasDraggedEvent: !!currentDragState.draggedEvent,
         isSameSlot,
         hasOnEventDrop: !!onEventDrop
       })
 
       if (!isSameSlot && onEventDrop) {
-        console.log('🎯 Calling onEventDrop:', dragState.draggedEvent.title, 'from', dragState.originalSlot, 'to', dropZoneState.activeDropZone)
-        onEventDrop(dragState.draggedEvent, dragState.originalSlot, dropZoneState.activeDropZone)
+        console.log('🎯 Calling onEventDrop:', currentDragState.draggedEvent.title, 'from', currentDragState.originalSlot, 'to', currentDropZoneState.activeDropZone)
+        onEventDrop(currentDragState.draggedEvent, currentDragState.originalSlot, currentDropZoneState.activeDropZone)
       } else {
         console.log('🎯 Not calling onEventDrop - same slot or no callback')
       }
     } else {
-      console.log('🎯 Not calling onEventDrop - missing required data')
+      console.log('🎯 Not calling onEventDrop - missing required data:', {
+        hasOriginalSlot: !!currentDragState.originalSlot,
+        hasActiveDropZone: !!currentDropZoneState.activeDropZone,
+        hasDraggedEvent: !!currentDragState.draggedEvent
+      })
     }
 
     console.log('🎯 Resetting drag state')
@@ -135,7 +156,7 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
       hoveredDropZone: null
     })
     setShowDropZones(false)
-  }, [dragState, dropZoneState, onEventDrop])
+  }, [onEventDrop])
 
   const setHoveredDropZone = useCallback((zone: { date: string; hour: number } | null) => {
     setDropZoneState(prev => ({ ...prev, hoveredDropZone: zone }))

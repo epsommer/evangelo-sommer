@@ -12,6 +12,7 @@ import DragAndDropEvent from '@/components/DragAndDropEvent'
 import DropZone from '@/components/DropZone'
 import RescheduleConfirmationModal from '@/components/RescheduleConfirmationModal'
 import DragVisualFeedback from '@/components/DragVisualFeedback'
+import { calculateDragDropTimes } from '@/utils/calendar'
 
 interface DragDropCalendarDemoProps {
   onClose?: () => void
@@ -122,15 +123,15 @@ const DragDropCalendarDemo: React.FC<DragDropCalendarDemoProps> = ({ onClose }) 
   // Confirm reschedule
   const handleRescheduleConfirm = async (data: RescheduleData, notifyParticipants: boolean) => {
     try {
-      // Calculate new times
-      const newDate = new Date(data.toSlot.date + 'T00:00:00')
-      newDate.setHours(data.toSlot.hour)
-      
-      const originalStart = new Date(data.event.startDateTime)
-      newDate.setMinutes(originalStart.getMinutes())
-      
-      const newStart = newDate.toISOString().slice(0, 19)
-      const newEnd = new Date(newDate.getTime() + data.event.duration * 60000).toISOString().slice(0, 19)
+      // Use the new drag calculation utility for accurate time mapping
+      const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
+        data.event,
+        data.fromSlot,
+        data.toSlot
+      )
+
+      const newStart = newStartDateTime
+      const newEnd = newEndDateTime
       
       // Update the event
       setEvents(prev => prev.map(e => 

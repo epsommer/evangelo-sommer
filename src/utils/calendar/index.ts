@@ -40,3 +40,11 @@ export {
   type ResizeBounds,
   type TimeCalculation
 } from './resizeCalculations'
+
+export {
+  calculateDragDropTimes,
+  calculateTimeFromPixelPosition,
+  verifyTimeCalculation,
+  type DropSlot,
+  type DragDropTimeCalculation
+} from './dragCalculations'

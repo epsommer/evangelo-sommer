@@ -84,6 +84,8 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const currentEventRef = useRef<UnifiedEvent | null>(null)
   const animationFrameRef = useRef<number | null>(null)
+  const startYRef = useRef<number>(0)
+  const currentHandleRef = useRef<ResizeHandle | null>(null)
 
   /**
    * Handle resize start
@@ -110,6 +112,11 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
       const initialTop = eventElement.offsetTop
       const initialLeft = eventElement.offsetLeft
 
+      // Store in refs for reliable access in callbacks
+      startYRef.current = clientY
+      currentHandleRef.current = handle
+      currentEventRef.current = event
+
       setResizeState({
         isResizing: true,
         handle,
@@ -124,7 +131,6 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
       })
 
       setMousePosition({ x: clientX, y: clientY })
-      currentEventRef.current = event
 
       onResizeStart?.(event, handle)
     },
@@ -184,18 +190,38 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
 
   /**
    * Handle resize end with persistence
+   * @param finalClientY - The final Y position from the mouse/touch event
    */
-  const handleResizeEndCallback = useCallback(async () => {
-    if (!resizeState.isResizing || !currentEventRef.current || !resizeState.handle) return
+  const handleResizeEndCallback = useCallback(async (finalClientY?: number) => {
+    console.log('🎯 [useEventResize] handleResizeEndCallback CALLED')
+    console.log('🎯 [useEventResize] currentEventRef.current:', currentEventRef.current?.title)
+    console.log('🎯 [useEventResize] currentHandleRef.current:', currentHandleRef.current)
+    console.log('🎯 [useEventResize] finalClientY:', finalClientY)
+    console.log('🎯 [useEventResize] startYRef.current:', startYRef.current)
+
+    if (!currentEventRef.current || !currentHandleRef.current) {
+      console.log('🔄 [useEventResize] Resize end - missing refs, aborting')
+      return
+    }
 
     const event = currentEventRef.current
-    const deltaY = resizeState.currentDeltaY
+    const handle = currentHandleRef.current
+
+    // Calculate deltaY from the final mouse position if provided, otherwise use state
+    let deltaY: number
+    if (finalClientY !== undefined) {
+      deltaY = finalClientY - startYRef.current
+      console.log('🎯 [useEventResize] Using finalClientY - deltaY:', deltaY)
+    } else {
+      deltaY = resizeState.currentDeltaY
+      console.log('🎯 [useEventResize] Using state deltaY:', deltaY)
+    }
 
     // Calculate final times
     const timeCalc = calculateResizedTimes(
       event,
       deltaY,
-      resizeState.handle,
+      handle,
       pixelsPerHour,
       snapMinutes
     )
@@ -212,10 +238,24 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     const originalStartString = format(originalStart, "yyyy-MM-dd'T'HH:mm:ss")
     const originalEndString = format(originalEnd, "yyyy-MM-dd'T'HH:mm:ss")
 
+    console.log('🎯 [useEventResize] Comparing times:', {
+      event: event.title,
+      handle,
+      deltaY,
+      originalStart: originalStartString,
+      originalEnd: originalEndString,
+      newStart: newStartString,
+      newEnd: newEndString,
+      changed: newStartString !== originalStartString || newEndString !== originalEndString
+    })
+
     // Only trigger resize end if times actually changed
     if (newStartString !== originalStartString || newEndString !== originalEndString) {
+      console.log('🎯 [useEventResize] ✅ Times changed! Calling onResizeEnd callback...')
+      console.log('🎯 [useEventResize] onResizeEnd callback exists:', !!onResizeEnd)
       // Notify parent component
       onResizeEnd?.(event, newStartString, newEndString)
+      console.log('🎯 [useEventResize] onResizeEnd callback completed')
 
       // Persist to database if enabled
       if (enablePersistence) {
@@ -227,6 +267,8 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
           duration: Math.round((timeCalc.newEnd.getTime() - timeCalc.newStart.getTime()) / 60000)
         })
       }
+    } else {
+      console.log('🔄 Resize end - no time change detected')
     }
 
     // Reset state
@@ -246,7 +288,9 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     })
 
     currentEventRef.current = null
-  }, [resizeState, pixelsPerHour, snapMinutes, onResizeEnd, enablePersistence, updateEvent])
+    currentHandleRef.current = null
+    startYRef.current = 0
+  }, [resizeState.currentDeltaY, pixelsPerHour, snapMinutes, onResizeEnd, enablePersistence, updateEvent])
 
   /**
    * Set up global mouse/touch event listeners during resize
@@ -261,7 +305,10 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
 
     const handleEnd = (e: MouseEvent | TouchEvent) => {
       e.preventDefault()
-      handleResizeEndCallback()
+      // Get the final Y position from the mouse/touch event
+      const isTouch = 'changedTouches' in e
+      const finalClientY = isTouch ? e.changedTouches[0].clientY : e.clientY
+      handleResizeEndCallback(finalClientY)
     }
 
     document.addEventListener('mousemove', handleMove)

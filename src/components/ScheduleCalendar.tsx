@@ -15,6 +15,7 @@ import ResizeConfirmationModal from '@/components/ResizeConfirmationModal';
 import DragVisualFeedback from '@/components/DragVisualFeedback';
 import { ClientNotificationService } from '@/lib/client-notification-service';
 import { UnifiedEvent } from '@/components/EventCreationModal';
+import { calculateDragDropTimes } from '@/utils/calendar';
 
 // Safe date formatting utility
 const safeFormatDate = (dateValue: string | Date | undefined, formatStr: string, fallback: string = '--:--'): string => {
@@ -158,18 +159,20 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
   const handleRescheduleConfirm = async (data: any, notifyParticipants: boolean) => {
     try {
-      // Calculate new start and end times
-      const newDate = new Date(data.toSlot.date + 'T00:00:00');
-      newDate.setHours(data.toSlot.hour);
+      console.group('🎯 [ScheduleCalendar] handleRescheduleConfirm');
+      console.log('Event:', data.event.title, data.event.id);
+      console.log('From slot:', data.fromSlot);
+      console.log('To slot:', data.toSlot);
 
-      const originalStart = new Date(data.event.startDateTime);
-      const originalDuration = data.event.duration;
+      // Use the new drag calculation utility for accurate time mapping
+      const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
+        data.event,
+        data.fromSlot,
+        data.toSlot
+      );
 
-      // Preserve the minutes from original time
-      newDate.setMinutes(originalStart.getMinutes());
-
-      const newStart = newDate.toISOString().slice(0, 19);
-      const newEnd = new Date(newDate.getTime() + originalDuration * 60000).toISOString().slice(0, 19);
+      const newStart = newStartDateTime;
+      const newEnd = newEndDateTime;
 
       const updates = {
         startDateTime: newStart,
@@ -181,8 +184,10 @@ Rescheduled: ${data.reason}`.trim() :
           data.event.notes
       };
 
+      console.log('Applying updates:', updates);
       await updateEvent(data.event.id, updates);
-      console.log('✅ Event rescheduled:', data.event.title);
+      console.log('✅ Event rescheduled successfully');
+      console.groupEnd();
 
       // Send notifications if requested
       if (notifyParticipants) {
