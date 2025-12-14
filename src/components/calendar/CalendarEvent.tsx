@@ -409,7 +409,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         data-event-id={event.id}
         className={`
           relative cursor-pointer select-none
-          border-l-4 rounded-r-md shadow-sm transition-colors
+          rounded-r-md shadow-sm transition-colors
           ${getEventTypeClass(event)}
           ${isEffectivelyCompact ? 'p-2' : 'p-3'}
           ${isDragging ? 'opacity-50 ring-2' : ''}
@@ -418,6 +418,10 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         style={{
           ...eventStyle,
           borderLeftWidth: '4px',
+          borderLeftStyle: 'solid',
+          borderTopWidth: '0px',
+          borderRightWidth: '0px',
+          borderBottomWidth: '0px',
           opacity: isDragging ? 0.5 : 1
         }}
         onMouseEnter={() => setIsHovered(true)}
