@@ -15,6 +15,7 @@ import { ClientNotificationService } from '@/lib/client-notification-service'
 import { DragDropProvider } from '@/components/DragDropContext'
 import { MouseEventDebugger } from '@/components/MouseEventDebugger'
 import DragAndDropEvent from '@/components/DragAndDropEvent'
+import CalendarEvent from '@/components/calendar/CalendarEvent'
 import DropZone from '@/components/DropZone'
 import RescheduleConfirmationModal from '@/components/RescheduleConfirmationModal'
 import ResizeConfirmationModal from '@/components/ResizeConfirmationModal'
@@ -1403,12 +1404,13 @@ Resized: ${data.reason}`.trim() :
                               />
                             )
                           } else if (eventStartHour === hour) {
-                            // Single hour event - render normally
-                            console.log(`🔧 RENDERING SINGLE-HOUR EVENT: "${unifiedEvent.title}" (${eventDuration}min) as DragAndDropEvent`);
+                            // Single hour event - render with new CalendarEvent (Framer Motion)
+                            console.log(`🔧 RENDERING SINGLE-HOUR EVENT: "${unifiedEvent.title}" (${eventDuration}min) as CalendarEvent`);
                             return (
-                              <DragAndDropEvent
+                              <CalendarEvent
                                 key={task.id}
                                 event={unifiedEvent}
+                                viewMode="day"
                                 conflicts={eventConflicts.get(unifiedEvent.id)}
                                 conflictingEvents={eventConflictTabs.get(unifiedEvent.id) || []}
                                 currentDate={format(date, 'yyyy-MM-dd')}

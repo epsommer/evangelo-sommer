@@ -9,6 +9,7 @@ import { useUnifiedEvents } from '@/hooks/useUnifiedEvents';
 import DropdownMenu from '@/components/ui/DropdownMenu';
 import { DragDropProvider } from '@/components/DragDropContext';
 import DragAndDropEvent from '@/components/DragAndDropEvent';
+import CalendarEvent from '@/components/calendar/CalendarEvent';
 import RescheduleConfirmationModal from '@/components/RescheduleConfirmationModal';
 import ResizeConfirmationModal from '@/components/ResizeConfirmationModal';
 import DragVisualFeedback from '@/components/DragVisualFeedback';
@@ -510,14 +511,15 @@ Duration changed: ${data.reason}`.trim() :
                         const unifiedEvent = unifiedEvents.find(e => e.id === service.id);
 
                         if (unifiedEvent) {
-                          // Use DragAndDropEvent for unified events
+                          // Use CalendarEvent (Framer Motion) for unified events
                           const eventDate = new Date(unifiedEvent.startDateTime);
                           const eventHour = eventDate.getHours();
 
                           return (
-                            <DragAndDropEvent
+                            <CalendarEvent
                               key={service.id}
                               event={unifiedEvent}
+                              viewMode="month"
                               currentDate={format(day, 'yyyy-MM-dd')}
                               currentHour={eventHour}
                               onClick={(e) => {
@@ -525,7 +527,7 @@ Duration changed: ${data.reason}`.trim() :
                                   onEventView(e);
                                 }
                               }}
-                              showResizeHandles={true}
+                              showResizeHandles={false}
                               isCompact={true}
                               className="text-xs p-1 rounded border hover:shadow-sm transition-all"
                             />

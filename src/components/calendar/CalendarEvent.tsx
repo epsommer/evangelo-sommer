@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { format, parseISO, addMinutes } from 'date-fns'
 import { Clock, MapPin, User, AlertTriangle, GripVertical } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { UnifiedEvent, Priority } from '@/components/EventCreationModal'
 import { ConflictResult } from '@/lib/conflict-detector'
@@ -11,12 +12,32 @@ import ResizeHandle from '@/components/calendar/ResizeHandle'
 import TimeTooltip from '@/components/calendar/TimeTooltip'
 import { useEventResize } from '@/hooks/useEventResize'
 import { ResizeHandle as HandleType } from '@/utils/calendar/resizeCalculations'
+import { useDragDrop } from '@/components/DragDropContext'
 
 export type CalendarViewMode = 'day' | 'week' | 'month'
 
+// Compatible interface with DragAndDropEvent
+export interface DragData {
+  event: UnifiedEvent
+  originalSlot: {
+    date: string
+    hour: number
+  }
+  dragOffset: { x: number; y: number }
+}
+
+export interface DropZoneData {
+  date: string
+  hour: number
+  element: HTMLElement
+}
+
 export interface CalendarEventProps {
   event: UnifiedEvent
-  viewMode: CalendarViewMode
+  viewMode?: CalendarViewMode
+  // Props for compatibility with DragAndDropEvent
+  currentDate?: string
+  currentHour?: number
   position?: EventPosition
   conflicts?: ConflictResult
   conflictingEvents?: UnifiedEvent[]
@@ -24,10 +45,14 @@ export interface CalendarEventProps {
   isCompact?: boolean
   showResizeHandles?: boolean
   showDragHandle?: boolean
+  showConflicts?: boolean
+  isDragging?: boolean
+  isResizing?: boolean
   onClick?: (event: UnifiedEvent) => void
   onConflictClick?: (conflicts: ConflictResult) => void
-  onDragStart?: (event: UnifiedEvent, handle: 'body') => void
-  onDragEnd?: (event: UnifiedEvent) => void
+  // New simplified callbacks
+  onDragStart?: (data: DragData) => void
+  onDragEnd?: (data: DragData, dropZone: DropZoneData | null) => void
   onResizeStart?: (event: UnifiedEvent, handle: HandleType) => void
   onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
   className?: string
@@ -38,10 +63,13 @@ export interface CalendarEventProps {
  * Unified CalendarEvent component
  * Adapts display based on view mode (day, week, month)
  * Supports Google Calendar-style overlap positioning
+ * Compatible with existing DragDropContext for HTML5 drag/drop
  */
 const CalendarEvent: React.FC<CalendarEventProps> = ({
   event,
   viewMode,
+  currentDate,
+  currentHour,
   position,
   conflicts,
   conflictingEvents = [],
@@ -49,6 +77,9 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   isCompact = false,
   showResizeHandles = true,
   showDragHandle = true,
+  showConflicts = true,
+  isDragging: externalIsDragging = false,
+  isResizing: externalIsResizing = false,
   onClick,
   onConflictClick,
   onDragStart,
@@ -61,10 +92,18 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   const eventRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
 
+  // Get DragDrop context - wrapped in try/catch for components outside provider
+  let dragDropContext: ReturnType<typeof useDragDrop> | null = null
+  try {
+    dragDropContext = useDragDrop()
+  } catch {
+    // Component is used outside DragDropProvider
+  }
+
   // Use resize hook for smooth resize behavior
   const {
     resizeState,
-    isResizing,
+    isResizing: hookIsResizing,
     handleResizeStart: startResize,
     previewStyles,
     mousePosition
@@ -79,8 +118,13 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     }
   })
 
+  const isResizing = hookIsResizing || externalIsResizing
+
+  // Derive viewMode from currentDate/currentHour if not provided
+  const effectiveViewMode = viewMode || 'day'
+
   // Determine compact mode based on view
-  const isEffectivelyCompact = isCompact || viewMode === 'month'
+  const isEffectivelyCompact = isCompact || effectiveViewMode === 'month'
 
   // Calculate dimensions based on view mode and overlap position
   const eventStyle: React.CSSProperties = {
@@ -89,12 +133,15 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   }
 
   // Apply overlap positioning if provided
-  if (position && viewMode !== 'month') {
+  if (position && effectiveViewMode !== 'month') {
     eventStyle.width = `${position.width}%`
     eventStyle.left = `${position.left}%`
     eventStyle.zIndex = isResizing ? 1000 : position.zIndex
     eventStyle.position = 'relative'
   }
+
+  // Check if this event is currently being dragged
+  const isDragging = externalIsDragging || (dragDropContext?.dragState.isDragging && dragDropContext?.dragState.draggedEvent?.id === event.id)
 
   // Priority-based colors
   const getPriorityColor = (priority: Priority): string => {
@@ -117,7 +164,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     const start = parseISO(startDateTime)
     const end = addMinutes(start, duration)
 
-    if (viewMode === 'month') {
+    if (effectiveViewMode === 'month') {
       return format(start, 'h:mm a')
     }
 
@@ -149,16 +196,78 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     }
   }, [conflicts, onConflictClick])
 
-  // Handle drag
+  // HTML5 Drag and Drop handlers
+  const handleDragStartHTML5 = useCallback((e: React.DragEvent) => {
+    // Calculate drag offset
+    const rect = eventRef.current?.getBoundingClientRect()
+    const dragOffset = rect
+      ? { x: e.clientX - rect.left, y: e.clientY - rect.top }
+      : { x: 0, y: 0 }
+
+    // Get the slot info
+    const slotDate = currentDate || format(parseISO(event.startDateTime), 'yyyy-MM-dd')
+    const slotHour = currentHour ?? parseISO(event.startDateTime).getHours()
+
+    const dragData: DragData = {
+      event,
+      originalSlot: { date: slotDate, hour: slotHour },
+      dragOffset
+    }
+
+    // Set drag data
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData))
+    e.dataTransfer.effectAllowed = 'move'
+
+    // Set drag image (with slight offset)
+    if (eventRef.current) {
+      e.dataTransfer.setDragImage(eventRef.current, dragOffset.x, dragOffset.y)
+    }
+
+    // Notify context
+    if (dragDropContext) {
+      dragDropContext.startDrag(event, dragOffset, { date: slotDate, hour: slotHour })
+    }
+
+    // Notify parent
+    onDragStart?.(dragData)
+  }, [event, currentDate, currentHour, dragDropContext, onDragStart])
+
+  const handleDragEndHTML5 = useCallback((e: React.DragEvent) => {
+    // Get drop zone from context
+    const dropZone = dragDropContext?.dropZoneState.activeDropZone
+
+    const slotDate = currentDate || format(parseISO(event.startDateTime), 'yyyy-MM-dd')
+    const slotHour = currentHour ?? parseISO(event.startDateTime).getHours()
+
+    const dragData: DragData = {
+      event,
+      originalSlot: { date: slotDate, hour: slotHour },
+      dragOffset: { x: 0, y: 0 }
+    }
+
+    // Construct DropZoneData if we have a drop zone
+    const dropZoneData: DropZoneData | null = dropZone
+      ? { date: dropZone.date, hour: dropZone.hour, element: e.target as HTMLElement }
+      : null
+
+    // End drag in context
+    if (dragDropContext) {
+      dragDropContext.endDrag()
+    }
+
+    // Notify parent
+    onDragEnd?.(dragData, dropZoneData)
+  }, [event, currentDate, currentHour, dragDropContext, onDragEnd])
+
+  // Legacy mouse-based drag (fallback)
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement
-    const isDragHandle = target.closest('[data-drag-handle]')
+    const isDragHandleEl = target.closest('[data-drag-handle]')
 
-    if (!isDragHandle) return
+    if (!isDragHandleEl) return
 
-    e.preventDefault()
-    onDragStart?.(event, 'body')
-  }, [event, onDragStart])
+    // Let HTML5 drag handle it
+  }, [event])
 
   // Handle resize
   const handleResizeStartWrapper = useCallback((e: React.MouseEvent | React.TouchEvent, handle: HandleType) => {
@@ -169,11 +278,11 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
 
   // Determine which resize handles to show based on view mode
   const getResizeHandles = (): HandleType[] => {
-    if (viewMode === 'month') {
+    if (effectiveViewMode === 'month') {
       return [] // No resize in month view
-    } else if (viewMode === 'day') {
+    } else if (effectiveViewMode === 'day') {
       return ['top', 'bottom'] // Only vertical resize in day view
-    } else if (viewMode === 'week') {
+    } else if (effectiveViewMode === 'week') {
       return ['top', 'bottom', 'top-left', 'top-right', 'bottom-left', 'bottom-right'] // Full resize in week view
     }
     return []
@@ -197,24 +306,46 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Total conflicts count
   const totalConflicts = (conflicts?.conflicts.length || 0) + conflictingEvents.length
 
+  // Use a wrapper div for HTML5 drag, motion.div for animations
   return (
     <div
-      ref={eventRef}
-      data-event-block="true"
-      data-event-id={event.id}
-      className={`
-        relative group cursor-pointer select-none transition-all duration-200
-        ${getPriorityColor(event.priority)}
-        border-l-4 rounded-r-md shadow-sm hover:shadow-md
-        ${isEffectivelyCompact ? 'p-2' : 'p-3'}
-        ${className}
-      `}
-      style={eventStyle}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleClick}
-      onMouseDown={handleDragStart}
+      draggable={effectiveViewMode !== 'month'}
+      onDragStart={handleDragStartHTML5}
+      onDragEnd={handleDragEndHTML5}
     >
+      <motion.div
+        ref={eventRef}
+        data-event-block="true"
+        data-event-id={event.id}
+        className={`
+          relative group cursor-pointer select-none
+          ${getPriorityColor(event.priority)}
+          border-l-4 rounded-r-md shadow-sm
+          ${isEffectivelyCompact ? 'p-2' : 'p-3'}
+          ${isDragging ? 'opacity-50 ring-2 ring-accent' : ''}
+          ${className}
+        `}
+        style={eventStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={handleClick}
+        onMouseDown={handleDragStart}
+        // Framer Motion animations
+        initial={false}
+        animate={{
+          scale: isDragging ? 1.02 : 1,
+          boxShadow: isDragging
+            ? '0 10px 25px rgba(0,0,0,0.3)'
+            : isHovered
+              ? '0 4px 12px rgba(0,0,0,0.15)'
+              : '0 1px 3px rgba(0,0,0,0.1)'
+        }}
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        layout
+        layoutId={`event-${event.id}`}
+      >
       {/* Drag Handle - for day/week views */}
       {showDragHandle && !isEffectivelyCompact && (
         <div
@@ -404,6 +535,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
           <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/95" />
         </div>
       )}
+      </motion.div>
     </div>
   )
 }

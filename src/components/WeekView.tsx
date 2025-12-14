@@ -14,6 +14,7 @@ import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
 import { ClientNotificationService } from '@/lib/client-notification-service'
 import { DragDropProvider } from '@/components/DragDropContext'
 import DragAndDropEvent from '@/components/DragAndDropEvent'
+import CalendarEvent from '@/components/calendar/CalendarEvent'
 import DropZone from '@/components/DropZone'
 import RescheduleConfirmationModal from '@/components/RescheduleConfirmationModal'
 import DragVisualFeedback from '@/components/DragVisualFeedback'
@@ -510,9 +511,10 @@ Rescheduled: ${data.reason}`.trim() :
                         const unifiedEvent = unifiedEvents.find(e => e.id === event.id)
                         if (unifiedEvent) {
                           return (
-                            <DragAndDropEvent
+                            <CalendarEvent
                               key={event.id}
                               event={unifiedEvent}
+                              viewMode="week"
                               currentDate={format(day, 'yyyy-MM-dd')}
                               currentHour={hour}
                               onClick={(e) => handleShowEventDetails(e)}
