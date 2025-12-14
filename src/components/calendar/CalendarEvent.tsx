@@ -143,19 +143,19 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Check if this event is currently being dragged
   const isDragging = externalIsDragging || (dragDropContext?.dragState.isDragging && dragDropContext?.dragState.draggedEvent?.id === event.id)
 
-  // Priority-based colors
+  // Priority-based colors - light theme friendly
   const getPriorityColor = (priority: Priority): string => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-900/30 text-red-200 border-l-red-500 hover:bg-red-900/40'
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-l-red-500 hover:bg-red-200 dark:hover:bg-red-900/40'
       case 'high':
-        return 'bg-orange-900/30 text-orange-200 border-l-orange-500 hover:bg-orange-900/40'
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-l-orange-500 hover:bg-orange-200 dark:hover:bg-orange-900/40'
       case 'medium':
-        return 'bg-accent/20 text-accent border-l-accent hover:bg-accent/30'
+        return 'bg-blue-100 dark:bg-accent/20 text-blue-800 dark:text-accent border-l-blue-500 dark:border-l-accent hover:bg-blue-200 dark:hover:bg-accent/30'
       case 'low':
-        return 'bg-green-900/30 text-green-200 border-l-green-500 hover:bg-green-900/40'
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-l-green-500 hover:bg-green-200 dark:hover:bg-green-900/40'
       default:
-        return 'bg-muted/50 text-muted-foreground border-l-muted-foreground hover:bg-muted/60'
+        return 'bg-gray-100 dark:bg-muted/50 text-gray-800 dark:text-muted-foreground border-l-gray-400 dark:border-l-muted-foreground hover:bg-gray-200 dark:hover:bg-muted/60'
     }
   }
 
@@ -309,6 +309,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Use a wrapper div for HTML5 drag, motion.div for animations
   return (
     <div
+      className="group"
       draggable={effectiveViewMode !== 'month'}
       onDragStart={handleDragStartHTML5}
       onDragEnd={handleDragEndHTML5}
@@ -318,7 +319,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         data-event-block="true"
         data-event-id={event.id}
         className={`
-          relative group cursor-pointer select-none
+          relative cursor-pointer select-none
           ${getPriorityColor(event.priority)}
           border-l-4 rounded-r-md shadow-sm
           ${isEffectivelyCompact ? 'p-2' : 'p-3'}

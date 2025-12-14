@@ -28,24 +28,27 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
 
   const getHandleClasses = (): string => {
     const baseClasses = `
-      absolute transition-opacity bg-current z-50
-      ${isCompact ? 'opacity-20 hover:opacity-80' : 'opacity-30 hover:opacity-100 group-hover:opacity-100'}
+      absolute transition-all duration-200 z-50
+      ${isCompact
+        ? 'opacity-0 hover:opacity-80 group-hover:opacity-50'
+        : 'opacity-20 hover:opacity-100 group-hover:opacity-60'}
+      bg-accent/70 hover:bg-accent
       ${className}
     `
 
     // Position and size based on handle type
     switch (handle) {
       case 'top':
-        return `${baseClasses} -top-1 left-0 right-0 ${isCompact ? 'h-1' : 'h-2'} cursor-n-resize bg-opacity-20`
+        return `${baseClasses} -top-1 left-2 right-2 ${isCompact ? 'h-1' : 'h-2'} cursor-n-resize rounded-full`
 
       case 'bottom':
-        return `${baseClasses} -bottom-1 left-0 right-0 ${isCompact ? 'h-1' : 'h-2'} cursor-s-resize bg-opacity-20`
+        return `${baseClasses} -bottom-1 left-2 right-2 ${isCompact ? 'h-1' : 'h-2'} cursor-s-resize rounded-full`
 
       case 'left':
-        return `${baseClasses} -left-1 top-0 bottom-0 ${isCompact ? 'w-1' : 'w-2'} cursor-w-resize bg-opacity-20`
+        return `${baseClasses} -left-1 top-2 bottom-2 ${isCompact ? 'w-1' : 'w-2'} cursor-w-resize rounded-full`
 
       case 'right':
-        return `${baseClasses} -right-1 top-0 bottom-0 ${isCompact ? 'w-1' : 'w-2'} cursor-e-resize bg-opacity-20`
+        return `${baseClasses} -right-1 top-2 bottom-2 ${isCompact ? 'w-1' : 'w-2'} cursor-e-resize rounded-full`
 
       case 'top-left':
         return `${baseClasses} -top-1 -left-1 w-3 h-3 cursor-nw-resize rounded-full`
@@ -57,7 +60,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
         return `${baseClasses} -bottom-1 -left-1 w-3 h-3 cursor-sw-resize rounded-full`
 
       case 'bottom-right':
-        return `${baseClasses} -bottom-1 -right-1 w-3 h-3 cursor-nw-resize rounded-full`
+        return `${baseClasses} -bottom-1 -right-1 w-3 h-3 cursor-se-resize rounded-full`
 
       default:
         return baseClasses
