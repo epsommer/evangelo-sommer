@@ -92,10 +92,13 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
     isLoading: eventsLoading
   } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger })
 
-  // Get today's events
+  // Get today's events - include events in deps to ensure re-render on any event change
   const todaysEvents = useMemo(() => {
-    return getEventsForDate(date)
-  }, [getEventsForDate, date])
+    console.log('🔄 [UnifiedDailyPlanner] Recalculating todaysEvents, events count:', events.length)
+    const filtered = getEventsForDate(date)
+    console.log('🔄 [UnifiedDailyPlanner] Today\'s events:', filtered.map(e => ({ id: e.id, title: e.title, start: e.startDateTime, end: e.endDateTime, duration: e.duration })))
+    return filtered
+  }, [events, getEventsForDate, date])
 
   // Load objectives from localStorage
   useEffect(() => {

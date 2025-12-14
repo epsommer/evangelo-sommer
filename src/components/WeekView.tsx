@@ -87,6 +87,12 @@ const WeekView: React.FC<WeekViewProps> = ({
     getEventsForDate
   } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger })
 
+  // Debug: log when events change
+  useEffect(() => {
+    console.log('🔄 [WeekView] unifiedEvents changed, count:', unifiedEvents.length)
+    console.log('🔄 [WeekView] Events:', unifiedEvents.map(e => ({ id: e.id, title: e.title, start: e.startDateTime, end: e.endDateTime, duration: e.duration })))
+  }, [unifiedEvents])
+
   // Load data from localStorage
   useEffect(() => {
     try {
