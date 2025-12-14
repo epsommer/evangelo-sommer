@@ -417,11 +417,18 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         `}
         style={{
           ...eventStyle,
+          // Use fully non-shorthand border properties to avoid React warning during resize
           borderLeftWidth: '4px',
-          borderLeftStyle: 'solid',
           borderTopWidth: '0px',
           borderRightWidth: '0px',
           borderBottomWidth: '0px',
+          borderLeftStyle: 'solid',
+          borderTopStyle: 'solid',
+          borderRightStyle: 'solid',
+          borderBottomStyle: 'solid',
+          borderTopColor: 'transparent',
+          borderRightColor: 'transparent',
+          borderBottomColor: 'transparent',
           opacity: isDragging ? 0.5 : 1
         }}
         onMouseEnter={() => setIsHovered(true)}
