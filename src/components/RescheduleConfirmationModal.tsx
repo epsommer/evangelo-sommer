@@ -106,15 +106,15 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
   const getPriorityColor = (priority: Priority): string => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border-[var(--status-danger-border)]'
       case 'high':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-[var(--status-warning-bg)] text-[var(--status-warning-text)] border-[var(--status-warning-border)]'
       case 'medium':
-        return 'bg-tactical-gold-light text-hud-text-primary border-tactical-gold'
+        return 'bg-accent/20 text-foreground border-accent'
       case 'low':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]'
       default:
-        return 'bg-tactical-grey-200 text-tactical-grey-700 border-tactical-grey-300'
+        return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -125,13 +125,9 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
     return isDifferentDay || timeDiff >= 2
   }
 
-  // Get participants count
+  // Get participants count (ONLY actual participants, not clients)
   const getParticipantsInfo = () => {
-    const participants = (event as any).participants || []
-    if (event.clientName && !participants.includes(event.clientName)) {
-      participants.push(event.clientName)
-    }
-    return participants
+    return event.participants || []
   }
 
   const participants = getParticipantsInfo()
@@ -198,10 +194,10 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-hud-border">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--hud-background-primary)] border-hud-border">
         <DialogHeader className="border-b border-hud-border pb-4">
-          <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-hud-text-primary">
-            <Calendar className="w-6 h-6 text-tactical-gold" />
+          <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-foreground">
+            <Calendar className="w-6 h-6 text-accent" />
             Confirm Reschedule
           </DialogTitle>
         </DialogHeader>
@@ -219,12 +215,12 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
             </CardHeader>
             <CardContent className="space-y-2">
               {event.description && (
-                <p className="text-sm text-medium-grey font-primary">
+                <p className="text-sm text-muted-foreground font-primary">
                   {event.description}
                 </p>
               )}
-              
-              <div className="flex flex-wrap gap-4 text-sm text-medium-grey font-primary">
+
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground font-primary">
                 {event.clientName && (
                   <div className="flex items-center gap-1">
                     <User className="w-4 h-4" />
@@ -250,7 +246,7 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
           {/* Time Change Display */}
           <Card className="border-hud-border">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-hud-text-primary font-primary uppercase tracking-wide mb-4">
+              <h3 className="font-semibold text-foreground font-primary uppercase tracking-wide mb-4">
                 Schedule Change
               </h3>
               
@@ -258,17 +254,17 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
                 {/* From Time */}
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <div className="text-sm text-medium-grey font-primary uppercase tracking-wide mb-1">
+                    <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide mb-1">
                       Current Time
                     </div>
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] rounded-lg p-4">
                       <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-red-600" />
+                        <Calendar className="w-5 h-5 text-[var(--status-danger-icon)]" />
                         <div>
-                          <div className="font-semibold text-red-800 font-primary">
+                          <div className="font-semibold text-[var(--status-danger-text)] font-primary">
                             {fromDateTime.date}
                           </div>
-                          <div className="text-sm text-red-600 font-primary">
+                          <div className="text-sm text-[var(--status-danger-icon)] font-primary">
                             {fromDateTime.time}
                           </div>
                         </div>
@@ -276,21 +272,21 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
                     </div>
                   </div>
                   
-                  <ArrowRight className="w-6 h-6 text-tactical-gold flex-shrink-0" />
+                  <ArrowRight className="w-6 h-6 text-accent flex-shrink-0" />
                   
                   {/* To Time */}
                   <div className="flex-1">
-                    <div className="text-sm text-medium-grey font-primary uppercase tracking-wide mb-1">
+                    <div className="text-sm text-muted-foreground font-primary uppercase tracking-wide mb-1">
                       New Time
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="bg-[var(--status-success-bg)] border border-[var(--status-success-border)] rounded-lg p-4">
                       <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-green-600" />
+                        <Calendar className="w-5 h-5 text-[var(--status-success-icon)]" />
                         <div>
-                          <div className="font-semibold text-green-800 font-primary">
+                          <div className="font-semibold text-[var(--status-success-text)] font-primary">
                             {toDateTime.date}
                           </div>
-                          <div className="text-sm text-green-600 font-primary">
+                          <div className="text-sm text-[var(--status-success-icon)] font-primary">
                             {toDateTime.time}
                           </div>
                         </div>
@@ -302,12 +298,12 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
                 {/* Change Summary */}
                 <div className="bg-hud-background-secondary border border-hud-border rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-tactical-gold" />
-                    <span className="font-semibold text-hud-text-primary font-primary uppercase text-sm">
+                    <Clock className="w-4 h-4 text-accent" />
+                    <span className="font-semibold text-foreground font-primary uppercase text-sm">
                       Change Summary
                     </span>
                   </div>
-                  <div className="text-sm text-medium-grey font-primary">
+                  <div className="text-sm text-muted-foreground font-primary">
                     {fromSlot.date !== toSlot.date ? (
                       <span>Moving from {fromDateTime.dateShort} to {toDateTime.dateShort}</span>
                     ) : (
@@ -327,15 +323,15 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
 
           {/* Significant Change Warning */}
           {isSignificantChange() && (
-            <Card className="border-orange-200 bg-orange-50">
+            <Card className="border-[var(--status-warning-border)] bg-[var(--status-warning-bg)]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-[var(--status-warning-icon)] flex-shrink-0" />
                   <div>
-                    <div className="font-semibold text-orange-800 font-primary text-sm">
+                    <div className="font-semibold text-[var(--status-warning-text)] font-primary text-sm">
                       Significant Schedule Change
                     </div>
-                    <div className="text-sm text-orange-700 font-primary">
+                    <div className="text-sm text-[var(--status-warning-icon)] font-primary">
                       This is a major time change. Consider providing a reason for participants.
                     </div>
                   </div>
@@ -350,15 +346,15 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
               <CardContent className="p-4">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-tactical-gold" />
-                    <h3 className="font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+                    <Mail className="w-5 h-5 text-accent" />
+                    <h3 className="font-semibold text-foreground font-primary uppercase tracking-wide">
                       Participant Notifications
                     </h3>
                   </div>
-                  
+
                   <div className="bg-hud-background-secondary rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-hud-text-primary font-primary">
+                      <span className="text-sm font-medium text-foreground font-primary">
                         {participants.length} participant{participants.length !== 1 ? 's' : ''} will be notified:
                       </span>
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -368,15 +364,15 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
                           onChange={(e) => setNotifyParticipants(e.target.checked)}
                           className="w-4 h-4 border-2 border-hud-border"
                         />
-                        <span className="text-sm font-medium text-hud-text-primary font-primary">
+                        <span className="text-sm font-medium text-foreground font-primary">
                           Send notifications
                         </span>
                       </label>
                     </div>
-                    
+
                     <div className="space-y-1">
                       {participants.map((participant: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2 text-sm text-medium-grey font-primary">
+                        <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground font-primary">
                           <User className="w-3 h-3" />
                           <span>{participant}</span>
                         </div>
@@ -392,18 +388,18 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
           <Card className="border-hud-border">
             <CardContent className="p-4">
               <div className="space-y-3">
-                <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+                <label className="block text-sm font-semibold text-foreground font-primary uppercase tracking-wide">
                   Reason for Reschedule {isSignificantChange() ? '(Recommended)' : '(Optional)'}
                 </label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Enter reason for rescheduling (will be included in notifications)"
-                  className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary resize-none"
+                  className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-[var(--hud-background-primary)] font-primary resize-none"
                   rows={3}
                 />
-                <div className="text-xs text-medium-grey font-primary">
-                  {hasParticipants && notifyParticipants ? 
+                <div className="text-xs text-muted-foreground font-primary">
+                  {hasParticipants && notifyParticipants ?
                     'This reason will be included in participant notifications.' :
                     'This will be saved with the event for your records.'
                   }
@@ -414,15 +410,15 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
 
           {/* Error Display */}
           {error && (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-[var(--status-danger-border)] bg-[var(--status-danger-bg)]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-[var(--status-danger-icon)] flex-shrink-0" />
                   <div>
-                    <div className="font-semibold text-red-800 font-primary text-sm">
+                    <div className="font-semibold text-[var(--status-danger-text)] font-primary text-sm">
                       Error
                     </div>
-                    <div className="text-sm text-red-700 font-primary">
+                    <div className="text-sm text-[var(--status-danger-icon)] font-primary">
                       {error}
                     </div>
                   </div>
@@ -453,11 +449,11 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
                 handleConfirm()
               }}
               disabled={isConfirming}
-              className="px-6 bg-tactical-gold hover:bg-tactical-gold-light text-hud-text-primary"
+              className="px-6 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               {isConfirming ? (
                 <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-hud-text-primary border-t-transparent" />
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent-foreground border-t-transparent" />
                   {notifyParticipants && hasParticipants ? 'Rescheduling & Notifying...' : 'Rescheduling...'}
                 </div>
               ) : (
@@ -475,7 +471,7 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
           </div>
 
           {/* Keyboard Shortcuts */}
-          <div className="text-xs text-medium-grey font-primary text-center border-t border-hud-border pt-4">
+          <div className="text-xs text-muted-foreground font-primary text-center border-t border-hud-border pt-4">
             <span>Keyboard shortcuts: </span>
             <span className="font-semibold">Enter</span> to confirm, <span className="font-semibold">Esc</span> to cancel
           </div>

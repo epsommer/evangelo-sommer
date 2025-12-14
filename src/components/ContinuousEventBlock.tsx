@@ -103,11 +103,11 @@ const ContinuousEventBlock: React.FC<ContinuousEventBlockProps> = ({
       case 'high':
         return 'bg-orange-900/30 text-orange-200 border-l-orange-500'
       case 'medium':
-        return 'bg-tactical-gold/20 text-tactical-gold-light border-l-tactical-gold'
+        return 'bg-accent/20 text-accent border-l-accent'
       case 'low':
         return 'bg-green-900/30 text-green-200 border-l-green-500'
       default:
-        return 'bg-tactical-grey-800/30 text-tactical-grey-200 border-l-gray-500'
+        return 'bg-muted/50 text-muted-foreground border-l-muted-foreground'
     }
   }
 
@@ -500,7 +500,7 @@ const ContinuousEventBlock: React.FC<ContinuousEventBlockProps> = ({
 
       {/* Drag indicator */}
       {isDragging && (
-        <div className="absolute -top-2 -right-2 bg-tactical-gold text-hud-text-primary rounded-full p-1">
+        <div className="absolute -top-2 -right-2 bg-accent text-accent-foreground rounded-full p-1">
           <Move className="w-3 h-3" />
         </div>
       )}

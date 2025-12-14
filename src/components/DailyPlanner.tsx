@@ -824,13 +824,27 @@ const DailyPlanner: React.FC<DailyPlannerProps> = ({ date = createLocalDate(), o
 
   // Drag and drop handlers
   const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
-    const rescheduleInfo: RescheduleData = {
-      event,
-      fromSlot,
-      toSlot
+    // Check if event has participants - only show confirmation if it does
+    const hasParticipants = event.participants && event.participants.length > 0
+
+    if (hasParticipants) {
+      // Show confirmation modal for events with participants
+      const rescheduleInfo: RescheduleData = {
+        event,
+        fromSlot,
+        toSlot
+      }
+      setRescheduleData(rescheduleInfo)
+      setShowRescheduleModal(true)
+    } else {
+      // Directly reschedule events without participants
+      const rescheduleInfo: RescheduleData = {
+        event,
+        fromSlot,
+        toSlot
+      }
+      await handleRescheduleConfirm(rescheduleInfo, false)
     }
-    setRescheduleData(rescheduleInfo)
-    setShowRescheduleModal(true)
   }
 
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
@@ -1493,7 +1507,7 @@ Resized: ${data.reason}`.trim() :
         {/* Show message if no tasks at all - but only if we're not loading events */}
         {sortedTasks.length === 0 && !eventsLoading && (
           <div className="col-span-12 text-center py-12">
-            <div className="text-medium-grey font-primary">
+            <div className="text-muted-foreground font-primary">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium uppercase tracking-wide">NO TASKS SCHEDULED</p>
               <p className="text-sm mt-2">Click on any time slot to add your first task</p>
@@ -1621,18 +1635,18 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ task, onEdit, onStatusChange, onV
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-2">
-              <h4 className="font-bold text-hud-text-primary font-primary">{task.title}</h4>
+              <h4 className="font-bold text-foreground font-primary">{task.title}</h4>
               <Badge className={`px-2 py-1 text-xs font-bold text-white uppercase ${getPriorityColorClass(task.priority)}`}>
                 {priorityConfig.label}
               </Badge>
               {task.serviceType && (
-                <Badge variant="outline" className="text-xs text-medium-grey uppercase tracking-wider font-primary">
+                <Badge variant="outline" className="text-xs text-muted-foreground uppercase tracking-wider font-primary">
                   {task.serviceType.replace('_', ' ')}
                 </Badge>
               )}
             </div>
             
-            <div className="flex items-center space-x-4 text-sm text-medium-grey font-primary mb-2">
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground font-primary mb-2">
               <span className="flex items-center">
                 <Clock className="h-3 w-3 mr-1" />
                 {formatTime(task.startTime)} - {formatTime(task.endTime)}
@@ -1652,11 +1666,11 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ task, onEdit, onStatusChange, onV
             </div>
             
             {task.description && (
-              <p className="text-sm text-medium-grey font-primary">{task.description}</p>
+              <p className="text-sm text-muted-foreground font-primary">{task.description}</p>
             )}
             
             {task.notes && (
-              <p className="text-xs text-medium-grey font-primary mt-2 italic">
+              <p className="text-xs text-muted-foreground font-primary mt-2 italic">
                 Note: {task.notes}
               </p>
             )}
@@ -1668,7 +1682,7 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ task, onEdit, onStatusChange, onV
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-1 h-auto text-medium-grey hover:text-hud-text-primary hover:bg-tactical-gold-light"
+                  className="p-1 h-auto text-muted-foreground hover:text-foreground hover:bg-accent/20"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>

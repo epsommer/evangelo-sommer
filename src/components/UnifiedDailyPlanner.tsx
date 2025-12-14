@@ -1,28 +1,21 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { format, isSameDay, startOfDay, endOfDay } from 'date-fns'
+import { format, isSameDay } from 'date-fns'
 import {
-  Plus, Clock, MapPin, User, Target, Calendar, Filter, Search,
-  ChevronDown, ChevronUp, GripVertical, Check, X, MoreVertical,
-  Zap, ListTodo, Timer, AlertCircle, CheckCircle2, Sparkles,
-  PlusCircle
+  Plus, Clock, MapPin, User, Target, Calendar, Search,
+  ChevronDown, ChevronUp, GripVertical, X,
+  Timer, CheckCircle2, PlusCircle
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
-import { useViewManager } from '@/contexts/ViewManagerContext'
 import EventCreationModal, { UnifiedEvent } from '@/components/EventCreationModal'
 import MultiEventCreationModal from '@/components/MultiEventCreationModal'
-import DropdownMenu from '@/components/ui/DropdownMenu'
 import { createLocalDate } from '@/lib/timezone-utils'
 import { DragDropProvider } from '@/components/DragDropContext'
-import DragAndDropEvent from '@/components/DragAndDropEvent'
 import DropZone from '@/components/DropZone'
-import ContinuousEventBlock from '@/components/ContinuousEventBlock'
-import { eventCategorizer, EventCategory } from '@/lib/event-categorizer'
+import { eventCategorizer } from '@/lib/event-categorizer'
 
 // Types
 interface MissionObjective {
@@ -360,17 +353,16 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   const renderAgenda = () => (
     <div className="space-y-2">
       {filteredEvents.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No events scheduled for this day</p>
-          <Button
-            variant="outline"
-            className="mt-4"
+        <div className="text-center py-12">
+          <Calendar className="h-12 w-12 mx-auto mb-4 text-[var(--neomorphic-text)] opacity-50" />
+          <p className="text-[var(--neomorphic-text)] opacity-70 font-primary">No events scheduled for this day</p>
+          <button
+            className="neo-button-active mt-4 px-4 py-2 rounded-lg font-primary text-sm uppercase tracking-wide flex items-center gap-2 mx-auto"
             onClick={() => setShowEventModal(true)}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4" />
             Add Event
-          </Button>
+          </button>
         </div>
       ) : (
         filteredEvents
@@ -443,16 +435,19 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
     <div className="space-y-3">
       {/* Quick Entry */}
       <div className="flex gap-2">
-        <Input
+        <input
           placeholder="Quick add: 'urgent: fix bug 30min #dev'"
           value={quickEntryText}
           onChange={(e) => setQuickEntryText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
-          className="flex-1"
+          className="neo-input flex-1 px-3 py-2 rounded-lg font-primary text-sm text-[var(--neomorphic-text)]"
         />
-        <Button size="sm" onClick={handleQuickAdd}>
+        <button
+          onClick={handleQuickAdd}
+          className="neo-button-active px-3 py-2 rounded-lg"
+        >
           <Plus className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
 
       {/* Pending Objectives */}
@@ -540,49 +535,46 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
             <div className="flex items-center gap-2">
               {/* Multi-event button */}
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => setShowMultiEventModal(true)}
-                className="gap-1"
+                className="neo-button px-3 py-2 rounded-lg flex items-center gap-1 font-primary text-sm uppercase tracking-wide text-[var(--neomorphic-text)]"
               >
                 <PlusCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Batch Add</span>
-              </Button>
+              </button>
 
               {/* Single event button */}
-              <Button
-                size="sm"
+              <button
                 onClick={() => {
                   setEditingEvent(null)
                   setShowEventModal(true)
                 }}
-                className="gap-1"
+                className="neo-button-active px-3 py-2 rounded-lg flex items-center gap-1 font-primary text-sm uppercase tracking-wide font-semibold"
               >
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Add Event</span>
-              </Button>
+              </button>
             </div>
           </div>
 
           {/* Controls */}
           <div className="flex flex-wrap items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex rounded-lg border p-0.5">
+            <div className="neo-inset flex rounded-lg p-1">
               <button
-                className={`px-3 py-1 text-xs rounded ${viewMode === 'timeline' ? 'bg-accent text-accent-foreground' : ''}`}
+                className={`px-3 py-1 text-xs rounded-md font-primary uppercase tracking-wide transition-all ${viewMode === 'timeline' ? 'neo-button-active' : 'text-[var(--neomorphic-text)] hover:bg-[var(--neomorphic-bg)]'}`}
                 onClick={() => setViewMode('timeline')}
               >
                 Timeline
               </button>
               <button
-                className={`px-3 py-1 text-xs rounded ${viewMode === 'agenda' ? 'bg-accent text-accent-foreground' : ''}`}
+                className={`px-3 py-1 text-xs rounded-md font-primary uppercase tracking-wide transition-all ${viewMode === 'agenda' ? 'neo-button-active' : 'text-[var(--neomorphic-text)] hover:bg-[var(--neomorphic-bg)]'}`}
                 onClick={() => setViewMode('agenda')}
               >
                 Agenda
               </button>
               <button
-                className={`px-3 py-1 text-xs rounded ${viewMode === 'combined' ? 'bg-accent text-accent-foreground' : ''}`}
+                className={`px-3 py-1 text-xs rounded-md font-primary uppercase tracking-wide transition-all ${viewMode === 'combined' ? 'neo-button-active' : 'text-[var(--neomorphic-text)] hover:bg-[var(--neomorphic-bg)]'}`}
                 onClick={() => setViewMode('combined')}
               >
                 Combined
@@ -591,12 +583,12 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
             {/* Search */}
             <div className="relative flex-1 min-w-[150px] max-w-[250px]">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--neomorphic-text)] opacity-50" />
+              <input
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8 text-sm"
+                className="neo-input pl-8 h-8 text-sm w-full rounded-lg font-primary text-[var(--neomorphic-text)]"
               />
             </div>
 
@@ -604,7 +596,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as FilterType)}
-              className="h-8 px-2 text-sm border rounded-md bg-background"
+              className="neo-input h-8 px-2 text-sm rounded-lg font-primary text-[var(--neomorphic-text)]"
             >
               <option value="all">All</option>
               <option value="pending">Pending</option>
@@ -613,27 +605,25 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
             </select>
 
             {/* Toggle Objectives */}
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => setShowObjectives(!showObjectives)}
-              className="gap-1"
+              className={`neo-button px-3 py-1 rounded-lg flex items-center gap-1 font-primary text-xs uppercase tracking-wide ${showObjectives ? 'neo-button-active' : 'text-[var(--neomorphic-text)]'}`}
             >
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">Objectives</span>
               {showObjectives ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            </Button>
+            </button>
           </div>
 
           {/* Progress Bar */}
           <div className="mt-3">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <div className="flex justify-between text-xs font-primary uppercase tracking-wide text-[var(--neomorphic-text)] opacity-70 mb-1">
               <span>Daily Progress</span>
               <span>{stats.completionRate}%</span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="neo-inset h-2 rounded-full overflow-hidden">
               <div
-                className="h-full bg-accent transition-all duration-300"
+                className="h-full bg-[var(--neomorphic-accent)] transition-all duration-300"
                 style={{ width: `${stats.completionRate}%` }}
               />
             </div>

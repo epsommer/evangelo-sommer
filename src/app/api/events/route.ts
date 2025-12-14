@@ -494,8 +494,9 @@ export async function POST(request: NextRequest) {
     } else {
       console.log('📝 Event created without participants')
 
-      // Sync to external calendars (Google, Notion, etc.)
-      const externalSyncResults = await syncEventToExternalCalendars(newEvent, prisma, 'create')
+      // Sync to external calendars using new CalendarSyncService
+      const { CalendarSyncService } = await import('@/lib/calendar-sync')
+      const externalSyncResults = await CalendarSyncService.pushEventToExternalCalendars(newEvent, 'create')
       const syncedProviders = externalSyncResults.filter(r => r.success).map(r => r.provider)
 
       if (syncedProviders.length > 0) {
@@ -678,8 +679,9 @@ export async function PUT(request: NextRequest) {
 
     console.log('🔄 API PUT - Event update completed successfully')
 
-    // Sync updated event to external calendars (Google, Notion, etc.)
-    const externalSyncResults = await syncEventToExternalCalendars(updatedEvent, prisma, 'update')
+    // Sync updated event to external calendars using new CalendarSyncService
+    const { CalendarSyncService } = await import('@/lib/calendar-sync')
+    const externalSyncResults = await CalendarSyncService.pushEventToExternalCalendars(updatedEvent, 'update')
     const syncedProviders = externalSyncResults.filter(r => r.success).map(r => r.provider)
 
     if (syncedProviders.length > 0) {
@@ -723,15 +725,32 @@ export async function DELETE(request: NextRequest) {
 
     console.log('🗑️ Deleting event:', eventId)
 
+    // Get event before deleting for external sync
+    const prisma = getPrismaClient()
+    let eventToDelete = null
+    if (prisma) {
+      try {
+        eventToDelete = await prisma.event.findUnique({
+          where: { id: eventId }
+        })
+      } catch (err) {
+        console.error('⚠️ Failed to fetch event for deletion:', err)
+      }
+    }
+
     // Delete from localStorage (attempt even if not found)
     const localStorageDeleted = UnifiedEventsManager.deleteEvent(eventId)
     console.log(`🔄 LocalStorage deletion result: ${localStorageDeleted}`)
 
     // Delete from database if available
-    const prisma = getPrismaClient()
     let dbDeleted = false
     if (prisma) {
       try {
+        // Delete EventSync records first (cascade should handle this, but being explicit)
+        await prisma.eventSync.deleteMany({
+          where: { eventId }
+        })
+
         await prisma.event.delete({
           where: { id: eventId }
         })
@@ -740,6 +759,18 @@ export async function DELETE(request: NextRequest) {
       } catch (dbError) {
         console.error('⚠️ Database deletion failed:', dbError)
         // Continue - maybe event only existed in localStorage
+      }
+    }
+
+    // Sync deletion to external calendars if event existed
+    if (eventToDelete && prisma) {
+      const { CalendarSyncService } = await import('@/lib/calendar-sync')
+      const unifiedEvent = convertToUnifiedEvent(eventToDelete)
+      const syncResults = await CalendarSyncService.pushEventToExternalCalendars(unifiedEvent, 'delete')
+      const syncedProviders = syncResults.filter(r => r.success).map(r => r.provider)
+
+      if (syncedProviders.length > 0) {
+        console.log(`📅 Event deletion synced to external calendars: ${syncedProviders.join(', ')}`)
       }
     }
 

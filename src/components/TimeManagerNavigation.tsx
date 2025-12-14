@@ -1,23 +1,20 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Clock, Grid3x3, List, Target } from 'lucide-react'
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Clock, Grid3x3 } from 'lucide-react'
 import { useViewManager, TimeManagerView } from '@/contexts/ViewManagerContext'
-import { format, startOfWeek, endOfWeek, addDays } from 'date-fns'
+import { format, startOfWeek, endOfWeek } from 'date-fns'
 
 interface TimeManagerNavigationProps {
   showTitle?: boolean
 }
 
-const VIEW_CONFIGS = {
+const VIEW_CONFIGS: Record<TimeManagerView, { label: string; icon: typeof Clock }> = {
   day: { label: 'Day', icon: Clock },
   week: { label: 'Week', icon: CalendarDays },
   month: { label: 'Month', icon: Calendar },
   year: { label: 'Year', icon: Grid3x3 },
-  agenda: { label: 'Agenda', icon: List },
-  objectives: { label: 'Mission Objectives', icon: Target },
-} as const
+}
 
 const CALENDAR_VIEWS: TimeManagerView[] = ['day', 'week', 'month', 'year']
 

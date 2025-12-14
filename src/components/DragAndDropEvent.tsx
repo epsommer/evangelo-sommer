@@ -37,7 +37,7 @@ interface DragAndDropEventProps {
   pixelsPerHour?: number
   onDragStart?: (data: DragData) => void
   onDragEnd?: (data: DragData, dropZone: DropZoneData | null) => void
-  onResizeStart?: (event: UnifiedEvent, handle: 'top' | 'bottom') => void
+  onResizeStart?: (event: UnifiedEvent, handle: 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right') => void
   onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
   onConflictClick?: (conflicts: ConflictResult) => void
   isDragging?: boolean
@@ -81,7 +81,7 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
   
   const [resizeState, setResizeState] = useState<{
     isResizing: boolean
-    handle: 'top' | 'bottom' | null
+    handle: 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | null
     startY: number
     originalHeight: number
     currentDeltaY: number
@@ -120,12 +120,12 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
       case 'high':
         return 'bg-orange-900/30 text-orange-200 border-l-orange-500'
       case 'medium':
-        return 'bg-tactical-gold/20 text-tactical-gold-light border-l-tactical-gold'
+        return 'bg-accent/20 text-accent border-l-accent'
       case 'low':
         return 'bg-green-900/30 text-green-200 border-l-green-500'
       default:
         console.warn('⚠️ Event using default color due to invalid priority:', priority, 'for event:', event.title)
-        return 'bg-tactical-grey-800/30 text-tactical-grey-200 border-l-gray-500'
+        return 'bg-muted/50 text-muted-foreground border-l-muted-foreground'
     }
   }
 
@@ -168,7 +168,7 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
   // Mouse drag handling removed - now using HTML5 drag API
 
   // Handle resize start
-  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, handle: 'top' | 'bottom') => {
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, handle: 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right') => {
     console.log('🎯 Resize start - handle:', handle, 'event:', event.title)
     e.preventDefault()
     e.stopPropagation()
@@ -235,8 +235,9 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
       let previewStart = currentStart
       let previewEnd = currentEnd
 
-      if (handle === 'top') {
-        // Top handle: change START time, keep END time fixed
+      // Handle different resize handles
+      if (handle === 'top' || handle === 'top-left' || handle === 'top-right') {
+        // Top handle (including corners): change START time, keep END time fixed
         previewStart = addMinutes(currentStart, deltaMinutes)
         // previewEnd stays the same (currentEnd)
         console.log('🎯 Top handle resize:', {
@@ -253,7 +254,7 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
           previewStart = addMinutes(currentEnd, -30)
         }
       } else {
-        // Bottom handle: change END time, keep START time fixed
+        // Bottom handle (including corners): change END time, keep START time fixed
         previewEnd = addMinutes(currentEnd, deltaMinutes)
         // previewStart stays the same (currentStart)
         console.log('🎯 Bottom handle resize:', {
@@ -611,14 +612,14 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
       }}
     >
 
-      {/* Resize Handles */}
-      {showResizeHandles && !isCompact && (
+      {/* Resize Handles - visible at 30% opacity by default */}
+      {showResizeHandles && (
         <>
           {/* Top resize handle */}
           <div
             data-resize-handle="top"
             draggable={false}
-            className="absolute -top-1 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 transition-opacity bg-current bg-opacity-20 z-50 pointer-events-none group-hover:pointer-events-auto"
+            className={`absolute -top-1 left-0 right-0 cursor-n-resize transition-opacity bg-current bg-opacity-20 z-50 ${isCompact ? 'h-1 opacity-20 hover:opacity-80' : 'h-2 opacity-30 hover:opacity-100 group-hover:opacity-100'}`}
             onMouseDown={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -637,7 +638,7 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
           <div
             data-resize-handle="bottom"
             draggable={false}
-            className="absolute -bottom-1 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 transition-opacity bg-current bg-opacity-20 z-50 pointer-events-none group-hover:pointer-events-auto"
+            className={`absolute -bottom-1 left-0 right-0 cursor-s-resize transition-opacity bg-current bg-opacity-20 z-50 ${isCompact ? 'h-1 opacity-20 hover:opacity-80' : 'h-2 opacity-30 hover:opacity-100 group-hover:opacity-100'}`}
             onMouseDown={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -651,6 +652,79 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
           >
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-current rounded-full opacity-60" />
           </div>
+
+          {/* Corner resize handles - hidden in compact mode */}
+          {!isCompact && (
+            <>
+              {/* Top-left corner */}
+              <div
+                data-resize-handle="top-left"
+                draggable={false}
+                className="absolute -top-1 -left-1 w-3 h-3 cursor-nwse-resize opacity-30 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-current rounded-full z-50"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'top-left')
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'top-left')
+                }}
+              />
+
+              {/* Top-right corner */}
+              <div
+                data-resize-handle="top-right"
+                draggable={false}
+                className="absolute -top-1 -right-1 w-3 h-3 cursor-nesw-resize opacity-30 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-current rounded-full z-50"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'top-right')
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'top-right')
+                }}
+              />
+
+              {/* Bottom-left corner */}
+              <div
+                data-resize-handle="bottom-left"
+                draggable={false}
+                className="absolute -bottom-1 -left-1 w-3 h-3 cursor-nesw-resize opacity-30 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-current rounded-full z-50"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'bottom-left')
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'bottom-left')
+                }}
+              />
+
+              {/* Bottom-right corner */}
+              <div
+                data-resize-handle="bottom-right"
+                draggable={false}
+                className="absolute -bottom-1 -right-1 w-3 h-3 cursor-nwse-resize opacity-30 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-current rounded-full z-50"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'bottom-right')
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleResizeStart(e, 'bottom-right')
+                }}
+              />
+            </>
+          )}
         </>
       )}
 
@@ -714,7 +788,7 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
 
         {/* Drag indicator */}
         {(isDragging || dragState.draggedEvent?.id === event.id) && (
-          <div className="absolute -top-2 -right-2 bg-tactical-gold text-hud-text-primary rounded-full p-1">
+          <div className="absolute -top-2 -right-2 bg-accent text-accent-foreground rounded-full p-1">
             <Move className="w-3 h-3" />
           </div>
         )}

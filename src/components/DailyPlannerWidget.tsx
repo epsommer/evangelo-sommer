@@ -189,7 +189,7 @@ const UpcomingTaskItem: React.FC<UpcomingTaskItemProps> = ({ task }) => {
       case 'in_progress':
         return <AlertCircle className="h-4 w-4 text-gold" />
       default:
-        return <Circle className="h-4 w-4 text-medium-grey" />
+        return <Circle className="h-4 w-4 text-muted-foreground" />
     }
   }
 

@@ -18,6 +18,7 @@ import { Calendar, TrendingUp, Clock, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useViewManager } from '@/contexts/ViewManagerContext'
 import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
+import YearDayIndicator from '@/components/calendar/YearDayIndicator'
 
 interface ScheduledService {
   id: string
@@ -155,11 +156,11 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
   }
 
   const getEventDensityColor = (eventCount: number) => {
-    if (eventCount === 0) return 'bg-tactical-grey-100'
-    if (eventCount <= 2) return 'bg-tactical-gold-muted'
-    if (eventCount <= 5) return 'bg-tactical-gold-light'
-    if (eventCount <= 10) return 'bg-tactical-gold'
-    return 'bg-tactical-brown'
+    if (eventCount === 0) return 'bg-muted'
+    if (eventCount <= 2) return 'bg-accent/30'
+    if (eventCount <= 5) return 'bg-accent/50'
+    if (eventCount <= 10) return 'bg-accent'
+    return 'bg-primary'
   }
 
   return (
@@ -268,11 +269,9 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
                         className={`
                           aspect-square text-xs rounded cursor-pointer transition-colors flex items-center justify-center relative font-primary
                           ${!isCurrentMonth
-                            ? 'text-muted'
+                            ? 'text-muted opacity-50'
                             : isCurrentDay
-                            ? 'bg-accent text-accent-foreground font-bold'
-                            : dayEvents.length > 0
-                            ? getEventDensityColor(dayEvents.length) + ' text-white'
+                            ? 'bg-accent text-accent-foreground font-bold ring-2 ring-accent'
                             : 'hover:bg-card'
                           }
                         `}
@@ -282,11 +281,17 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
                             handleDayClick(cellDate)
                           }
                         }}
-                        title={isCurrentMonth && dayEvents.length > 0 ? `${dayEvents.length} events` : ''}
                       >
-                        {cellDate.getDate()}
-                        {dayEvents.length > 0 && (
-                          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-accent rounded-full"></div>
+                        <span className="relative z-10">{cellDate.getDate()}</span>
+                        {isCurrentMonth && (
+                          <div className="absolute inset-0">
+                            <YearDayIndicator
+                              eventCount={dayEvents.length}
+                              onClick={() => handleDayClick(cellDate)}
+                              onDoubleClick={() => onEventCreate?.(cellDate)}
+                              isToday={isCurrentDay}
+                            />
+                          </div>
                         )}
                       </div>
                     )
@@ -337,19 +342,13 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
               const dayEvents = getEventsForDay(date)
               
               return (
-                <div
+                <YearDayIndicator
                   key={i}
-                  className={`w-3 h-3 rounded-sm cursor-pointer transition-colors hover:scale-110 ${
-                    getEventDensityColor(dayEvents.length)
-                  }`}
-                  title={`${format(date, 'MMM d')}: ${dayEvents.length} events - Click to view/create`}
+                  eventCount={dayEvents.length}
                   onClick={() => handleDayClick(date)}
-                  onDoubleClick={(e) => {
-                    e.stopPropagation()
-                    if (onEventCreate) {
-                      onEventCreate(date)
-                    }
-                  }}
+                  onDoubleClick={() => onEventCreate?.(date)}
+                  isToday={isToday(date)}
+                  className="w-3 h-3"
                 />
               )
             })}
@@ -357,11 +356,11 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
           <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground font-primary uppercase tracking-wide">
             <span>Less</span>
             <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 rounded-sm bg-tactical-grey-100"></div>
-              <div className="w-3 h-3 rounded-sm bg-tactical-gold-muted"></div>
-              <div className="w-3 h-3 rounded-sm bg-tactical-gold-light"></div>
-              <div className="w-3 h-3 rounded-sm bg-tactical-gold"></div>
-              <div className="w-3 h-3 rounded-sm bg-tactical-brown"></div>
+              <div className="w-3 h-3 rounded-sm bg-muted"></div>
+              <div className="w-3 h-3 rounded-sm bg-accent/30"></div>
+              <div className="w-3 h-3 rounded-sm bg-accent/50"></div>
+              <div className="w-3 h-3 rounded-sm bg-accent"></div>
+              <div className="w-3 h-3 rounded-sm bg-primary"></div>
             </div>
             <span>More</span>
           </div>

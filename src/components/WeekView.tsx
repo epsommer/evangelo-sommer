@@ -232,13 +232,27 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   // Drag and drop handlers
   const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
-    const rescheduleInfo: RescheduleData = {
-      event,
-      fromSlot,
-      toSlot
+    // Check if event has participants - only show confirmation if it does
+    const hasParticipants = event.participants && event.participants.length > 0
+
+    if (hasParticipants) {
+      // Show confirmation modal for events with participants
+      const rescheduleInfo: RescheduleData = {
+        event,
+        fromSlot,
+        toSlot
+      }
+      setRescheduleData(rescheduleInfo)
+      setShowRescheduleModal(true)
+    } else {
+      // Directly reschedule events without participants
+      const rescheduleInfo: RescheduleData = {
+        event,
+        fromSlot,
+        toSlot
+      }
+      await handleRescheduleConfirm(rescheduleInfo, false)
     }
-    setRescheduleData(rescheduleInfo)
-    setShowRescheduleModal(true)
   }
 
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
@@ -384,7 +398,7 @@ Rescheduled: ${data.reason}`.trim() :
       case 'low':
         return 'bg-green-100 text-green-800 border-green-200'
       default:
-        return 'bg-tactical-gold-muted text-tactical-brown-dark border-tactical-gold'
+        return 'bg-accent/30 text-foreground border-accent'
     }
   }
 
@@ -394,11 +408,11 @@ Rescheduled: ${data.reason}`.trim() :
         return 'bg-green-600'
       case 'in_progress':
       case 'in-progress':
-        return 'bg-tactical-gold'
+        return 'bg-accent'
       case 'cancelled':
         return 'bg-red-600'
       default:
-        return 'bg-medium-grey'
+        return 'bg-muted'
     }
   }
 
@@ -540,7 +554,7 @@ Rescheduled: ${data.reason}`.trim() :
                                 <DropdownMenu
                                   trigger={
                                     <button
-                                      className="p-0.5 text-tactical-grey-500 hover:text-tactical-grey-700 opacity-0 group-hover/event:opacity-100 transition-opacity"
+                                      className="p-0.5 text-muted-foreground hover:text-foreground opacity-0 group-hover/event:opacity-100 transition-opacity"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       <MoreVertical className="h-3 w-3" />
@@ -585,7 +599,7 @@ Rescheduled: ${data.reason}`.trim() :
                       
                       {events.length > 2 && (
                         <div 
-                          className="text-xs text-medium-grey text-center py-1 cursor-pointer hover:text-hud-text-primary hover:bg-tactical-gold-light rounded transition-colors"
+                          className="text-xs text-muted-foreground text-center py-1 cursor-pointer hover:text-foreground hover:bg-accent/20 rounded transition-colors"
                           onClick={(e) => {
                             e.stopPropagation()
                             if (onDayNavigation) {

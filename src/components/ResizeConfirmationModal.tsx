@@ -89,13 +89,13 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
   const getPriorityColor = (priority: Priority): string => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border-[var(--status-danger-border)]'
       case 'high':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-[var(--status-warning-bg)] text-[var(--status-warning-text)] border-[var(--status-warning-border)]'
       case 'medium':
         return 'bg-tactical-gold-light text-hud-text-primary border-tactical-gold'
       case 'low':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]'
       default:
         return 'bg-tactical-grey-200 text-tactical-grey-700 border-tactical-grey-300'
     }
@@ -168,7 +168,7 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-hud-border">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--hud-background-primary)] border-hud-border">
         <DialogHeader className="border-b border-hud-border pb-4">
           <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-hud-text-primary">
             <ArrowUpDown className="w-6 h-6 text-tactical-gold" />
@@ -226,14 +226,14 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
                     <div className="text-sm text-medium-grey font-primary uppercase tracking-wide mb-1">
                       Original Duration
                     </div>
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] rounded-lg p-4">
                       <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-red-600" />
+                        <Clock className="w-5 h-5 text-[var(--status-danger-icon)]" />
                         <div>
-                          <div className="font-semibold text-red-800 font-primary">
+                          <div className="font-semibold text-[var(--status-danger-text)] font-primary">
                             {formatTime(originalStart)} - {formatTime(originalEnd)}
                           </div>
-                          <div className="text-sm text-red-600 font-primary">
+                          <div className="text-sm text-[var(--status-danger-icon)] font-primary">
                             {originalDuration} minutes
                           </div>
                         </div>
@@ -248,14 +248,14 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
                     <div className="text-sm text-medium-grey font-primary uppercase tracking-wide mb-1">
                       New Duration
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="bg-[var(--status-success-bg)] border border-[var(--status-success-border)] rounded-lg p-4">
                       <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-green-600" />
+                        <Clock className="w-5 h-5 text-[var(--status-success-icon)]" />
                         <div>
-                          <div className="font-semibold text-green-800 font-primary">
+                          <div className="font-semibold text-[var(--status-success-text)] font-primary">
                             {formatTime(finalStart)} - {formatTime(finalEnd)}
                           </div>
-                          <div className="text-sm text-green-600 font-primary">
+                          <div className="text-sm text-[var(--status-success-icon)] font-primary">
                             {finalDuration} minutes
                           </div>
                         </div>
@@ -275,7 +275,7 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
                   <div className="text-sm text-medium-grey font-primary">
                     <span>
                       {handle === 'top' ? 'Start time' : 'End time'} moved by{' '}
-                      <span className={`font-semibold ${durationChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`font-semibold ${durationChange > 0 ? 'text-[var(--status-success-icon)]' : 'text-[var(--status-danger-icon)]'}`}>
                         {durationChange > 0 ? '+' : ''}{durationChange} minutes
                       </span>
                       {' '}({durationChange > 0 ? 'extended' : 'shortened'})
@@ -341,7 +341,7 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Enter reason for resizing the event duration (will be included in notifications)"
-                  className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary resize-none"
+                  className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-[var(--hud-background-primary)] font-primary resize-none"
                   rows={3}
                 />
                 <div className="text-xs text-medium-grey font-primary">
@@ -356,15 +356,15 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
 
           {/* Error Display */}
           {error && (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-[var(--status-danger-border)] bg-[var(--status-danger-bg)]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-[var(--status-danger-icon)] flex-shrink-0" />
                   <div>
-                    <div className="font-semibold text-red-800 font-primary text-sm">
+                    <div className="font-semibold text-[var(--status-danger-text)] font-primary text-sm">
                       Error
                     </div>
-                    <div className="text-sm text-red-700 font-primary">
+                    <div className="text-sm text-[var(--status-danger-icon)] font-primary">
                       {error}
                     </div>
                   </div>

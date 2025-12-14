@@ -1,0 +1,249 @@
+/**
+ * Unified Calendar Event Styles
+ *
+ * This stylesheet provides unified styling for calendar events across all views
+ * with CSS custom properties to support resize handles and overlap positioning.
+ */
+
+/* CSS Custom Properties for Event Styling */
+:root {
+  /* Event spacing and sizing */
+  --calendar-event-border-radius: 0.375rem; /* 6px */
+  --calendar-event-border-width: 4px;
+  --calendar-event-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --calendar-event-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Resize handle positioning */
+  --calendar-resize-handle-height: 8px;
+  --calendar-resize-handle-offset: -4px;
+  --calendar-resize-handle-indicator-width: 24px;
+  --calendar-resize-handle-indicator-height: 4px;
+  --calendar-resize-handle-z-index: 50;
+
+  /* Drag handle */
+  --calendar-drag-handle-width: 4px;
+  --calendar-drag-handle-opacity: 0.2;
+  --calendar-drag-handle-hover-opacity: 0.4;
+
+  /* Overlap positioning */
+  --calendar-event-min-width: 60px; /* Minimum width for touch targets */
+  --calendar-event-z-index-base: 20;
+  --calendar-event-z-index-dragging: 1000;
+  --calendar-event-z-index-conflict: 30;
+
+  /* Conflict indicators */
+  --calendar-conflict-badge-size: 20px;
+  --calendar-conflict-popup-max-width: 280px;
+  --calendar-conflict-popup-max-height: 160px;
+
+  /* Transitions */
+  --calendar-event-transition: all 0.2s ease-in-out;
+  --calendar-handle-transition: opacity 0.15s ease-in-out;
+}
+
+/* Base Event Styles */
+.calendar-event {
+  position: relative;
+  transition: var(--calendar-event-transition);
+  border-radius: 0 var(--calendar-event-border-radius) var(--calendar-event-border-radius) 0;
+  box-shadow: var(--calendar-event-shadow);
+}
+
+.calendar-event:hover {
+  box-shadow: var(--calendar-event-shadow-hover);
+}
+
+/* Event with overlap positioning */
+.calendar-event-overlapped {
+  min-width: var(--calendar-event-min-width);
+}
+
+/* Event in dragging state */
+.calendar-event-dragging {
+  z-index: var(--calendar-event-z-index-dragging);
+  opacity: 0.8;
+  transform: scale(1.02);
+  cursor: grabbing;
+}
+
+/* Event with conflicts */
+.calendar-event-conflicted {
+  z-index: var(--calendar-event-z-index-conflict);
+}
+
+/* Resize Handle Base Styles */
+.resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--calendar-resize-handle-height);
+  z-index: var(--calendar-resize-handle-z-index);
+  transition: var(--calendar-handle-transition);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.calendar-event:hover .resize-handle,
+.calendar-event.calendar-event-resizing .resize-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Top Resize Handle */
+.resize-handle-top {
+  top: var(--calendar-resize-handle-offset);
+  cursor: n-resize;
+}
+
+/* Bottom Resize Handle */
+.resize-handle-bottom {
+  bottom: var(--calendar-resize-handle-offset);
+  cursor: s-resize;
+}
+
+/* Resize Handle Indicator (visual bar) */
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--calendar-resize-handle-indicator-width);
+  height: var(--calendar-resize-handle-indicator-height);
+  background-color: currentColor;
+  border-radius: 9999px;
+  opacity: 0.6;
+}
+
+.resize-handle-top::after {
+  top: 0;
+}
+
+.resize-handle-bottom::after {
+  bottom: 0;
+}
+
+/* Drag Handle Styles */
+.drag-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--calendar-drag-handle-width);
+  background-color: currentColor;
+  opacity: var(--calendar-drag-handle-opacity);
+  transition: var(--calendar-handle-transition);
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.calendar-event:hover .drag-handle {
+  opacity: var(--calendar-drag-handle-hover-opacity);
+}
+
+/* Compact Mode Styles (Month View) */
+.calendar-event-compact {
+  padding: 0.5rem;
+}
+
+.calendar-event-compact .resize-handle,
+.calendar-event-compact .drag-handle {
+  display: none;
+}
+
+/* Multi-Column Layout Support (for overlapping events) */
+.calendar-event-column-1 {
+  width: 100%;
+  left: 0;
+}
+
+.calendar-event-column-2-0 {
+  width: 50%;
+  left: 0;
+}
+
+.calendar-event-column-2-1 {
+  width: 50%;
+  left: 50%;
+}
+
+.calendar-event-column-3-0 {
+  width: 33.333%;
+  left: 0;
+}
+
+.calendar-event-column-3-1 {
+  width: 33.333%;
+  left: 33.333%;
+}
+
+.calendar-event-column-3-2 {
+  width: 33.333%;
+  left: 66.666%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  :root {
+    --calendar-event-min-width: 80px;
+    --calendar-resize-handle-height: 12px;
+    --calendar-drag-handle-width: 6px;
+  }
+
+  /* Larger touch targets on mobile */
+  .resize-handle {
+    height: 12px;
+  }
+
+  .drag-handle {
+    width: 6px;
+  }
+}
+
+/* High DPI / Retina Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .calendar-event {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .calendar-event:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .resize-handle,
+  .drag-handle,
+  .calendar-conflict-popup {
+    display: none !important;
+  }
+
+  .calendar-event {
+    box-shadow: none;
+    border: 1px solid currentColor;
+  }
+}
+
+/* Accessibility - High Contrast Mode */
+@media (prefers-contrast: high) {
+  .calendar-event {
+    border: 2px solid currentColor;
+  }
+
+  .resize-handle,
+  .drag-handle {
+    opacity: 1;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .calendar-event,
+  .resize-handle,
+  .drag-handle {
+    transition: none;
+  }
+}

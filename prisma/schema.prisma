@@ -188,10 +188,13 @@ model Event {
   duration      Int      // minutes
   priority      Priority
 
-  // Client relationship
+  // Client relationship (CRM contact this event is FOR)
   clientId      String?
   clientName    String?
   client        ClientRecord? @relation(fields: [clientId], references: [id])
+
+  // Participants (people ATTENDING the event)
+  participants  Json? // String[] - email addresses or names of attendees
 
   // Location and notes
   location      String?
@@ -228,6 +231,9 @@ model Event {
   // External calendar integration
   googleCalendarEventId String?
   outlookCalendarEventId String?
+
+  // Sync tracking
+  eventSyncs    EventSync[]
 
   // Metadata
   createdAt DateTime @default(now())
@@ -719,12 +725,82 @@ model CalendarIntegration {
   lastSyncAt    DateTime?
   lastSyncError String?  // Last error message if sync failed
 
+  // Sync configuration
+  syncToken     String?  // For incremental sync (Google Calendar)
+  webhookId     String?  // Webhook/push notification ID
+  webhookExpiry DateTime?  // When webhook expires (needs renewal)
+  syncDirection SyncDirection @default(BIDIRECTIONAL)
+
+  // Relationships
+  eventSyncs    EventSync[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([participantId, provider])
   @@index([participantId])
   @@index([isActive])
+}
+
+// Event Sync Tracking - maps local events to external calendar events
+model EventSync {
+  id              String @id @default(cuid())
+  eventId         String
+  event           Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  integrationId   String
+  integration     CalendarIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  provider        CalendarProvider
+  externalId      String  // Google event ID, Notion page ID, etc.
+
+  // Sync status
+  syncStatus      SyncStatus @default(PENDING)
+  lastSyncAt      DateTime?
+  lastSyncError   String?
+  retryCount      Int @default(0)
+
+  // Conflict resolution
+  localVersion    DateTime  // Last modified timestamp of local event
+  remoteVersion   DateTime? // Last modified timestamp of remote event
+  conflictData    Json?     // Store conflict details if any
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, integrationId])
+  @@index([eventId])
+  @@index([integrationId])
+  @@index([provider])
+  @@index([syncStatus])
+  @@index([externalId])
+}
+
+// Sync Queue - for retry logic and background processing
+model SyncQueue {
+  id              String @id @default(cuid())
+
+  operation       SyncOperation
+  eventId         String?
+  integrationId   String?
+
+  payload         Json      // Event data or sync parameters
+  status          QueueStatus @default(PENDING)
+  priority        Int @default(0)  // Higher = more urgent
+
+  retryCount      Int @default(0)
+  maxRetries      Int @default(3)
+  lastError       String?
+
+  scheduledFor    DateTime @default(now())
+  processedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([priority])
 }
 
 // Enums
@@ -975,6 +1051,38 @@ enum CalendarProvider {
   OUTLOOK
   APPLE
   CALDAV
+  NOTION
+}
+
+enum SyncDirection {
+  BIDIRECTIONAL  // Sync both ways
+  EXPORT_ONLY    // Only push local changes to external
+  IMPORT_ONLY    // Only pull external changes to local
+}
+
+enum SyncStatus {
+  PENDING        // Waiting to sync
+  SYNCING        // Currently syncing
+  SYNCED         // Successfully synced
+  ERROR          // Sync failed
+  CONFLICT       // Conflicting changes detected
+}
+
+enum SyncOperation {
+  CREATE_EVENT
+  UPDATE_EVENT
+  DELETE_EVENT
+  PULL_CHANGES
+  PUSH_CHANGES
+  RESOLVE_CONFLICT
+}
+
+enum QueueStatus {
+  PENDING        // Waiting to be processed
+  PROCESSING     // Currently being processed
+  COMPLETED      // Successfully processed
+  FAILED         // Processing failed
+  CANCELLED      // Manually cancelled
 }
 
 // Follow-up specific enums

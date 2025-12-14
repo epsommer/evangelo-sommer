@@ -61,6 +61,20 @@
   --tactical-warning: #F59E0B;
   --tactical-error: #EF4444;
 
+  /* Status colors for modals/alerts - Theme-aware */
+  --status-danger-bg: #fef2f2;
+  --status-danger-border: #fecaca;
+  --status-danger-text: #991b1b;
+  --status-danger-icon: #dc2626;
+  --status-success-bg: #f0fdf4;
+  --status-success-border: #bbf7d0;
+  --status-success-text: #166534;
+  --status-success-icon: #16a34a;
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #fde68a;
+  --status-warning-text: #92400e;
+  --status-warning-icon: #d97706;
+
   /* HUD colors mapped to neomorphic */
   --hud-background-primary: hsl(var(--background));
   --hud-background-secondary: hsl(var(--muted));
@@ -232,6 +246,20 @@
   --bg-secondary: hsl(var(--muted));
   --text-primary: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
+
+  /* Status colors for dark mode */
+  --status-danger-bg: #451a1a;
+  --status-danger-border: #7f1d1d;
+  --status-danger-text: #fca5a5;
+  --status-danger-icon: #f87171;
+  --status-success-bg: #14532d;
+  --status-success-border: #166534;
+  --status-success-text: #86efac;
+  --status-success-icon: #4ade80;
+  --status-warning-bg: #451a03;
+  --status-warning-border: #78350f;
+  --status-warning-text: #fcd34d;
+  --status-warning-icon: #fbbf24;
 }
 
 /* Overkast Theme */
@@ -269,6 +297,20 @@
   --bg-secondary: hsl(var(--muted));
   --text-primary: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
+
+  /* Status colors - grey-tinted for Overkast */
+  --status-danger-bg: #f5e6e6;
+  --status-danger-border: #d4b3b3;
+  --status-danger-text: #8b3a3a;
+  --status-danger-icon: #b54545;
+  --status-success-bg: #e6f0e6;
+  --status-success-border: #b3ccb3;
+  --status-success-text: #2d5a2d;
+  --status-success-icon: #3d7a3d;
+  --status-warning-bg: #f5efe6;
+  --status-warning-border: #d4c4a3;
+  --status-warning-text: #6b5020;
+  --status-warning-icon: #9a7530;
 }
 
 /* True Night Theme - Pure Neutral Dark */
@@ -313,6 +355,20 @@
   --bg-secondary: hsl(var(--muted));
   --text-primary: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
+
+  /* Status colors for dark mode - pure neutral */
+  --status-danger-bg: #2a1a1a;
+  --status-danger-border: #4a2a2a;
+  --status-danger-text: #f0a0a0;
+  --status-danger-icon: #e07070;
+  --status-success-bg: #1a2a1a;
+  --status-success-border: #2a4a2a;
+  --status-success-text: #90e090;
+  --status-success-icon: #60c060;
+  --status-warning-bg: #2a2010;
+  --status-warning-border: #4a3820;
+  --status-warning-text: #e0c080;
+  --status-warning-icon: #d0a050;
 }
 
 /* Gilded Meadow Theme - Light Yellow with Dark Grey */
@@ -350,6 +406,20 @@
   --bg-secondary: hsl(var(--muted));
   --text-primary: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
+
+  /* Status colors - warm tinted for Gilded Meadow */
+  --status-danger-bg: #fdf2e9;
+  --status-danger-border: #e8c4a8;
+  --status-danger-text: #8b3a25;
+  --status-danger-icon: #c45030;
+  --status-success-bg: #f0f5e8;
+  --status-success-border: #c8d8a8;
+  --status-success-text: #3a5a28;
+  --status-success-icon: #4a7a38;
+  --status-warning-bg: #fdf8e6;
+  --status-warning-border: #e8d8a0;
+  --status-warning-text: #6b5020;
+  --status-warning-icon: #9a7530;
 }
 
 /* Alias for dark mode */
@@ -825,4 +895,160 @@ input[type="radio"].neo-radio:disabled + label::after {
   box-shadow:
     inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.4),
     inset -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   CALENDAR EVENT DRAG & RESIZE STYLES
+   Cursor and transition styles for smooth interactions
+   ======================================== */
+
+/* Cursor styles for drag and resize */
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grabbing {
+  cursor: grabbing;
+}
+
+.cursor-n-resize {
+  cursor: n-resize;
+}
+
+.cursor-s-resize {
+  cursor: s-resize;
+}
+
+.cursor-e-resize {
+  cursor: e-resize;
+}
+
+.cursor-w-resize {
+  cursor: w-resize;
+}
+
+.cursor-ne-resize {
+  cursor: ne-resize;
+}
+
+.cursor-nw-resize {
+  cursor: nw-resize;
+}
+
+.cursor-se-resize {
+  cursor: se-resize;
+}
+
+.cursor-sw-resize {
+  cursor: sw-resize;
+}
+
+/* Calendar event transitions */
+.event-transition {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-transition-fast {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Drag shadow effects */
+.event-dragging {
+  opacity: 0.7;
+  transform: scale(1.02);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+}
+
+.event-drag-ghost {
+  opacity: 0.5;
+  border: 2px dashed hsl(var(--accent));
+  background-color: hsl(var(--accent) / 0.1);
+}
+
+/* Resize preview */
+.event-resizing {
+  transition: none;
+  z-index: 1000;
+  border: 2px solid hsl(var(--accent));
+  box-shadow: 0 0 0 2px hsl(var(--accent) / 0.2);
+}
+
+.event-resize-preview {
+  border: 2px dashed hsl(var(--accent));
+  background-color: hsl(var(--accent) / 0.15);
+  transition: none;
+  pointer-events: none;
+}
+
+/* Hover effects for events */
+.event-hover {
+  transition: all 0.2s ease;
+}
+
+.event-hover:hover {
+  transform: scale(1.01);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+/* Focus states for accessibility */
+.event-focus:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  z-index: 20;
+}
+
+/* Smooth height transitions for resize */
+.event-smooth-resize {
+  transition: height 0.1s ease-out, top 0.1s ease-out;
+}
+
+/* Drop zone highlights */
+.drop-zone-active {
+  background-color: hsl(var(--accent) / 0.1);
+  border: 2px dashed hsl(var(--accent));
+  transition: all 0.2s ease;
+}
+
+.drop-zone-hover {
+  background-color: hsl(var(--accent) / 0.2);
+  border-color: hsl(var(--accent));
+}
+
+/* Calendar grid cell hover */
+.calendar-cell-hover {
+  transition: background-color 0.15s ease;
+}
+
+.calendar-cell-hover:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Framer Motion layout animations - optimize for 60fps */
+[data-layout] {
+  will-change: transform;
+}
+
+/* Prevent text selection during drag */
+.dragging-active * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Dark mode adjustments for drag/resize */
+.mocha-mode .event-dragging,
+.true-night-mode .event-dragging {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.mocha-mode .event-hover:hover,
+.true-night-mode .event-hover:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
 }

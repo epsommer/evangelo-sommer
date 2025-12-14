@@ -3,10 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { format, parseISO, addMinutes } from 'date-fns'
 import { Calendar, Clock, MapPin, User, Target, CheckCircle, AlertTriangle, Bell, Plus, X, Repeat } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import ClientSelector, { Client } from '@/components/ClientSelector'
 
 // Types for the unified event system
@@ -23,12 +19,12 @@ export type RecurrenceInterval = 'days' | 'weeks' | 'months' | 'years'
 
 export interface RecurrenceRule {
   frequency: RecurrenceFrequency
-  interval: number // e.g., every 2 weeks = interval: 2, intervalType: 'weeks'
+  interval: number
   intervalType?: RecurrenceInterval
   endDate?: string
   occurrences?: number
-  weekDays?: number[] // 0 = Sunday, 1 = Monday, etc. (for weekly recurrence)
-  monthDay?: number // Day of month (1-31) for monthly recurrence
+  weekDays?: number[]
+  monthDay?: number
 }
 
 export interface NotificationRule {
@@ -38,7 +34,6 @@ export interface NotificationRule {
   enabled: boolean
 }
 
-// Preset notification options (like Google Calendar and Notion)
 export const PRESET_NOTIFICATIONS = [
   { label: 'At time of event', value: 0, trigger: 'minutes' as NotificationTrigger },
   { label: '5 minutes before', value: 5, trigger: 'minutes' as NotificationTrigger },
@@ -59,40 +54,29 @@ export interface UnifiedEvent {
   description?: string
   startDateTime: string
   endDateTime?: string
-  duration: number // minutes
+  duration: number
   priority: Priority
+  // Client (CRM contact this event is FOR)
   clientId?: string
   clientName?: string
+  // Participants (people ATTENDING the event)
+  participants?: string[]
   location?: string
   notes?: string
-  
-  // Multi-day and all-day event support
   isAllDay?: boolean
   isMultiDay?: boolean
-  
-  // Notification settings
   notifications?: NotificationRule[]
-  
-  // Recurring event settings
   recurrence?: RecurrenceRule
   isRecurring?: boolean
-  parentEventId?: string // For recurring instances, references the original event
-  
-  // Legacy compatibility fields
+  parentEventId?: string
   status?: string
   service?: string
   scheduledDate?: string
-  
-  // Goal-specific fields
   goalTimeframe?: GoalTimeframe
   progressTarget?: number
   currentProgress?: number
-  
-  // Milestone-specific fields
   deadline?: string
   dependencies?: string[]
-  
-  // Metadata
   createdAt: string
   updatedAt: string
 }
@@ -146,15 +130,15 @@ interface FormErrors {
   general?: string
 }
 
-const PRIORITY_OPTIONS: { value: Priority; label: string; color: string }[] = [
-  { value: 'low', label: 'Low', color: 'bg-light-grey text-hud-text-primary' },
-  { value: 'medium', label: 'Medium', color: 'bg-tactical-gold text-hud-text-primary' },
-  { value: 'high', label: 'High', color: 'bg-dark-grey text-white' },
-  { value: 'urgent', label: 'Urgent', color: 'bg-red-600 text-white' }
+const PRIORITY_OPTIONS: { value: Priority; label: string; borderColor: string; hoverBorder: string; activeStyles: string }[] = [
+  { value: 'low', label: 'Low', borderColor: 'border-green-500', hoverBorder: 'hover:border-green-500/50', activeStyles: 'neo-button-active !bg-green-500/90 !text-white !shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.1)]' },
+  { value: 'medium', label: 'Medium', borderColor: 'border-yellow-500', hoverBorder: 'hover:border-yellow-500/50', activeStyles: 'neo-button-active !bg-yellow-500/90 !text-white !shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.1)]' },
+  { value: 'high', label: 'High', borderColor: 'border-orange-500', hoverBorder: 'hover:border-orange-500/50', activeStyles: 'neo-button-active !bg-orange-500/90 !text-white !shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.1)]' },
+  { value: 'urgent', label: 'Urgent', borderColor: 'border-red-500', hoverBorder: 'hover:border-red-500/50', activeStyles: 'neo-button-active !bg-red-500/90 !text-white !shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.1)]' }
 ]
 
 const EVENT_TYPE_OPTIONS: { value: EventType; label: string; icon: React.ReactNode; defaultDuration: number }[] = [
-  { value: 'event', label: 'Event/Appointment', icon: <Calendar className="w-4 h-4" />, defaultDuration: 60 },
+  { value: 'event', label: 'Event', icon: <Calendar className="w-4 h-4" />, defaultDuration: 60 },
   { value: 'task', label: 'Task', icon: <CheckCircle className="w-4 h-4" />, defaultDuration: 30 },
   { value: 'goal', label: 'Goal', icon: <Target className="w-4 h-4" />, defaultDuration: 0 },
   { value: 'milestone', label: 'Milestone', icon: <AlertTriangle className="w-4 h-4" />, defaultDuration: 0 }
@@ -169,7 +153,6 @@ const GOAL_TIMEFRAME_OPTIONS: { value: GoalTimeframe; label: string }[] = [
   { value: 'custom', label: 'Custom Timeframe' }
 ]
 
-// Time generation utilities
 const generateTimeOptions = () => {
   const times = []
   for (let hour = 0; hour < 24; hour++) {
@@ -212,7 +195,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     goalTimeframe: 'monthly',
     progressTarget: 100,
     deadline: '',
-    notifications: [{ id: '1', value: 15, trigger: 'minutes', enabled: true }], // Default: 15 minutes before
+    notifications: [{ id: '1', value: 15, trigger: 'minutes', enabled: true }],
     isAllDay: false,
     isMultiDay: false,
     endDate: initialDate ? format(initialDate, 'yyyy-MM-dd') : format((() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()) })(), 'yyyy-MM-dd'),
@@ -220,7 +203,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     recurrenceFrequency: 'weekly',
     recurrenceInterval: 1,
     recurrenceIntervalType: 'weeks',
-    recurrenceEndDate: format(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'), // 1 year from now
+    recurrenceEndDate: format(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
     recurrenceOccurrences: 10,
     participants: []
   })
@@ -229,20 +212,18 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [clients, setClients] = useState<Array<{ id: string; name: string }>>([])
 
-  // Load clients from localStorage
   useEffect(() => {
     try {
       const storedClients = JSON.parse(localStorage.getItem('clients') || '[]')
-      setClients(storedClients.map((client: any) => ({ 
-        id: client.id, 
-        name: client.name || 'Unnamed Client' 
+      setClients(storedClients.map((client: any) => ({
+        id: client.id,
+        name: client.name || 'Unnamed Client'
       })))
     } catch (error) {
       console.error('Error loading clients:', error)
     }
   }, [])
 
-  // Update form data when initialTime, initialDate, or initialClient changes for new events
   useEffect(() => {
     if (!editingEvent && (initialTime || initialDate || initialClientId)) {
       setFormData(prev => ({
@@ -256,12 +237,11 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     }
   }, [initialTime, initialDate, initialClientId, initialClientName, editingEvent])
 
-  // Initialize form when editing
   useEffect(() => {
     if (editingEvent) {
       const startDate = parseISO(editingEvent.startDateTime)
       const endDate = editingEvent.endDateTime ? parseISO(editingEvent.endDateTime) : null
-      
+
       setFormData({
         type: editingEvent.type,
         title: editingEvent.title,
@@ -288,12 +268,11 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         recurrenceIntervalType: editingEvent.recurrence?.intervalType || 'weeks',
         recurrenceEndDate: editingEvent.recurrence?.endDate || format(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         recurrenceOccurrences: editingEvent.recurrence?.occurrences || 10,
-        participants: (editingEvent as any).metadata?.participantEmails || []
+        participants: editingEvent.participants || []
       })
     }
   }, [editingEvent])
 
-  // Update end time and duration when type or start time changes
   useEffect(() => {
     const selectedEventType = EVENT_TYPE_OPTIONS.find(option => option.value === formData.type)
     if (selectedEventType && !editingEvent) {
@@ -308,7 +287,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
   const handleInputChange = (field: keyof FormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear specific field errors
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
@@ -317,17 +295,16 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
   const handleTimeChange = (field: 'startTime' | 'endTime', value: string) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value }
-      
-      // Calculate duration if both times are set
+
       if (field === 'startTime' || field === 'endTime') {
         const startDateTime = new Date(`${prev.date}T${field === 'startTime' ? value : prev.startTime}`)
         const endDateTime = new Date(`${prev.date}T${field === 'endTime' ? value : prev.endTime}`)
-        
+
         if (endDateTime > startDateTime) {
           newData.duration = Math.round((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60))
         }
       }
-      
+
       return newData
     })
 
@@ -340,7 +317,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     setFormData(prev => {
       const startDateTime = new Date(`${prev.date}T${prev.startTime}`)
       const endDateTime = addMinutes(startDateTime, minutes)
-      
+
       return {
         ...prev,
         duration: minutes,
@@ -351,28 +328,27 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
-    
+
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required'
     }
-    
+
     if (!formData.date) {
       newErrors.date = 'Date is required'
     }
-    
+
     if (!formData.startTime) {
       newErrors.startTime = 'Start time is required'
     }
-    
+
     if (!formData.clientName.trim()) {
       newErrors.clientName = 'Client is required'
     }
-    
+
     if (formData.type !== 'goal' && formData.type !== 'milestone' && formData.duration <= 0) {
       newErrors.duration = 'Duration must be greater than 0'
     }
-    
-    // Create dates in local timezone to avoid timezone mismatches
+
     const startDateTime = new Date(`${formData.date}T${formData.startTime}`)
     if (formData.endTime) {
       const endDateTime = new Date(`${formData.date}T${formData.endTime}`)
@@ -380,40 +356,38 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         newErrors.general = 'End time must be after start time'
       }
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
-    
+
     setIsLoading(true)
-    
+
     try {
-      // Create dates in local timezone to ensure correct day display
-      const startDateTime = formData.isAllDay 
-        ? new Date(`${formData.date}T00:00:00`) 
+      const startDateTime = formData.isAllDay
+        ? new Date(`${formData.date}T00:00:00`)
         : new Date(`${formData.date}T${formData.startTime}`)
-        
+
       let endDateTime: Date
-      
+
       if (formData.isAllDay) {
-        // For all-day events, end at 23:59 on the same or end date
         const endDateStr = formData.isMultiDay ? formData.endDate : formData.date
         endDateTime = new Date(`${endDateStr}T23:59:59`)
       } else if (formData.isMultiDay) {
-        // For multi-day events with specific times
         endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
       } else {
-        // Regular single-day events
         endDateTime = formData.endTime ? new Date(`${formData.date}T${formData.endTime}`) : addMinutes(startDateTime, formData.duration)
       }
-      
+
+      const filteredParticipants = formData.participants.filter(p => p.trim() !== '')
+
       const newEvent: UnifiedEvent = {
         id: editingEvent?.id || `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: formData.type,
@@ -425,6 +399,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         priority: formData.priority,
         clientId: formData.clientId || undefined,
         clientName: formData.clientName || undefined,
+        participants: filteredParticipants.length > 0 ? filteredParticipants : undefined,
         location: formData.location.trim() || undefined,
         notes: formData.notes.trim() || undefined,
         goalTimeframe: formData.type === 'goal' ? formData.goalTimeframe : undefined,
@@ -445,17 +420,10 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         createdAt: editingEvent?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
-      
-      // Add participants for API integration
-      const eventWithParticipants = {
-        ...newEvent,
-        participants: formData.participants.filter(email => email.trim() !== '')
-      }
-      
-      await onSave(eventWithParticipants as UnifiedEvent)
+
+      await onSave(newEvent)
       onClose()
-      
-      // Reset form for next use
+
       if (!editingEvent) {
         setFormData({
           type: 'event',
@@ -486,7 +454,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
           participants: []
         })
       }
-      
+
     } catch (error) {
       console.error('Error saving event:', error)
       setErrors({ general: 'Failed to save event. Please try again.' })
@@ -504,38 +472,57 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     }
   }
 
+  if (!isOpen) return null
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-hud-border"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div
+        className="neo-card relative w-full max-w-2xl max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <DialogHeader className="border-b border-hud-border pb-4">
-          <DialogTitle className="text-xl font-primary font-semibold uppercase tracking-wide text-hud-text-primary">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-[var(--neomorphic-dark-shadow)]">
+          <h2 className="text-xl font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
             {editingEvent ? 'Edit Event' : 'Create New Event'}
-          </DialogTitle>
-        </DialogHeader>
+          </h2>
+          <button
+            onClick={onClose}
+            className="neo-button-sm p-2 rounded-full"
+            aria-label="Close modal"
+          >
+            <X className="h-5 w-5 text-[var(--neomorphic-text)]" />
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+        {/* Content */}
+        <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(90vh-160px)] p-6 space-y-6">
           {/* Event Type Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
               Event Type
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {EVENT_TYPE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleInputChange('type', option.value)}
-                  className={`flex items-center gap-3 p-3 border-2 transition-colors font-primary ${
+                  className={`flex items-center justify-center gap-2 p-3 rounded-lg font-primary text-sm transition-all ${
                     formData.type === option.value
-                      ? 'border-hud-border-accent bg-tactical-gold-light text-hud-text-primary'
-                      : 'border-hud-border bg-white text-medium-grey hover:border-hud-border-accent'
+                      ? 'neo-button-active'
+                      : 'neo-button'
                   }`}
                 >
                   {option.icon}
-                  <span className="font-medium uppercase text-xs tracking-wide">
+                  <span className="font-medium uppercase tracking-wide">
                     {option.label}
                   </span>
                 </button>
@@ -545,7 +532,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
           {/* Title */}
           <div className="space-y-2">
-            <label htmlFor="title" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+            <label htmlFor="title" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
               Title *
             </label>
             <input
@@ -553,19 +540,19 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
               type="text"
               value={formData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
-              className={`w-full p-3 border-2 font-primary ${
-                errors.title ? 'border-red-500' : 'border-hud-border focus:border-hud-border-accent'
-              } bg-white`}
+              className={`neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] ${
+                errors.title ? 'ring-2 ring-red-500' : ''
+              }`}
               placeholder="Enter event title"
             />
             {errors.title && (
-              <p className="text-sm text-red-600 font-primary">{errors.title}</p>
+              <p className="text-sm text-red-500 font-primary">{errors.title}</p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <label htmlFor="description" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+            <label htmlFor="description" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
               Description
             </label>
             <textarea
@@ -573,16 +560,15 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={3}
-              className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+              className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] resize-none"
               placeholder="Enter event description"
             />
           </div>
 
           {/* Date and Time Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Date */}
             <div className="space-y-2">
-              <label htmlFor="date" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+              <label htmlFor="date" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                 Date *
               </label>
               <input
@@ -590,27 +576,26 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) => handleInputChange('date', e.target.value)}
-                className={`w-full p-3 border-2 font-primary ${
-                  errors.date ? 'border-red-500' : 'border-hud-border focus:border-hud-border-accent'
-                } bg-white`}
+                className={`neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] ${
+                  errors.date ? 'ring-2 ring-red-500' : ''
+                }`}
               />
               {errors.date && (
-                <p className="text-sm text-red-600 font-primary">{errors.date}</p>
+                <p className="text-sm text-red-500 font-primary">{errors.date}</p>
               )}
             </div>
 
-            {/* Start Time */}
             <div className="space-y-2">
-              <label htmlFor="startTime" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+              <label htmlFor="startTime" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                 {formData.type === 'goal' ? 'Target Date' : 'Start Time'} *
               </label>
               <select
                 id="startTime"
                 value={formData.startTime}
                 onChange={(e) => handleTimeChange('startTime', e.target.value)}
-                className={`w-full p-3 border-2 font-primary ${
-                  errors.startTime ? 'border-red-500' : 'border-hud-border focus:border-hud-border-accent'
-                } bg-white`}
+                className={`neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] ${
+                  errors.startTime ? 'ring-2 ring-red-500' : ''
+                }`}
               >
                 {TIME_OPTIONS.map(option => (
                   <option key={option.value} value={option.value}>
@@ -619,21 +604,20 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                 ))}
               </select>
               {errors.startTime && (
-                <p className="text-sm text-red-600 font-primary">{errors.startTime}</p>
+                <p className="text-sm text-red-500 font-primary">{errors.startTime}</p>
               )}
             </div>
 
-            {/* End Time / Duration */}
             {formData.type !== 'goal' && formData.type !== 'milestone' && (
               <div className="space-y-2">
-                <label htmlFor="endTime" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+                <label htmlFor="endTime" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                   End Time
                 </label>
                 <select
                   id="endTime"
                   value={formData.endTime}
                   onChange={(e) => handleTimeChange('endTime', e.target.value)}
-                  className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+                  className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
                 >
                   {TIME_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>
@@ -647,8 +631,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
           {/* Duration Display */}
           {formData.type !== 'goal' && formData.type !== 'milestone' && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-medium-grey font-primary">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-[var(--neomorphic-text)] opacity-70 font-primary">
                 <Clock className="w-4 h-4" />
                 <span>Duration: {formData.duration} minutes ({Math.floor(formData.duration / 60)}h {formData.duration % 60}m)</span>
               </div>
@@ -658,7 +642,9 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                     key={minutes}
                     type="button"
                     onClick={() => handleDurationChange(minutes)}
-                    className="px-3 py-1 text-xs border border-hud-border hover:border-hud-border-accent text-medium-grey hover:text-hud-text-primary font-primary"
+                    className={`neo-button px-3 py-1 text-xs font-primary rounded-lg ${
+                      formData.duration === minutes ? 'neo-button-active' : ''
+                    }`}
                   >
                     {minutes}m
                   </button>
@@ -669,13 +655,12 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
           {/* All-day and Multi-day Event Options */}
           {formData.type !== 'goal' && formData.type !== 'milestone' && (
-            <div className="space-y-4 p-4 border border-hud-border bg-hud-background-secondary">
-              <h4 className="text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+            <div className="neo-inset rounded-xl p-5 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                 Event Duration Options
               </h4>
-              
+
               <div className="space-y-3">
-                {/* All-day Event */}
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -688,15 +673,14 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                         endTime: e.target.checked ? '23:59' : prev.endTime
                       }))
                     }}
-                    className="w-4 h-4 border-2 border-hud-border"
+                    className="w-4 h-4 rounded accent-[var(--neomorphic-accent)]"
                   />
                   <div>
-                    <span className="text-sm font-medium text-hud-text-primary font-primary">All-day event</span>
-                    <p className="text-xs text-medium-grey font-primary">Event lasts the entire day without specific times</p>
+                    <span className="text-sm font-medium text-[var(--neomorphic-text)] font-primary">All-day event</span>
+                    <p className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary">Event lasts the entire day</p>
                   </div>
                 </label>
 
-                {/* Multi-day Event */}
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -707,18 +691,17 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                         isMultiDay: e.target.checked
                       }))
                     }}
-                    className="w-4 h-4 border-2 border-hud-border"
+                    className="w-4 h-4 rounded accent-[var(--neomorphic-accent)]"
                   />
                   <div>
-                    <span className="text-sm font-medium text-hud-text-primary font-primary">Multi-day event</span>
-                    <p className="text-xs text-medium-grey font-primary">Event spans across multiple days</p>
+                    <span className="text-sm font-medium text-[var(--neomorphic-text)] font-primary">Multi-day event</span>
+                    <p className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary">Event spans multiple days</p>
                   </div>
                 </label>
 
-                {/* End Date (Multi-day events only) */}
                 {formData.isMultiDay && (
                   <div className="ml-7 space-y-2">
-                    <label htmlFor="endDate" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+                    <label htmlFor="endDate" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                       End Date
                     </label>
                     <input
@@ -727,7 +710,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                       value={formData.endDate}
                       onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                       min={formData.date}
-                      className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+                      className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
                     />
                   </div>
                 )}
@@ -737,197 +720,111 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
           {/* Recurring Event Options */}
           {formData.type !== 'goal' && formData.type !== 'milestone' && (
-            <div className="space-y-4 p-4 border border-hud-border bg-hud-background-secondary">
-              <h4 className="text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
-                <Repeat className="inline w-4 h-4 mr-2" />
+            <div className="neo-inset rounded-xl p-5 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide flex items-center gap-2">
+                <Repeat className="w-4 h-4" />
                 Recurring Event
               </h4>
-              
-              <div className="space-y-4">
-                {/* Enable Recurring */}
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isRecurring}
-                    onChange={(e) => {
-                      setFormData(prev => ({
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isRecurring}
+                  onChange={(e) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      isRecurring: e.target.checked
+                    }))
+                  }}
+                  className="w-4 h-4 rounded accent-[var(--neomorphic-accent)]"
+                />
+                <div>
+                  <span className="text-sm font-medium text-[var(--neomorphic-text)] font-primary">Make this a recurring event</span>
+                  <p className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary">Event will repeat based on schedule</p>
+                </div>
+              </label>
+
+              {formData.isRecurring && (
+                <div className="ml-7 space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+                      Repeats
+                    </label>
+                    <select
+                      value={formData.recurrenceFrequency}
+                      onChange={(e) => setFormData(prev => ({
                         ...prev,
-                        isRecurring: e.target.checked
-                      }))
-                    }}
-                    className="w-4 h-4 border-2 border-hud-border"
-                  />
-                  <div>
-                    <span className="text-sm font-medium text-hud-text-primary font-primary">Make this a recurring event</span>
-                    <p className="text-xs text-medium-grey font-primary">Event will repeat based on the schedule below</p>
+                        recurrenceFrequency: e.target.value as RecurrenceFrequency,
+                        recurrenceInterval: 1
+                      }))}
+                      className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="yearly">Yearly</option>
+                      <option value="custom">Custom</option>
+                    </select>
                   </div>
-                </label>
 
-                {/* Recurring Options */}
-                {formData.isRecurring && (
-                  <div className="ml-7 space-y-4">
-                    {/* Frequency Selection */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
-                        Repeats
-                      </label>
-                      <select
-                        value={formData.recurrenceFrequency}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
-                          recurrenceFrequency: e.target.value as RecurrenceFrequency,
-                          recurrenceInterval: e.target.value === 'daily' ? 1 : 
-                                             e.target.value === 'weekly' ? 1 :
-                                             e.target.value === 'monthly' ? 1 :
-                                             e.target.value === 'yearly' ? 1 : prev.recurrenceInterval
-                        }))}
-                        className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
-                      >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="yearly">Yearly</option>
-                        <option value="custom">Custom</option>
-                      </select>
-                    </div>
-
-                    {/* Custom Interval */}
-                    {formData.recurrenceFrequency === 'custom' && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-hud-text-primary font-primary mb-1">
-                            Every
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.recurrenceInterval}
-                            onChange={(e) => setFormData(prev => ({ ...prev, recurrenceInterval: parseInt(e.target.value) || 1 }))}
-                            min="1"
-                            max="365"
-                            className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-hud-text-primary font-primary mb-1">
-                            Period
-                          </label>
-                          <select
-                            value={formData.recurrenceIntervalType}
-                            onChange={(e) => setFormData(prev => ({ ...prev, recurrenceIntervalType: e.target.value as RecurrenceInterval }))}
-                            className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
-                          >
-                            <option value="days">Days</option>
-                            <option value="weeks">Weeks</option>
-                            <option value="months">Months</option>
-                            <option value="years">Years</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Quick Preset Buttons */}
-                    {formData.recurrenceFrequency !== 'custom' && (
-                      <div className="space-y-2">
-                        <span className="text-xs text-medium-grey font-primary uppercase tracking-wide">Quick presets:</span>
-                        <div className="flex flex-wrap gap-2">
-                          {formData.recurrenceFrequency === 'weekly' && (
-                            <>
-                              <button type="button" onClick={() => setFormData(prev => ({ ...prev, recurrenceInterval: 1 }))}
-                                className={`px-3 py-1 text-xs border transition-colors font-primary ${formData.recurrenceInterval === 1 ? 'border-hud-border-accent bg-tactical-gold-light' : 'border-hud-border hover:border-hud-border-accent'}`}>
-                                Weekly
-                              </button>
-                              <button type="button" onClick={() => setFormData(prev => ({ ...prev, recurrenceInterval: 2 }))}
-                                className={`px-3 py-1 text-xs border transition-colors font-primary ${formData.recurrenceInterval === 2 ? 'border-hud-border-accent bg-tactical-gold-light' : 'border-hud-border hover:border-hud-border-accent'}`}>
-                                Bi-weekly
-                              </button>
-                            </>
-                          )}
-                          {formData.recurrenceFrequency === 'monthly' && (
-                            <>
-                              <button type="button" onClick={() => setFormData(prev => ({ ...prev, recurrenceInterval: 1 }))}
-                                className={`px-3 py-1 text-xs border transition-colors font-primary ${formData.recurrenceInterval === 1 ? 'border-hud-border-accent bg-tactical-gold-light' : 'border-hud-border hover:border-hud-border-accent'}`}>
-                                Monthly
-                              </button>
-                              <button type="button" onClick={() => setFormData(prev => ({ ...prev, recurrenceInterval: 2 }))}
-                                className={`px-3 py-1 text-xs border transition-colors font-primary ${formData.recurrenceInterval === 2 ? 'border-hud-border-accent bg-tactical-gold-light' : 'border-hud-border hover:border-hud-border-accent'}`}>
-                                Bi-monthly
-                              </button>
-                              <button type="button" onClick={() => setFormData(prev => ({ ...prev, recurrenceInterval: 3 }))}
-                                className={`px-3 py-1 text-xs border transition-colors font-primary ${formData.recurrenceInterval === 3 ? 'border-hud-border-accent bg-tactical-gold-light' : 'border-hud-border hover:border-hud-border-accent'}`}>
-                                Quarterly
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Recurrence End Options */}
-                    <div className="space-y-3">
-                      <span className="text-sm font-medium text-hud-text-primary font-primary">Ends:</span>
-                      
-                      <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="recurrenceEnd"
-                            value="date"
-                            checked={!!formData.recurrenceEndDate}
-                            onChange={() => {}}
-                            className="w-4 h-4"
-                          />
-                          <div className="flex items-center gap-2 flex-1">
-                            <span className="text-sm text-hud-text-primary font-primary">On date:</span>
-                            <input
-                              type="date"
-                              value={formData.recurrenceEndDate}
-                              onChange={(e) => setFormData(prev => ({ ...prev, recurrenceEndDate: e.target.value }))}
-                              min={formData.date}
-                              className="p-2 border border-hud-border text-sm font-primary bg-white"
-                            />
-                          </div>
+                  {formData.recurrenceFrequency === 'custom' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--neomorphic-text)] font-primary mb-1">
+                          Every
                         </label>
-
-                        <label className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="recurrenceEnd"
-                            value="occurrences"
-                            checked={!formData.recurrenceEndDate}
-                            onChange={() => setFormData(prev => ({ ...prev, recurrenceEndDate: '' }))}
-                            className="w-4 h-4"
-                          />
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-hud-text-primary font-primary">After</span>
-                            <input
-                              type="number"
-                              value={formData.recurrenceOccurrences}
-                              onChange={(e) => setFormData(prev => ({ ...prev, recurrenceOccurrences: parseInt(e.target.value) || 1 }))}
-                              min="1"
-                              max="1000"
-                              className="w-20 p-2 border border-hud-border text-sm text-center font-primary bg-white"
-                            />
-                            <span className="text-sm text-hud-text-primary font-primary">occurrences</span>
-                          </div>
+                        <input
+                          type="number"
+                          value={formData.recurrenceInterval}
+                          onChange={(e) => setFormData(prev => ({ ...prev, recurrenceInterval: parseInt(e.target.value) || 1 }))}
+                          min="1"
+                          max="365"
+                          className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--neomorphic-text)] font-primary mb-1">
+                          Period
                         </label>
+                        <select
+                          value={formData.recurrenceIntervalType}
+                          onChange={(e) => setFormData(prev => ({ ...prev, recurrenceIntervalType: e.target.value as RecurrenceInterval }))}
+                          className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
+                        >
+                          <option value="days">Days</option>
+                          <option value="weeks">Weeks</option>
+                          <option value="months">Months</option>
+                          <option value="years">Years</option>
+                        </select>
                       </div>
                     </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-[var(--neomorphic-text)] font-primary">Ends on:</label>
+                    <input
+                      type="date"
+                      value={formData.recurrenceEndDate}
+                      onChange={(e) => setFormData(prev => ({ ...prev, recurrenceEndDate: e.target.value }))}
+                      min={formData.date}
+                      className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
+                    />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Goal Timeframe (Goals only) */}
+          {/* Goal Timeframe */}
           {formData.type === 'goal' && (
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+              <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                 Goal Timeframe
               </label>
               <select
                 value={formData.goalTimeframe}
                 onChange={(e) => handleInputChange('goalTimeframe', e.target.value)}
-                className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+                className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
               >
                 {GOAL_TIMEFRAME_OPTIONS.map(option => (
                   <option key={option.value} value={option.value}>
@@ -941,7 +838,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
           {/* Milestone Deadline */}
           {formData.type === 'milestone' && (
             <div className="space-y-2">
-              <label htmlFor="deadline" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+              <label htmlFor="deadline" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
                 Deadline
               </label>
               <input
@@ -949,154 +846,135 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                 type="date"
                 value={formData.deadline}
                 onChange={(e) => handleInputChange('deadline', e.target.value)}
-                className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+                className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
               />
             </div>
           )}
 
-          {/* Priority and Client Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Priority */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
-                Priority
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {PRIORITY_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleInputChange('priority', option.value)}
-                    className={`p-2 text-xs font-primary font-semibold uppercase tracking-wide transition-colors ${
-                      formData.priority === option.value
-                        ? option.color
-                        : 'bg-light-grey text-medium-grey hover:bg-tactical-gold hover:text-hud-text-primary'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Client Selection */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
-                Client *
-              </label>
-              <ClientSelector
-                selectedClientId={formData.clientId}
-                selectedClientName={formData.clientName}
-                onClientSelect={(client, isNonClient) => {
-                  if (client) {
-                    handleInputChange('clientId', isNonClient ? '' : client.id)
-                    handleInputChange('clientName', client.name)
-                  } else {
-                    handleInputChange('clientId', '')
-                    handleInputChange('clientName', '')
-                  }
-                }}
-                onCreateClient={async (clientData) => {
-                  // Create client in localStorage
-                  const newClient: Client = {
-                    ...clientData,
-                    id: `client-${Date.now()}`,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                  }
-                  
-                  try {
-                    const existingClients = JSON.parse(localStorage.getItem('clients') || '[]')
-                    const updatedClients = [...existingClients, newClient]
-                    localStorage.setItem('clients', JSON.stringify(updatedClients))
-                    
-                    // Update the local clients state to trigger re-render
-                    setClients(updatedClients.map(c => ({ id: c.id, name: c.name })))
-                    
-                    console.log('✅ Client created successfully:', newClient.name)
-                    return newClient
-                  } catch (error) {
-                    console.error('❌ Error creating client:', error)
-                    throw new Error('Failed to create client')
-                  }
-                }}
-                placeholder="Search for a client or enter name"
-                allowNonClient={true}
-              />
-              {errors.clientName && (
-                <p className="text-sm text-red-600 font-primary">{errors.clientName}</p>
-              )}
+          {/* Priority */}
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+              Priority
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {PRIORITY_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleInputChange('priority', option.value)}
+                  className={`p-2 text-xs font-primary font-semibold uppercase tracking-wide rounded-lg transition-all border-2 ${
+                    formData.priority === option.value
+                      ? `${option.activeStyles} ${option.borderColor}`
+                      : `neo-button border-transparent ${option.hoverBorder}`
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Participants/Attendees */}
+          {/* Client Selection (who this event is FOR) */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
-              <User className="inline w-4 h-4 mr-2" />
-              Participants/Attendees
+            <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+              Client (Who is this for?) *
             </label>
-            <div className="space-y-3 p-4 border border-hud-border bg-hud-background-secondary rounded">
-              <p className="text-xs text-medium-grey font-primary">
-                Add email addresses of people who should receive notifications about this event
-              </p>
-              
-              {formData.participants.length > 0 && (
-                <div className="space-y-2">
-                  {formData.participants.map((participant, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <input
-                        type="email"
-                        value={participant}
-                        onChange={(e) => {
-                          const newParticipants = [...formData.participants]
-                          newParticipants[index] = e.target.value
-                          setFormData(prev => ({ ...prev, participants: newParticipants }))
-                        }}
-                        placeholder="Enter email address"
-                        className="flex-1 p-2 border border-hud-border focus:border-hud-border-accent bg-white font-primary rounded text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newParticipants = formData.participants.filter((_, i) => i !== index)
-                          setFormData(prev => ({ ...prev, participants: newParticipants }))
-                        }}
-                        className="p-2 text-red-600 hover:text-red-800 transition-colors"
-                        title="Remove participant"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+            <ClientSelector
+              selectedClientId={formData.clientId}
+              selectedClientName={formData.clientName}
+              onClientSelect={(client, isNonClient) => {
+                if (client) {
+                  handleInputChange('clientId', isNonClient ? '' : client.id)
+                  handleInputChange('clientName', client.name)
+                } else {
+                  handleInputChange('clientId', '')
+                  handleInputChange('clientName', '')
+                }
+              }}
+              onCreateClient={async (clientData) => {
+                const newClient: Client = {
+                  ...clientData,
+                  id: `client-${Date.now()}`,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }
+
+                try {
+                  const existingClients = JSON.parse(localStorage.getItem('clients') || '[]')
+                  const updatedClients = [...existingClients, newClient]
+                  localStorage.setItem('clients', JSON.stringify(updatedClients))
+                  setClients(updatedClients.map(c => ({ id: c.id, name: c.name })))
+                  return newClient
+                } catch (error) {
+                  console.error('Error creating client:', error)
+                  throw new Error('Failed to create client')
+                }
+              }}
+              placeholder="Search for a client or enter name"
+              allowNonClient={true}
+            />
+            {errors.clientName && (
+              <p className="text-sm text-red-500 font-primary">{errors.clientName}</p>
+            )}
+          </div>
+
+          {/* Participants (who is ATTENDING) */}
+          <div className="neo-inset rounded-xl p-5 space-y-4">
+            <h4 className="text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Participants (Who is attending?)
+            </h4>
+            <p className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary">
+              Add email addresses or names of people attending this event. They will receive notifications about changes.
+            </p>
+
+            <div className="space-y-3">
+              {formData.participants.map((participant, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={participant}
+                    onChange={(e) => {
+                      const newParticipants = [...formData.participants]
+                      newParticipants[index] = e.target.value
+                      setFormData(prev => ({ ...prev, participants: newParticipants }))
+                    }}
+                    className="neo-input flex-1 p-2 rounded-lg text-sm font-primary text-[var(--neomorphic-text)]"
+                    placeholder="Email or name"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newParticipants = formData.participants.filter((_, i) => i !== index)
+                      setFormData(prev => ({ ...prev, participants: newParticipants }))
+                    }}
+                    className="p-2 text-red-500 hover:text-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
-              
+              ))}
+
               <button
                 type="button"
                 onClick={() => {
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    participants: [...prev.participants, ''] 
+                  setFormData(prev => ({
+                    ...prev,
+                    participants: [...prev.participants, '']
                   }))
                 }}
-                className="flex items-center gap-2 px-3 py-2 border border-hud-border bg-white hover:bg-tactical-gold-light transition-colors font-primary text-sm rounded"
+                className="neo-button w-full py-2 text-sm font-primary rounded-lg flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 Add Participant
               </button>
-              
-              {formData.participants.length > 0 && (
-                <div className="text-xs text-medium-grey font-primary">
-                  <Bell className="inline w-3 h-3 mr-1" />
-                  {formData.participants.length} participant{formData.participants.length !== 1 ? 's' : ''} will receive event notifications
-                </div>
-              )}
             </div>
           </div>
 
           {/* Location */}
           <div className="space-y-2">
-            <label htmlFor="location" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+            <label htmlFor="location" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+              <MapPin className="inline w-4 h-4 mr-1" />
               Location
             </label>
             <input
@@ -1104,14 +982,14 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
               type="text"
               value={formData.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
-              className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+              className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
               placeholder="Enter location or address"
             />
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <label htmlFor="notes" className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
+            <label htmlFor="notes" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
               Notes
             </label>
             <textarea
@@ -1119,21 +997,21 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
               value={formData.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
               rows={3}
-              className="w-full p-3 border-2 border-hud-border focus:border-hud-border-accent bg-white font-primary"
+              className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] resize-none"
               placeholder="Additional notes or details"
             />
           </div>
 
           {/* Notifications */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-hud-text-primary font-primary uppercase tracking-wide">
-              <Bell className="inline w-4 h-4 mr-2" />
+          <div className="neo-inset rounded-xl p-5 space-y-4">
+            <h4 className="text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide flex items-center gap-2">
+              <Bell className="w-4 h-4" />
               Notifications
-            </label>
+            </h4>
+
             <div className="space-y-3">
-              {/* Existing Notifications */}
               {formData.notifications.map((notification, index) => (
-                <div key={notification.id} className="flex items-center gap-3 p-3 border border-hud-border bg-hud-background-secondary">
+                <div key={notification.id} className="flex items-center gap-3">
                   <input
                     type="number"
                     value={notification.value}
@@ -1142,7 +1020,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                       newNotifications[index] = { ...notification, value: parseInt(e.target.value) || 0 }
                       setFormData(prev => ({ ...prev, notifications: newNotifications }))
                     }}
-                    className="w-16 p-2 border border-hud-border text-sm text-center"
+                    className="neo-input w-16 p-2 rounded-lg text-sm text-center font-primary text-[var(--neomorphic-text)]"
                     min="0"
                     max="999"
                   />
@@ -1153,40 +1031,29 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                       newNotifications[index] = { ...notification, trigger: e.target.value as NotificationTrigger }
                       setFormData(prev => ({ ...prev, notifications: newNotifications }))
                     }}
-                    className="p-2 border border-hud-border text-sm font-primary bg-white"
+                    className="neo-input p-2 rounded-lg text-sm font-primary text-[var(--neomorphic-text)]"
                   >
                     <option value="minutes">minutes before</option>
                     <option value="hours">hours before</option>
                     <option value="days">days before</option>
                     <option value="weeks">weeks before</option>
                   </select>
-                  <input
-                    type="checkbox"
-                    checked={notification.enabled}
-                    onChange={(e) => {
-                      const newNotifications = [...formData.notifications]
-                      newNotifications[index] = { ...notification, enabled: e.target.checked }
-                      setFormData(prev => ({ ...prev, notifications: newNotifications }))
-                    }}
-                    className="w-4 h-4"
-                  />
                   <button
                     type="button"
                     onClick={() => {
                       const newNotifications = formData.notifications.filter((_, i) => i !== index)
                       setFormData(prev => ({ ...prev, notifications: newNotifications }))
                     }}
-                    className="text-red-600 hover:text-red-800 transition-colors"
+                    className="p-2 text-red-500 hover:text-red-600 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
 
-              {/* Preset Notification Buttons */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-medium-grey font-primary uppercase tracking-wide">Quick add:</span>
-                {PRESET_NOTIFICATIONS.slice(0, 6).map((preset) => (
+                <span className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary uppercase tracking-wide">Quick add:</span>
+                {PRESET_NOTIFICATIONS.slice(0, 4).map((preset) => (
                   <button
                     key={`${preset.value}-${preset.trigger}`}
                     type="button"
@@ -1198,84 +1065,61 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                         trigger: preset.trigger,
                         enabled: true
                       }
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        notifications: [...prev.notifications, newNotification] 
+                      setFormData(prev => ({
+                        ...prev,
+                        notifications: [...prev.notifications, newNotification]
                       }))
                     }}
-                    className="px-2 py-1 text-xs border border-hud-border bg-white hover:bg-tactical-gold-light transition-colors font-primary"
+                    className="neo-button px-2 py-1 text-xs font-primary rounded-lg"
                   >
                     {preset.label}
                   </button>
                 ))}
               </div>
-
-              {/* Add Custom Notification */}
-              <button
-                type="button"
-                onClick={() => {
-                  const newId = Date.now().toString()
-                  const newNotification: NotificationRule = {
-                    id: newId,
-                    value: 10,
-                    trigger: 'minutes',
-                    enabled: true
-                  }
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    notifications: [...prev.notifications, newNotification] 
-                  }))
-                }}
-                className="flex items-center gap-2 px-3 py-2 border border-hud-border bg-white hover:bg-tactical-gold-light transition-colors font-primary text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Add Custom Notification
-              </button>
             </div>
           </div>
 
           {/* Error Display */}
           {errors.general && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-600 font-primary text-sm">
+            <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-600 font-primary text-sm">
               {errors.general}
             </div>
           )}
+        </form>
 
-          {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-hud-border">
-            <Button
+        {/* Footer Actions */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-6 border-t border-[var(--neomorphic-dark-shadow)]">
+          <div className="text-xs text-[var(--neomorphic-text)] opacity-50 font-primary">
+            <span className="font-semibold">Ctrl+Enter</span> to save, <span className="font-semibold">Esc</span> to cancel
+          </div>
+          <div className="flex gap-3">
+            <button
               type="button"
-              variant="outline"
               onClick={onClose}
               disabled={isLoading}
-              className="px-6"
+              className="neo-button px-6 py-2 text-sm font-primary uppercase tracking-wide"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
+              onClick={handleSubmit}
               disabled={isLoading}
-              className="px-6"
+              className="neo-button-active px-6 py-2 text-sm font-primary uppercase tracking-wide font-semibold"
             >
               {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-dark-grey border-t-transparent" />
+                <span className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
                   Saving...
-                </div>
+                </span>
               ) : (
                 editingEvent ? 'Update Event' : 'Create Event'
               )}
-            </Button>
+            </button>
           </div>
-
-          {/* Keyboard Shortcuts */}
-          <div className="text-xs text-medium-grey font-primary text-center border-t border-hud-border pt-4">
-            <span>Keyboard shortcuts: </span>
-            <span className="font-semibold">Ctrl+Enter</span> to save, <span className="font-semibold">Esc</span> to cancel
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   )
 }
 

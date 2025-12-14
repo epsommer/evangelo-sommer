@@ -289,7 +289,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
       case 'low':
         return 'bg-green-100 text-green-800 border-green-200'
       default:
-        return 'bg-tactical-gold-muted text-tactical-brown-dark border-tactical-grey-300'
+        return 'bg-accent/30 text-foreground border-border'
     }
   }
 
@@ -299,11 +299,11 @@ const AgendaView: React.FC<AgendaViewProps> = ({
         return 'bg-green-600'
       case 'in_progress':
       case 'in-progress':
-        return 'bg-tactical-gold'
+        return 'bg-accent'
       case 'cancelled':
         return 'bg-red-600'
       default:
-        return 'bg-medium-grey'
+        return 'bg-muted'
     }
   }
 
@@ -385,7 +385,7 @@ const AgendaView: React.FC<AgendaViewProps> = ({
                     <span>Secondary: Business Support</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-tactical-gold-muted"></div>
+                    <div className="w-3 h-3 rounded-full bg-accent/30"></div>
                     <span>Tertiary: Personal Life</span>
                   </div>
                 </div>

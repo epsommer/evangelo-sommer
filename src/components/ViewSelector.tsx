@@ -1,8 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Calendar, List, Settings, CalendarDays, Grid3x3, Clock, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, CalendarDays, Grid3x3, Clock, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useViewManager, TimeManagerView } from '@/contexts/ViewManagerContext'
 import { format } from 'date-fns'
 
@@ -90,18 +89,17 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
   const CalendarViewDropdown = () => {
     return (
       <div ref={dropdownRef} className="relative">
-        <Button
-          variant="outline"
+        <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-3 py-2 flex items-center space-x-1"
+          className="neo-button px-3 py-2 rounded-lg flex items-center space-x-1 font-primary text-sm text-[var(--neomorphic-text)]"
           title="Calendar View"
         >
           <Calendar className="h-4 w-4" />
           <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-        </Button>
+        </button>
 
         {isDropdownOpen && (
-          <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-hud-border rounded-md shadow-lg z-50">
+          <div className="absolute top-full left-0 mt-2 w-56 neo-card rounded-xl z-50 overflow-hidden">
             <div className="py-1">
               {CALENDAR_VIEWS.map((view) => {
                 const config = VIEW_CONFIGS[view as keyof typeof VIEW_CONFIGS]
@@ -112,14 +110,16 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
                   <button
                     key={view}
                     onClick={() => handleViewChange(view)}
-                    className={`w-full px-4 py-2 text-left hover:bg-tactical-grey-100 flex items-center space-x-3 ${
-                      isActive ? 'bg-tactical-gold-light text-hud-text-primary' : 'text-tactical-grey-600'
+                    className={`w-full px-4 py-3 text-left flex items-center space-x-3 transition-colors font-primary ${
+                      isActive
+                        ? 'bg-[var(--neomorphic-accent)]/20 text-[var(--neomorphic-accent)]'
+                        : 'text-[var(--neomorphic-text)] hover:bg-[var(--neomorphic-bg)]'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
                     <div>
-                      <div className="font-medium">{config.label}</div>
-                      <div className="text-xs text-tactical-grey-500">{config.description}</div>
+                      <div className="font-medium text-sm uppercase tracking-wide">{config.label}</div>
+                      <div className="text-xs opacity-60">{config.description}</div>
                     </div>
                   </button>
                 )
@@ -168,84 +168,40 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
   if (variant === 'compact') {
     return (
       <div className="flex flex-col space-y-2">
-        {/* View selector - Calendar dropdown + other view buttons */}
+        {/* View selector - Calendar dropdown */}
         <div className="flex items-center space-x-2">
-          {CALENDAR_VIEWS.includes(currentView) ? (
-            <CalendarViewDropdown />
-          ) : (
-            <Button
-              variant="outline"
-              onClick={() => handleViewChange('day')}
-              className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-3 py-1 text-xs flex items-center space-x-1"
-            >
-              <Calendar className="h-3 w-3" />
-              <span>Calendar</span>
-            </Button>
-          )}
-          
-          {/* Non-calendar view buttons */}
-          {Object.entries(VIEW_CONFIGS)
-            .filter(([viewKey]) => !CALENDAR_VIEWS.includes(viewKey as TimeManagerView))
-            .map(([viewKey, config]) => {
-              const view = viewKey as TimeManagerView
-              const Icon = config.icon
-              const isActive = currentView === view
-
-              return (
-                <Button
-                  key={view}
-                  variant={isActive ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleViewChange(view)}
-                  className={`${
-                    isActive 
-                      ? 'bg-tactical-gold text-hud-text-primary' 
-                      : 'border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary'
-                  } px-3 py-1 flex items-center space-x-1`}
-                  title={config.description}
-                >
-                  <Icon className="h-3 w-3" />
-                  <span className="text-xs">{config.label}</span>
-                </Button>
-              )
-            })}
+          <CalendarViewDropdown />
         </div>
-        
+
         {/* Compact navigation */}
         {showNavigation && CALENDAR_VIEWS.includes(currentView) && (
           <div className="flex items-center space-x-1">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => navigateDate('previous')}
-              className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-2 py-1 text-xs"
+              className="neo-button px-2 py-1 rounded-lg text-[var(--neomorphic-text)]"
               title={getQuickNavigationLabels(currentView).previous}
               aria-label={`Navigate to ${getQuickNavigationLabels(currentView).previous.toLowerCase()}`}
             >
               <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+
+            <button
               onClick={navigateToCurrentPeriod}
-              className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-2 py-1 text-xs font-medium"
+              className="neo-button px-3 py-1 rounded-lg text-xs font-primary font-medium uppercase tracking-wide text-[var(--neomorphic-text)]"
               title={`Navigate to ${getContextualButtonLabel(currentView).toLowerCase()}`}
               aria-label={`Navigate to ${getContextualButtonLabel(currentView).toLowerCase()}`}
             >
               {getContextualButtonLabel(currentView).replace('This ', '').replace('Today', 'Now')}
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+
+            <button
               onClick={() => navigateDate('next')}
-              className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-2 py-1 text-xs"
+              className="neo-button px-2 py-1 rounded-lg text-[var(--neomorphic-text)]"
               title={getQuickNavigationLabels(currentView).next}
               aria-label={`Navigate to ${getQuickNavigationLabels(currentView).next.toLowerCase()}`}
             >
               <ChevronRight className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         )}
       </div>
@@ -253,123 +209,63 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({
   }
 
   return (
-    <div className="bg-hud-background-secondary p-4 md:p-6 border-b-2 border-hud-border-accent">
+    <div className="neo-card rounded-none border-x-0 border-t-0 p-4 md:p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
         <div className="flex-1">
           {showTitle && (
             <div className="mb-4">
-              <h1 className="text-hero font-display font-black text-hud-text-primary uppercase tracking-wide">
+              <h1 className="text-2xl md:text-3xl font-primary font-bold text-[var(--neomorphic-text)] uppercase tracking-wide">
                 Time Manager
               </h1>
-              <p className="text-label font-interface font-light text-medium-grey uppercase tracking-wider">
+              <p className="text-sm font-primary font-light text-[var(--neomorphic-text)] opacity-60 uppercase tracking-wider">
                 {formatDateForView(selectedDate, currentView)}
               </p>
             </div>
           )}
-          
+
           {showNavigation && CALENDAR_VIEWS.includes(currentView) && (
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
               {/* Quick navigation with contextual labels */}
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => navigateDate('previous')}
-                  className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-3 py-1 text-xs sm:text-sm"
+                  className="neo-button px-3 py-2 rounded-lg text-[var(--neomorphic-text)]"
                   title={getQuickNavigationLabels(currentView).previous}
                   aria-label={`Navigate to ${getQuickNavigationLabels(currentView).previous.toLowerCase()}`}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
+                </button>
+
+                <button
                   onClick={navigateToCurrentPeriod}
-                  className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-3 py-1 font-medium text-xs sm:text-sm"
+                  className="neo-button px-4 py-2 rounded-lg font-primary font-medium text-sm uppercase tracking-wide text-[var(--neomorphic-text)]"
                   title={`Navigate to ${getContextualButtonLabel(currentView).toLowerCase()}`}
                   aria-label={`Navigate to ${getContextualButtonLabel(currentView).toLowerCase()}`}
                 >
                   {getContextualButtonLabel(currentView)}
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
+                </button>
+
+                <button
                   onClick={() => navigateDate('next')}
-                  className="border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary px-3 py-1 text-xs sm:text-sm"
+                  className="neo-button px-3 py-2 rounded-lg text-[var(--neomorphic-text)]"
                   title={getQuickNavigationLabels(currentView).next}
                   aria-label={`Navigate to ${getQuickNavigationLabels(currentView).next.toLowerCase()}`}
                 >
                   <ChevronRight className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
             </div>
           )}
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Mobile view - compact dropdowns and buttons */}
+          {/* Mobile view - Calendar dropdown */}
           <div className="flex md:hidden space-x-1">
-            {/* Mission Objectives button always first */}
-            {Object.entries(VIEW_CONFIGS)
-              .filter(([viewKey]) => !CALENDAR_VIEWS.includes(viewKey as TimeManagerView))
-              .map(([viewKey, config]) => {
-                const view = viewKey as TimeManagerView
-                const Icon = config.icon
-                const isActive = currentView === view
-
-                return (
-                  <Button
-                    key={view}
-                    variant={isActive ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleViewChange(view)}
-                    className={`${
-                      isActive 
-                        ? 'bg-tactical-gold text-hud-text-primary' 
-                        : 'border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary'
-                    } p-2`}
-                    title={config.description}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </Button>
-                )
-              })}
-            
-            {/* Calendar dropdown always visible */}
             <CalendarViewDropdown />
           </div>
 
-          {/* Desktop view - full dropdown and buttons */}
+          {/* Desktop view - Calendar dropdown */}
           <div className="hidden md:flex items-center space-x-2">
-            {/* Mission Objectives button always first */}
-            {Object.entries(VIEW_CONFIGS)
-              .filter(([viewKey]) => !CALENDAR_VIEWS.includes(viewKey as TimeManagerView))
-              .map(([viewKey, config]) => {
-                const view = viewKey as TimeManagerView
-                const Icon = config.icon
-                const isActive = currentView === view
-
-                return (
-                  <Button
-                    key={view}
-                    variant={isActive ? 'default' : 'outline'}
-                    onClick={() => handleViewChange(view)}
-                    className={`${
-                      isActive 
-                        ? 'bg-tactical-gold text-hud-text-primary' 
-                        : 'border-hud-border-accent text-gold hover:bg-tactical-gold hover:text-hud-text-primary'
-                    } px-4 py-2`}
-                    title={config.description}
-                  >
-                    <Icon className="h-4 w-4 mr-2" />
-                    {config.label}
-                  </Button>
-                )
-              })}
-            
-            {/* Calendar dropdown always visible */}
             <CalendarViewDropdown />
           </div>
         </div>
