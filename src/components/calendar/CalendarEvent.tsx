@@ -251,7 +251,40 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Format time display
   const formatEventTime = (startDateTime: string, duration: number): string => {
     const start = parseISO(startDateTime)
-    const end = addMinutes(start, duration)
+
+    // Debug logging to diagnose time display issues
+    console.log('🕐 [CalendarEvent] formatEventTime debug:', {
+      eventTitle: event.title,
+      startDateTime,
+      duration,
+      eventEndDateTime: event.endDateTime,
+      parsedStart: start.toISOString(),
+      parsedStartLocal: format(start, 'yyyy-MM-dd HH:mm:ss')
+    })
+
+    // Safeguard: if duration is unreasonably large (>24 hours), use endDateTime or default to 60 min
+    let effectiveDuration = duration
+    if (duration > 1440) { // 1440 minutes = 24 hours
+      console.warn(`⚠️ [CalendarEvent] Unreasonable duration detected: ${duration} minutes for event "${event.title}"`)
+
+      // Try to calculate from endDateTime if available
+      if (event.endDateTime) {
+        const endFromDb = parseISO(event.endDateTime)
+        const calculatedDuration = Math.round((endFromDb.getTime() - start.getTime()) / (1000 * 60))
+        if (calculatedDuration > 0 && calculatedDuration <= 1440) {
+          effectiveDuration = calculatedDuration
+          console.log(`✅ [CalendarEvent] Using calculated duration from endDateTime: ${effectiveDuration} minutes`)
+        } else {
+          effectiveDuration = 60 // Default fallback
+          console.log(`⚠️ [CalendarEvent] endDateTime calculation also invalid (${calculatedDuration}), using default 60 minutes`)
+        }
+      } else {
+        effectiveDuration = 60 // Default fallback
+        console.log(`⚠️ [CalendarEvent] No endDateTime available, using default 60 minutes`)
+      }
+    }
+
+    const end = addMinutes(start, effectiveDuration)
 
     if (effectiveViewMode === 'month') {
       return format(start, 'h:mm a')
