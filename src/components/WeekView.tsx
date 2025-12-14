@@ -154,12 +154,43 @@ const WeekView: React.FC<WeekViewProps> = ({
     console.groupEnd()
   }
   
-  const handleEventCreate = async (eventData: UnifiedEvent) => {
+  const handleSaveEvent = async (eventData: UnifiedEvent) => {
     try {
-      await createEvent(eventData)
+      // Check if this is an edit (event exists in our list) or a new event
+      const existingEvent = unifiedEvents.find(e => e.id === eventData.id)
+
+      if (existingEvent) {
+        // Update existing event
+        console.log('📝 [WeekView] Updating existing event:', eventData.title)
+        await updateEvent(eventData.id, {
+          title: eventData.title,
+          description: eventData.description,
+          startDateTime: eventData.startDateTime,
+          endDateTime: eventData.endDateTime,
+          duration: eventData.duration,
+          priority: eventData.priority,
+          clientId: eventData.clientId,
+          clientName: eventData.clientName,
+          location: eventData.location,
+          notes: eventData.notes,
+          isAllDay: eventData.isAllDay,
+          isMultiDay: eventData.isMultiDay,
+          isRecurring: eventData.isRecurring,
+          recurrence: eventData.recurrence,
+          notifications: eventData.notifications
+        })
+        console.log('✅ [WeekView] Event updated:', eventData.title)
+      } else {
+        // Create new event
+        console.log('➕ [WeekView] Creating new event:', eventData.title)
+        await createEvent(eventData)
+        console.log('✅ [WeekView] Event created:', eventData.title)
+      }
+
       setShowEventModal(false)
+      setEditingEvent(null)
     } catch (error) {
-      console.error('Error creating event:', error)
+      console.error('❌ [WeekView] Error saving event:', error)
     }
   }
   
@@ -688,7 +719,7 @@ Rescheduled: ${data.reason}`.trim() :
             setShowEventModal(false)
             setEditingEvent(null)
           }}
-          onSave={handleEventCreate}
+          onSave={handleSaveEvent}
           initialDate={modalInitialDate}
           initialTime={modalInitialTime}
           editingEvent={editingEvent || undefined}

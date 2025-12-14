@@ -203,14 +203,43 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
     saveObjectives(objectives.filter(obj => obj.id !== id))
   }
 
-  // Handle event creation
-  const handleCreateEvent = async (eventData: UnifiedEvent) => {
+  // Handle event creation or update
+  const handleSaveEvent = async (eventData: UnifiedEvent) => {
     try {
-      await createEvent(eventData)
-      console.log('Event created:', eventData.title)
+      // Check if this is an edit (event exists in our list) or a new event
+      const existingEvent = events.find(e => e.id === eventData.id)
+
+      if (existingEvent) {
+        // Update existing event
+        console.log('📝 [UnifiedDailyPlanner] Updating existing event:', eventData.title)
+        await updateEvent(eventData.id, {
+          title: eventData.title,
+          description: eventData.description,
+          startDateTime: eventData.startDateTime,
+          endDateTime: eventData.endDateTime,
+          duration: eventData.duration,
+          priority: eventData.priority,
+          clientId: eventData.clientId,
+          clientName: eventData.clientName,
+          location: eventData.location,
+          notes: eventData.notes,
+          isAllDay: eventData.isAllDay,
+          isMultiDay: eventData.isMultiDay,
+          isRecurring: eventData.isRecurring,
+          recurrence: eventData.recurrence,
+          notifications: eventData.notifications
+        })
+        console.log('✅ [UnifiedDailyPlanner] Event updated:', eventData.title)
+      } else {
+        // Create new event
+        console.log('➕ [UnifiedDailyPlanner] Creating new event:', eventData.title)
+        await createEvent(eventData)
+        console.log('✅ [UnifiedDailyPlanner] Event created:', eventData.title)
+      }
+
       onRefreshTrigger?.()
     } catch (error) {
-      console.error('Error creating event:', error)
+      console.error('❌ [UnifiedDailyPlanner] Error saving event:', error)
     }
   }
 
@@ -744,7 +773,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
             setShowEventModal(false)
             setEditingEvent(null)
           }}
-          onSave={handleCreateEvent}
+          onSave={handleSaveEvent}
           initialDate={date}
           initialTime={selectedTimeSlot}
           editingEvent={editingEvent || undefined}
