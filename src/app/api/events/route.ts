@@ -121,6 +121,15 @@ function convertToPrismaEvent(event: UnifiedEvent): any {
 
 // Helper function to convert Prisma Event to UnifiedEvent format
 function convertFromPrismaEvent(prismaEvent: any): UnifiedEvent {
+  // Debug logging to diagnose time/duration issues
+  console.log(`📅 [API] Converting event from DB: "${prismaEvent.title}"`, {
+    id: prismaEvent.id,
+    startDateTime: prismaEvent.startDateTime,
+    endDateTime: prismaEvent.endDateTime,
+    duration: prismaEvent.duration,
+    durationInHours: prismaEvent.duration ? (prismaEvent.duration / 60).toFixed(2) : 'N/A'
+  })
+
   return {
     id: prismaEvent.id,
     type: prismaEvent.type.toLowerCase(),
@@ -640,12 +649,19 @@ export async function PUT(request: NextRequest) {
           console.log('🔄 API PUT - Found event in database, updating directly...')
 
           // Convert update data to Prisma format
-          const prismaUpdateData = {
-            startDateTime: eventData.startDateTime,
-            endDateTime: eventData.endDateTime,
-            notes: eventData.notes,
+          const prismaUpdateData: any = {
             updatedAt: new Date()
           }
+
+          // Only include fields that are provided in the update
+          if (eventData.startDateTime !== undefined) prismaUpdateData.startDateTime = eventData.startDateTime
+          if (eventData.endDateTime !== undefined) prismaUpdateData.endDateTime = eventData.endDateTime
+          if (eventData.duration !== undefined) prismaUpdateData.duration = eventData.duration
+          if (eventData.notes !== undefined) prismaUpdateData.notes = eventData.notes
+          if (eventData.title !== undefined) prismaUpdateData.title = eventData.title
+          if (eventData.description !== undefined) prismaUpdateData.description = eventData.description
+          if (eventData.location !== undefined) prismaUpdateData.location = eventData.location
+          if (eventData.priority !== undefined) prismaUpdateData.priority = mapToValidPriority(eventData.priority)
 
           // Update in database
           dbEvent = await prisma.event.update({
