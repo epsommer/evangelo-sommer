@@ -261,9 +261,15 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
   // Handle time slot click
   const handleTimeSlotClick = (hour: number) => {
-    setSelectedTimeSlot(`${hour.toString().padStart(2, '0')}:00`)
-    setEditingEvent(null)
-    setShowEventModal(true)
+    if (onTimeSlotClick) {
+      // Parent is managing event creation (e.g., via sidebar)
+      onTimeSlotClick(date, hour)
+    } else {
+      // Fallback to local modal handling
+      setSelectedTimeSlot(`${hour.toString().padStart(2, '0')}:00`)
+      setEditingEvent(null)
+      setShowEventModal(true)
+    }
   }
 
   // Handle event resize
@@ -367,67 +373,114 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   }, [objectives, todaysEvents])
 
   // Render timeline view
+  // Fixed height per hour slot in pixels
+  const PIXELS_PER_HOUR = 50
+
+  // Calculate event position and height based on start time and duration
+  const getEventStyle = (event: UnifiedEvent): React.CSSProperties => {
+    const startDate = new Date(event.startDateTime)
+    const startHour = startDate.getHours()
+    const startMinutes = startDate.getMinutes()
+    const duration = event.duration || 60
+
+    // Calculate top position: hours * pixelsPerHour + minutes offset
+    const top = (startHour * PIXELS_PER_HOUR) + ((startMinutes / 60) * PIXELS_PER_HOUR)
+    // Calculate height based on duration
+    const height = (duration / 60) * PIXELS_PER_HOUR
+
+    return {
+      position: 'absolute',
+      top: `${top}px`,
+      height: `${Math.max(height, 25)}px`, // Minimum 25px for visibility
+      left: 0,
+      right: 0,
+      zIndex: 10
+    }
+  }
+
   const renderTimeline = () => (
-    <div className="space-y-1">
-      {Array.from({ length: 24 }, (_, i) => {
-        const hour = i
-        const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-        const period = hour < 12 ? 'AM' : 'PM'
-        const now = new Date()
-        const isCurrentHour = isSameDay(date, now) && now.getHours() === hour
+    <div className="relative">
+      {/* Time slots grid - fixed height slots */}
+      <div className="relative">
+        {Array.from({ length: 24 }, (_, i) => {
+          const hour = i
+          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+          const period = hour < 12 ? 'AM' : 'PM'
+          const now = new Date()
+          const isCurrentHour = isSameDay(date, now) && now.getHours() === hour
 
-        // Get events for this hour
-        const hourEvents = filteredEvents.filter(event => {
-          const eventDate = new Date(event.startDateTime)
-          return eventDate.getHours() === hour
-        })
+          // Get events starting in this hour (for DropZone occupancy check)
+          const hourEvents = filteredEvents.filter(event => {
+            const eventDate = new Date(event.startDateTime)
+            return eventDate.getHours() === hour
+          })
 
-        return (
-          <div
-            key={hour}
-            ref={(el) => { timeSlotRefs.current[hour] = el }}
-            className={`grid grid-cols-12 gap-2 py-1 ${isCurrentHour ? 'bg-accent/10 border-l-2 border-accent' : ''}`}
-          >
-            {/* Time Column */}
-            <div className="col-span-2 lg:col-span-1">
-              <div
-                className={`text-right cursor-pointer p-1 rounded text-xs ${isCurrentHour ? 'text-accent font-bold' : 'text-muted-foreground'}`}
-                onClick={() => handleTimeSlotClick(hour)}
-              >
-                <div>{hour.toString().padStart(2, '0')}:00</div>
-                <div className="text-[10px]">{displayHour} {period}</div>
+          return (
+            <div
+              key={hour}
+              ref={(el) => { timeSlotRefs.current[hour] = el }}
+              className={`grid grid-cols-12 gap-2 border-b border-border ${isCurrentHour ? 'bg-accent/10 border-l-2 border-l-accent' : ''}`}
+              style={{ height: `${PIXELS_PER_HOUR}px` }}
+            >
+              {/* Time Column */}
+              <div className="col-span-2 lg:col-span-1">
+                <div
+                  className={`text-right cursor-pointer p-1 rounded text-xs ${isCurrentHour ? 'text-accent font-bold' : 'text-muted-foreground'}`}
+                  onClick={() => handleTimeSlotClick(hour)}
+                >
+                  <div>{hour.toString().padStart(2, '0')}:00</div>
+                  <div className="text-[10px]">{displayHour} {period}</div>
+                </div>
+              </div>
+
+              {/* DropZone Column - fixed height, no events rendered inside */}
+              <div className="col-span-10 lg:col-span-11 relative" style={{ height: `${PIXELS_PER_HOUR}px` }}>
+                <DropZone
+                  date={format(date, 'yyyy-MM-dd')}
+                  hour={hour}
+                  isOccupied={hourEvents.length > 0}
+                  events={hourEvents}
+                  onTimeSlotClick={() => handleTimeSlotClick(hour)}
+                />
               </div>
             </div>
+          )
+        })}
+      </div>
 
-            {/* Events Column */}
-            <div className="col-span-10 lg:col-span-11 min-h-[50px]">
-              <DropZone
-                date={format(date, 'yyyy-MM-dd')}
-                hour={hour}
-                isOccupied={hourEvents.length > 0}
-                events={hourEvents}
-                onTimeSlotClick={() => handleTimeSlotClick(hour)}
+      {/* Events layer - absolutely positioned over the grid */}
+      <div
+        className="absolute top-0 left-0 right-0 pointer-events-none"
+        style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+      >
+        <div className="grid grid-cols-12 gap-2 h-full">
+          {/* Spacer for time column */}
+          <div className="col-span-2 lg:col-span-1" />
+
+          {/* Events container */}
+          <div className="col-span-10 lg:col-span-11 relative">
+            {filteredEvents.map(event => (
+              <div
+                key={event.id}
+                style={getEventStyle(event)}
+                className="pointer-events-auto"
               >
-                {hourEvents.map(event => (
-                  <CalendarEvent
-                    key={event.id}
-                    event={event}
-                    viewMode="day"
-                    currentDate={format(date, 'yyyy-MM-dd')}
-                    currentHour={hour}
-                    pixelsPerHour={50}
-                    onClick={() => onEventView?.(event)}
-                    onResizeEnd={handleEventResize}
-                    showResizeHandles={true}
-                    isCompact={false}
-                    className="mb-1"
-                  />
-                ))}
-              </DropZone>
-            </div>
+                <CalendarEvent
+                  event={event}
+                  viewMode="day"
+                  currentDate={format(date, 'yyyy-MM-dd')}
+                  currentHour={new Date(event.startDateTime).getHours()}
+                  pixelsPerHour={PIXELS_PER_HOUR}
+                  onClick={() => onEventView?.(event)}
+                  onResizeEnd={handleEventResize}
+                  showResizeHandles={true}
+                  isCompact={false}
+                />
+              </div>
+            ))}
           </div>
-        )
-      })}
+        </div>
+      </div>
     </div>
   )
 
@@ -715,7 +768,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Main Content */}
-          <div className={`flex-1 overflow-y-auto p-4 ${showObjectives && viewMode === 'combined' ? 'lg:w-2/3' : 'w-full'}`}>
+          <div className="flex-1 overflow-y-auto p-4">
             {viewMode === 'timeline' && renderTimeline()}
             {viewMode === 'agenda' && renderAgenda()}
             {viewMode === 'combined' && (
@@ -725,20 +778,6 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
               </div>
             )}
           </div>
-
-          {/* Objectives Sidebar (Combined Mode) */}
-          {showObjectives && viewMode === 'combined' && (
-            <div className="hidden lg:block w-1/3 border-l p-4 overflow-y-auto">
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="h-4 w-4" />
-                <span className="font-medium">Mission Objectives</span>
-                <Badge variant="outline" className="ml-auto">
-                  {stats.completedObjectives}/{stats.totalObjectives}
-                </Badge>
-              </div>
-              {renderObjectives()}
-            </div>
-          )}
         </div>
 
         {/* Collapsible Objectives (Non-Combined or Mobile) */}

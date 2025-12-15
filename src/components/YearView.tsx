@@ -324,48 +324,6 @@ const YearView: React.FC<YearViewProps> = ({ onMonthClick, onDayClick, onEventCr
         })}
       </div>
 
-      {/* Activity Heatmap */}
-      <div className="neo-card">
-        <div className="bg-card border-b border-border p-6">
-          <div className="flex items-center space-x-3">
-            <TrendingUp className="h-5 w-5 text-accent" />
-            <h3 className="font-bold text-foreground font-primary uppercase tracking-wide">
-              Activity Heatmap
-            </h3>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="grid grid-cols-53 gap-1">
-            {Array.from({ length: 365 }, (_, i) => {
-              const date = new Date(yearStart)
-              date.setDate(date.getDate() + i)
-              const dayEvents = getEventsForDay(date)
-              
-              return (
-                <YearDayIndicator
-                  key={i}
-                  eventCount={dayEvents.length}
-                  onClick={() => handleDayClick(date)}
-                  onDoubleClick={() => onEventCreate?.(date)}
-                  isToday={isToday(date)}
-                  className="w-3 h-3"
-                />
-              )
-            })}
-          </div>
-          <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground font-primary uppercase tracking-wide">
-            <span>Less</span>
-            <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 rounded-sm bg-muted"></div>
-              <div className="w-3 h-3 rounded-sm bg-accent/30"></div>
-              <div className="w-3 h-3 rounded-sm bg-accent/50"></div>
-              <div className="w-3 h-3 rounded-sm bg-accent"></div>
-              <div className="w-3 h-3 rounded-sm bg-primary"></div>
-            </div>
-            <span>More</span>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

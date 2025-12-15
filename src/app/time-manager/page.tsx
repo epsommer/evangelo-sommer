@@ -3,6 +3,7 @@
 import React, { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import CRMLayout from '@/components/CRMLayout'
+import CalendarLayout from '@/components/CalendarLayout'
 import UnifiedDailyPlanner from '@/components/UnifiedDailyPlanner'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
 import TimeManagerNavigation from '@/components/TimeManagerNavigation'
@@ -30,6 +31,10 @@ const TimeManagerContent = () => {
   const [initialClientId, setInitialClientId] = useState<string | undefined>(undefined)
   const [initialClientName, setInitialClientName] = useState<string | undefined>(undefined)
 
+  // Event creation mode state (for sidebar integration)
+  const [isEventCreationMode, setIsEventCreationMode] = useState(false)
+  const [eventCreationTime, setEventCreationTime] = useState<string | null>(null)
+
   // Conflict resolution state
   const [showConflictModal, setShowConflictModal] = useState(false)
   const [pendingEvent, setPendingEvent] = useState<UnifiedEvent | null>(null)
@@ -37,7 +42,7 @@ const TimeManagerContent = () => {
   const [recentlyCreatedEvents, setRecentlyCreatedEvents] = useState<Set<string>>(new Set())
 
   // Use unified events hook for global event management
-  const { createEvent, updateEvent, deleteEvent } = useUnifiedEvents({
+  const { events: allEvents, createEvent, updateEvent, deleteEvent } = useUnifiedEvents({
     refreshTrigger
   })
 
@@ -270,10 +275,21 @@ const TimeManagerContent = () => {
   }
 
   const handleTimeSlotClick = (date: Date, hour?: number) => {
+    const timeString = hour !== undefined ? `${hour.toString().padStart(2, '0')}:00` : '09:00'
+
+    // Set sidebar to event creation mode
+    setEventCreationTime(timeString)
+    setIsEventCreationMode(true)
+
+    // Also set modal state as fallback
     setModalInitialDate(date)
-    setModalInitialTime(hour ? `${hour.toString().padStart(2, '0')}:00` : '09:00')
+    setModalInitialTime(timeString)
     setEditingEvent(null)
-    setShowEventModal(true)
+  }
+
+  const handleExitEventCreation = () => {
+    setIsEventCreationMode(false)
+    setEventCreationTime(null)
   }
 
   // Conflict resolution handlers
@@ -517,94 +533,114 @@ const TimeManagerContent = () => {
   }
 
   const renderCurrentView = () => {
-    switch (state.currentView) {
-      case 'day':
-        return (
-          <UnifiedDailyPlanner
-            date={state.selectedDate}
-            onEventView={handleEventView}
-            refreshTrigger={refreshTrigger}
-            onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
-            onTaskStatusChange={handleTaskStatusChange}
-            onConflictClick={handleExistingEventConflictClick}
-            activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
-            excludeFromConflictDetection={recentlyCreatedEvents}
-            onTimeSlotClick={handleTimeSlotClick}
-          />
-        )
-      case 'week':
-        return (
-          <WeekView 
-            onTaskClick={(task) => {
-              // Convert task to UnifiedEvent and show details
-              if ('startTime' in task && 'endTime' in task) {
-                const startDate = task.startTime instanceof Date ? task.startTime : new Date(task.startTime)
-                const endDate = task.endTime instanceof Date ? task.endTime : new Date(task.endTime)
-                
-                const event: UnifiedEvent = {
-                  id: task.id,
-                  type: 'task' as const,
-                  title: task.title,
-                  description: task.description,
-                  startDateTime: startDate.toISOString(),
-                  endDateTime: endDate.toISOString(),
-                  duration: Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60)),
-                  priority: task.priority,
-                  clientId: task.clientId,
-                  location: task.location,
-                  notes: task.notes,
-                  status: task.status,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
+    const viewContent = (() => {
+      switch (state.currentView) {
+        case 'day':
+          return (
+            <UnifiedDailyPlanner
+              date={state.selectedDate}
+              onEventView={handleEventView}
+              refreshTrigger={refreshTrigger}
+              onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
+              onTaskStatusChange={handleTaskStatusChange}
+              onConflictClick={handleExistingEventConflictClick}
+              activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
+              excludeFromConflictDetection={recentlyCreatedEvents}
+              onTimeSlotClick={handleTimeSlotClick}
+            />
+          )
+        case 'week':
+          return (
+            <WeekView
+              onTaskClick={(task) => {
+                // Convert task to UnifiedEvent and show details
+                if ('startTime' in task && 'endTime' in task) {
+                  const startDate = task.startTime instanceof Date ? task.startTime : new Date(task.startTime)
+                  const endDate = task.endTime instanceof Date ? task.endTime : new Date(task.endTime)
+
+                  const event: UnifiedEvent = {
+                    id: task.id,
+                    type: 'task' as const,
+                    title: task.title,
+                    description: task.description,
+                    startDateTime: startDate.toISOString(),
+                    endDateTime: endDate.toISOString(),
+                    duration: Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60)),
+                    priority: task.priority,
+                    clientId: task.clientId,
+                    location: task.location,
+                    notes: task.notes,
+                    status: task.status,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                  }
+                  handleEventView(event)
                 }
-                handleEventView(event)
-              }
-            }}
-            onTimeSlotClick={handleTimeSlotClick}
-            enableEventCreation={true}
-            onTaskEdit={handleTaskEdit}
-            onTaskDelete={handleTaskDelete}
-            onTaskStatusChange={handleTaskStatusChange}
-            onDayNavigation={handleDayClick}
-            refreshTrigger={refreshTrigger}
-          />
-        )
-      case 'month':
-        return (
-          <ScheduleCalendar 
-            selectedDate={state.selectedDate} 
-            enableEditing={true}
-            onDayClick={handleDayClick}
-            onEventEdit={handleEventEdit}
-            onEventView={handleEventView}
-            onEventDelete={handleTaskDelete}
-            onEventStatusChange={handleTaskStatusChange}
-            refreshTrigger={refreshTrigger}
-          />
-        )
-      case 'year':
-        return (
-          <YearView
-            onMonthClick={(date) => console.log('Month clicked:', date)}
-            onDayClick={handleDayClick}
-            refreshTrigger={refreshTrigger}
-          />
-        )
-      default:
-        return (
-          <UnifiedDailyPlanner
-            date={state.selectedDate}
-            onEventView={handleEventView}
-            refreshTrigger={refreshTrigger}
-            onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
-            onTaskStatusChange={handleTaskStatusChange}
-            onConflictClick={handleExistingEventConflictClick}
-            activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
-            excludeFromConflictDetection={recentlyCreatedEvents}
-            onTimeSlotClick={handleTimeSlotClick}
-          />
-        )
-    }
+              }}
+              onTimeSlotClick={handleTimeSlotClick}
+              enableEventCreation={true}
+              onTaskEdit={handleTaskEdit}
+              onTaskDelete={handleTaskDelete}
+              onTaskStatusChange={handleTaskStatusChange}
+              onDayNavigation={handleDayClick}
+              refreshTrigger={refreshTrigger}
+            />
+          )
+        case 'month':
+          return (
+            <ScheduleCalendar
+              selectedDate={state.selectedDate}
+              enableEditing={true}
+              onDayClick={handleDayClick}
+              onEventEdit={handleEventEdit}
+              onEventView={handleEventView}
+              onEventDelete={handleTaskDelete}
+              onEventStatusChange={handleTaskStatusChange}
+              refreshTrigger={refreshTrigger}
+            />
+          )
+        case 'year':
+          return (
+            <YearView
+              onMonthClick={(date) => console.log('Month clicked:', date)}
+              onDayClick={handleDayClick}
+              refreshTrigger={refreshTrigger}
+            />
+          )
+        default:
+          return (
+            <UnifiedDailyPlanner
+              date={state.selectedDate}
+              onEventView={handleEventView}
+              refreshTrigger={refreshTrigger}
+              onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
+              onTaskStatusChange={handleTaskStatusChange}
+              onConflictClick={handleExistingEventConflictClick}
+              activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
+              excludeFromConflictDetection={recentlyCreatedEvents}
+              onTimeSlotClick={handleTimeSlotClick}
+            />
+          )
+      }
+    })()
+
+    // Wrap all views with CalendarLayout for consistent sidebar
+    return (
+      <CalendarLayout
+        selectedDate={state.selectedDate}
+        currentView={state.currentView}
+        events={allEvents}
+        onDateSelect={setSelectedDate}
+        onViewChange={setCurrentView}
+        onEventCreate={handleEventCreate}
+        onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
+        isEventCreationMode={isEventCreationMode}
+        initialEventTime={eventCreationTime || undefined}
+        onExitEventCreation={handleExitEventCreation}
+      >
+        {viewContent}
+      </CalendarLayout>
+    )
   }
 
   return (

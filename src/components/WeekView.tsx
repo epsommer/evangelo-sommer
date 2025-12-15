@@ -77,7 +77,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   }>({ isOpen: false, event: null })
   const timeSlotRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const containerRef = useRef<HTMLDivElement>(null)
-  
+  const eventsGridRef = useRef<HTMLDivElement>(null)
+
   // Use unified events hook
   const {
     events: unifiedEvents,
@@ -139,8 +140,13 @@ const WeekView: React.FC<WeekViewProps> = ({
       hour: hour,
       enableEventCreation: enableEventCreation
     })
-    
-    if (enableEventCreation) {
+
+    if (onTimeSlotClick) {
+      // Parent is managing event creation (e.g., via sidebar)
+      console.log('Calling onTimeSlotClick callback')
+      onTimeSlotClick(date, hour)
+    } else if (enableEventCreation) {
+      // Fallback to local modal handling
       console.log('Opening event creation modal...')
       setModalInitialDate(date)
       setModalInitialTime(`${hour.toString().padStart(2, '0')}:00`)
@@ -149,14 +155,7 @@ const WeekView: React.FC<WeekViewProps> = ({
     } else {
       console.log('Event creation is disabled')
     }
-    
-    if (onTimeSlotClick) {
-      console.log('Calling onTimeSlotClick callback')
-      onTimeSlotClick(date, hour)
-    } else {
-      console.log('No onTimeSlotClick callback provided')
-    }
-    
+
     console.groupEnd()
   }
   
@@ -294,15 +293,20 @@ const WeekView: React.FC<WeekViewProps> = ({
     }
   }
 
-  const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
+  const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => {
     console.log('🎯 [WeekView] handleEventResize CALLED')
     console.log('🎯 [WeekView] Event:', event.title, event.id)
-    console.log('🎯 [WeekView] New times:', { newStartTime, newEndTime })
+    console.log('🎯 [WeekView] New times:', { newStartTime, newEndTime, isMultiDay })
 
-    const updates = {
+    const updates: Record<string, any> = {
       startDateTime: newStartTime,
       endDateTime: newEndTime,
       duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
+    }
+
+    // Include isMultiDay if provided
+    if (isMultiDay !== undefined) {
+      updates.isMultiDay = isMultiDay
     }
 
     console.log('🎯 [WeekView] Calling updateEvent with:', updates)
@@ -412,10 +416,141 @@ Rescheduled: ${data.reason}`.trim() :
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 })
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
+  // Fixed pixels per hour for the week view grid
+  const PIXELS_PER_HOUR = 80
+
   // Generate time slots for all 24 hours
   const timeSlots = Array.from({ length: 24 }, (_, i) => i)
 
-  // Get events for a specific day and hour
+  // Get all events for a specific day (for the events overlay)
+  // Only returns SINGLE-DAY events that start on this day
+  const getEventsForDay = (date: Date) => {
+    const servicesForDay = scheduledServices.filter(service => {
+      const serviceDate = new Date(service.scheduledDate)
+      return isSameDay(serviceDate, date)
+    })
+
+    const tasksForDay = tasks.filter(task => {
+      if (!task.startTime) return false
+      const taskDate = new Date(task.startTime)
+      return isSameDay(taskDate, date)
+    })
+
+    // Only get SINGLE-DAY unified events that start on this day
+    const unifiedEventsForDay = unifiedEvents.filter(event => {
+      const eventDate = new Date(event.startDateTime)
+      const startsOnThisDay = isSameDay(eventDate, date)
+
+      // Check if it's a multi-day event
+      const isMultiDayEvent = event.isMultiDay || (event.endDateTime && !isSameDay(new Date(event.startDateTime), new Date(event.endDateTime)))
+
+      // Only include single-day events here
+      return startsOnThisDay && !isMultiDayEvent
+    })
+
+    return [...servicesForDay, ...tasksForDay, ...unifiedEventsForDay]
+  }
+
+  // Get multi-day events that should be displayed in this week
+  const getMultiDayEventsForWeek = () => {
+    return unifiedEvents.filter(event => {
+      // Check if it's a multi-day event
+      const isMultiDayEvent = event.isMultiDay || (event.endDateTime && !isSameDay(new Date(event.startDateTime), new Date(event.endDateTime)))
+      if (!isMultiDayEvent) return false
+
+      // Check if any part of this event falls within the current week
+      const eventStart = new Date(event.startDateTime)
+      const eventEnd = event.endDateTime ? new Date(event.endDateTime) : eventStart
+      const weekEnd = addDays(weekStart, 6)
+
+      // Event overlaps with week if: eventStart <= weekEnd AND eventEnd >= weekStart
+      return eventStart <= weekEnd && eventEnd >= weekStart
+    })
+  }
+
+  // Calculate column span for a multi-day event
+  const getMultiDayEventStyle = (event: UnifiedEvent): React.CSSProperties => {
+    const eventStart = new Date(event.startDateTime)
+    const eventEnd = event.endDateTime ? new Date(event.endDateTime) : eventStart
+
+    // Calculate which day columns this event spans
+    let startDayIndex = 0
+    let endDayIndex = 6
+
+    // Find start day index within the week (0-6)
+    for (let i = 0; i < 7; i++) {
+      if (isSameDay(weekDays[i], eventStart)) {
+        startDayIndex = i
+        break
+      } else if (weekDays[i] > eventStart) {
+        // Event started before this week
+        startDayIndex = 0
+        break
+      }
+    }
+
+    // Find end day index within the week (0-6)
+    for (let i = 6; i >= 0; i--) {
+      if (isSameDay(weekDays[i], eventEnd)) {
+        endDayIndex = i
+        break
+      } else if (weekDays[i] < eventEnd) {
+        // Event ends after this week
+        endDayIndex = 6
+        break
+      }
+    }
+
+    // Clamp start and end to week bounds
+    if (eventStart < weekDays[0]) startDayIndex = 0
+    if (eventEnd > weekDays[6]) endDayIndex = 6
+
+    // Calculate column positions (add 2 because column 1 is the time column, grid is 1-indexed)
+    const gridColumnStart = startDayIndex + 2
+    const gridColumnEnd = endDayIndex + 3 // +3 because we want to span TO this column (not before it)
+
+    // Calculate vertical position based on start time
+    const startHour = eventStart.getHours()
+    const startMinutes = eventStart.getMinutes()
+    const duration = event.duration || 60
+    const top = (startHour * PIXELS_PER_HOUR) + ((startMinutes / 60) * PIXELS_PER_HOUR)
+    const height = (duration / 60) * PIXELS_PER_HOUR
+
+    return {
+      position: 'absolute',
+      top: `${top}px`,
+      height: `${Math.max(height, 25)}px`,
+      gridColumnStart,
+      gridColumnEnd,
+      left: '2px',
+      right: '2px',
+      zIndex: 20 // Higher z-index for multi-day events
+    }
+  }
+
+  // Calculate event position and height based on start time and duration
+  const getEventStyle = (event: UnifiedEvent): React.CSSProperties => {
+    const startDate = new Date(event.startDateTime)
+    const startHour = startDate.getHours()
+    const startMinutes = startDate.getMinutes()
+    const duration = event.duration || 60
+
+    // Calculate top position: hours * pixelsPerHour + minutes offset
+    const top = (startHour * PIXELS_PER_HOUR) + ((startMinutes / 60) * PIXELS_PER_HOUR)
+    // Calculate height based on duration
+    const height = (duration / 60) * PIXELS_PER_HOUR
+
+    return {
+      position: 'absolute',
+      top: `${top}px`,
+      height: `${Math.max(height, 25)}px`, // Minimum 25px for visibility
+      left: '2px',
+      right: '2px',
+      zIndex: 10
+    }
+  }
+
+  // Get events for a specific day and hour (for DropZone occupancy)
   const getEventsForSlot = (date: Date, hour: number) => {
     const dateStr = format(date, 'yyyy-MM-dd')
     
@@ -523,196 +658,136 @@ Rescheduled: ${data.reason}`.trim() :
             })}
           </div>
 
-          {/* Time Grid */}
-          {timeSlots.map(hour => {
-            // Check if this is the current hour
-            const now = new Date()
-            const isCurrentHour = now.getHours() === hour
+          {/* Time Grid Container - relative positioning for events overlay */}
+          <div className="relative">
+            {/* Time slots grid - fixed height rows */}
+            {timeSlots.map(hour => {
+              const now = new Date()
+              const isCurrentHour = now.getHours() === hour
 
-            return (
-            <div
-              key={hour}
-              ref={(el) => { timeSlotRefs.current[hour] = el; }}
-              className={`grid grid-cols-8 gap-0 border-b border-border min-h-[60px] md:min-h-[80px] ${isCurrentHour ? 'bg-accent/10 border-l-4 border-accent' : ''}`}>
-              {/* Time Label */}
-              <div className={`p-2 md:p-3 border-r border-border flex items-start transition-colors ${isCurrentHour ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-card/80'}`}>
-                <div className="text-center w-full">
-                  <div className={`text-xs md:text-sm font-bold font-primary ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
-                    {hour.toString().padStart(2, '0')}:00
-                    {isCurrentHour && <span className="ml-1 text-xs">●</span>}
+              return (
+                <div
+                  key={hour}
+                  ref={(el) => { timeSlotRefs.current[hour] = el; }}
+                  className={`grid grid-cols-8 gap-0 border-b border-border ${isCurrentHour ? 'bg-accent/10 border-l-4 border-accent' : ''}`}
+                  style={{ height: `${PIXELS_PER_HOUR}px` }}
+                >
+                  {/* Time Label */}
+                  <div className={`p-2 md:p-3 border-r border-border flex items-start transition-colors ${isCurrentHour ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-card/80'}`}>
+                    <div className="text-center w-full">
+                      <div className={`text-xs md:text-sm font-bold font-primary ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
+                        {hour.toString().padStart(2, '0')}:00
+                        {isCurrentHour && <span className="ml-1 text-xs">●</span>}
+                      </div>
+                      <div className={`text-xs font-primary hidden md:block ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
+                        {formatTimeSlot(hour).split(' ')[1]}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`text-xs font-primary hidden md:block ${isCurrentHour ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
-                    {formatTimeSlot(hour).split(' ')[1]}
-                  </div>
+
+                  {/* Day Columns - DropZones only (no events rendered inside) */}
+                  {weekDays.map(day => {
+                    const events = getEventsForSlot(day, hour)
+                    const isCurrentDay = isToday(day)
+
+                    return (
+                      <DropZone
+                        key={`${day.toISOString()}-${hour}`}
+                        date={format(day, 'yyyy-MM-dd')}
+                        hour={hour}
+                        isOccupied={events.length > 0}
+                        events={events.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]}
+                        onTimeSlotClick={handleTimeSlotClick}
+                        className={`border-r border-border transition-colors ${
+                          isCurrentDay ? 'bg-accent/20 border-l-2 border-accent' : 'bg-background hover:bg-card'
+                        }`}
+                        compact={true}
+                      />
+                    )
+                  })}
                 </div>
+              )
+            })}
+
+            {/* Events Overlay Layer - absolutely positioned over the grid */}
+            <div
+              ref={eventsGridRef}
+              className="absolute top-0 left-0 right-0 pointer-events-none"
+              style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+            >
+              <div className="grid grid-cols-8 gap-0 h-full">
+                {/* Spacer for time column */}
+                <div className="border-r border-transparent" />
+
+                {/* Single-day events for each day column */}
+                {weekDays.map(day => {
+                  const dayEvents = getEventsForDay(day)
+                  const dayUnifiedEvents = dayEvents.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]
+
+                  return (
+                    <div
+                      key={`events-${day.toISOString()}`}
+                      className="relative border-r border-transparent"
+                    >
+                      {dayUnifiedEvents.map(event => (
+                        <div
+                          key={event.id}
+                          style={getEventStyle(event)}
+                          className="pointer-events-auto"
+                        >
+                          <CalendarEvent
+                            event={event}
+                            viewMode="week"
+                            currentDate={format(day, 'yyyy-MM-dd')}
+                            currentHour={new Date(event.startDateTime).getHours()}
+                            pixelsPerHour={PIXELS_PER_HOUR}
+                            onClick={(e) => handleShowEventDetails(e)}
+                            onResizeEnd={handleEventResize}
+                            showResizeHandles={true}
+                            isCompact={false}
+                            gridContainerRef={eventsGridRef}
+                            weekStartDate={weekStart}
+                            className="text-xs rounded border hover:shadow-sm transition-all"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })}
               </div>
 
-              {/* Day Columns */}
-              {weekDays.map(day => {
-                const events = getEventsForSlot(day, hour)
-                const isCurrentDay = isToday(day)
-
-                return (
-                  <DropZone
-                    key={`${day.toISOString()}-${hour}`}
-                    date={format(day, 'yyyy-MM-dd')}
-                    hour={hour}
-                    isOccupied={events.length > 0}
-                    events={events.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]}
-                    onTimeSlotClick={handleTimeSlotClick}
-                    className={`p-1 md:p-2 border-r border-border min-h-[60px] md:min-h-[80px] transition-colors ${
-                      isCurrentDay ? 'bg-accent/20 border-l-2 border-accent' : 'bg-background hover:bg-card'
-                    }`}
-                    compact={true}
+              {/* Multi-day events overlay - spans across multiple columns */}
+              <div
+                className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0"
+                style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+              >
+                {getMultiDayEventsForWeek().map(event => (
+                  <div
+                    key={`multiday-${event.id}`}
+                    style={getMultiDayEventStyle(event)}
+                    className="pointer-events-auto"
                   >
-                    <div className="space-y-1">
-                      {events.slice(0, 2).map(event => {
-                        const unifiedEvent = unifiedEvents.find(e => e.id === event.id)
-                        if (unifiedEvent) {
-                          return (
-                            <CalendarEvent
-                              key={event.id}
-                              event={unifiedEvent}
-                              viewMode="week"
-                              currentDate={format(day, 'yyyy-MM-dd')}
-                              currentHour={hour}
-                              onClick={(e) => handleShowEventDetails(e)}
-                              onResizeEnd={handleEventResize}
-                              showResizeHandles={true}
-                              isCompact={false}
-                              className="text-xs p-1 md:p-2 rounded border hover:shadow-sm transition-all"
-                            />
-                          )
-                        } else {
-                          return (
-                            <div
-                              key={event.id}
-                              className={`text-xs p-1 md:p-2 rounded border cursor-pointer hover:shadow-sm transition-all group/event ${
-                                getPriorityColor(event.priority)
-                              }`}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                const unifiedEvent = unifiedEvents.find(ue => ue.id === event.id)
-                                if (unifiedEvent) {
-                                  handleShowEventDetails(unifiedEvent)
-                                } else if ('service' in event || 'startTime' in event) {
-                                  onTaskClick?.(event as DailyTask | ScheduledService)
-                                }
-                              }}
-                            >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="font-medium truncate text-xs flex-1 mr-1">
-                              {(event.title || ('service' in event ? event.service : '') || 'Untitled').length > 10
-                                ? (event.title || ('service' in event ? event.service : '') || 'Untitled').substring(0, 10) + '...'
-                                : (event.title || ('service' in event ? event.service : '') || 'Untitled')
-                              }
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <div 
-                                className={`w-2 h-2 rounded-full ${getStatusColor(event.status || 'scheduled')}`}
-                                title={event.status || 'scheduled'}
-                              />
-                              {(onTaskEdit || onTaskDelete || onTaskStatusChange) && (
-                                <DropdownMenu
-                                  trigger={
-                                    <button
-                                      className="p-0.5 text-muted-foreground hover:text-foreground opacity-0 group-hover/event:opacity-100 transition-opacity"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreVertical className="h-3 w-3" />
-                                    </button>
-                                  }
-                                  items={[
-                                    ...(onTaskEdit && ('service' in event || 'startTime' in event) ? [{
-                                      label: 'Edit',
-                                      onClick: () => onTaskEdit(event as DailyTask | ScheduledService),
-                                      icon: <Edit className="h-3 w-3" />
-                                    }] : []),
-                                    ...(onTaskStatusChange ? [{
-                                      label: event.status === 'completed' ? 'Mark Pending' : 'Mark Done',
-                                      onClick: () => onTaskStatusChange(event.id, event.status === 'completed' ? 'pending' : 'completed'),
-                                      icon: <CheckCircle className="h-3 w-3" />
-                                    }] : []),
-                                    ...(onTaskDelete ? [{
-                                      label: 'Delete',
-                                      onClick: () => onTaskDelete(event.id),
-                                      icon: <Trash2 className="h-3 w-3" />,
-                                      variant: 'destructive' as const
-                                    }] : [])
-                                  ]}
-                                  align="right"
-                                />
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-xs opacity-75 truncate hidden md:block">
-                            {'clientName' in event ? event.clientName : 'No client'}
-                          </div>
-                          {'duration' in event && event.duration && (
-                            <div className="text-xs opacity-60 flex items-center mt-1 hidden md:flex">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {'duration' in event ? event.duration : 0}min
-                            </div>
-                          )}
-                          </div>
-                          )
-                        }
-                      })}
-                      
-                      {events.length > 2 && (
-                        <div 
-                          className="text-xs text-muted-foreground text-center py-1 cursor-pointer hover:text-foreground hover:bg-accent/20 rounded transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (onDayNavigation) {
-                              onDayNavigation(day)
-                            }
-                          }}
-                          title={`View all ${events.length} events for ${format(day, 'MMM d')}`}
-                        >
-                          +{events.length - 2} more
-                        </div>
-                      )}
-                    </div>
-                  </DropZone>
-                )
-              })}
-            </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Week Summary */}
-      <div className="neo-card p-6">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-foreground font-primary uppercase tracking-wide">
-            WEEK SUMMARY
-          </h3>
-            <div className="flex items-center space-x-4">
-              {weekDays.map(day => {
-                const dayEvents = scheduledServices.filter(service => {
-                  const serviceDate = new Date(service.scheduledDate)
-                  return isSameDay(serviceDate, day)
-                })
-                
-                return (
-                  <div key={day.toISOString()} className="text-center">
-                    <div className="text-xs uppercase tracking-wider text-muted-foreground font-primary">
-                      {format(day, 'EEE')}
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={`mt-1 ${dayEvents.length > 0 ? 'bg-accent text-accent-foreground' : 'bg-card text-muted-foreground border-border'}`}
-                    >
-                      {dayEvents.length}
-                    </Badge>
+                    <CalendarEvent
+                      event={event}
+                      viewMode="week"
+                      currentDate={format(new Date(event.startDateTime), 'yyyy-MM-dd')}
+                      currentHour={new Date(event.startDateTime).getHours()}
+                      pixelsPerHour={PIXELS_PER_HOUR}
+                      onClick={(e) => handleShowEventDetails(e)}
+                      onResizeEnd={handleEventResize}
+                      showResizeHandles={true}
+                      isCompact={false}
+                      gridContainerRef={eventsGridRef}
+                      weekStartDate={weekStart}
+                      className="text-xs rounded border hover:shadow-sm transition-all h-full"
+                    />
                   </div>
-                )
-              })}
+                ))}
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
       {/* Drag Visual Feedback */}
       <DragVisualFeedback containerRef={containerRef as React.RefObject<HTMLElement>} />
