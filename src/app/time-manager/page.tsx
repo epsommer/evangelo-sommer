@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, Suspense, useEffect } from 'react'
+import React, { useState, Suspense, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import CRMLayout from '@/components/CRMLayout'
@@ -346,21 +346,39 @@ const TimeManagerContent = () => {
     setSidebarSelectedEvent(null)
   }
 
-  const handleFormChange = (data: { title?: string; date?: string; startTime?: string; duration?: number }) => {
+  // Use ref to track last values and prevent unnecessary updates
+  const lastFormChangeRef = useRef<{ date?: string; startTime?: string; duration?: number }>({})
+
+  const handleFormChange = useCallback((data: { title?: string; date?: string; startTime?: string; duration?: number }) => {
     // Update placeholder event when sidebar form changes
-    if (placeholderEvent && data.date && data.startTime !== undefined && data.duration !== undefined) {
+    // Only update if values actually changed to prevent infinite loops
+    const last = lastFormChangeRef.current
+    if (
+      data.date === last.date &&
+      data.startTime === last.startTime &&
+      data.duration === last.duration
+    ) {
+      return // No actual change, skip update
+    }
+
+    lastFormChangeRef.current = { date: data.date, startTime: data.startTime, duration: data.duration }
+
+    setPlaceholderEvent(prev => {
+      if (!prev || !data.date || data.startTime === undefined || data.duration === undefined) {
+        return prev
+      }
       const hour = parseInt(data.startTime.split(':')[0])
-      setPlaceholderEvent({
-        ...placeholderEvent,
+      return {
+        ...prev,
         date: data.date,
         hour: hour,
         duration: data.duration,
         title: data.title
-      })
-    }
-  }
+      }
+    })
+  }, [])
 
-  const handlePlaceholderChange = (placeholder: {
+  const handlePlaceholderChange = useCallback((placeholder: {
     date: string
     hour: number
     duration: number
@@ -370,24 +388,9 @@ const TimeManagerContent = () => {
   } | null) => {
     console.log('🖱️ [TimeManager] Placeholder changed:', placeholder)
     setPlaceholderEvent(placeholder)
-
-    // Also update the sidebar form to reflect drag changes
-    if (placeholder && isEventCreationMode) {
-      const startTime = `${placeholder.hour.toString().padStart(2, '0')}:00`
-      const date = new Date(placeholder.date + 'T00:00:00')
-
-      setEventCreationTime(startTime)
-      setEventCreationDate(date)
-
-      console.log('🖱️ [TimeManager] Updated sidebar form:', {
-        date: placeholder.date,
-        startTime,
-        duration: placeholder.duration,
-        endDate: placeholder.endDate,
-        endHour: placeholder.endHour
-      })
-    }
-  }
+    // Note: We intentionally don't update sidebar form state here to avoid circular updates.
+    // The form is the source of truth; placeholder is just visual feedback.
+  }, [])
 
   const handleSidebarEventEdit = (event: UnifiedEvent) => {
     // Close sidebar event details
@@ -663,6 +666,9 @@ const TimeManagerContent = () => {
               activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
               excludeFromConflictDetection={recentlyCreatedEvents}
               onTimeSlotClick={handleTimeSlotClick}
+              onTimeSlotDoubleClick={handleTimeSlotDoubleClick}
+              placeholderEvent={placeholderEvent}
+              onPlaceholderChange={handlePlaceholderChange}
             />
           )
         case 'week':
@@ -712,6 +718,7 @@ const TimeManagerContent = () => {
               selectedDate={state.selectedDate}
               enableEditing={true}
               onDayClick={handleDayClick}
+              onDayDoubleClick={handleTimeSlotDoubleClick}
               onEventEdit={handleEventEdit}
               onEventView={handleEventView}
               onEventDelete={handleTaskDelete}
@@ -731,6 +738,8 @@ const TimeManagerContent = () => {
               activeConflicts={pendingEvent && conflicts ? { [pendingEvent.id]: conflicts } : undefined}
               excludeFromConflictDetection={recentlyCreatedEvents}
               onTimeSlotClick={handleTimeSlotClick}
+              placeholderEvent={placeholderEvent}
+              onPlaceholderChange={handlePlaceholderChange}
             />
           )
       }

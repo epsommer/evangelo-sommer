@@ -53,6 +53,7 @@ interface ScheduleCalendarProps {
   selectedDate?: Date;
   onDateSelect?: (date: Date) => void;
   onDayClick?: (date: Date) => void;
+  onDayDoubleClick?: (date: Date, hour?: number) => void;
   onEventEdit?: (event: any) => void;
   onEventView?: (event: any) => void;
   onEventDelete?: (eventId: string) => void;
@@ -65,6 +66,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   selectedDate = (() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()) })(),
   onDateSelect,
   onDayClick,
+  onDayDoubleClick,
   onEventEdit,
   onEventView,
   onEventDelete,
@@ -81,6 +83,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   const [showResizeModal, setShowResizeModal] = useState(false);
   const [resizeData, setResizeData] = useState<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Use unified events hook
   const { events: unifiedEvents, updateEvent } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger });
@@ -470,9 +473,25 @@ Duration changed: ${data.reason}`.trim() :
                         : 'bg-card hover:bg-card/80'
                     }`}
                     onClick={() => {
-                      onDateSelect?.(day)
-                      if (isCurrentMonth && onDayClick) {
-                        onDayClick(day)
+                      // Implement double-click detection
+                      if (clickTimeout) {
+                        // This is a double-click
+                        clearTimeout(clickTimeout)
+                        setClickTimeout(null)
+                        if (isCurrentMonth && onDayDoubleClick) {
+                          // Create event at default 9am time
+                          onDayDoubleClick(day, dayHour)
+                        }
+                      } else {
+                        // This might be a single-click - set a timeout
+                        const timeout = setTimeout(() => {
+                          onDateSelect?.(day)
+                          if (isCurrentMonth && onDayClick) {
+                            onDayClick(day)
+                          }
+                          setClickTimeout(null)
+                        }, 300) // 300ms window for double-click detection
+                        setClickTimeout(timeout)
                       }
                     }}
                   >

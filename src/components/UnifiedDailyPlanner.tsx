@@ -16,8 +16,10 @@ import { createLocalDate } from '@/lib/timezone-utils'
 import { DragDropProvider } from '@/components/DragDropContext'
 import DropZone from '@/components/DropZone'
 import CalendarEvent from '@/components/calendar/CalendarEvent'
+import PlaceholderEvent from '@/components/calendar/PlaceholderEvent'
 import { eventCategorizer } from '@/lib/event-categorizer'
 import { calculateDragDropTimes } from '@/utils/calendar'
+import { useEventCreationDrag, DragState } from '@/hooks/useEventCreationDrag'
 
 // Types
 interface MissionObjective {
@@ -32,6 +34,15 @@ interface MissionObjective {
   createdAt: string
 }
 
+interface PlaceholderEventData {
+  date: string // 'yyyy-MM-dd' format
+  hour: number // 0-23
+  duration: number // in minutes
+  title?: string // optional, from form input
+  endDate?: string // optional, for multi-day events
+  endHour?: number // optional, for multi-day events
+}
+
 interface UnifiedDailyPlannerProps {
   date?: Date
   onEventView?: (event: UnifiedEvent) => void
@@ -42,6 +53,9 @@ interface UnifiedDailyPlannerProps {
   activeConflicts?: Record<string, any>
   excludeFromConflictDetection?: Set<string>
   onTimeSlotClick?: (date: Date, hour?: number) => void
+  onTimeSlotDoubleClick?: (date: Date, hour: number) => void
+  placeholderEvent?: PlaceholderEventData | null
+  onPlaceholderChange?: (placeholder: PlaceholderEventData | null) => void
 }
 
 type ViewMode = 'timeline' | 'agenda' | 'combined'
@@ -63,7 +77,10 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   onConflictClick,
   activeConflicts,
   excludeFromConflictDetection,
-  onTimeSlotClick
+  onTimeSlotClick,
+  onTimeSlotDoubleClick,
+  placeholderEvent = null,
+  onPlaceholderChange
 }) => {
   // State
   const [viewMode, setViewMode] = useState<ViewMode>('combined')
@@ -80,7 +97,47 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null)
   const timeSlotRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
+  const eventsGridRef = useRef<HTMLDivElement>(null)
   const pixelsPerHour = 70
+
+  // For day view, create a "week" starting on the selected date (single day treated as a week)
+  const dayStart = date
+
+  // Event creation drag hook
+  const {
+    dragState: creationDragState,
+    isDragging: isCreationDragging,
+    handleMouseDown: handleCreationMouseDown,
+    resetDrag: resetCreationDrag
+  } = useEventCreationDrag(eventsGridRef, dayStart, {
+    onDragMove: (state: DragState) => {
+      // Update placeholder event in real-time during drag
+      if (onPlaceholderChange) {
+        onPlaceholderChange({
+          date: state.startDate,
+          hour: state.startHour,
+          duration: state.duration,
+          title: placeholderEvent?.title,
+          endDate: state.currentDate,
+          endHour: state.currentHour
+        })
+      }
+    },
+    onDragEnd: (state: DragState) => {
+      console.log('🖱️ [UnifiedDailyPlanner] Drag ended, final state:', state)
+      // Final update to placeholder with drag result
+      if (onPlaceholderChange) {
+        onPlaceholderChange({
+          date: state.startDate,
+          hour: state.startHour,
+          duration: state.duration,
+          title: placeholderEvent?.title,
+          endDate: state.currentDate,
+          endHour: state.currentHour
+        })
+      }
+    }
+  })
 
   // Unified events hook
   const {
@@ -272,6 +329,18 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
     }
   }
 
+  // Handle time slot double-click (for sidebar event creation)
+  const handleTimeSlotDoubleClick = (hour: number) => {
+    if (onTimeSlotDoubleClick) {
+      onTimeSlotDoubleClick(date, hour)
+    } else {
+      // Fallback to local modal handling (same as single click for now)
+      setSelectedTimeSlot(`${hour.toString().padStart(2, '0')}:00`)
+      setEditingEvent(null)
+      setShowEventModal(true)
+    }
+  }
+
   // Handle event resize
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
     console.log('🎯 [UnifiedDailyPlanner] handleEventResize CALLED')
@@ -438,9 +507,12 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
                 <DropZone
                   date={format(date, 'yyyy-MM-dd')}
                   hour={hour}
+                  dayIndex={0}
                   isOccupied={hourEvents.length > 0}
                   events={hourEvents}
                   onTimeSlotClick={() => handleTimeSlotClick(hour)}
+                  onTimeSlotDoubleClick={() => handleTimeSlotDoubleClick(hour)}
+                  onMouseDownOnSlot={handleCreationMouseDown}
                 />
               </div>
             </div>
@@ -450,6 +522,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
       {/* Events layer - absolutely positioned over the grid */}
       <div
+        ref={eventsGridRef}
         className="absolute top-0 left-0 right-0 pointer-events-none"
         style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
       >
@@ -481,6 +554,33 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Placeholder event overlay - shows ghost event during creation */}
+      {placeholderEvent && (
+        <div
+          className="absolute top-0 left-0 right-0 pointer-events-none"
+          style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+        >
+          <div className="grid grid-cols-12 gap-2 h-full">
+            {/* Spacer for time column */}
+            <div className="col-span-2 lg:col-span-1" />
+
+            {/* Placeholder container */}
+            <div className="col-span-10 lg:col-span-11 relative">
+              <PlaceholderEvent
+                date={placeholderEvent.date}
+                hour={placeholderEvent.hour}
+                duration={placeholderEvent.duration}
+                title={placeholderEvent.title}
+                pixelsPerHour={PIXELS_PER_HOUR}
+                endDate={placeholderEvent.endDate}
+                endHour={placeholderEvent.endHour}
+                isMultiDay={placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 
