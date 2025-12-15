@@ -21,6 +21,9 @@ import { eventCategorizer } from '@/lib/event-categorizer'
 import { calculateDragDropTimes } from '@/utils/calendar'
 import { useEventCreationDrag, DragState } from '@/hooks/useEventCreationDrag'
 
+// Constants
+const DAY_VIEW_PIXELS_PER_HOUR = 50
+
 // Types
 interface MissionObjective {
   id: string
@@ -137,7 +140,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
         })
       }
     }
-  })
+  }, DAY_VIEW_PIXELS_PER_HOUR)
 
   // Unified events hook
   const {
@@ -442,8 +445,8 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   }, [objectives, todaysEvents])
 
   // Render timeline view
-  // Fixed height per hour slot in pixels
-  const PIXELS_PER_HOUR = 50
+  // Fixed height per hour slot in pixels (uses module constant)
+  const PIXELS_PER_HOUR = DAY_VIEW_PIXELS_PER_HOUR
 
   // Calculate event position and height based on start time and duration
   const getEventStyle = (event: UnifiedEvent): React.CSSProperties => {

@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { format, addDays } from 'date-fns'
 
-const PIXELS_PER_HOUR = 80
+const DEFAULT_PIXELS_PER_HOUR = 80
 const SNAP_MINUTES = 15
 const MIN_DURATION_MINUTES = 15
 const DRAG_THRESHOLD_PX = 5 // Minimum movement to trigger drag mode
@@ -41,7 +41,7 @@ export interface UseEventCreationDragResult {
 /**
  * Convert Y position to hour and minutes
  */
-function yToTime(y: number, gridTop: number, pixelsPerHour: number = PIXELS_PER_HOUR) {
+function yToTime(y: number, gridTop: number, pixelsPerHour: number = DEFAULT_PIXELS_PER_HOUR) {
   const relativeY = Math.max(0, y - gridTop)
   const totalMinutes = (relativeY / pixelsPerHour) * 60
   const hour = Math.floor(totalMinutes / 60)
@@ -92,10 +92,24 @@ function calculateDuration(
 export function useEventCreationDrag(
   gridContainerRef: React.RefObject<HTMLElement | null>,
   weekStartDate: Date,
-  callbacks: DragCallbacks = {}
+  callbacks: DragCallbacks = {},
+  pixelsPerHour: number = DEFAULT_PIXELS_PER_HOUR
 ): UseEventCreationDragResult {
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isTrackingMouse, setIsTrackingMouse] = useState(false) // State to trigger listener setup
+
+  // Use refs for callbacks to avoid re-creating memoized functions
+  const callbacksRef = useRef(callbacks)
+  callbacksRef.current = callbacks
+
+  // Use ref for weekStartDate to avoid dependency issues
+  const weekStartDateRef = useRef(weekStartDate)
+  weekStartDateRef.current = weekStartDate
+
+  // Use ref for pixelsPerHour to avoid dependency issues
+  const pixelsPerHourRef = useRef(pixelsPerHour)
+  pixelsPerHourRef.current = pixelsPerHour
 
   const dragStartRef = useRef<{
     date: string
@@ -155,6 +169,7 @@ export function useEventCreationDrag(
       }
 
       mouseMoveStartedRef.current = false
+      setIsTrackingMouse(true) // Trigger useEffect to add global listeners
 
       console.log('🖱️ [useEventCreationDrag] Mouse down on second click - ready to drag', {
         date,
@@ -187,11 +202,11 @@ export function useEventCreationDrag(
 
     if (mouseMoveStartedRef.current) {
       // Calculate current time from mouse position
-      const currentTime = yToTime(e.clientY, startData.gridTop, PIXELS_PER_HOUR)
+      const currentTime = yToTime(e.clientY, startData.gridTop, pixelsPerHourRef.current)
       const currentDayIndex = xToDay(e.clientX, startData.gridLeft, startData.timeColumnWidth, startData.dayColumnWidth)
 
-      // Calculate current date based on day index
-      const currentDate = format(addDays(weekStartDate, currentDayIndex), 'yyyy-MM-dd')
+      // Calculate current date based on day index (use ref to avoid dependency)
+      const currentDate = format(addDays(weekStartDateRef.current, currentDayIndex), 'yyyy-MM-dd')
 
       // Determine start and end based on drag direction
       let startDate = startData.date
@@ -233,27 +248,32 @@ export function useEventCreationDrag(
       }
 
       setDragState(newDragState)
-      callbacks.onDragMove?.(newDragState)
+      callbacksRef.current.onDragMove?.(newDragState)
     }
-  }, [weekStartDate, callbacks])
+  }, []) // No dependencies - uses refs instead
+
+  // Use ref to access dragState without dependency
+  const dragStateRef = useRef(dragState)
+  dragStateRef.current = dragState
 
   /**
    * Handle mouse up (end drag)
    */
   const handleMouseUp = useCallback(() => {
-    if (mouseMoveStartedRef.current && dragState) {
-      console.log('🖱️ [useEventCreationDrag] Drag ended', dragState)
-      callbacks.onDragEnd?.(dragState)
+    if (mouseMoveStartedRef.current && dragStateRef.current) {
+      console.log('🖱️ [useEventCreationDrag] Drag ended', dragStateRef.current)
+      callbacksRef.current.onDragEnd?.(dragStateRef.current)
     }
 
     // Reset drag tracking
     dragStartRef.current = null
     mouseMoveStartedRef.current = false
     setIsDragging(false)
+    setIsTrackingMouse(false) // Stop tracking mouse
 
     // Note: We don't clear dragState here - parent component should do that
     // after syncing with sidebar form
-  }, [dragState, callbacks])
+  }, []) // No dependencies - uses refs instead
 
   /**
    * Reset drag state (called by parent)
@@ -261,25 +281,28 @@ export function useEventCreationDrag(
   const resetDrag = useCallback(() => {
     setDragState(null)
     setIsDragging(false)
+    setIsTrackingMouse(false)
     dragStartRef.current = null
     mouseMoveStartedRef.current = false
     clickCountRef.current = 0
   }, [])
 
   /**
-   * Set up global mouse event listeners
+   * Set up global mouse event listeners when tracking is active
    */
   useEffect(() => {
-    if (dragStartRef.current) {
+    if (isTrackingMouse) {
+      console.log('🖱️ [useEventCreationDrag] Adding global mouse listeners')
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
 
       return () => {
+        console.log('🖱️ [useEventCreationDrag] Removing global mouse listeners')
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [handleMouseMove, handleMouseUp])
+  }, [isTrackingMouse, handleMouseMove, handleMouseUp])
 
   return {
     dragState,
