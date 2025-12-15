@@ -451,22 +451,23 @@ export default function SystemPreferencesPage() {
                   <h2 className="text-2xl font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-8">
                     Display & Theme
                   </h2>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-6">
+
+                  <div className="space-y-8">
+                    {/* Appearance Section */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
                         Appearance
                       </h3>
-                      
-                      <div className="space-y-6">
-                        <div>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="py-4">
                           <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
                             Theme
                           </label>
                           <select
                             value={preferences.display.theme}
                             onChange={(e) => updateDisplay('theme', e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none"
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
                           >
                             <option value="light">Light Theme</option>
                             <option value="dark">Dark Theme</option>
@@ -474,7 +475,7 @@ export default function SystemPreferencesPage() {
                           </select>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Compact Mode</div>
                             <div className="text-sm text-medium-grey font-primary">Reduce spacing for more content</div>
@@ -490,7 +491,7 @@ export default function SystemPreferencesPage() {
                           </label>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">High Contrast</div>
                             <div className="text-sm text-medium-grey font-primary">Improve visibility and readability</div>
@@ -508,20 +509,21 @@ export default function SystemPreferencesPage() {
                       </div>
                     </div>
 
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-6">
+                    {/* Layout Section */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
                         Layout
                       </h3>
-                      
-                      <div className="space-y-6">
-                        <div>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="py-4">
                           <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
                             Default View
                           </label>
                           <select
                             value={preferences.display.defaultView}
                             onChange={(e) => updateDisplay('defaultView', e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none"
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
                           >
                             <option value="grid">Grid View</option>
                             <option value="list">List View</option>
@@ -529,7 +531,7 @@ export default function SystemPreferencesPage() {
                           </select>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Show Sidebar</div>
                             <div className="text-sm text-medium-grey font-primary">Always show navigation sidebar</div>
@@ -559,20 +561,20 @@ export default function SystemPreferencesPage() {
 
                   <div className="space-y-8">
                     {/* Language & Parsing Settings */}
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-6">
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
                         Language & Parsing
                       </h3>
-                      
-                      <div className="space-y-6">
-                        <div>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="py-4">
                           <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
                             Parsing Language
                           </label>
                           <select
                             value={preferences.conversations.parsingLanguage}
                             onChange={(e) => updateConversations('parsingLanguage', e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none"
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
                           >
                             <option value="auto">Auto-Detect</option>
                             <option value="en">English</option>
@@ -581,7 +583,7 @@ export default function SystemPreferencesPage() {
                           </select>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Enable Keyword Detection</div>
                             <div className="text-sm text-medium-grey font-primary">Automatically detect keywords and phrases</div>
@@ -600,13 +602,13 @@ export default function SystemPreferencesPage() {
                     </div>
 
                     {/* Auto-Draft Settings */}
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-6">
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
                         Auto-Draft Settings
                       </h3>
-                      
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Enable Auto-Draft</div>
                             <div className="text-sm text-medium-grey font-primary">Automatically generate drafts from conversations</div>
@@ -622,7 +624,7 @@ export default function SystemPreferencesPage() {
                           </label>
                         </div>
 
-                        <div>
+                        <div className="py-4">
                           <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
                             Confidence Threshold
                           </label>
@@ -630,7 +632,7 @@ export default function SystemPreferencesPage() {
                             value={preferences.conversations.autoDraftConfidenceThreshold}
                             onChange={(e) => updateConversations('autoDraftConfidenceThreshold', e.target.value)}
                             disabled={!preferences.conversations.enableAutoDraft}
-                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50 focus:border-tactical-gold focus:outline-none"
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50 focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
                           >
                             <option value="low">Low - More suggestions</option>
                             <option value="medium">Medium - Balanced</option>
@@ -639,14 +641,14 @@ export default function SystemPreferencesPage() {
                         </div>
 
                         {/* Auto-Draft Types */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="py-4 space-y-3">
                           {[
                             { key: 'generateReceipts', label: 'Auto-Draft Receipts', desc: 'Generate receipts automatically' },
                             { key: 'generateInvoices', label: 'Auto-Draft Invoices', desc: 'Generate invoices automatically' },
                             { key: 'generateReplies', label: 'Auto-Draft Replies', desc: 'Generate reply suggestions' },
                             { key: 'requireApproval', label: 'Require Approval', desc: 'Always ask before auto-drafting' }
                           ].map(item => (
-                            <div key={item.key} className="flex items-center justify-between p-4 border border-hud-border">
+                            <div key={item.key} className="flex items-center justify-between py-2">
                               <div>
                                 <div className="font-medium text-hud-text-primary font-primary text-sm">{item.label}</div>
                                 <div className="text-xs text-medium-grey font-primary mt-1">{item.desc}</div>
@@ -671,8 +673,8 @@ export default function SystemPreferencesPage() {
                     </div>
 
                     {/* Keyword Triggers */}
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-hud-border">
                         <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
                           Keyword Triggers
                         </h3>
@@ -685,7 +687,7 @@ export default function SystemPreferencesPage() {
                           Add Trigger
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {preferences.conversations.keywordTriggers.map(trigger => (
                           <div key={trigger.id} className="bg-white p-4 border border-medium-grey">
@@ -715,7 +717,7 @@ export default function SystemPreferencesPage() {
                                 </button>
                               </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                               <div>
                                 <label className="block text-xs text-medium-grey font-primary mb-2 uppercase tracking-wider">Action</label>
@@ -745,14 +747,14 @@ export default function SystemPreferencesPage() {
                                 />
                               </div>
                             </div>
-                            
+
                             <div>
                               <label className="block text-xs text-medium-grey font-primary mb-2 uppercase tracking-wider">Keywords (comma-separated)</label>
                               <input
                                 type="text"
                                 value={trigger.keywords.join(', ')}
-                                onChange={(e) => updateKeywordTrigger(trigger.id, { 
-                                  keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0) 
+                                onChange={(e) => updateKeywordTrigger(trigger.id, {
+                                  keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0)
                                 })}
                                 className="w-full px-3 py-2 text-sm border border-medium-grey bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none"
                                 placeholder="keyword1, keyword2, phrase example"
@@ -775,13 +777,13 @@ export default function SystemPreferencesPage() {
 
                   <div className="space-y-8">
                     {/* Smart Categorization Settings */}
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-6">
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
                         Smart Categorization
                       </h3>
-                      
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Enable Smart Categorization</div>
                             <div className="text-sm text-medium-grey font-primary">Automatically categorize events by money-making priority</div>
@@ -797,7 +799,7 @@ export default function SystemPreferencesPage() {
                           </label>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Show Category Badges</div>
                             <div className="text-sm text-medium-grey font-primary">Display visual badges for Primary/Secondary/Tertiary</div>
@@ -814,7 +816,7 @@ export default function SystemPreferencesPage() {
                           </label>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border border-hud-border">
+                        <div className="flex items-center justify-between py-4">
                           <div>
                             <div className="font-medium text-hud-text-primary font-primary">Prioritize Money-Making</div>
                             <div className="text-sm text-medium-grey font-primary">Show Primary objectives first in all views</div>
@@ -831,7 +833,7 @@ export default function SystemPreferencesPage() {
                           </label>
                         </div>
 
-                        <div>
+                        <div className="py-4">
                           <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
                             Default Category for Uncategorized Events
                           </label>
@@ -839,7 +841,7 @@ export default function SystemPreferencesPage() {
                             value={preferences.eventParsing.defaultCategory}
                             onChange={(e) => updateEventParsing('defaultCategory', e.target.value)}
                             disabled={!preferences.eventParsing.enableSmartCategorization}
-                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50 focus:border-tactical-gold focus:outline-none"
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50 focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
                           >
                             <option value="primary">Primary - Money-Making</option>
                             <option value="secondary">Secondary - Business Support</option>
@@ -850,8 +852,8 @@ export default function SystemPreferencesPage() {
                     </div>
 
                     {/* Categorization Rules */}
-                    <div className="bg-hud-background-primary border-2 border-hud-border p-6">
-                      <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-hud-border">
                         <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide">
                           Categorization Rules
                         </h3>
@@ -865,7 +867,7 @@ export default function SystemPreferencesPage() {
                           Add Rule
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {preferences.eventParsing.categorizationRules.map(rule => (
                           <div key={rule.id} className="bg-white p-4 border border-medium-grey">
@@ -898,7 +900,7 @@ export default function SystemPreferencesPage() {
                                 </button>
                               </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                               <div>
                                 <label className="block text-xs text-medium-grey font-primary mb-2 uppercase tracking-wider">Category</label>
@@ -938,14 +940,14 @@ export default function SystemPreferencesPage() {
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div>
                               <label className="block text-xs text-medium-grey font-primary mb-2 uppercase tracking-wider">Keywords (comma-separated)</label>
                               <input
                                 type="text"
                                 value={rule.keywords.join(', ')}
-                                onChange={(e) => updateCategorizationRule(rule.id, { 
-                                  keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0) 
+                                onChange={(e) => updateCategorizationRule(rule.id, {
+                                  keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0)
                                 })}
                                 disabled={!preferences.eventParsing.enableSmartCategorization}
                                 className="w-full px-3 py-2 text-sm border border-medium-grey bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none disabled:opacity-50"
@@ -979,14 +981,408 @@ export default function SystemPreferencesPage() {
                 </div>
               )}
 
-              {/* Placeholder content for other tabs */}
-              {['notifications', 'workflow', 'performance'].includes(activeTab) && (
+              {/* Notifications Tab */}
+              {activeTab === 'notifications' && (
                 <div className="p-8">
                   <h2 className="text-2xl font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-8">
-                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                    Notifications
                   </h2>
-                  <div className="text-medium-grey font-primary">
-                    This section will be implemented with detailed settings for {activeTab}...
+
+                  <div className="space-y-8">
+                    {/* General Notification Settings */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        General Settings
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Enable All Notifications</div>
+                            <div className="text-sm text-medium-grey font-primary">Master switch for all notifications</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.notifications.enableAll}
+                              onChange={(e) => updateNotifications('enableAll', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Sound Enabled</div>
+                            <div className="text-sm text-medium-grey font-primary">Play sound for notifications</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.notifications.soundEnabled}
+                              onChange={(e) => updateNotifications('soundEnabled', e.target.checked)}
+                              disabled={!preferences.notifications.enableAll}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notification Types */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        Notification Types
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Client Updates</div>
+                            <div className="text-sm text-medium-grey font-primary">Notifications for client activity and changes</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.notifications.clientUpdates}
+                              onChange={(e) => updateNotifications('clientUpdates', e.target.checked)}
+                              disabled={!preferences.notifications.enableAll}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Schedule Reminders</div>
+                            <div className="text-sm text-medium-grey font-primary">Reminders for upcoming events</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.notifications.scheduleReminders}
+                              onChange={(e) => updateNotifications('scheduleReminders', e.target.checked)}
+                              disabled={!preferences.notifications.enableAll}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">System Alerts</div>
+                            <div className="text-sm text-medium-grey font-primary">Important system notifications</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.notifications.systemAlerts}
+                              onChange={(e) => updateNotifications('systemAlerts', e.target.checked)}
+                              disabled={!preferences.notifications.enableAll}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quiet Hours */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        Quiet Hours
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Enable Quiet Hours</div>
+                            <div className="text-sm text-medium-grey font-primary">Mute notifications during specified times</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.notifications.quietHours.enabled}
+                              onChange={(e) => updateNotifications('quietHours', {
+                                ...preferences.notifications.quietHours,
+                                enabled: e.target.checked
+                              })}
+                              disabled={!preferences.notifications.enableAll}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
+                          </label>
+                        </div>
+
+                        <div className="py-4 grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                              Start Time
+                            </label>
+                            <input
+                              type="time"
+                              value={preferences.notifications.quietHours.start}
+                              onChange={(e) => updateNotifications('quietHours', {
+                                ...preferences.notifications.quietHours,
+                                start: e.target.value
+                              })}
+                              disabled={!preferences.notifications.quietHours.enabled || !preferences.notifications.enableAll}
+                              className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50 focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                              End Time
+                            </label>
+                            <input
+                              type="time"
+                              value={preferences.notifications.quietHours.end}
+                              onChange={(e) => updateNotifications('quietHours', {
+                                ...preferences.notifications.quietHours,
+                                end: e.target.value
+                              })}
+                              disabled={!preferences.notifications.quietHours.enabled || !preferences.notifications.enableAll}
+                              className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary disabled:opacity-50 focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Workflow Tab */}
+              {activeTab === 'workflow' && (
+                <div className="p-8">
+                  <h2 className="text-2xl font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-8">
+                    Workflow
+                  </h2>
+
+                  <div className="space-y-8">
+                    {/* Automation Settings */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        Automation
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Auto-Save</div>
+                            <div className="text-sm text-medium-grey font-primary">Automatically save changes</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.workflow.autoSave}
+                              onChange={(e) => updateWorkflow('autoSave', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Confirm Deletions</div>
+                            <div className="text-sm text-medium-grey font-primary">Ask before deleting items</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.workflow.confirmDeletions}
+                              onChange={(e) => updateWorkflow('confirmDeletions', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="py-4">
+                          <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                            Backup Frequency
+                          </label>
+                          <select
+                            value={preferences.workflow.backupFrequency}
+                            onChange={(e) => updateWorkflow('backupFrequency', e.target.value)}
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
+                          >
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Default Settings */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        Defaults
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="py-4">
+                          <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                            Default Client Status
+                          </label>
+                          <select
+                            value={preferences.workflow.defaultClientStatus}
+                            onChange={(e) => updateWorkflow('defaultClientStatus', e.target.value)}
+                            className="w-full px-4 py-3 border-2 border-hud-border bg-white text-hud-text-primary font-primary focus:border-tactical-gold focus:outline-none hover:bg-gray-50"
+                          >
+                            <option value="prospect">Prospect</option>
+                            <option value="active">Active</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Advanced Features */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        Advanced
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Show Advanced Features</div>
+                            <div className="text-sm text-medium-grey font-primary">Enable experimental features</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.workflow.showAdvancedFeatures}
+                              onChange={(e) => updateWorkflow('showAdvancedFeatures', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Keyboard Shortcuts</div>
+                            <div className="text-sm text-medium-grey font-primary">Enable keyboard navigation</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.workflow.keyboardShortcuts}
+                              onChange={(e) => updateWorkflow('keyboardShortcuts', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Performance Tab */}
+              {activeTab === 'performance' && (
+                <div className="p-8">
+                  <h2 className="text-2xl font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-8">
+                    Performance
+                  </h2>
+
+                  <div className="space-y-8">
+                    {/* Performance Optimization */}
+                    <div>
+                      <h3 className="font-bold text-hud-text-primary font-primary uppercase tracking-wide mb-4 pb-2 border-b border-hud-border">
+                        Optimization
+                      </h3>
+
+                      <div className="divide-y divide-hud-border">
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Animations Enabled</div>
+                            <div className="text-sm text-medium-grey font-primary">Enable interface animations</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.performance.animationsEnabled}
+                              onChange={(e) => updatePerformance('animationsEnabled', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Cache Data</div>
+                            <div className="text-sm text-medium-grey font-primary">Store data locally for faster access</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.performance.cacheData}
+                              onChange={(e) => updatePerformance('cacheData', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Preload Next Page</div>
+                            <div className="text-sm text-medium-grey font-primary">Load upcoming pages in advance</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.performance.preloadNextPage}
+                              onChange={(e) => updatePerformance('preloadNextPage', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Background Sync</div>
+                            <div className="text-sm text-medium-grey font-primary">Sync data in background</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.performance.backgroundSync}
+                              onChange={(e) => updatePerformance('backgroundSync', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center justify-between py-4">
+                          <div>
+                            <div className="font-medium text-hud-text-primary font-primary">Data Compression</div>
+                            <div className="text-sm text-medium-grey font-primary">Compress data for reduced bandwidth</div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={preferences.performance.dataCompression}
+                              onChange={(e) => updatePerformance('dataCompression', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
