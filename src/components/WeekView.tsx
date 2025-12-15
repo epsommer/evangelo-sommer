@@ -45,6 +45,7 @@ interface RescheduleData {
 interface PlaceholderEventData {
   date: string // 'yyyy-MM-dd' format
   hour: number // 0-23
+  minutes?: number // 0-59, for precise positioning
   duration: number // in minutes
   title?: string // optional, from form input
   endDate?: string // optional, for multi-day events
@@ -124,6 +125,7 @@ const WeekView: React.FC<WeekViewProps> = ({
         onPlaceholderChange({
           date: state.startDate,
           hour: state.startHour,
+          minutes: state.startMinutes,
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
@@ -138,6 +140,7 @@ const WeekView: React.FC<WeekViewProps> = ({
         onPlaceholderChange({
           date: state.startDate,
           hour: state.startHour,
+          minutes: state.startMinutes,
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
@@ -868,41 +871,121 @@ Rescheduled: ${data.reason}`.trim() :
               </div>
 
               {/* Placeholder event overlay - shows ghost event during creation */}
-              {placeholderEvent && (
-                <div
-                  className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0"
-                  style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
-                >
-                  {/* Spacer for time column */}
-                  <div className="border-r border-transparent" />
+              {placeholderEvent && (() => {
+                const isMultiDay = placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date
 
-                  {/* Render placeholder in the correct day column */}
-                  {weekDays.map(day => {
-                    const dayDate = format(day, 'yyyy-MM-dd')
-                    const isPlaceholderDay = dayDate === placeholderEvent.date
+                if (isMultiDay) {
+                  // Multi-day placeholder: span across columns like multi-day events
+                  const startDate = new Date(placeholderEvent.date)
+                  const endDate = new Date(placeholderEvent.endDate!)
 
-                    return (
+                  // Find start and end day indices in the week
+                  let startDayIndex = 0
+                  let endDayIndex = 6
+
+                  for (let i = 0; i < 7; i++) {
+                    if (isSameDay(weekDays[i], startDate)) {
+                      startDayIndex = i
+                      break
+                    } else if (weekDays[i] > startDate) {
+                      startDayIndex = 0
+                      break
+                    }
+                  }
+
+                  for (let i = 6; i >= 0; i--) {
+                    if (isSameDay(weekDays[i], endDate)) {
+                      endDayIndex = i
+                      break
+                    } else if (weekDays[i] < endDate) {
+                      endDayIndex = 6
+                      break
+                    }
+                  }
+
+                  // Clamp to week bounds
+                  if (startDate < weekDays[0]) startDayIndex = 0
+                  if (endDate > weekDays[6]) endDayIndex = 6
+
+                  // Calculate grid columns (add 2 for time column offset)
+                  const gridColumnStart = startDayIndex + 2
+                  const gridColumnEnd = endDayIndex + 3
+
+                  // Calculate vertical position
+                  const top = (placeholderEvent.hour * PIXELS_PER_HOUR) + (((placeholderEvent.minutes || 0) / 60) * PIXELS_PER_HOUR)
+                  const height = (placeholderEvent.duration / 60) * PIXELS_PER_HOUR
+
+                  return (
+                    <div
+                      className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0 pointer-events-none"
+                      style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+                    >
                       <div
-                        key={`placeholder-${dayDate}`}
-                        className="relative border-r border-transparent"
+                        style={{
+                          position: 'absolute',
+                          top: `${top}px`,
+                          height: `${Math.max(height, 20)}px`,
+                          gridColumnStart,
+                          gridColumnEnd,
+                          left: '2px',
+                          right: '2px',
+                          zIndex: 25
+                        }}
                       >
-                        {isPlaceholderDay && (
-                          <PlaceholderEvent
-                            date={placeholderEvent.date}
-                            hour={placeholderEvent.hour}
-                            duration={placeholderEvent.duration}
-                            title={placeholderEvent.title}
-                            pixelsPerHour={PIXELS_PER_HOUR}
-                            endDate={placeholderEvent.endDate}
-                            endHour={placeholderEvent.endHour}
-                            isMultiDay={placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date}
-                          />
-                        )}
+                        <PlaceholderEvent
+                          date={placeholderEvent.date}
+                          hour={placeholderEvent.hour}
+                          minutes={placeholderEvent.minutes}
+                          duration={placeholderEvent.duration}
+                          title={placeholderEvent.title}
+                          pixelsPerHour={PIXELS_PER_HOUR}
+                          endDate={placeholderEvent.endDate}
+                          endHour={placeholderEvent.endHour}
+                          isMultiDay={true}
+                        />
                       </div>
-                    )
-                  })}
-                </div>
-              )}
+                    </div>
+                  )
+                } else {
+                  // Single-day placeholder: render in specific day column
+                  return (
+                    <div
+                      className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0"
+                      style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+                    >
+                      {/* Spacer for time column */}
+                      <div className="border-r border-transparent" />
+
+                      {/* Render placeholder in the correct day column */}
+                      {weekDays.map(day => {
+                        const dayDate = format(day, 'yyyy-MM-dd')
+                        const isPlaceholderDay = dayDate === placeholderEvent.date
+
+                        return (
+                          <div
+                            key={`placeholder-${dayDate}`}
+                            className="relative border-r border-transparent"
+                          >
+                            {isPlaceholderDay && (
+                              <PlaceholderEvent
+                                date={placeholderEvent.date}
+                                hour={placeholderEvent.hour}
+                                minutes={placeholderEvent.minutes}
+                                duration={placeholderEvent.duration}
+                                title={placeholderEvent.title}
+                                pixelsPerHour={PIXELS_PER_HOUR}
+                                endDate={placeholderEvent.endDate}
+                                endHour={placeholderEvent.endHour}
+                                isMultiDay={false}
+                              />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                }
+              })()}
             </div>
           </div>
         </div>
