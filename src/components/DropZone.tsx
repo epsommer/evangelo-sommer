@@ -262,7 +262,6 @@ const DropZone: React.FC<DropZoneProps> = ({
       data-drop-hour={hour.toString()}
       className={`
         relative transition-all duration-200 ease-in-out h-full overflow-visible
-        ${compact ? 'min-h-[40px]' : 'min-h-[60px]'}
         ${shouldShowContent ? 'opacity-100' : 'opacity-0'}
         ${isActiveDropZone && isValidDropTarget ?
           'bg-tactical-gold-light border-2 border-tactical-gold shadow-md scale-105' :
