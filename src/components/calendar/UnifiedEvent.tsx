@@ -12,7 +12,7 @@ import { ResizeHandle as HandleType } from '@/utils/calendar/resizeCalculations'
 
 export interface UnifiedEventProps {
   event: UnifiedEventType
-  view: 'day' | 'week' | 'month' | 'year'
+  view: 'day' | 'week' | 'month'
   onResize?: (eventId: string, newStart: Date, newEnd: Date) => void
   onDrag?: (eventId: string, newStart: Date) => void
   onClick?: (event: UnifiedEventType) => void
@@ -26,12 +26,12 @@ export interface UnifiedEventProps {
 /**
  * UnifiedEvent Component
  *
- * A unified event component that adapts to different calendar views (day, week, month, year)
+ * A unified event component that adapts to different calendar views (day, week, month)
  * with smooth Framer Motion animations for drag and resize operations.
  *
  * Features:
  * - Framer Motion-powered drag and resize
- * - View-specific rendering (day/week/month/year)
+ * - View-specific rendering (day/week/month)
  * - Resize handles (top/bottom for day/week, edges for multi-day)
  * - Smooth animations and transitions
  * - Conflict detection and visual indicators
@@ -132,18 +132,6 @@ const UnifiedEvent: React.FC<UnifiedEventProps> = ({
   }
 
   // Render based on view
-  if (view === 'year') {
-    // Year view: Simple dot indicator
-    return (
-      <motion.div
-        className="w-2 h-2 rounded-full bg-accent"
-        whileHover={{ scale: 1.3 }}
-        onClick={() => onClick?.(event)}
-        title={`${event.title} - ${formatEventTime()}`}
-      />
-    )
-  }
-
   if (view === 'month') {
     // Month view: Compact event card
     return (
@@ -182,7 +170,7 @@ const UnifiedEvent: React.FC<UnifiedEventProps> = ({
   return (
     <motion.div
       ref={containerRef}
-      drag={!isResizing && view !== 'year'}
+      drag={!isResizing}
       dragMomentum={false}
       dragElastic={0.1}
       dragConstraints={containerRef.current?.parentElement || undefined}

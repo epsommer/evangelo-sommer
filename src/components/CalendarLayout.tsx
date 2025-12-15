@@ -7,15 +7,21 @@ import { UnifiedEvent } from '@/components/EventCreationModal'
 interface CalendarLayoutProps {
   children: React.ReactNode
   selectedDate: Date
-  currentView: 'day' | 'week' | 'month' | 'year'
+  currentView: 'day' | 'week' | 'month'
   events: UnifiedEvent[]
   onDateSelect: (date: Date) => void
-  onViewChange: (view: 'day' | 'week' | 'month' | 'year') => void
+  onViewChange: (view: 'day' | 'week' | 'month') => void
   onEventCreate?: (eventData: UnifiedEvent) => void
   onRefreshTrigger?: () => void
   isEventCreationMode?: boolean
   initialEventTime?: string
+  initialEventDate?: Date
   onExitEventCreation?: () => void
+  selectedEvent?: UnifiedEvent | null
+  onEventEdit?: (event: UnifiedEvent) => void
+  onEventDelete?: (eventId: string) => void
+  onExitEventDetails?: () => void
+  onFormChange?: (data: { title?: string; date?: string; startTime?: string; duration?: number }) => void
 }
 
 /**
@@ -29,6 +35,7 @@ interface CalendarLayoutProps {
  * The sidebar shows different content based on mode:
  * - Default: Mini calendar, mission objectives, upcoming events
  * - Event creation mode: Inline event creation form (to be added in future prompt)
+ * - Event details mode: Shows detailed information about a selected event
  */
 const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   children,
@@ -41,7 +48,13 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   onRefreshTrigger,
   isEventCreationMode = false,
   initialEventTime,
-  onExitEventCreation
+  initialEventDate,
+  onExitEventCreation,
+  selectedEvent = null,
+  onEventEdit,
+  onEventDelete,
+  onExitEventDetails,
+  onFormChange
 }) => {
   return (
     <div className="flex h-full">
@@ -61,7 +74,13 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
           events={events}
           isEventCreationMode={isEventCreationMode}
           initialEventTime={initialEventTime}
+          initialEventDate={initialEventDate}
           onExitEventCreation={onExitEventCreation}
+          selectedEvent={selectedEvent}
+          onEventEdit={onEventEdit}
+          onEventDelete={onEventDelete}
+          onExitEventDetails={onExitEventDetails}
+          onFormChange={onFormChange}
         />
       </aside>
     </div>

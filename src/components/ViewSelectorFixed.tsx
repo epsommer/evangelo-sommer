@@ -25,12 +25,6 @@ const VIEW_CONFIGS = {
     description: 'Monthly calendar',
     category: 'calendar'
   },
-  year: {
-    label: 'Year',
-    icon: Grid3x3,
-    description: 'Year overview',
-    category: 'calendar'
-  },
   agenda: {
     label: 'Mission Objectives',
     icon: List,
@@ -39,7 +33,7 @@ const VIEW_CONFIGS = {
   },
 } as const
 
-const CALENDAR_VIEWS: TimeManagerView[] = ['day', 'week', 'month', 'year']
+const CALENDAR_VIEWS: TimeManagerView[] = ['day', 'week', 'month']
 
 interface ViewSelectorProps {
   showTitle?: boolean
@@ -81,8 +75,6 @@ const ViewSelectorFixed: React.FC<ViewSelectorProps> = ({
         return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`
       case 'month':
         return format(date, 'MMMM yyyy')
-      case 'year':
-        return format(date, 'yyyy')
       default:
         return format(date, 'MMMM yyyy')
     }
@@ -141,8 +133,6 @@ const ViewSelectorFixed: React.FC<ViewSelectorProps> = ({
         return 'This Week'
       case 'month':
         return 'This Month'
-      case 'year':
-        return 'This Year'
       default:
         return 'Today'
     }
@@ -156,8 +146,6 @@ const ViewSelectorFixed: React.FC<ViewSelectorProps> = ({
         return { previous: 'Last Week', next: 'Next Week' }
       case 'month':
         return { previous: 'Last Month', next: 'Next Month' }
-      case 'year':
-        return { previous: 'Last Year', next: 'Next Year' }
       default:
         return { previous: 'Previous', next: 'Next' }
     }

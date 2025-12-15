@@ -12,10 +12,13 @@ interface DropZoneProps {
   isOccupied?: boolean
   events?: UnifiedEvent[]
   onTimeSlotClick?: (date: Date, hour: number) => void
+  onTimeSlotDoubleClick?: (date: Date, hour: number) => void
+  onMouseDownOnSlot?: (e: React.MouseEvent, date: string, hour: number, dayIndex: number) => void
   className?: string
   children?: React.ReactNode
   showAlways?: boolean
   compact?: boolean
+  dayIndex?: number // Day of week index (0-6 for Sun-Sat)
 }
 
 const DropZone: React.FC<DropZoneProps> = ({
@@ -24,14 +27,18 @@ const DropZone: React.FC<DropZoneProps> = ({
   isOccupied = false,
   events = [],
   onTimeSlotClick,
+  onTimeSlotDoubleClick,
+  onMouseDownOnSlot,
   className = '',
   children,
   showAlways = false,
-  compact = false
+  compact = false,
+  dayIndex = 0
 }) => {
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
   const [isDraggedOver, setIsDraggedOver] = useState(false)
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null)
   
   const {
     dragState,
@@ -114,7 +121,19 @@ const DropZone: React.FC<DropZoneProps> = ({
     // The actual drop logic is handled in the DragDropContext
   }
 
-  // Handle click to create new event
+  // Handle mousedown to track drag-on-double-click
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't trigger if clicking on an event
+    const target = e.target as HTMLElement
+    const clickedOnEvent = target.closest('[data-event-block]') || target.closest('.group.cursor-pointer')
+
+    if (!dragState.isDragging && !clickedOnEvent && onMouseDownOnSlot) {
+      console.log('🖱️ DROPZONE MOUSEDOWN:', { hour, date, dayIndex })
+      onMouseDownOnSlot(e, date, hour, dayIndex)
+    }
+  }
+
+  // Handle click to create new event (with double-click detection)
   const handleClick = (e: React.MouseEvent) => {
     console.log('🖱️ DROPZONE CLICK:', {
       hour,
@@ -131,11 +150,40 @@ const DropZone: React.FC<DropZoneProps> = ({
     const target = e.target as HTMLElement
     const clickedOnEvent = target.closest('[data-event-block]') || target.closest('.group.cursor-pointer')
 
-    if (!dragState.isDragging && onTimeSlotClick && !clickedOnEvent) {
+    if (!dragState.isDragging && !clickedOnEvent) {
       const clickDate = new Date(date + 'T00:00:00')
-      onTimeSlotClick(clickDate, hour)
+
+      // Check if this is a double-click by checking if there's a pending single-click
+      if (clickTimeout) {
+        // This is a double-click - clear the single-click timeout and call double-click handler
+        clearTimeout(clickTimeout)
+        setClickTimeout(null)
+        console.log('🖱️ DROPZONE DOUBLE-CLICK detected')
+        if (onTimeSlotDoubleClick) {
+          onTimeSlotDoubleClick(clickDate, hour)
+        }
+      } else {
+        // This might be a single-click - set a timeout to call single-click handler
+        const timeout = setTimeout(() => {
+          console.log('🖱️ DROPZONE SINGLE-CLICK confirmed')
+          if (onTimeSlotClick) {
+            onTimeSlotClick(clickDate, hour)
+          }
+          setClickTimeout(null)
+        }, 300) // 300ms window for double-click detection
+        setClickTimeout(timeout)
+      }
     }
   }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (clickTimeout) {
+        clearTimeout(clickTimeout)
+      }
+    }
+  }, [clickTimeout])
 
   // Handle mouse events for hover feedback
   const handleMouseEnter = (e: React.MouseEvent) => {
@@ -242,6 +290,7 @@ const DropZone: React.FC<DropZoneProps> = ({
       onDrop={shouldAllowDragEvents ? handleDrop : undefined}
       onMouseEnter={shouldBeInteractive && !children ? handleMouseEnter : undefined}
       onMouseLeave={shouldBeInteractive && !children ? handleMouseLeave : undefined}
+      onMouseDown={shouldBeInteractive && !children ? handleMouseDown : undefined}
       onClick={shouldBeInteractive && !children ? handleClick : undefined}
     >
       {/* Content area */}

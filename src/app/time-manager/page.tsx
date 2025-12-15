@@ -2,13 +2,13 @@
 
 import React, { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { format } from 'date-fns'
 import CRMLayout from '@/components/CRMLayout'
 import CalendarLayout from '@/components/CalendarLayout'
 import UnifiedDailyPlanner from '@/components/UnifiedDailyPlanner'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
 import TimeManagerNavigation from '@/components/TimeManagerNavigation'
 import WeekView from '@/components/WeekView'
-import YearView from '@/components/YearView'
 import EventCreationModal, { UnifiedEvent } from '@/components/EventCreationModal'
 import EventDetailsModal from '@/components/EventDetailsModal'
 import ConflictResolutionModal from '@/components/ConflictResolutionModal'
@@ -34,6 +34,20 @@ const TimeManagerContent = () => {
   // Event creation mode state (for sidebar integration)
   const [isEventCreationMode, setIsEventCreationMode] = useState(false)
   const [eventCreationTime, setEventCreationTime] = useState<string | null>(null)
+  const [eventCreationDate, setEventCreationDate] = useState<Date | null>(null)
+
+  // Event details mode state (for sidebar integration)
+  const [sidebarSelectedEvent, setSidebarSelectedEvent] = useState<UnifiedEvent | null>(null)
+
+  // Placeholder event state (visual ghost event during creation)
+  const [placeholderEvent, setPlaceholderEvent] = useState<{
+    date: string
+    hour: number
+    duration: number
+    title?: string
+    endDate?: string
+    endHour?: number
+  } | null>(null)
 
   // Conflict resolution state
   const [showConflictModal, setShowConflictModal] = useState(false)
@@ -171,6 +185,7 @@ const TimeManagerContent = () => {
         // No conflicts, create event directly
         await createEvent(eventData)
         setShowEventModal(false)
+        setPlaceholderEvent(null) // Clear placeholder after event is created
         console.log('✅ Event created:', eventData.title)
 
         // Trigger refresh of all calendar views
@@ -187,8 +202,17 @@ const TimeManagerContent = () => {
   }
 
   const handleEventView = (event: UnifiedEvent) => {
-    setSelectedEvent(event)
-    setShowDetailsModal(true)
+    // Show event details in sidebar instead of modal for week view
+    if (state.currentView === 'week') {
+      setSidebarSelectedEvent(event)
+      // Clear event creation mode if active
+      setIsEventCreationMode(false)
+      setEventCreationTime(null)
+    } else {
+      // Use modal for other views
+      setSelectedEvent(event)
+      setShowDetailsModal(true)
+    }
   }
 
   const handleEventDelete = async (eventId: string) => {
@@ -279,6 +303,7 @@ const TimeManagerContent = () => {
 
     // Set sidebar to event creation mode
     setEventCreationTime(timeString)
+    setEventCreationDate(date)
     setIsEventCreationMode(true)
 
     // Also set modal state as fallback
@@ -287,9 +312,100 @@ const TimeManagerContent = () => {
     setEditingEvent(null)
   }
 
+  const handleTimeSlotDoubleClick = (date: Date, hour: number) => {
+    console.log('🖱️ TimeManager: Time Slot Double-Clicked', { date, hour })
+
+    const timeString = `${hour.toString().padStart(2, '0')}:00`
+    const dateString = format(date, 'yyyy-MM-dd')
+
+    // Close event details if open
+    setSidebarSelectedEvent(null)
+
+    // Set placeholder event (ghost box in calendar)
+    setPlaceholderEvent({
+      date: dateString,
+      hour: hour,
+      duration: 60, // Default 1 hour
+      title: undefined
+    })
+
+    // Set sidebar to event creation mode
+    setEventCreationTime(timeString)
+    setEventCreationDate(date)
+    setIsEventCreationMode(true)
+  }
+
   const handleExitEventCreation = () => {
     setIsEventCreationMode(false)
     setEventCreationTime(null)
+    setEventCreationDate(null)
+    setPlaceholderEvent(null) // Clear placeholder when exiting creation mode
+  }
+
+  const handleExitEventDetails = () => {
+    setSidebarSelectedEvent(null)
+  }
+
+  const handleFormChange = (data: { title?: string; date?: string; startTime?: string; duration?: number }) => {
+    // Update placeholder event when sidebar form changes
+    if (placeholderEvent && data.date && data.startTime !== undefined && data.duration !== undefined) {
+      const hour = parseInt(data.startTime.split(':')[0])
+      setPlaceholderEvent({
+        ...placeholderEvent,
+        date: data.date,
+        hour: hour,
+        duration: data.duration,
+        title: data.title
+      })
+    }
+  }
+
+  const handlePlaceholderChange = (placeholder: {
+    date: string
+    hour: number
+    duration: number
+    title?: string
+    endDate?: string
+    endHour?: number
+  } | null) => {
+    console.log('🖱️ [TimeManager] Placeholder changed:', placeholder)
+    setPlaceholderEvent(placeholder)
+
+    // Also update the sidebar form to reflect drag changes
+    if (placeholder && isEventCreationMode) {
+      const startTime = `${placeholder.hour.toString().padStart(2, '0')}:00`
+      const date = new Date(placeholder.date + 'T00:00:00')
+
+      setEventCreationTime(startTime)
+      setEventCreationDate(date)
+
+      console.log('🖱️ [TimeManager] Updated sidebar form:', {
+        date: placeholder.date,
+        startTime,
+        duration: placeholder.duration,
+        endDate: placeholder.endDate,
+        endHour: placeholder.endHour
+      })
+    }
+  }
+
+  const handleSidebarEventEdit = (event: UnifiedEvent) => {
+    // Close sidebar event details
+    setSidebarSelectedEvent(null)
+    // Open edit modal
+    setEditingEvent(event)
+    setShowEventModal(true)
+  }
+
+  const handleSidebarEventDelete = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId)
+      setSidebarSelectedEvent(null)
+      setRefreshTrigger(prev => prev + 1) // Force UI refresh after deletion
+      console.log('✅ Event deleted from sidebar:', eventId)
+    } catch (error) {
+      console.error('❌ Error deleting event from sidebar:', error)
+    }
   }
 
   // Conflict resolution handlers
@@ -578,12 +694,16 @@ const TimeManagerContent = () => {
                 }
               }}
               onTimeSlotClick={handleTimeSlotClick}
+              onTimeSlotDoubleClick={handleTimeSlotDoubleClick}
               enableEventCreation={true}
               onTaskEdit={handleTaskEdit}
               onTaskDelete={handleTaskDelete}
               onTaskStatusChange={handleTaskStatusChange}
               onDayNavigation={handleDayClick}
               refreshTrigger={refreshTrigger}
+              useExternalEventDetailsHandler={true}
+              placeholderEvent={placeholderEvent}
+              onPlaceholderChange={handlePlaceholderChange}
             />
           )
         case 'month':
@@ -596,14 +716,6 @@ const TimeManagerContent = () => {
               onEventView={handleEventView}
               onEventDelete={handleTaskDelete}
               onEventStatusChange={handleTaskStatusChange}
-              refreshTrigger={refreshTrigger}
-            />
-          )
-        case 'year':
-          return (
-            <YearView
-              onMonthClick={(date) => console.log('Month clicked:', date)}
-              onDayClick={handleDayClick}
               refreshTrigger={refreshTrigger}
             />
           )
@@ -636,7 +748,13 @@ const TimeManagerContent = () => {
         onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
         isEventCreationMode={isEventCreationMode}
         initialEventTime={eventCreationTime || undefined}
+        initialEventDate={eventCreationDate || undefined}
         onExitEventCreation={handleExitEventCreation}
+        selectedEvent={sidebarSelectedEvent}
+        onEventEdit={handleSidebarEventEdit}
+        onEventDelete={handleSidebarEventDelete}
+        onExitEventDetails={handleExitEventDetails}
+        onFormChange={handleFormChange}
       >
         {viewContent}
       </CalendarLayout>

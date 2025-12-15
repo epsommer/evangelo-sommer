@@ -54,9 +54,12 @@ export interface CalendarEventProps {
   onDragStart?: (data: DragData) => void
   onDragEnd?: (data: DragData, dropZone: DropZoneData | null) => void
   onResizeStart?: (event: UnifiedEvent, handle: HandleType) => void
-  onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
+  onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => void
   className?: string
   style?: React.CSSProperties
+  // Grid context for multi-day resize in week view
+  gridContainerRef?: React.RefObject<HTMLElement | null>
+  weekStartDate?: Date
 }
 
 /**
@@ -87,10 +90,14 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   onResizeStart,
   onResizeEnd,
   className = '',
-  style = {}
+  style = {},
+  gridContainerRef,
+  weekStartDate
 }) => {
   const eventRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
+  // Track when resize just ended to prevent click from firing
+  const resizeJustEndedRef = useRef(false)
 
   // Get DragDrop context - wrapped in try/catch for components outside provider
   let dragDropContext: ReturnType<typeof useDragDrop> | null = null
@@ -100,6 +107,9 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     // Component is used outside DragDropProvider
   }
 
+  // Derive viewMode from currentDate/currentHour if not provided
+  const effectiveViewMode = viewMode || 'day'
+
   // Use resize hook for smooth resize behavior
   // Disable auto-persistence - let parent handle it via onResizeEnd callback and confirmation modal
   const {
@@ -107,31 +117,44 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     isResizing: hookIsResizing,
     handleResizeStart: startResize,
     previewStyles,
-    mousePosition
+    mousePosition,
+    previewDaySpan,
+    isPreviewMultiDay
   } = useEventResize({
     pixelsPerHour,
     snapMinutes: 15,
     enablePersistence: false, // Parent handles persistence via confirmation modal
+    gridContainerRef,
+    weekStartDate,
+    viewMode: effectiveViewMode,
     onResizeStart: (evt, handle) => {
       onResizeStart?.(evt, handle)
     },
-    onResizeEnd: (evt, newStart, newEnd) => {
-      onResizeEnd?.(evt, newStart, newEnd)
+    onResizeEnd: (evt, newStart, newEnd, isMultiDay) => {
+      // Set flag to prevent click handler from firing after resize
+      resizeJustEndedRef.current = true
+      // Clear the flag after a short delay to allow normal clicks again
+      setTimeout(() => {
+        resizeJustEndedRef.current = false
+      }, 100)
+      onResizeEnd?.(evt, newStart, newEnd, isMultiDay)
     }
   })
 
   const isResizing = hookIsResizing || externalIsResizing
 
-  // Derive viewMode from currentDate/currentHour if not provided
-  const effectiveViewMode = viewMode || 'day'
-
   // Determine compact mode based on view
   const isEffectivelyCompact = isCompact || effectiveViewMode === 'month'
 
   // Calculate dimensions based on view mode and overlap position
+  // Height is controlled by parent container via absolute positioning
   const eventStyle: React.CSSProperties = {
     ...style,
-    ...(isResizing ? previewStyles : {})
+    ...(isResizing ? previewStyles : {}),
+    // Fill parent container height (parent controls actual size)
+    ...(effectiveViewMode !== 'month' && !isResizing ? {
+      height: '100%'
+    } : {})
   }
 
   // Apply overlap positioning if provided
@@ -248,39 +271,36 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     } as React.CSSProperties
   }
 
-  // Format time display
+  // Format time display - shows preview times during resize
   const formatEventTime = (startDateTime: string, duration: number): string => {
-    const start = parseISO(startDateTime)
+    // During resize, show the preview times instead of original times
+    if (isResizing && resizeState.previewStart && resizeState.previewEnd) {
+      const previewStart = parseISO(resizeState.previewStart)
+      const previewEnd = parseISO(resizeState.previewEnd)
 
-    // Debug logging to diagnose time display issues
-    console.log('🕐 [CalendarEvent] formatEventTime debug:', {
-      eventTitle: event.title,
-      startDateTime,
-      duration,
-      eventEndDateTime: event.endDateTime,
-      parsedStart: start.toISOString(),
-      parsedStartLocal: format(start, 'yyyy-MM-dd HH:mm:ss')
-    })
+      if (effectiveViewMode === 'month') {
+        return format(previewStart, 'h:mm a')
+      }
+
+      return `${format(previewStart, 'h:mm a')} - ${format(previewEnd, 'h:mm a')}`
+    }
+
+    const start = parseISO(startDateTime)
 
     // Safeguard: if duration is unreasonably large (>24 hours), use endDateTime or default to 60 min
     let effectiveDuration = duration
     if (duration > 1440) { // 1440 minutes = 24 hours
-      console.warn(`⚠️ [CalendarEvent] Unreasonable duration detected: ${duration} minutes for event "${event.title}"`)
-
       // Try to calculate from endDateTime if available
       if (event.endDateTime) {
         const endFromDb = parseISO(event.endDateTime)
         const calculatedDuration = Math.round((endFromDb.getTime() - start.getTime()) / (1000 * 60))
         if (calculatedDuration > 0 && calculatedDuration <= 1440) {
           effectiveDuration = calculatedDuration
-          console.log(`✅ [CalendarEvent] Using calculated duration from endDateTime: ${effectiveDuration} minutes`)
         } else {
           effectiveDuration = 60 // Default fallback
-          console.log(`⚠️ [CalendarEvent] endDateTime calculation also invalid (${calculatedDuration}), using default 60 minutes`)
         }
       } else {
         effectiveDuration = 60 // Default fallback
-        console.log(`⚠️ [CalendarEvent] No endDateTime available, using default 60 minutes`)
       }
     }
 
@@ -295,6 +315,13 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
 
   // Handle click
   const handleClick = useCallback((e: React.MouseEvent) => {
+    // Don't trigger click if resize just ended
+    if (resizeJustEndedRef.current) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+
     const target = e.target as HTMLElement
     const isConflictButton = target.closest('button[class*="conflict"]')
     const isDragHandle = target.closest('[data-drag-handle]')
@@ -431,7 +458,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Use a wrapper div for HTML5 drag, motion.div for animations
   return (
     <div
-      className="group overflow-visible relative"
+      className="group overflow-visible relative h-full"
       draggable={effectiveViewMode !== 'month'}
       onDragStart={handleDragStartHTML5}
       onDragEnd={handleDragEndHTML5}
@@ -441,7 +468,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         data-event-block="true"
         data-event-id={event.id}
         className={`
-          relative cursor-pointer select-none
+          relative cursor-pointer select-none h-full
           rounded-r-md shadow-sm transition-colors
           ${getEventTypeClass(event)}
           ${isEffectivelyCompact ? 'p-2' : 'p-3'}

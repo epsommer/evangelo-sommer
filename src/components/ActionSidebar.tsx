@@ -36,17 +36,25 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { UnifiedEvent } from '@/components/EventCreationModal'
 import YearDayIndicator from '@/components/calendar/YearDayIndicator'
+import EventDetailsPanel from '@/components/sidebar/EventDetailsPanel'
+import EventCreationForm from '@/components/sidebar/EventCreationForm'
 
 interface ActionSidebarProps {
   selectedDate: Date
-  currentView: 'day' | 'week' | 'month' | 'year'
+  currentView: 'day' | 'week' | 'month'
   onDateSelect: (date: Date) => void
   onViewChange?: (view: 'day' | 'week') => void
   onEventCreate?: (eventData: UnifiedEvent) => void
   events: UnifiedEvent[]
   isEventCreationMode?: boolean
   initialEventTime?: string
+  initialEventDate?: Date
   onExitEventCreation?: () => void
+  selectedEvent?: UnifiedEvent | null
+  onEventEdit?: (event: UnifiedEvent) => void
+  onEventDelete?: (eventId: string) => void
+  onExitEventDetails?: () => void
+  onFormChange?: (data: { title?: string; date?: string; startTime?: string; duration?: number }) => void
 }
 
 interface MissionObjective {
@@ -79,7 +87,13 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   events,
   isEventCreationMode = false,
   initialEventTime,
-  onExitEventCreation
+  initialEventDate,
+  onExitEventCreation,
+  selectedEvent = null,
+  onEventEdit,
+  onEventDelete,
+  onExitEventDetails,
+  onFormChange
 }) => {
   const today = new Date()
   const [displayedMonth, setDisplayedMonth] = useState<Date>(selectedDate)
@@ -150,7 +164,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
 
   const handleDayClick = (date: Date) => {
     onDateSelect(date)
-    if (currentView === 'month' || currentView === 'year') {
+    if (currentView === 'month') {
       onViewChange?.('day')
     }
   }
@@ -750,7 +764,20 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
     )
   }
 
-  // Main render - show event creation mode or default panels
+  // Main render - show event details, event creation mode, or default panels
+  if (selectedEvent) {
+    return (
+      <div className="neo-card h-full overflow-hidden">
+        <EventDetailsPanel
+          event={selectedEvent}
+          onClose={onExitEventDetails || (() => {})}
+          onEdit={onEventEdit}
+          onDelete={onEventDelete}
+        />
+      </div>
+    )
+  }
+
   if (isEventCreationMode) {
     return (
       <div className="neo-card h-full overflow-y-auto">
@@ -769,11 +796,24 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
           </div>
         </div>
         <div className="p-4">
-          <div className="text-sm text-muted-foreground font-primary text-center py-8">
-            Event creation form will be rendered here inline.
-            <br />
-            (Integration in next prompt)
-          </div>
+          <EventCreationForm
+            onSave={(eventData) => {
+              if (onEventCreate) {
+                onEventCreate(eventData)
+              }
+              if (onExitEventCreation) {
+                onExitEventCreation()
+              }
+            }}
+            onCancel={() => {
+              if (onExitEventCreation) {
+                onExitEventCreation()
+              }
+            }}
+            initialDate={initialEventDate || selectedDate}
+            initialTime={initialEventTime}
+            onFormChange={onFormChange}
+          />
         </div>
       </div>
     )

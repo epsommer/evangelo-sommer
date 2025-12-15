@@ -13,10 +13,9 @@ const VIEW_CONFIGS: Record<TimeManagerView, { label: string; icon: typeof Clock 
   day: { label: 'Day', icon: Clock },
   week: { label: 'Week', icon: CalendarDays },
   month: { label: 'Month', icon: Calendar },
-  year: { label: 'Year', icon: Grid3x3 },
 }
 
-const CALENDAR_VIEWS: TimeManagerView[] = ['day', 'week', 'month', 'year']
+const CALENDAR_VIEWS: TimeManagerView[] = ['day', 'week', 'month']
 
 const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({ 
   showTitle = true 
@@ -58,8 +57,6 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
         }
       case 'month':
         return format(selectedDate, 'MMMM yyyy')
-      case 'year':
-        return format(selectedDate, 'yyyy')
       default:
         return format(selectedDate, 'MMMM yyyy')
     }

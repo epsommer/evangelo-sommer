@@ -19,7 +19,9 @@ import DropZone from '@/components/DropZone'
 import RescheduleConfirmationModal from '@/components/RescheduleConfirmationModal'
 import DragVisualFeedback from '@/components/DragVisualFeedback'
 import EventDetailsModal from '@/components/EventDetailsModal'
+import PlaceholderEvent from '@/components/calendar/PlaceholderEvent'
 import { calculateDragDropTimes } from '@/utils/calendar'
+import { useEventCreationDrag, DragState } from '@/hooks/useEventCreationDrag'
 
 interface ScheduledService {
   id: string
@@ -40,26 +42,43 @@ interface RescheduleData {
   reason?: string
 }
 
+interface PlaceholderEventData {
+  date: string // 'yyyy-MM-dd' format
+  hour: number // 0-23
+  duration: number // in minutes
+  title?: string // optional, from form input
+  endDate?: string // optional, for multi-day events
+  endHour?: number // optional, for multi-day events
+}
+
 interface WeekViewProps {
   onTaskClick?: (task: DailyTask | ScheduledService) => void
   onTimeSlotClick?: (date: Date, hour: number) => void
+  onTimeSlotDoubleClick?: (date: Date, hour: number) => void
   enableEventCreation?: boolean
   onTaskEdit?: (task: DailyTask | ScheduledService) => void
   onTaskDelete?: (taskId: string) => void
   onTaskStatusChange?: (taskId: string, status: string) => void
   onDayNavigation?: (date: Date) => void
   refreshTrigger?: number
+  useExternalEventDetailsHandler?: boolean
+  placeholderEvent?: PlaceholderEventData | null
+  onPlaceholderChange?: (placeholder: PlaceholderEventData | null) => void
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ 
-  onTaskClick, 
-  onTimeSlotClick, 
+const WeekView: React.FC<WeekViewProps> = ({
+  onTaskClick,
+  onTimeSlotClick,
+  onTimeSlotDoubleClick,
   enableEventCreation = true,
   onTaskEdit,
   onTaskDelete,
   onTaskStatusChange,
   onDayNavigation,
-  refreshTrigger 
+  refreshTrigger,
+  useExternalEventDetailsHandler = false,
+  placeholderEvent = null,
+  onPlaceholderChange
 }) => {
   const { state } = useViewManager()
   const { selectedDate, workingHours, displaySettings } = state
@@ -87,6 +106,46 @@ const WeekView: React.FC<WeekViewProps> = ({
     deleteEvent,
     getEventsForDate
   } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger })
+
+  // Generate week days starting from Sunday
+  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 })
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+
+  // Event creation drag hook
+  const {
+    dragState: creationDragState,
+    isDragging: isCreationDragging,
+    handleMouseDown: handleCreationMouseDown,
+    resetDrag: resetCreationDrag
+  } = useEventCreationDrag(eventsGridRef, weekStart, {
+    onDragMove: (state: DragState) => {
+      // Update placeholder event in real-time during drag
+      if (onPlaceholderChange) {
+        onPlaceholderChange({
+          date: state.startDate,
+          hour: state.startHour,
+          duration: state.duration,
+          title: placeholderEvent?.title,
+          endDate: state.currentDate,
+          endHour: state.currentHour
+        })
+      }
+    },
+    onDragEnd: (state: DragState) => {
+      console.log('🖱️ [WeekView] Drag ended, final state:', state)
+      // Final update to placeholder with drag result
+      if (onPlaceholderChange) {
+        onPlaceholderChange({
+          date: state.startDate,
+          hour: state.startHour,
+          duration: state.duration,
+          title: placeholderEvent?.title,
+          endDate: state.currentDate,
+          endHour: state.currentHour
+        })
+      }
+    }
+  })
 
   // Debug: log when events change
   useEffect(() => {
@@ -158,6 +217,25 @@ const WeekView: React.FC<WeekViewProps> = ({
 
     console.groupEnd()
   }
+
+  const handleTimeSlotDoubleClick = (date: Date, hour: number) => {
+    console.group('🕐 WeekView: Time Slot Double-Clicked')
+    console.log('Time slot double-clicked:', {
+      date: date.toISOString(),
+      hour: hour,
+      enableEventCreation: enableEventCreation
+    })
+
+    if (onTimeSlotDoubleClick) {
+      // Parent is managing double-click event creation (via sidebar)
+      console.log('Calling onTimeSlotDoubleClick callback')
+      onTimeSlotDoubleClick(date, hour)
+    } else {
+      console.log('No double-click handler provided')
+    }
+
+    console.groupEnd()
+  }
   
   const handleSaveEvent = async (eventData: UnifiedEvent) => {
     try {
@@ -204,7 +282,7 @@ const WeekView: React.FC<WeekViewProps> = ({
     setShowEventModal(true)
   }
 
-  // Handle showing event details modal
+  // Handle showing event details modal or calling external handler
   const handleShowEventDetails = (event: UnifiedEvent) => {
     console.group('🔍 WeekView: Show Event Details')
     console.log('Event clicked:', {
@@ -216,18 +294,23 @@ const WeekView: React.FC<WeekViewProps> = ({
       clientName: event.clientName,
       location: event.location
     })
-    console.log('Opening event details modal...')
-    
-    setEventDetailsModal({ isOpen: true, event })
-    
-    // Also call the original onTaskClick if provided for backward compatibility
-    if (onTaskClick) {
-      console.log('Calling original onTaskClick callback for backward compatibility')
+
+    if (useExternalEventDetailsHandler && onTaskClick) {
+      // Use external handler (e.g., show in sidebar)
+      console.log('Using external event details handler (sidebar)')
       onTaskClick(event as any)
     } else {
-      console.log('No onTaskClick callback provided')
+      // Use internal modal
+      console.log('Opening event details modal...')
+      setEventDetailsModal({ isOpen: true, event })
+
+      // Also call onTaskClick if provided for backward compatibility
+      if (onTaskClick) {
+        console.log('Calling original onTaskClick callback for backward compatibility')
+        onTaskClick(event as any)
+      }
     }
-    
+
     console.groupEnd()
   }
 
@@ -411,10 +494,6 @@ Rescheduled: ${data.reason}`.trim() :
       throw error
     }
   }
-
-  // Generate week days starting from Sunday
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 })
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
   // Fixed pixels per hour for the week view grid
   const PIXELS_PER_HOUR = 80
@@ -686,7 +765,7 @@ Rescheduled: ${data.reason}`.trim() :
                   </div>
 
                   {/* Day Columns - DropZones only (no events rendered inside) */}
-                  {weekDays.map(day => {
+                  {weekDays.map((day, dayIndex) => {
                     const events = getEventsForSlot(day, hour)
                     const isCurrentDay = isToday(day)
 
@@ -695,9 +774,12 @@ Rescheduled: ${data.reason}`.trim() :
                         key={`${day.toISOString()}-${hour}`}
                         date={format(day, 'yyyy-MM-dd')}
                         hour={hour}
+                        dayIndex={dayIndex}
                         isOccupied={events.length > 0}
                         events={events.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]}
                         onTimeSlotClick={handleTimeSlotClick}
+                        onTimeSlotDoubleClick={handleTimeSlotDoubleClick}
+                        onMouseDownOnSlot={handleCreationMouseDown}
                         className={`border-r border-border transition-colors ${
                           isCurrentDay ? 'bg-accent/20 border-l-2 border-accent' : 'bg-background hover:bg-card'
                         }`}
@@ -784,6 +866,43 @@ Rescheduled: ${data.reason}`.trim() :
                   </div>
                 ))}
               </div>
+
+              {/* Placeholder event overlay - shows ghost event during creation */}
+              {placeholderEvent && (
+                <div
+                  className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0"
+                  style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
+                >
+                  {/* Spacer for time column */}
+                  <div className="border-r border-transparent" />
+
+                  {/* Render placeholder in the correct day column */}
+                  {weekDays.map(day => {
+                    const dayDate = format(day, 'yyyy-MM-dd')
+                    const isPlaceholderDay = dayDate === placeholderEvent.date
+
+                    return (
+                      <div
+                        key={`placeholder-${dayDate}`}
+                        className="relative border-r border-transparent"
+                      >
+                        {isPlaceholderDay && (
+                          <PlaceholderEvent
+                            date={placeholderEvent.date}
+                            hour={placeholderEvent.hour}
+                            duration={placeholderEvent.duration}
+                            title={placeholderEvent.title}
+                            pixelsPerHour={PIXELS_PER_HOUR}
+                            endDate={placeholderEvent.endDate}
+                            endHour={placeholderEvent.endHour}
+                            isMultiDay={placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date}
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -818,14 +937,16 @@ Rescheduled: ${data.reason}`.trim() :
         rescheduleData={rescheduleData}
       />
       
-      {/* Event Details Modal */}
-      <EventDetailsModal
-        event={eventDetailsModal.event}
-        isOpen={eventDetailsModal.isOpen}
-        onClose={() => setEventDetailsModal({ isOpen: false, event: null })}
-        onEdit={handleEditFromDetails}
-        onDelete={handleDeleteFromDetails}
-      />
+      {/* Event Details Modal - Only show if not using external handler */}
+      {!useExternalEventDetailsHandler && (
+        <EventDetailsModal
+          event={eventDetailsModal.event}
+          isOpen={eventDetailsModal.isOpen}
+          onClose={() => setEventDetailsModal({ isOpen: false, event: null })}
+          onEdit={handleEditFromDetails}
+          onDelete={handleDeleteFromDetails}
+        />
+      )}
     </div>
     </DragDropProvider>
   )

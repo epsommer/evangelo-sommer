@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { CalendarView } from '@/types/scheduling'
 import { createLocalDate } from '@/lib/timezone-utils'
 
-export type TimeManagerView = 'day' | 'week' | 'month' | 'year'
+export type TimeManagerView = 'day' | 'week' | 'month'
 
 interface ViewManagerState {
   currentView: TimeManagerView
@@ -101,7 +101,7 @@ export const ViewManagerProvider: React.FC<ViewManagerProviderProps> = ({ childr
       const urlView = searchParams.get('view') as TimeManagerView
       const urlDate = searchParams.get('date')
       
-      if (urlView && ['day', 'week', 'month', 'year'].includes(urlView)) {
+      if (urlView && ['day', 'week', 'month'].includes(urlView)) {
         initialState.currentView = urlView
       }
       
@@ -227,9 +227,6 @@ export const ViewManagerProvider: React.FC<ViewManagerProviderProps> = ({ childr
             break
           case 'month':
             newDate.setMonth(newDate.getMonth() + multiplier)
-            break
-          case 'year':
-            newDate.setFullYear(newDate.getFullYear() + multiplier)
             break
         }
       }

@@ -69,8 +69,6 @@ const ViewSelectorDebug: React.FC = () => {
         return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`
       case 'month':
         return format(date, 'MMMM yyyy')
-      case 'year':
-        return format(date, 'yyyy')
       default:
         return format(date, 'MMMM yyyy')
     }
@@ -84,8 +82,6 @@ const ViewSelectorDebug: React.FC = () => {
         return { previous: 'Last Week', next: 'Next Week' }
       case 'month':
         return { previous: 'Last Month', next: 'Next Month' }
-      case 'year':
-        return { previous: 'Last Year', next: 'Next Year' }
       default:
         return { previous: 'Previous', next: 'Next' }
     }
@@ -99,8 +95,6 @@ const ViewSelectorDebug: React.FC = () => {
         return 'This Week'
       case 'month':
         return 'This Month'
-      case 'year':
-        return 'This Year'
       default:
         return 'Today'
     }
