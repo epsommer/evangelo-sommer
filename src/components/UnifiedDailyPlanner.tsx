@@ -40,6 +40,7 @@ interface MissionObjective {
 interface PlaceholderEventData {
   date: string // 'yyyy-MM-dd' format
   hour: number // 0-23
+  minutes?: number // 0-59, for precise positioning
   duration: number // in minutes
   title?: string // optional, from form input
   endDate?: string // optional, for multi-day events
@@ -119,6 +120,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
         onPlaceholderChange({
           date: state.startDate,
           hour: state.startHour,
+          minutes: state.startMinutes,
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
@@ -133,6 +135,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
         onPlaceholderChange({
           date: state.startDate,
           hour: state.startHour,
+          minutes: state.startMinutes,
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
@@ -573,6 +576,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
               <PlaceholderEvent
                 date={placeholderEvent.date}
                 hour={placeholderEvent.hour}
+                minutes={placeholderEvent.minutes}
                 duration={placeholderEvent.duration}
                 title={placeholderEvent.title}
                 pixelsPerHour={PIXELS_PER_HOUR}

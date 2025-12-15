@@ -7,6 +7,7 @@ import { Clock } from 'lucide-react'
 interface PlaceholderEventProps {
   date: string // 'yyyy-MM-dd' format
   hour: number // 0-23
+  minutes?: number // 0-59, for precise positioning
   duration?: number // in minutes, default 60
   title?: string // optional, from form input
   pixelsPerHour?: number // default 80
@@ -24,6 +25,7 @@ interface PlaceholderEventProps {
 const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
   date,
   hour,
+  minutes = 0,
   duration = 60,
   title,
   pixelsPerHour = 80,
@@ -31,15 +33,16 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
   endHour,
   isMultiDay = false
 }) => {
-  // Calculate position and height, clamped to 24-hour boundary
-  const top = hour * pixelsPerHour
+  // Calculate position and height with precise minute positioning
+  // Top position includes minutes offset for precise placement
+  const top = (hour * pixelsPerHour) + ((minutes / 60) * pixelsPerHour)
   const maxGridHeight = 24 * pixelsPerHour
   const rawHeight = (duration / 60) * pixelsPerHour
   // Clamp height so placeholder doesn't extend past midnight (24:00)
   const height = Math.min(rawHeight, maxGridHeight - top)
 
   // Calculate time range display
-  const startDateTime = `${date}T${hour.toString().padStart(2, '0')}:00:00`
+  const startDateTime = `${date}T${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`
   const start = parseISO(startDateTime)
   const end = addMinutes(start, duration)
 

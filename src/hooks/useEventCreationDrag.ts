@@ -128,6 +128,7 @@ export function useEventCreationDrag(
   const dragStartRef = useRef<{
     date: string
     hour: number
+    minutes: number // Precise minutes from click position
     dayIndex: number
     mouseY: number
     mouseX: number
@@ -169,10 +170,14 @@ export function useEventCreationDrag(
       const timeColumnWidth = totalWidth / 8 // 1 time column + 7 day columns
       const dayColumnWidth = (totalWidth - timeColumnWidth) / 7
 
-      // Store initial drag data
+      // Calculate precise start time from mouse Y position (not just the integer hour)
+      const initialTime = yToTime(e.clientY, rect.top, pixelsPerHourRef.current)
+
+      // Store initial drag data with precise time
       dragStartRef.current = {
         date,
-        hour,
+        hour: initialTime.hour,
+        minutes: initialTime.minutes, // Store precise minutes from click position
         dayIndex,
         mouseY: e.clientY,
         mouseX: e.clientX,
@@ -223,15 +228,16 @@ export function useEventCreationDrag(
       const currentDate = format(addDays(weekStartDateRef.current, currentDayIndex), 'yyyy-MM-dd')
 
       // Determine start and end based on drag direction
+      // Use precise minutes from initial click position
       let startDate = startData.date
       let startHour = startData.hour
-      let startMinutes = 0
+      let startMinutes = startData.minutes
       let endDate = currentDate
       let endHour = currentTime.hour
       let endMinutes = currentTime.minutes
 
       // Handle backward drag (swap start and end)
-      const startDateTime = new Date(`${startDate}T${startHour.toString().padStart(2, '0')}:00:00`)
+      const startDateTime = new Date(`${startDate}T${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}:00`)
       const endDateTime = new Date(`${endDate}T${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:00`)
 
       if (endDateTime < startDateTime) {

@@ -43,6 +43,7 @@ const TimeManagerContent = () => {
   const [placeholderEvent, setPlaceholderEvent] = useState<{
     date: string
     hour: number
+    minutes?: number // For precise positioning
     duration: number
     title?: string
     endDate?: string
