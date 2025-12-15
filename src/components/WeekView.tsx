@@ -876,40 +876,41 @@ Rescheduled: ${data.reason}`.trim() :
 
                 if (isMultiDay) {
                   // Multi-day placeholder: span across columns like multi-day events
-                  const startDate = new Date(placeholderEvent.date)
-                  const endDate = new Date(placeholderEvent.endDate!)
+                  const startDate = new Date(placeholderEvent.date + 'T00:00:00')
+                  const endDate = new Date(placeholderEvent.endDate! + 'T00:00:00')
 
                   // Find start and end day indices in the week
-                  let startDayIndex = 0
-                  let endDayIndex = 6
+                  let startDayIndex = -1
+                  let endDayIndex = -1
 
                   for (let i = 0; i < 7; i++) {
                     if (isSameDay(weekDays[i], startDate)) {
                       startDayIndex = i
-                      break
-                    } else if (weekDays[i] > startDate) {
-                      startDayIndex = 0
-                      break
                     }
-                  }
-
-                  for (let i = 6; i >= 0; i--) {
                     if (isSameDay(weekDays[i], endDate)) {
                       endDayIndex = i
-                      break
-                    } else if (weekDays[i] < endDate) {
-                      endDayIndex = 6
-                      break
                     }
                   }
 
-                  // Clamp to week bounds
-                  if (startDate < weekDays[0]) startDayIndex = 0
-                  if (endDate > weekDays[6]) endDayIndex = 6
+                  // Clamp to week bounds if dates are outside
+                  if (startDayIndex === -1) startDayIndex = startDate < weekDays[0] ? 0 : 6
+                  if (endDayIndex === -1) endDayIndex = endDate > weekDays[6] ? 6 : 0
 
-                  // Calculate grid columns (add 2 for time column offset)
-                  const gridColumnStart = startDayIndex + 2
-                  const gridColumnEnd = endDayIndex + 3
+                  // Ensure start <= end
+                  if (startDayIndex > endDayIndex) {
+                    [startDayIndex, endDayIndex] = [endDayIndex, startDayIndex]
+                  }
+
+                  // Calculate pixel positions based on column indices
+                  // Grid has 8 columns: 1 time column (12.5%) + 7 day columns (12.5% each)
+                  const timeColumnPercent = 12.5 // 1/8 of 100%
+                  const dayColumnPercent = 12.5 // Each day column is 1/8 of 100%
+
+                  // Left position: skip time column + start day columns
+                  const leftPercent = timeColumnPercent + (startDayIndex * dayColumnPercent)
+                  // Width: number of day columns to span
+                  const numColumns = endDayIndex - startDayIndex + 1
+                  const widthPercent = numColumns * dayColumnPercent
 
                   // Calculate vertical position
                   const top = (placeholderEvent.hour * PIXELS_PER_HOUR) + (((placeholderEvent.minutes || 0) / 60) * PIXELS_PER_HOUR)
@@ -917,7 +918,7 @@ Rescheduled: ${data.reason}`.trim() :
 
                   return (
                     <div
-                      className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0 pointer-events-none"
+                      className="absolute top-0 left-0 right-0 pointer-events-none"
                       style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
                     >
                       <div
@@ -925,10 +926,8 @@ Rescheduled: ${data.reason}`.trim() :
                           position: 'absolute',
                           top: `${top}px`,
                           height: `${Math.max(height, 20)}px`,
-                          gridColumnStart,
-                          gridColumnEnd,
-                          left: '2px',
-                          right: '2px',
+                          left: `calc(${leftPercent}% + 2px)`,
+                          width: `calc(${widthPercent}% - 4px)`,
                           zIndex: 25
                         }}
                       >
