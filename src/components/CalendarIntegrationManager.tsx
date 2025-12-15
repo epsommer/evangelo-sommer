@@ -30,11 +30,59 @@ export default function CalendarIntegrationManager({
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
   const [activeTab, setActiveTab] = useState<'integrations' | 'recurring'>('integrations');
 
-  // Load existing integrations on mount
+  // Load existing integrations from database on mount
   useEffect(() => {
-    const existingIntegrations = calendarService.getAllIntegrations();
-    setIntegrations(existingIntegrations);
-    onIntegrationChange?.(existingIntegrations);
+    const loadIntegrations = async () => {
+      try {
+        // Fetch integrations from database API
+        const response = await fetch('/api/calendar/integrations');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            // Map database integrations to component format
+            const mappedIntegrations: IntegrationType[] = result.data.map((dbIntegration: any) => ({
+              id: dbIntegration.id,
+              provider: dbIntegration.provider.toLowerCase(),
+              accountId: dbIntegration.calendarEmail || dbIntegration.externalId,
+              calendarId: dbIntegration.externalId,
+              isActive: dbIntegration.isActive,
+              syncEnabled: true,
+              syncSettings: {
+                syncDirection: 'bidirectional' as const,
+                autoCreateEvents: true,
+                defaultVisibility: 'private' as const,
+              },
+              lastSyncAt: dbIntegration.lastSyncAt,
+              createdAt: dbIntegration.createdAt,
+              updatedAt: dbIntegration.updatedAt,
+              // Note: credentials are NOT returned by API for security
+            }));
+
+            setIntegrations(mappedIntegrations);
+            onIntegrationChange?.(mappedIntegrations);
+
+            // Also sync to localStorage for backward compatibility
+            mappedIntegrations.forEach(integration => {
+              calendarService.addIntegration(integration);
+            });
+          }
+        } else {
+          console.warn('Failed to fetch integrations from database, falling back to localStorage');
+          // Fallback to localStorage if API fails
+          const existingIntegrations = calendarService.getAllIntegrations();
+          setIntegrations(existingIntegrations);
+          onIntegrationChange?.(existingIntegrations);
+        }
+      } catch (error) {
+        console.error('Error loading integrations:', error);
+        // Fallback to localStorage on error
+        const existingIntegrations = calendarService.getAllIntegrations();
+        setIntegrations(existingIntegrations);
+        onIntegrationChange?.(existingIntegrations);
+      }
+    };
+
+    loadIntegrations();
   }, [onIntegrationChange]);
 
   // Handle OAuth callback from URL params
@@ -42,32 +90,66 @@ export default function CalendarIntegrationManager({
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
     const provider = urlParams.get('provider');
-    const data = urlParams.get('data');
+    const integrationId = urlParams.get('integrationId');
     const error = urlParams.get('error');
 
-    if (success === 'true' && provider && data) {
-      try {
-        const integrationData = JSON.parse(data);
-        const integration = calendarService.handleOAuthCallback(provider, integrationData);
-        
-        setIntegrations(prev => {
-          const updated = [...prev, integration];
-          onIntegrationChange?.(updated);
-          return updated;
-        });
+    if (success === 'true' && provider && integrationId) {
+      // Reload integrations from database to get the newly connected integration
+      const reloadIntegrations = async () => {
+        try {
+          const response = await fetch('/api/calendar/integrations');
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              // Map database integrations to component format
+              const mappedIntegrations: IntegrationType[] = result.data.map((dbIntegration: any) => ({
+                id: dbIntegration.id,
+                provider: dbIntegration.provider.toLowerCase(),
+                accountId: dbIntegration.calendarEmail || dbIntegration.externalId,
+                calendarId: dbIntegration.externalId,
+                isActive: dbIntegration.isActive,
+                syncEnabled: true,
+                syncSettings: {
+                  syncDirection: 'bidirectional' as const,
+                  autoCreateEvents: true,
+                  defaultVisibility: 'private' as const,
+                },
+                lastSyncAt: dbIntegration.lastSyncAt,
+                createdAt: dbIntegration.createdAt,
+                updatedAt: dbIntegration.updatedAt,
+              }));
 
-        // Clear URL params
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-        
-        // Auto-sync after successful connection
-        handleSync(integration.id);
-        
-      } catch (error) {
-        console.error('Failed to process OAuth callback:', error);
-      }
+              setIntegrations(mappedIntegrations);
+              onIntegrationChange?.(mappedIntegrations);
+
+              // Sync to localStorage
+              mappedIntegrations.forEach(integration => {
+                calendarService.addIntegration(integration);
+              });
+
+              // Auto-sync after successful connection
+              const newIntegration = mappedIntegrations.find(i => i.id === integrationId);
+              if (newIntegration) {
+                handleSync(newIntegration.id);
+              }
+            }
+          }
+
+          // Clear URL params after processing
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, '', newUrl);
+        } catch (error) {
+          console.error('Failed to reload integrations after OAuth callback:', error);
+        }
+      };
+
+      reloadIntegrations();
     } else if (error) {
       console.error('OAuth error:', error, urlParams.get('message'));
+
+      // Clear URL params
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
     }
   }, [onIntegrationChange]);
 
@@ -91,11 +173,29 @@ export default function CalendarIntegrationManager({
     }
   };
 
-  const handleDisconnect = (integrationId: string) => {
-    calendarService.removeIntegration(integrationId);
-    const updated = integrations.filter(i => i.id !== integrationId);
-    setIntegrations(updated);
-    onIntegrationChange?.(updated);
+  const handleDisconnect = async (integrationId: string) => {
+    try {
+      // Delete from database
+      const response = await fetch(`/api/calendar/integrations/${integrationId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove from localStorage
+        calendarService.removeIntegration(integrationId);
+
+        // Update local state
+        const updated = integrations.filter(i => i.id !== integrationId);
+        setIntegrations(updated);
+        onIntegrationChange?.(updated);
+      } else {
+        console.error('Failed to disconnect integration from database');
+        alert('Failed to disconnect calendar. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error disconnecting integration:', error);
+      alert('Failed to disconnect calendar. Please try again.');
+    }
   };
 
   const handleSync = async (integrationId: string) => {
@@ -194,7 +294,7 @@ export default function CalendarIntegrationManager({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-8 ${className}`}>
       {/* Header with Tabs */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -220,14 +320,14 @@ export default function CalendarIntegrationManager({
               Recurring Events
             </button>
           </div>
-          <p className="text-sm text-[var(--neomorphic-text)] opacity-70 font-primary">
+          <p className="text-sm text-foreground/60 font-primary">
             {activeTab === 'integrations'
               ? 'Connect your calendar services to sync events and appointments'
               : 'Manage recurring appointments and automatic event generation'}
           </p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-[var(--neomorphic-text)] opacity-70">
+          <div className="text-sm text-foreground/60">
             {activeTab === 'integrations' && (
               <>
                 <div className="font-primary">{`${integrations.filter((i) => i.isActive).length} of ${providers.length} connected`}</div>
@@ -254,84 +354,137 @@ export default function CalendarIntegrationManager({
           onEventsGenerated={handleRecurringEventsGenerated}
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
 
-      {/* Integration Status */}
+      {/* Integration Status Section */}
       {integrations.length > 0 && (
-        <div className="neo-card p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full shadow-lg animate-pulse"></div>
-            <span className="text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
-              Calendar integrations active
-            </span>
-          </div>
-          <div className="text-sm text-[var(--neomorphic-text)] opacity-70 font-primary">
-            Last sync:{" "}
-            {integrations.find((i) => i.lastSyncAt)?.lastSyncAt
-              ? new Date(
-                  integrations.find((i) => i.lastSyncAt)!.lastSyncAt!,
-                ).toLocaleString()
-              : "Never"}
+        <div>
+          <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+            Status
+          </h3>
+          <div className="py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full shadow-lg animate-pulse"></div>
+              <span className="text-sm font-semibold text-foreground font-primary">
+                Calendar integrations active
+              </span>
+            </div>
+            <div className="text-sm text-foreground/60 font-primary">
+              Last sync:{" "}
+              {integrations.find((i) => i.lastSyncAt)?.lastSyncAt
+                ? new Date(
+                    integrations.find((i) => i.lastSyncAt)!.lastSyncAt!,
+                  ).toLocaleString()
+                : "Never"}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Provider Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {providers.map((provider) => {
-          const integration = getIntegratedProvider(provider.id);
-          const isConnected = integration?.isActive;
-          const currentSyncStatus = integration
-            ? syncStatus[integration.id] || "idle"
-            : "idle";
+      {/* Calendar Providers Section */}
+      <div>
+        <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+          Calendar Providers
+        </h3>
+        <div className="divide-y divide-border">
+          {providers.map((provider) => {
+            const integration = getIntegratedProvider(provider.id);
+            const isConnected = integration?.isActive;
+            const currentSyncStatus = integration
+              ? syncStatus[integration.id] || "idle"
+              : "idle";
 
-          return (
-            <div
-              key={provider.id}
-              className={`neo-card p-6 transition-all ${
-                isConnected ? "ring-2 ring-green-500/30" : ""
-              }`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`w-12 h-12 rounded-xl ${provider.color} flex items-center justify-center text-white text-xl shadow-lg`}
-                  >
-                    {provider.icon}
+            return (
+              <div
+                key={provider.id}
+                className="py-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`w-10 h-10 rounded-lg ${provider.color} flex items-center justify-center text-white text-lg`}
+                    >
+                      {provider.icon}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-foreground font-primary">
+                          {provider.name}
+                        </h4>
+                        {isConnected && (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold font-primary uppercase tracking-wide">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            Connected
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-foreground/60 font-primary">
+                        {provider.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-[var(--neomorphic-text)] font-primary">
-                      {provider.name}
-                    </h3>
-                    <p className="text-sm text-[var(--neomorphic-text)] opacity-60 font-primary">
-                      {provider.description}
-                    </p>
-                  </div>
+
+                  {integration && isConnected ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleSync(integration.id)}
+                        disabled={currentSyncStatus === "syncing"}
+                        className={`neo-button px-3 py-1.5 text-xs font-primary uppercase tracking-wide transition-all ${
+                          currentSyncStatus === "syncing"
+                            ? "opacity-50 cursor-not-allowed"
+                            : currentSyncStatus === "success"
+                              ? "!bg-green-100 !text-green-700"
+                              : currentSyncStatus === "error"
+                                ? "!bg-red-100 !text-red-700"
+                                : ""
+                        }`}
+                      >
+                        {currentSyncStatus === "syncing" && "Syncing..."}
+                        {currentSyncStatus === "success" && "Synced"}
+                        {currentSyncStatus === "error" && "Failed"}
+                        {currentSyncStatus === "idle" && "Sync Now"}
+                      </button>
+
+                      <button
+                        onClick={() => handleDisconnect(integration.id)}
+                        className="neo-button px-3 py-1.5 text-xs font-primary uppercase tracking-wide text-red-600 hover:text-red-700"
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleConnect(provider.id)}
+                      disabled={isConnecting === provider.id || !['google', 'notion'].includes(provider.id)}
+                      className={`px-4 py-2 text-xs font-primary uppercase tracking-wide font-semibold transition-all ${
+                        !['google', 'notion'].includes(provider.id)
+                          ? "neo-button opacity-50 cursor-not-allowed"
+                          : isConnecting === provider.id
+                            ? "neo-button opacity-50 cursor-not-allowed"
+                            : "neo-button-active"
+                      }`}
+                    >
+                      {isConnecting === provider.id
+                        ? "Connecting..."
+                        : !['google', 'notion'].includes(provider.id)
+                          ? "Coming Soon"
+                          : "Connect"}
+                    </button>
+                  )}
                 </div>
 
-                {isConnected && (
-                  <div className="neo-badge px-3 py-1 flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-green-600 font-semibold font-primary uppercase tracking-wide">
-                      Connected
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {integration && isConnected ? (
-                <div className="space-y-4">
-                  {/* Integration Details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm neo-inset rounded-lg p-3">
+                {/* Integration Details - shown inline when connected */}
+                {integration && isConnected && (
+                  <div className="mt-3 ml-13 pl-13 grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-[var(--neomorphic-text)] opacity-60 text-xs font-primary uppercase tracking-wide mb-1">Account</div>
-                      <div className="font-medium text-[var(--neomorphic-text)] truncate font-primary">
+                      <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Account</div>
+                      <div className="font-medium text-foreground truncate font-primary">
                         {integration.accountId}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[var(--neomorphic-text)] opacity-60 text-xs font-primary uppercase tracking-wide mb-1">Sync Direction</div>
-                      <div className="font-medium text-[var(--neomorphic-text)] capitalize font-primary">
+                      <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Sync Direction</div>
+                      <div className="font-medium text-foreground capitalize font-primary">
                         {integration.syncSettings.syncDirection.replace(
                           "-",
                           " ",
@@ -339,68 +492,20 @@ export default function CalendarIntegrationManager({
                       </div>
                     </div>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleSync(integration.id)}
-                      disabled={currentSyncStatus === "syncing"}
-                      className={`neo-button flex-1 px-4 py-2 text-sm font-primary uppercase tracking-wide transition-all ${
-                        currentSyncStatus === "syncing"
-                          ? "opacity-50 cursor-not-allowed"
-                          : currentSyncStatus === "success"
-                            ? "!bg-green-100 !text-green-700"
-                            : currentSyncStatus === "error"
-                              ? "!bg-red-100 !text-red-700"
-                              : ""
-                      }`}
-                    >
-                      {currentSyncStatus === "syncing" && "Syncing..."}
-                      {currentSyncStatus === "success" && "Synced"}
-                      {currentSyncStatus === "error" && "Failed"}
-                      {currentSyncStatus === "idle" && "Sync Now"}
-                    </button>
-
-                    <button
-                      onClick={() => handleDisconnect(integration.id)}
-                      className="neo-button px-4 py-2 text-sm font-primary uppercase tracking-wide text-red-600 hover:text-red-700"
-                    >
-                      Disconnect
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Connection Button */
-                <button
-                  onClick={() => handleConnect(provider.id)}
-                  disabled={isConnecting === provider.id || !['google', 'notion'].includes(provider.id)}
-                  className={`w-full py-3 text-sm font-primary uppercase tracking-wide font-semibold transition-all ${
-                    !['google', 'notion'].includes(provider.id)
-                      ? "neo-button opacity-50 cursor-not-allowed"
-                      : isConnecting === provider.id
-                        ? "neo-button opacity-50 cursor-not-allowed"
-                        : "neo-button-active"
-                  }`}
-                >
-                  {isConnecting === provider.id
-                    ? "Connecting..."
-                    : !['google', 'notion'].includes(provider.id)
-                      ? "Coming Soon"
-                      : `Connect ${provider.name}`}
-                </button>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Events Summary */}
+      {/* Synchronized Events Section */}
       {allEvents.length > 0 && (
-        <div className="neo-card p-6">
-          <h3 className="font-semibold text-[var(--neomorphic-text)] mb-4 font-primary uppercase tracking-wide">
+        <div>
+          <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
             Synchronized Events ({allEvents.length})
           </h3>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="divide-y divide-border max-h-48 overflow-y-auto">
             {allEvents
               .sort(
                 (a, b) =>
@@ -411,7 +516,7 @@ export default function CalendarIntegrationManager({
               .map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between p-3 neo-inset rounded-lg"
+                  className="py-3 flex items-center justify-between"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="text-lg">
@@ -424,18 +529,18 @@ export default function CalendarIntegrationManager({
                             : "🔔"}
                     </div>
                     <div>
-                      <div className="font-medium text-[var(--neomorphic-text)] text-sm font-primary">
+                      <div className="font-medium text-foreground text-sm font-primary">
                         {event.title}
                       </div>
-                      <div className="text-[var(--neomorphic-text)] opacity-60 text-xs font-primary">
+                      <div className="text-foreground/60 text-xs font-primary">
                         {new Date(event.startTime).toLocaleDateString()} •{" "}
                         {event.type}
                       </div>
                     </div>
                   </div>
-                  <div className="neo-badge text-xs px-2 py-1 capitalize font-primary">
+                  <span className="text-xs px-2 py-1 bg-background border border-border rounded capitalize font-primary">
                     {integrations.find(i => i.id === event.metadata?.integrationId)?.provider || 'local'}
-                  </div>
+                  </span>
                 </div>
               ))}
           </div>
@@ -443,8 +548,8 @@ export default function CalendarIntegrationManager({
       )}
 
       {/* Help Text */}
-      <div className="text-center">
-        <p className="text-sm text-[var(--neomorphic-text)] opacity-60 font-primary">
+      <div className="pt-4 border-t border-border">
+        <p className="text-sm text-foreground/60 font-primary text-center">
           Currently supporting Google Calendar and Notion. More integrations coming soon!
         </p>
       </div>
