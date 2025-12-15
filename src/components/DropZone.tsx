@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Plus, Target, Clock } from 'lucide-react'
+import { Target, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { useDragDrop } from './DragDropContext'
 import { UnifiedEvent } from '@/components/EventCreationModal'
@@ -245,7 +245,8 @@ const DropZone: React.FC<DropZoneProps> = ({
   const shouldAllowDragEvents = dragState.isDragging || shouldBeInteractive
 
   // When there are events (children), the DropZone should not intercept pointer events unless dragging
-  const shouldEnablePointerEvents = children ? dragState.isDragging : shouldAllowDragEvents
+  // For empty slots (no children), always enable pointer events so clicks can be detected
+  const shouldEnablePointerEvents = children ? dragState.isDragging : true
   const isCurrentTime = () => {
     const now = new Date()
     const currentDate = format(now, 'yyyy-MM-dd')
@@ -288,10 +289,10 @@ const DropZone: React.FC<DropZoneProps> = ({
       onDragOver={shouldAllowDragEvents ? handleDragOver : undefined}
       onDragLeave={shouldAllowDragEvents ? handleDragLeave : undefined}
       onDrop={shouldAllowDragEvents ? handleDrop : undefined}
-      onMouseEnter={shouldBeInteractive && !children ? handleMouseEnter : undefined}
-      onMouseLeave={shouldBeInteractive && !children ? handleMouseLeave : undefined}
-      onMouseDown={shouldBeInteractive && !children ? handleMouseDown : undefined}
-      onClick={shouldBeInteractive && !children ? handleClick : undefined}
+      onMouseEnter={!children ? handleMouseEnter : undefined}
+      onMouseLeave={!children ? handleMouseLeave : undefined}
+      onMouseDown={!children ? handleMouseDown : undefined}
+      onClick={!children ? handleClick : undefined}
     >
       {/* Content area */}
       <div
@@ -337,16 +338,6 @@ const DropZone: React.FC<DropZoneProps> = ({
               </div>
             )}
             
-            {/* Create event prompt */}
-            {!dragState.isDragging && effectiveHovered && !isOccupied && (
-              <div
-                className="flex items-center gap-2 text-medium-grey hover:text-hud-text-primary font-primary bg-hud-background-secondary border border-hud-border rounded px-3 py-2 shadow-sm transition-colors"
-                style={{ zIndex: 3 }} // Ensure it's above DropZone but below events (which have z-index 20+)
-              >
-                <Plus className="w-4 h-4 flex-shrink-0" />
-                <span className="font-medium text-xs whitespace-nowrap">Add Event</span>
-              </div>
-            )}
             
             {/* Current time indicator */}
             {isCurrentTime() && (

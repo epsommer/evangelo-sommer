@@ -502,19 +502,6 @@ Duration changed: ${data.reason}`.trim() :
                         {format(day, 'd')}
                       </span>
                       <div className="flex items-center space-x-1">
-                        {/* Add Event Button - appears on hover */}
-                        {isCurrentMonth && onDayClick && (
-                          <button
-                            className="opacity-0 group-hover:opacity-100 transition-opacity neo-button-active text-xs p-1"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onDayClick(day)
-                            }}
-                            title="Create event"
-                          >
-                            +
-                          </button>
-                        )}
                         {dayEvents.length > 0 && (
                           <Badge className={`h-5 w-5 p-0 text-xs flex items-center justify-center ${
                             dayEvents.length > 5 ? 'bg-red-600 text-white' :
