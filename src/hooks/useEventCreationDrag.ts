@@ -40,16 +40,22 @@ export interface UseEventCreationDragResult {
 
 /**
  * Convert Y position to hour and minutes
+ * Clamps to 24-hour boundary (max 23:45 for 15-min snapping)
  */
 function yToTime(y: number, gridTop: number, pixelsPerHour: number = DEFAULT_PIXELS_PER_HOUR) {
   const relativeY = Math.max(0, y - gridTop)
   const totalMinutes = (relativeY / pixelsPerHour) * 60
-  const hour = Math.floor(totalMinutes / 60)
-  const minutes = Math.round((totalMinutes % 60) / SNAP_MINUTES) * SNAP_MINUTES
+
+  // Clamp total minutes to max 24 hours (1440 minutes)
+  // Use 23:45 as max since that's the last 15-min snap point before midnight
+  const clampedTotalMinutes = Math.min(totalMinutes, 23 * 60 + 45)
+
+  const hour = Math.floor(clampedTotalMinutes / 60)
+  const minutes = Math.round((clampedTotalMinutes % 60) / SNAP_MINUTES) * SNAP_MINUTES
 
   // Clamp to valid range
   const clampedHour = Math.max(0, Math.min(23, hour))
-  const clampedMinutes = Math.max(0, Math.min(59, minutes))
+  const clampedMinutes = Math.max(0, Math.min(45, minutes)) // Max 45 for last snap point
 
   return { hour: clampedHour, minutes: clampedMinutes }
 }
@@ -67,6 +73,7 @@ function xToDay(x: number, gridLeft: number, timeColumnWidth: number, columnWidt
 
 /**
  * Calculate duration between two date/times
+ * For same-day events, clamps to not exceed midnight
  */
 function calculateDuration(
   startDate: string,
@@ -80,7 +87,14 @@ function calculateDuration(
   const end = new Date(`${endDate}T${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:00`)
 
   const durationMs = end.getTime() - start.getTime()
-  const durationMinutes = Math.round(durationMs / (1000 * 60))
+  let durationMinutes = Math.round(durationMs / (1000 * 60))
+
+  // For same-day events, cap duration so event doesn't extend past midnight
+  if (startDate === endDate) {
+    const startTotalMinutes = startHour * 60 + startMinutes
+    const maxDuration = (24 * 60) - startTotalMinutes // Minutes until midnight
+    durationMinutes = Math.min(durationMinutes, maxDuration)
+  }
 
   // Ensure minimum duration
   return Math.max(MIN_DURATION_MINUTES, durationMinutes)

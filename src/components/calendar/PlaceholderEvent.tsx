@@ -31,9 +31,12 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
   endHour,
   isMultiDay = false
 }) => {
-  // Calculate position and height
+  // Calculate position and height, clamped to 24-hour boundary
   const top = hour * pixelsPerHour
-  const height = (duration / 60) * pixelsPerHour
+  const maxGridHeight = 24 * pixelsPerHour
+  const rawHeight = (duration / 60) * pixelsPerHour
+  // Clamp height so placeholder doesn't extend past midnight (24:00)
+  const height = Math.min(rawHeight, maxGridHeight - top)
 
   // Calculate time range display
   const startDateTime = `${date}T${hour.toString().padStart(2, '0')}:00:00`
