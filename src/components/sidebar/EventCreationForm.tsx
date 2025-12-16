@@ -193,11 +193,20 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
     }
   }, [initialTime, initialDate, initialClientId, initialClientName, editingEvent])
 
+  // Track the last initialDuration we processed to prevent infinite loops
+  const lastInitialDurationRef = useRef<number | undefined>(initialDuration)
+
   // Sync duration from placeholder drag (separate effect to avoid complex dependencies)
   // This allows the placeholder's duration to update the form during drag creation
   useEffect(() => {
-    if (!editingEvent && initialDuration !== undefined && initialDuration !== formData.duration) {
+    // Only process if initialDuration actually changed from the parent
+    if (!editingEvent && initialDuration !== undefined && initialDuration !== lastInitialDurationRef.current) {
+      lastInitialDurationRef.current = initialDuration
       setFormData(prev => {
+        // Skip if form already has this duration (prevents loops)
+        if (prev.duration === initialDuration) {
+          return prev
+        }
         const newEndTime = format(addMinutes(new Date(`${prev.date}T${prev.startTime}`), initialDuration), 'HH:mm')
         return {
           ...prev,
@@ -206,7 +215,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
         }
       })
     }
-  }, [initialDuration, editingEvent]) // Don't include formData.duration to avoid loops
+  }, [initialDuration, editingEvent])
 
   // Sync multi-day state from placeholder drag
   // When the placeholder spans multiple days, update the form's isMultiDay and endDate
