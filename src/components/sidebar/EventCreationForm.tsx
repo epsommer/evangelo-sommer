@@ -195,6 +195,8 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
   // Track the last initialDuration we processed to prevent infinite loops
   const lastInitialDurationRef = useRef<number | undefined>(initialDuration)
+  // Flag to indicate we're syncing from props (should not trigger onFormChange)
+  const isSyncingFromPropsRef = useRef(false)
 
   // Sync duration from placeholder drag (separate effect to avoid complex dependencies)
   // This allows the placeholder's duration to update the form during drag creation
@@ -202,6 +204,10 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
     // Only process if initialDuration actually changed from the parent
     if (!editingEvent && initialDuration !== undefined && initialDuration !== lastInitialDurationRef.current) {
       lastInitialDurationRef.current = initialDuration
+
+      // Mark that we're syncing from props - onFormChange should not fire
+      isSyncingFromPropsRef.current = true
+
       setFormData(prev => {
         // Skip if form already has this duration (prevents loops)
         if (prev.duration === initialDuration) {
@@ -213,6 +219,11 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
           duration: initialDuration,
           endTime: newEndTime
         }
+      })
+
+      // Reset flag after a microtask to allow the state update to complete
+      Promise.resolve().then(() => {
+        isSyncingFromPropsRef.current = false
       })
     }
   }, [initialDuration, editingEvent])
@@ -283,6 +294,11 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
   // Notify parent of form changes for placeholder updates
   useEffect(() => {
+    // Skip if we're syncing from props (prevents circular updates)
+    if (isSyncingFromPropsRef.current) {
+      return
+    }
+
     if (onFormChange) {
       const newData = {
         title: formData.title,
