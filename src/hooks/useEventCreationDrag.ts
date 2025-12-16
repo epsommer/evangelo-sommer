@@ -149,6 +149,17 @@ export function useEventCreationDrag(
     dayColumnWidth: number
   } | null>(null)
 
+  // Track last drag state values to prevent redundant updates
+  const lastDragStateRef = useRef<{
+    startDate: string
+    startHour: number
+    startMinutes: number
+    currentDate: string
+    currentHour: number
+    currentMinutes: number
+    duration: number
+  } | null>(null)
+
   const mouseMoveStartedRef = useRef(false)
   const clickCountRef = useRef(0)
   const lastClickTimeRef = useRef(0)
@@ -259,22 +270,46 @@ export function useEventCreationDrag(
       // Check if multi-day
       const isMultiDay = startDate !== endDate
 
-      const newDragState: DragState = {
-        isDragging: true,
-        startDate,
-        startHour,
-        startMinutes,
-        currentDate: endDate,
-        currentHour: endHour,
-        currentMinutes: endMinutes,
-        duration,
-        isMultiDay,
-        startDayIndex: startData.dayIndex,
-        currentDayIndex
-      }
+      // Check if values have actually changed to prevent redundant updates
+      const lastState = lastDragStateRef.current
+      const hasChanged = !lastState ||
+        lastState.startDate !== startDate ||
+        lastState.startHour !== startHour ||
+        lastState.startMinutes !== startMinutes ||
+        lastState.currentDate !== endDate ||
+        lastState.currentHour !== endHour ||
+        lastState.currentMinutes !== endMinutes ||
+        lastState.duration !== duration
 
-      setDragState(newDragState)
-      callbacksRef.current.onDragMove?.(newDragState)
+      if (hasChanged) {
+        const newDragState: DragState = {
+          isDragging: true,
+          startDate,
+          startHour,
+          startMinutes,
+          currentDate: endDate,
+          currentHour: endHour,
+          currentMinutes: endMinutes,
+          duration,
+          isMultiDay,
+          startDayIndex: startData.dayIndex,
+          currentDayIndex
+        }
+
+        // Update ref before state to track what we're setting
+        lastDragStateRef.current = {
+          startDate,
+          startHour,
+          startMinutes,
+          currentDate: endDate,
+          currentHour: endHour,
+          currentMinutes: endMinutes,
+          duration
+        }
+
+        setDragState(newDragState)
+        callbacksRef.current.onDragMove?.(newDragState)
+      }
     }
   }, []) // No dependencies - uses refs instead
 
@@ -307,6 +342,7 @@ export function useEventCreationDrag(
     setDragState(null)
     setIsDragging(false)
     setIsTrackingMouse(false)
+    lastDragStateRef.current = null
     dragStartRef.current = null
     mouseMoveStartedRef.current = false
     clickCountRef.current = 0
