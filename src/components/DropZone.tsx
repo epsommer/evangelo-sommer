@@ -12,7 +12,7 @@ interface DropZoneProps {
   isOccupied?: boolean
   events?: UnifiedEvent[]
   onTimeSlotClick?: (date: Date, hour: number) => void
-  onTimeSlotDoubleClick?: (date: Date, hour: number) => void
+  onTimeSlotDoubleClick?: (date: Date, hour: number, minutes?: number) => void
   onMouseDownOnSlot?: (e: React.MouseEvent, date: string, hour: number, dayIndex: number) => void
   className?: string
   children?: React.ReactNode
@@ -158,7 +158,10 @@ const DropZone: React.FC<DropZoneProps> = ({
         clearTimeout(clickTimeout)
         setClickTimeout(null)
         if (onTimeSlotDoubleClick) {
-          onTimeSlotDoubleClick(clickDate, hour)
+          // Calculate precise 15-minute interval from click position
+          const preciseTime = calculatePreciseTime(e.clientY)
+          const preciseMinutes = Math.round((preciseTime - hour) * 60)
+          onTimeSlotDoubleClick(clickDate, hour, preciseMinutes)
         }
       } else {
         // This might be a single-click - set a timeout to call single-click handler

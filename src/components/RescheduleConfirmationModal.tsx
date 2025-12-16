@@ -50,29 +50,16 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  console.log('🎯 RescheduleConfirmationModal render - isOpen:', isOpen, 'rescheduleData:', rescheduleData)
-  console.log('🎯 Modal props: onConfirm type =', typeof onConfirm, 'onClose type =', typeof onClose)
-
-  // Log when modal actually becomes visible
-  React.useEffect(() => {
-    if (isOpen && rescheduleData) {
-      console.log('🎯 Modal is now open with reschedule data:', rescheduleData)
-    }
-  }, [isOpen, rescheduleData])
 
   // Handle keyboard shortcuts
   React.useEffect(() => {
     if (!isOpen) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      console.log('🎯 KeyDown event in modal:', event.key)
-
       if (event.key === 'Enter' && !isConfirming) {
-        console.log('🎯 Enter key pressed - calling handleConfirm')
         event.preventDefault()
         handleConfirm()
       } else if (event.key === 'Escape' && !isConfirming) {
-        console.log('🎯 Escape key pressed - calling handleClose')
         event.preventDefault()
         handleClose()
       }
@@ -134,23 +121,12 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
   const hasParticipants = participants.length > 0
 
   const handleConfirm = async () => {
-    console.log('🎯 ========== RESCHEDULE MODAL CONFIRM CLICKED ==========')
-    console.log('🎯 RescheduleConfirmationModal: handleConfirm clicked')
-    console.log('🎯 Reschedule data:', rescheduleData)
-    console.log('🎯 Notify participants:', notifyParticipants)
-    console.log('🎯 Reason:', reason)
-    console.log('🎯 onConfirm function type:', typeof onConfirm)
-    console.log('🎯 onConfirm function:', onConfirm)
-    console.log('🎯 Modal is confirming, setting isConfirming to true')
-
     if (!onConfirm) {
-      console.error('🎯 CRITICAL ERROR: onConfirm is null or undefined!')
       setError('onConfirm function is not available')
       return
     }
 
     if (!rescheduleData) {
-      console.error('🎯 CRITICAL ERROR: rescheduleData is null or undefined!')
       setError('Reschedule data is not available')
       return
     }
@@ -164,22 +140,13 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
         reason: reason.trim() || undefined
       }
 
-      console.log('🎯 About to call onConfirm with data:', dataWithReason)
-      console.log('🎯 About to call onConfirm with notifyParticipants:', notifyParticipants)
+      await onConfirm(dataWithReason, notifyParticipants)
 
-      const result = await onConfirm(dataWithReason, notifyParticipants)
-      console.log('🎯 onConfirm completed successfully, result:', result)
-
-      console.log('🎯 Calling onClose()')
       onClose()
       setReason('')
-      console.log('🎯 Modal cleanup completed')
     } catch (err) {
-      console.error('🎯 onConfirm failed with error:', err)
-      console.error('🎯 Error stack:', err instanceof Error ? err.stack : 'No stack trace')
       setError(err instanceof Error ? err.message : 'Failed to reschedule event')
     } finally {
-      console.log('🎯 Setting isConfirming to false')
       setIsConfirming(false)
     }
   }
@@ -440,10 +407,6 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
             </Button>
             <Button
               onClick={(e) => {
-                console.log('🎯 BUTTON CLICKED! Event:', e)
-                console.log('🎯 Button click target:', e.target)
-                console.log('🎯 Button click currentTarget:', e.currentTarget)
-                console.log('🎯 isConfirming state:', isConfirming)
                 e.preventDefault()
                 e.stopPropagation()
                 handleConfirm()

@@ -46,30 +46,24 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
   
   // Load events from both localStorage and database with sync check
   const loadEvents = useCallback(async () => {
-    console.log('🔥 useUnifiedEvents.loadEvents - Starting load process...')
     setIsLoading(true)
     setError(null)
 
     try {
       // Import from legacy storage if requested and no unified events exist
       if (syncWithLegacy) {
-        console.log('🔥 useUnifiedEvents.loadEvents - Checking for legacy sync...')
         const existingEvents = UnifiedEventsManager.getAllEvents()
-        console.log('🔥 useUnifiedEvents.loadEvents - Existing events in localStorage:', existingEvents.length)
         if (existingEvents.length === 0) {
-          console.log('🔥 useUnifiedEvents.loadEvents - Importing from legacy storage...')
           UnifiedEventsManager.importFromLegacyStorage()
         }
       }
 
       // Try to load from API first (includes both localStorage and database)
       try {
-        console.log('🔥 useUnifiedEvents.loadEvents - Making API call to /api/events?source=both')
 
         // Add timeout to fetch call
         const controller = new AbortController()
         const timeoutId = setTimeout(() => {
-          console.error('🔥 useUnifiedEvents.loadEvents - API call timeout after 10 seconds')
           controller.abort()
         }, 10000)
 
@@ -82,30 +76,12 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
         })
 
         clearTimeout(timeoutId)
-        console.log('🔥 useUnifiedEvents.loadEvents - API response:', response.status, response.ok)
 
         if (response.ok) {
           const result = await response.json()
-          console.log('🔥 useUnifiedEvents.loadEvents - API result:', result)
 
           if (result.success) {
-            console.log('🔥 useUnifiedEvents.loadEvents - Setting events:', result.events.length)
-
-            // Debug individual event data
-            result.events.forEach((event: any, index: number) => {
-              console.log(`🔍 EVENT ${index + 1} RAW DATA:`, {
-                title: event.title,
-                startDateTime: event.startDateTime,
-                endDateTime: event.endDateTime,
-                duration: event.duration,
-                id: event.id,
-                type: event.type,
-                fullEvent: event
-              })
-            })
-
             setEvents(result.events)
-            console.log(`✅ Loaded ${result.events.length} events from API (${result.source})`)
 
             // Check if sync is needed in background
             checkSyncStatus()
@@ -113,18 +89,12 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
           }
         }
       } catch (apiError) {
-        if (apiError instanceof Error && apiError.name === 'AbortError') {
-          console.error('❌ API call was aborted due to timeout')
-        } else {
-          console.error('❌ API load failed:', apiError)
-        }
-        console.log('🔥 useUnifiedEvents.loadEvents - Falling back to localStorage...')
+        // API failed, fall back to localStorage
       }
 
       // Fallback to localStorage only
       const loadedEvents = UnifiedEventsManager.getAllEvents()
       setEvents(loadedEvents)
-      console.log(`⚠️ Loaded ${loadedEvents.length} events from localStorage only`)
       setError('Warning: Displaying local events only - database may be unavailable')
 
     } catch (err) {
@@ -143,34 +113,24 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          const { status, recommendations } = result
+          const { status } = result
 
           // Auto-sync if there are localStorage-only events
           if (status.localOnlyEvents > 0 && status.localOnlyEvents <= 10) {
-            console.log(`🔄 Auto-syncing ${status.localOnlyEvents} localStorage events to database...`)
             try {
-              const syncResponse = await fetch('/api/events/sync', {
+              await fetch('/api/events/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'migrate-to-database' })
               })
-              if (syncResponse.ok) {
-                const syncResult = await syncResponse.json()
-                console.log('✅ Auto-sync completed:', syncResult.message)
-              }
             } catch (syncError) {
-              console.warn('⚠️ Auto-sync failed:', syncError)
+              // Sync failed silently
             }
-          }
-
-          // Log sync recommendations
-          if (recommendations.length > 0) {
-            console.log('📋 Sync recommendations:', recommendations)
           }
         }
       }
     } catch (error) {
-      console.warn('⚠️ Sync status check failed:', error)
+      // Sync status check failed silently
     }
   }, [])
   
@@ -184,22 +144,9 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
   // Refresh events when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger !== undefined) {
-      console.log(`🔥 useUnifiedEvents - refreshTrigger changed to ${refreshTrigger}, reloading events...`)
       loadEvents()
     }
   }, [refreshTrigger, loadEvents])
-
-  // Debug: Log events state changes
-  useEffect(() => {
-    console.log('🔥 useUnifiedEvents - events state changed, count:', events.length)
-    if (events.length > 0) {
-      console.log('🔥 useUnifiedEvents - events:', events.map(e => ({ id: e.id, title: e.title, startDateTime: e.startDateTime })))
-    } else {
-      console.log('🔥 useUnifiedEvents - events array is empty, checking loading states...')
-      console.log('🔥 useUnifiedEvents - isLoading:', isLoading)
-      console.log('🔥 useUnifiedEvents - error:', error)
-    }
-  }, [events, isLoading, error])
   
   // Create new event with database-first approach and optional participant notifications
   const createEvent = useCallback(async (eventData: Omit<UnifiedEvent, 'id' | 'createdAt' | 'updatedAt'> & { participants?: string[] }): Promise<UnifiedEvent> => {
@@ -211,8 +158,6 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
       if (!validation.isValid) {
         throw new Error(validation.errors.join(', '))
       }
-
-      console.log('🔄 Creating event via database-first API...')
 
       // Always use the integrated API for database persistence
       const response = await fetch('/api/events', {
@@ -231,38 +176,21 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
       if (!result.success) {
         // Handle warning case (event created but some features failed)
         if (result.warning) {
-          console.warn('⚠️', result.warning)
           setError(`Warning: ${result.warning}`)
         } else {
           throw new Error(result.error || 'Failed to create event')
         }
       }
 
-      // Log success details
-      const hasParticipants = eventData.participants && eventData.participants.length > 0
-      if (hasParticipants && result.appointment) {
-        console.log('✅ Event created with notifications:', result.appointment.participantCount, 'participants notified')
-      }
-      if (result.database?.persisted) {
-        console.log('✅ Event persisted to database:', result.database.eventId)
-      }
-
       const newEvent = result.event
-      console.log(`🔥 useUnifiedEvents - Adding new event to local state:`, { id: newEvent.id, title: newEvent.title, startDateTime: newEvent.startDateTime })
-      setEvents(prev => {
-        const updated = [...prev, newEvent]
-        console.log(`🔥 useUnifiedEvents - Local events count after creation: ${updated.length}`)
-        return updated
-      })
+      setEvents(prev => [...prev, newEvent])
 
       return newEvent
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create event'
       setError(errorMessage)
-      console.error('❌ Event creation error:', err)
 
       // Fallback to localStorage if API fails
-      console.log('⚠️ Falling back to localStorage-only creation...')
       try {
         const newEvent = UnifiedEventsManager.createEvent(eventData)
         setEvents(prev => [...prev, newEvent])
@@ -300,69 +228,38 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
         }
       }
 
-      console.log('🔄 ========== UPDATE EVENT API CALL STARTED ==========')
-      console.log('🔄 Optimistically updating event in UI...')
-      console.log('🔄 Event ID:', id)
-      console.log('🔄 Updates payload:', updates)
-
       // Apply optimistic update immediately to prevent UI bounce-back
-      setEvents(prev => {
-        const optimisticEvents = prev.map(event => event.id === id ? optimisticEvent : event)
-        console.log('✅ Optimistic update applied to local state')
-        return optimisticEvents
-      })
+      setEvents(prev => prev.map(event => event.id === id ? optimisticEvent : event))
 
       // Try API first
       try {
-        console.log('🔄 Making PUT request to /api/events?id=' + id)
         const response = await fetch(`/api/events?id=${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates)
         })
 
-        console.log('🔄 API response status:', response.status)
-        console.log('🔄 API response ok:', response.ok)
-
         if (response.ok) {
           const result = await response.json()
-          console.log('🔄 API response result:', result)
 
           if (result.success) {
             const updatedEvent = result.event
-            console.log('🔄 Updated event from API:', updatedEvent)
 
             // Update with server response (may have additional fields)
-            setEvents(prev => {
-              const newEvents = prev.map(event => event.id === id ? updatedEvent : event)
-              console.log('🔄 Local events synced with server response')
-              console.log('🔄 Updated event in local state:', newEvents.find(e => e.id === id))
-              return newEvents
-            })
+            setEvents(prev => prev.map(event => event.id === id ? updatedEvent : event))
 
-            if (result.database?.persisted) {
-              console.log('✅ Event updated in database:', result.database.eventId)
-            } else {
-              console.log('⚠️ Event not persisted to database')
-            }
-
-            console.log('🔄 ========== UPDATE EVENT API CALL SUCCESS ==========')
             return updatedEvent
           } else {
-            console.error('❌ API returned success=false:', result)
             // Rollback optimistic update
             setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
             throw new Error(result.error || 'Failed to update event')
           }
         } else {
-          const errorText = await response.text()
-          console.error('❌ API response not ok:', response.status, errorText)
           // Rollback optimistic update
           setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
           throw new Error(`API error: ${response.status}`)
         }
       } catch (apiError) {
-        console.error('❌ API update failed, attempting localStorage fallback:', apiError)
 
         // Try localStorage fallback
         const localUpdatedEvent = UnifiedEventsManager.updateEvent(id, updates)
@@ -378,22 +275,18 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update event'
-      console.error('❌ Update error:', errorMessage)
       // Ensure rollback happened
       setEvents(prev => prev.map(event => event.id === id ? originalEvent : event))
       setError(errorMessage)
       throw new Error(errorMessage)
     }
   }, [events])
-  
+
   // Delete event with database-first approach
   const deleteEvent = useCallback(async (id: string): Promise<boolean> => {
     setError(null)
-    console.log(`🗑️ useUnifiedEvents deleteEvent called with id: ${id}`)
 
     try {
-      console.log('🔄 Deleting event via database-first API...')
-
       // Try API first
       let apiSuccess = false
       try {
@@ -405,40 +298,27 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
           const result = await response.json()
           if (result.success) {
             apiSuccess = true
-            if (result.database?.deleted) {
-              console.log('✅ Event deleted from database:', id)
-            }
           }
         }
       } catch (apiError) {
-        console.warn('⚠️ API deletion failed, falling back to localStorage:', apiError)
+        // API deletion failed, will try localStorage
       }
 
       // Always attempt localStorage deletion for consistency
-      console.log(`🔥 Calling UnifiedEventsManager.deleteEvent with id: ${id}`)
       const localSuccess = UnifiedEventsManager.deleteEvent(id)
-      console.log(`🔥 UnifiedEventsManager.deleteEvent returned: ${localSuccess}`)
 
       // Update local state if either API or localStorage deletion succeeded
       if (apiSuccess || localSuccess) {
-        console.log(`🔥 Filtering events to remove id: ${id} (apiSuccess: ${apiSuccess}, localSuccess: ${localSuccess})`)
-        setEvents(prev => {
-          const filtered = prev.filter(event => event.id !== id)
-          console.log(`🔥 Events before filter: ${prev.length}, after filter: ${filtered.length}`)
-          return filtered
-        })
+        setEvents(prev => prev.filter(event => event.id !== id))
       }
 
-      if (apiSuccess && !localSuccess) {
-        console.log('✅ Event deleted from database only (localStorage may not have contained the event)')
-      } else if (!apiSuccess && localSuccess) {
+      if (!apiSuccess && localSuccess) {
         setError('Warning: Event deleted locally only - database may be unavailable')
       }
 
       return apiSuccess || localSuccess
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete event'
-      console.error(`🔥 Error in deleteEvent:`, err)
       setError(errorMessage)
       throw new Error(errorMessage)
     }

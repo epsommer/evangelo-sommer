@@ -56,6 +56,10 @@ const TimeManagerContent = () => {
   const [conflicts, setConflicts] = useState<ConflictResult | null>(null)
   const [recentlyCreatedEvents, setRecentlyCreatedEvents] = useState<Set<string>>(new Set())
 
+  // Global conflict tracking for sidebar icon
+  const [globalConflictCount, setGlobalConflictCount] = useState(0)
+  const [allConflicts, setAllConflicts] = useState<ConflictResult | null>(null)
+
   // Use unified events hook for global event management
   const { events: allEvents, createEvent, updateEvent, deleteEvent } = useUnifiedEvents({
     refreshTrigger
@@ -83,6 +87,60 @@ const TimeManagerContent = () => {
     }
   }, [searchParams])
 
+  // Calculate global conflicts whenever events change
+  // Only counts temporal overlaps (real conflicts), not business rules
+  useEffect(() => {
+    const calculateGlobalConflicts = () => {
+      const existingEvents = getAllExistingEvents()
+      if (existingEvents.length < 2) {
+        setGlobalConflictCount(0)
+        setAllConflicts(null)
+        return
+      }
+
+      // Use batch detection to find all conflicts between existing events
+      const batchResults = conflictDetector.detectBatchConflicts(existingEvents)
+
+      // Count unique temporal overlaps only (filter out business rules)
+      const conflictSet = new Set<string>()
+      const allConflictDetails: ConflictResult['conflicts'] = []
+
+      batchResults.forEach((result, eventId) => {
+        result.conflicts
+          .filter(c => c.type === 'temporal_overlap') // Only real overlaps
+          .forEach(conflict => {
+            // Create a unique key for this conflict pair to avoid counting twice
+            const ids = [eventId, conflict.conflictingEvent.id].sort()
+            const conflictKey = `${ids[0]}_${ids[1]}`
+            if (!conflictSet.has(conflictKey)) {
+              conflictSet.add(conflictKey)
+              allConflictDetails.push(conflict)
+            }
+          })
+      })
+
+      setGlobalConflictCount(conflictSet.size)
+      setAllConflicts(conflictSet.size > 0 ? {
+        hasConflicts: true,
+        conflicts: allConflictDetails,
+        suggestions: [],
+        canProceed: true
+      } : null)
+    }
+
+    calculateGlobalConflicts()
+  }, [allEvents, refreshTrigger])
+
+  // Handler for opening conflict modal from sidebar icon
+  const handleShowConflicts = useCallback(() => {
+    if (allConflicts && allConflicts.conflicts.length > 0) {
+      // Use the first conflicting event as the "proposed" event for display
+      const firstConflict = allConflicts.conflicts[0]
+      setPendingEvent(firstConflict.proposedEvent)
+      setConflicts(allConflicts)
+      setShowConflictModal(true)
+    }
+  }, [allConflicts])
 
   // Helper function to get all existing events for conflict detection
   const getAllExistingEvents = (): UnifiedEvent[] => {
@@ -142,9 +200,6 @@ const TimeManagerContent = () => {
       array.findIndex(e => e.id === event.id) === index
     )
 
-    console.log(`🔥 TimeManager - Raw events: scheduled=${serviceEvents.length}, local=${validLocalEvents.length}`)
-    console.log(`🔥 TimeManager - Total raw: ${allEvents.length}, After deduplication: ${uniqueEvents.length}`)
-
     return uniqueEvents
   }
 
@@ -155,43 +210,20 @@ const TimeManagerContent = () => {
 
       if (isEditing) {
         // Update existing event
-        console.log(`🔄 Updating existing event: ${eventData.title} (ID: ${eventData.id})`)
         await updateEvent(eventData.id, eventData)
         setShowEventModal(false)
         setEditingEvent(null)
         setRefreshTrigger(prev => prev + 1) // Force UI refresh after update
-        console.log('✅ Event updated:', eventData.title)
         return
       }
 
-      // Check for conflicts before creating new event (using enhanced detection with database persistence)
-      const existingEvents = getAllExistingEvents()
-      console.log(`🔥🔥🔥 ========== ENHANCED CONFLICT DETECTION ==========`)
-      console.log(`🔥 Event being created: ${eventData.title}`)
-      console.log(`🔥 Existing events count: ${existingEvents.length}`)
-      const conflictResult = await conflictDetector.detectConflictsWithResolutions(eventData, existingEvents)
-      console.log(`🔥 Conflicts found after filtering resolved: ${conflictResult.conflicts.length}`)
-      conflictResult.conflicts.forEach((conflict, index) => {
-        console.log(`🔥 Unresolved conflict ${index + 1}: ${conflict.message} (ID: ${conflict.id})`)
-      })
-      console.log(`🔥🔥🔥 ========== END ENHANCED CONFLICT DETECTION ==========`)
+      // Create event directly - conflicts are tracked but don't block creation
+      await createEvent(eventData)
+      setShowEventModal(false)
+      setPlaceholderEvent(null) // Clear placeholder after event is created
 
-      if (conflictResult.hasConflicts) {
-        // Show conflict resolution modal
-        setPendingEvent(eventData)
-        setConflicts(conflictResult)
-        setShowConflictModal(true)
-        setShowEventModal(false)
-      } else {
-        // No conflicts, create event directly
-        await createEvent(eventData)
-        setShowEventModal(false)
-        setPlaceholderEvent(null) // Clear placeholder after event is created
-        console.log('✅ Event created:', eventData.title)
-
-        // Trigger refresh of all calendar views
-        setRefreshTrigger(prev => prev + 1)
-      }
+      // Trigger refresh of all calendar views and recalculate global conflicts
+      setRefreshTrigger(prev => prev + 1)
     } catch (error) {
       console.error('❌ Error creating/updating event:', error)
     }
@@ -221,9 +253,8 @@ const TimeManagerContent = () => {
       await deleteEvent(eventId)
       setShowDetailsModal(false)
       setRefreshTrigger(prev => prev + 1) // Force UI refresh after deletion
-      console.log('✅ Event deleted:', eventId)
     } catch (error) {
-      console.error('❌ Error deleting event:', error)
+      console.error('Error deleting event:', error)
     }
   }
 
@@ -263,44 +294,43 @@ const TimeManagerContent = () => {
     try {
       await deleteEvent(taskId)
       setRefreshTrigger(prev => prev + 1) // Force UI refresh after deletion
-      console.log('✅ Task deleted:', taskId)
     } catch (error) {
-      console.error('❌ Error deleting task:', error)
+      console.error('Error deleting task:', error)
     }
   }
 
   const handleTaskStatusChange = async (taskId: string, status: string) => {
     try {
-      console.log('TimeManager handleTaskStatusChange called:', taskId, 'to', status)
-      
       // Since we need to update the full event, we need to get the current event first
       // For now, let's update the localStorage directly for scheduled services
       const scheduledServices = JSON.parse(localStorage.getItem('scheduled-services') || '[]')
-      console.log('Current scheduled services:', scheduledServices)
-      console.log('Looking for service with ID:', taskId)
-      
+
       const updatedServices = scheduledServices.map((service: any) => {
         if (service.id === taskId) {
-          console.log('Found service to update:', service)
-          console.log('Updating status from', service.status, 'to', status)
           return { ...service, status }
         }
         return service
       })
-      
+
       localStorage.setItem('scheduled-services', JSON.stringify(updatedServices))
-      console.log('✅ Event status updated:', taskId, 'to', status)
-      
+
       // Trigger a refresh of components that depend on scheduled services
       setRefreshTrigger(prev => prev + 1)
-      
+
     } catch (error) {
-      console.error('❌ Error updating event status:', error)
+      console.error('Error updating event status:', error)
     }
   }
 
   const handleTimeSlotClick = (date: Date, hour?: number) => {
     const timeString = hour !== undefined ? `${hour.toString().padStart(2, '0')}:00` : '09:00'
+
+    // Clear any existing placeholder on single click
+    // This prevents "cut and paste" behavior after drag
+    // User must double-click to create a new placeholder
+    if (placeholderEvent) {
+      setPlaceholderEvent(null)
+    }
 
     // Set sidebar to event creation mode
     setEventCreationTime(timeString)
@@ -313,20 +343,20 @@ const TimeManagerContent = () => {
     setEditingEvent(null)
   }
 
-  const handleTimeSlotDoubleClick = (date: Date, hour: number) => {
-    console.log('🖱️ TimeManager: Time Slot Double-Clicked', { date, hour })
-
-    const timeString = `${hour.toString().padStart(2, '0')}:00`
+  const handleTimeSlotDoubleClick = (date: Date, hour: number, minutes: number = 0) => {
+    const timeString = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
     const dateString = format(date, 'yyyy-MM-dd')
 
     // Close event details if open
     setSidebarSelectedEvent(null)
 
     // Set placeholder event (ghost box in calendar)
+    // Start with compact 15-minute placeholder, user can drag to expand
     setPlaceholderEvent({
       date: dateString,
       hour: hour,
-      duration: 60, // Default 1 hour
+      minutes: minutes,
+      duration: 15, // Compact initial display
       title: undefined
     })
 
@@ -387,7 +417,6 @@ const TimeManagerContent = () => {
     endDate?: string
     endHour?: number
   } | null) => {
-    console.log('🖱️ [TimeManager] Placeholder changed:', placeholder)
     setPlaceholderEvent(placeholder)
     // Note: We intentionally don't update sidebar form state here to avoid circular updates.
     // The form is the source of truth; placeholder is just visual feedback.
@@ -406,58 +435,28 @@ const TimeManagerContent = () => {
       await deleteEvent(eventId)
       setSidebarSelectedEvent(null)
       setRefreshTrigger(prev => prev + 1) // Force UI refresh after deletion
-      console.log('✅ Event deleted from sidebar:', eventId)
     } catch (error) {
-      console.error('❌ Error deleting event from sidebar:', error)
+      console.error('Error deleting event from sidebar:', error)
     }
   }
 
   // Conflict resolution handlers
   const handleAcceptConflict = async (conflictId: string) => {
-    console.log(`🔥🔥🔥 ========== ACCEPTING CONFLICT ==========`)
-    console.log(`🔥 Conflict ID being accepted: ${conflictId}`)
-    console.log(`🔥 Pending event: ${pendingEvent?.title}`)
-    console.log(`🔥 Current conflicts count: ${conflicts?.conflicts.length}`)
-
     // Just remove this specific conflict from the modal, but don't create the event yet
     // The user should resolve all conflicts before the event is created
     if (conflicts && pendingEvent) {
-      const conflictBeingAccepted = conflicts.conflicts.find(c => c.id === conflictId)
-      console.log(`🔥 Conflict being accepted details:`, {
-        id: conflictBeingAccepted?.id,
-        type: conflictBeingAccepted?.type,
-        message: conflictBeingAccepted?.message,
-        conflictingEventTitle: conflictBeingAccepted?.conflictingEvent?.title,
-        conflictingEventId: conflictBeingAccepted?.conflictingEvent?.id
-      })
-
       const updatedConflicts = {
         ...conflicts,
         conflicts: conflicts.conflicts.filter(c => c.id !== conflictId)
       }
       setConflicts(updatedConflicts)
-
-      // Conflict resolution is now handled by database persistence via server actions
-      console.log(`✅ Conflict ${conflictId} accepted and will be persisted via database`)
-
-      console.log(`✅ Conflict ${conflictId} accepted. Remaining conflicts: ${updatedConflicts.conflicts.length}`)
-      console.log(`🔥 Remaining conflict IDs: ${updatedConflicts.conflicts.map(c => c.id).join(', ')}`)
-      console.log(`🔥🔥🔥 ========== END ACCEPTING CONFLICT ==========`)
     }
   }
 
   const handleDeleteEvent = async (conflictId: string, eventId: string) => {
     try {
-      console.log(`🔥🔥🔥 ========== DELETING EVENT ==========`)
-      console.log(`🗑️ TimeManager handleDeleteEvent called with conflictId: ${conflictId}, eventId: ${eventId}`)
-      console.log(`🔥 Event being deleted: ${eventId}`)
-      console.log(`🔥 Conflict causing deletion: ${conflictId}`)
-      console.log(`🔥 deleteEvent function:`, deleteEvent)
-      console.log(`🔥 About to call deleteEvent with eventId: ${eventId}`)
-
       // Try deleting from unified events first
       const result = await deleteEvent(eventId)
-      console.log(`🔥 deleteEvent returned:`, result)
 
       // Also try deleting from legacy localStorage systems
       let deletedFromLegacy = false
@@ -468,7 +467,6 @@ const TimeManagerContent = () => {
       if (filteredScheduledServices.length < scheduledServices.length) {
         localStorage.setItem('scheduled-services', JSON.stringify(filteredScheduledServices))
         deletedFromLegacy = true
-        console.log(`🔥 Deleted from scheduled-services: ${eventId}`)
       }
 
       // Try deleting from calendar-events
@@ -477,47 +475,22 @@ const TimeManagerContent = () => {
       if (filteredCalendarEvents.length < calendarEvents.length) {
         localStorage.setItem('calendar-events', JSON.stringify(filteredCalendarEvents))
         deletedFromLegacy = true
-        console.log(`🔥 Deleted from calendar-events: ${eventId}`)
-      }
-
-      if (result || deletedFromLegacy) {
-        console.log(`✅ Successfully deleted event: ${eventId} (unified: ${result}, legacy: ${deletedFromLegacy})`)
-      } else {
-        console.warn(`⚠️  Event ${eventId} not found in any storage system`)
       }
 
       // Recalculate conflicts for the modal after deletion
       if (pendingEvent) {
-        console.log(`🔥 Recalculating conflicts for pending event: ${pendingEvent.title}`)
         const updatedExistingEvents = getAllExistingEvents()
-        console.log(`🔥 Updated existing events count: ${updatedExistingEvents.length}`)
-
-        console.log(`🔥🔥🔥 ========== RE-DETECTION AFTER DELETE ==========`)
-        console.log(`🔥 Pending event: ${pendingEvent.title}`)
-        console.log(`🔥 Updated existing events count: ${updatedExistingEvents.length}`)
-        console.log(`🔥 Current conflicts before re-detection: ${conflicts?.conflicts.length}`)
-        console.log(`🔥 Current conflict IDs: ${conflicts?.conflicts.map(c => c.id).join(', ')}`)
 
         const freshConflictResult = conflictDetector.detectConflicts(pendingEvent, updatedExistingEvents)
-        console.log(`🔥 Fresh conflict detection found: ${freshConflictResult.conflicts.length} conflicts`)
-        freshConflictResult.conflicts.forEach((conflict, index) => {
-          console.log(`🔥 Fresh conflict ${index + 1}: ${conflict.message} (ID: ${conflict.id})`)
-        })
 
         // Keep track of previously accepted conflicts by comparing with current conflicts state
         const currentConflictIds = conflicts?.conflicts.map(c => c.id) || []
         const originalConflictIds = conflictDetector.detectConflicts(pendingEvent, getAllExistingEvents()).conflicts.map(c => c.id)
         const acceptedConflictIds = originalConflictIds.filter(id => !currentConflictIds.includes(id))
 
-        console.log(`🔥 Current conflict IDs in state: ${currentConflictIds.join(', ')}`)
-        console.log(`🔥 Original conflict IDs (full re-detection): ${originalConflictIds.join(', ')}`)
-        console.log(`🔥 Calculated accepted conflict IDs: ${acceptedConflictIds.join(', ')}`)
-
         // Filter out conflicts that were previously accepted (mainly business rules)
         const filteredConflicts = freshConflictResult.conflicts.filter(conflict => {
-          const isAccepted = acceptedConflictIds.includes(conflict.id)
-          console.log(`🔥 Filtering conflict ${conflict.id} (${conflict.message}): accepted=${isAccepted}`)
-          return !isAccepted
+          return !acceptedConflictIds.includes(conflict.id)
         })
 
         const updatedConflictResult = {
@@ -526,36 +499,20 @@ const TimeManagerContent = () => {
           hasConflicts: filteredConflicts.length > 0
         }
 
-        console.log(`🔥 After filtering accepted conflicts: ${updatedConflictResult.conflicts.length} remaining`)
-
-        // Log the remaining conflicts
-        updatedConflictResult.conflicts.forEach((conflict, index) => {
-          console.log(`🔥 Final remaining conflict ${index + 1}: ${conflict.message} (ID: ${conflict.id})`)
-        })
-
         setConflicts(updatedConflictResult)
-        console.log(`🔥🔥🔥 ========== END RE-DETECTION AFTER DELETE ==========`)
       }
 
       // Force refresh to update conflict indicators and calendar
-      console.log(`🔥 Setting refresh trigger`)
       setRefreshTrigger(prev => prev + 1)
-      console.log(`🔥🔥🔥 ========== END DELETING EVENT ==========`)
-
-      // DO NOT auto-create the pending event after deletion
-      // The user should manually close the modal and create the event when all conflicts are resolved
-      console.log(`🔥 Skipping auto-creation of pending event to allow user to resolve remaining conflicts`)
     } catch (error) {
-      console.error(`❌ Failed to delete event ${eventId}:`, error)
+      console.error('Failed to delete event:', error)
     }
   }
 
   const handleRescheduleEvent = async (conflictId: string, eventId: string) => {
-    console.log(`📅 Rescheduling event: ${eventId} for conflict: ${conflictId}`)
     // TODO: Implement rescheduling logic - for now just create the pending event
     if (pendingEvent) {
       await createEvent(pendingEvent)
-      console.log('✅ Event created, modal remains open for additional actions')
 
       // Force refresh to update conflict indicators and calendar views
       setRefreshTrigger(prev => prev + 1)
@@ -563,29 +520,18 @@ const TimeManagerContent = () => {
   }
 
   const handleConflictAcceptSave = async () => {
-    console.log(`🔥🔥🔥 ========== CONFLICT MODAL ACCEPT/SAVE ==========`)
-    console.log(`🔥 Accepting/Saving conflict resolution`)
-    console.log(`🔥 Current pending event: ${pendingEvent?.title}`)
-    console.log(`🔥 Current conflicts: ${conflicts?.conflicts.length}`)
-
     // Check if there are any remaining conflicts
     if (conflicts && conflicts.conflicts.length === 0 && pendingEvent) {
       // No remaining conflicts - create the event
-      console.log(`✅ No remaining conflicts. Creating pending event: ${pendingEvent.title}`)
       try {
         const createdEvent = await createEvent(pendingEvent)
-        console.log(`✅ Event "${pendingEvent.title}" created successfully`)
 
         // Track this event as recently created to prevent immediate conflict re-detection
         if (createdEvent && createdEvent.id) {
-          console.log(`🔥 Adding event ${createdEvent.id} to recently created events exclusion list`)
           setRecentlyCreatedEvents(prev => new Set([...prev, createdEvent.id]))
-
-          // Conflict resolution is now managed by database persistence
 
           // Remove from exclusion list after 5 seconds
           setTimeout(() => {
-            console.log(`🔥 Removing event ${createdEvent.id} from recently created events exclusion list`)
             setRecentlyCreatedEvents(prev => {
               const newSet = new Set(prev)
               newSet.delete(createdEvent.id)
@@ -602,48 +548,23 @@ const TimeManagerContent = () => {
         setPendingEvent(null)
         setConflicts(null)
       } catch (error) {
-        console.error(`❌ Failed to create pending event:`, error)
+        console.error('Failed to create pending event:', error)
       }
-    } else if (conflicts && conflicts.conflicts.length > 0) {
-      console.log(`⚠️  Cannot save event. ${conflicts.conflicts.length} unresolved conflicts remaining.`)
-      // Don't close modal, user needs to resolve remaining conflicts
     }
-
-    console.log(`🔥🔥🔥 ========== END CONFLICT MODAL ACCEPT/SAVE ==========`)
+    // If conflicts remain, don't close modal - user needs to resolve them
   }
 
   const handleConflictCancel = async () => {
-    console.log(`🔥🔥🔥 ========== CONFLICT MODAL CANCEL ==========`)
-    console.log(`🔥 Canceling conflict modal`)
-    console.log(`🔥 Current pending event: ${pendingEvent?.title}`)
-    console.log(`🔥 Current conflicts: ${conflicts?.conflicts.length}`)
-
     // Just close the modal without creating events
-    // Event creation should be handled by separate "Save" action
-    console.log(`🔥 Closing conflict modal - no automatic event creation`)
-
     setShowConflictModal(false)
     setPendingEvent(null)
     setConflicts(null)
-    console.log(`🔥🔥🔥 ========== END CONFLICT MODAL CANCEL ==========`)
   }
 
   const handleExistingEventConflictClick = (event: UnifiedEvent, conflicts: ConflictResult) => {
-    console.log(`🔥🔥🔥 ========== EXISTING EVENT CONFLICT CLICK ==========`)
-    console.log(`🔥 Event clicked: ${event.title}`)
-    console.log(`🔥 Event ID: ${event.id}`)
-    console.log(`🔥 Conflicts passed in: ${conflicts.conflicts.length}`)
-    conflicts.conflicts.forEach((conflict, index) => {
-      console.log(`🔥 Existing event conflict ${index + 1}: ${conflict.message} (ID: ${conflict.id})`)
-    })
-    console.log(`🔥 This will REPLACE current conflicts state!`)
-    console.log(`🔥 Current pending event: ${pendingEvent?.title}`)
-    console.log(`🔥 Current conflicts count: ${conflicts?.conflicts.length}`)
-
     setPendingEvent(event)
     setConflicts(conflicts)
     setShowConflictModal(true)
-    console.log(`🔥🔥🔥 ========== END EXISTING EVENT CONFLICT CLICK ==========`)
   }
 
   const handleDayClick = (date: Date) => {
@@ -676,8 +597,12 @@ const TimeManagerContent = () => {
           return (
             <WeekView
               onTaskClick={(task) => {
-                // Convert task to UnifiedEvent and show details
-                if ('startTime' in task && 'endTime' in task) {
+                // Handle both UnifiedEvent format (startDateTime) and legacy task format (startTime)
+                if ('startDateTime' in task) {
+                  // Already a UnifiedEvent, use directly
+                  handleEventView(task as UnifiedEvent)
+                } else if ('startTime' in task && 'endTime' in task) {
+                  // Legacy task format, convert to UnifiedEvent
                   const startDate = task.startTime instanceof Date ? task.startTime : new Date(task.startTime)
                   const endDate = task.endTime instanceof Date ? task.endTime : new Date(task.endTime)
 
@@ -719,7 +644,7 @@ const TimeManagerContent = () => {
               selectedDate={state.selectedDate}
               enableEditing={true}
               onDayClick={handleDayClick}
-              onDayDoubleClick={handleTimeSlotDoubleClick}
+              onDayDoubleClick={(date: Date, hour?: number) => handleTimeSlotDoubleClick(date, hour ?? 9, 0)}
               onEventEdit={handleEventEdit}
               onEventView={handleEventView}
               onEventDelete={handleTaskDelete}
@@ -759,12 +684,17 @@ const TimeManagerContent = () => {
         isEventCreationMode={isEventCreationMode}
         initialEventTime={eventCreationTime || undefined}
         initialEventDate={eventCreationDate || undefined}
+        initialEventDuration={placeholderEvent?.duration}
+        initialEventEndDate={placeholderEvent?.endDate}
+        initialEventEndHour={placeholderEvent?.endHour}
         onExitEventCreation={handleExitEventCreation}
         selectedEvent={sidebarSelectedEvent}
         onEventEdit={handleSidebarEventEdit}
         onEventDelete={handleSidebarEventDelete}
         onExitEventDetails={handleExitEventDetails}
         onFormChange={handleFormChange}
+        conflictCount={globalConflictCount}
+        onShowConflicts={handleShowConflicts}
       >
         {viewContent}
       </CalendarLayout>
