@@ -56,7 +56,7 @@ interface PlaceholderEventData {
 interface WeekViewProps {
   onTaskClick?: (task: DailyTask | ScheduledService) => void
   onTimeSlotClick?: (date: Date, hour: number) => void
-  onTimeSlotDoubleClick?: (date: Date, hour: number) => void
+  onTimeSlotDoubleClick?: (date: Date, hour: number, minutes?: number) => void
   enableEventCreation?: boolean
   onTaskEdit?: (task: DailyTask | ScheduledService) => void
   onTaskDelete?: (taskId: string) => void
@@ -205,10 +205,10 @@ const WeekView: React.FC<WeekViewProps> = ({
     }
   }
 
-  const handleTimeSlotDoubleClick = (date: Date, hour: number) => {
+  const handleTimeSlotDoubleClick = (date: Date, hour: number, minutes?: number) => {
     if (onTimeSlotDoubleClick) {
       // Parent is managing double-click event creation (via sidebar)
-      onTimeSlotDoubleClick(date, hour)
+      onTimeSlotDoubleClick(date, hour, minutes)
     }
   }
   

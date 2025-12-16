@@ -57,7 +57,7 @@ interface UnifiedDailyPlannerProps {
   activeConflicts?: Record<string, any>
   excludeFromConflictDetection?: Set<string>
   onTimeSlotClick?: (date: Date, hour?: number) => void
-  onTimeSlotDoubleClick?: (date: Date, hour: number) => void
+  onTimeSlotDoubleClick?: (date: Date, hour: number, minutes?: number) => void
   placeholderEvent?: PlaceholderEventData | null
   onPlaceholderChange?: (placeholder: PlaceholderEventData | null) => void
 }
@@ -328,12 +328,13 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   }
 
   // Handle time slot double-click (for sidebar event creation)
-  const handleTimeSlotDoubleClick = (hour: number) => {
+  const handleTimeSlotDoubleClick = (hour: number, minutes?: number) => {
     if (onTimeSlotDoubleClick) {
-      onTimeSlotDoubleClick(date, hour)
+      onTimeSlotDoubleClick(date, hour, minutes)
     } else {
       // Fallback to local modal handling (same as single click for now)
-      setSelectedTimeSlot(`${hour.toString().padStart(2, '0')}:00`)
+      const mins = minutes ?? 0
+      setSelectedTimeSlot(`${hour.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`)
       setEditingEvent(null)
       setShowEventModal(true)
     }
@@ -488,7 +489,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
                   isOccupied={hourEvents.length > 0}
                   events={hourEvents}
                   onTimeSlotClick={() => handleTimeSlotClick(hour)}
-                  onTimeSlotDoubleClick={() => handleTimeSlotDoubleClick(hour)}
+                  onTimeSlotDoubleClick={(clickDate, clickHour, minutes) => handleTimeSlotDoubleClick(clickHour, minutes)}
                   onMouseDownOnSlot={handleCreationMouseDown}
                 />
               </div>
