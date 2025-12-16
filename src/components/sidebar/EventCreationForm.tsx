@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { format, parseISO, addMinutes } from 'date-fns'
 import { Calendar, Clock, MapPin, User, Target, CheckCircle, AlertTriangle, Bell, Plus, X, Repeat } from 'lucide-react'
 import ClientSelector, { Client } from '@/components/ClientSelector'
@@ -62,8 +62,8 @@ const PRIORITY_OPTIONS: { value: Priority; label: string; borderColor: string; h
 ]
 
 const EVENT_TYPE_OPTIONS: { value: EventType; label: string; icon: React.ReactNode; defaultDuration: number }[] = [
-  { value: 'event', label: 'Event', icon: <Calendar className="w-4 h-4" />, defaultDuration: 60 },
-  { value: 'task', label: 'Task', icon: <CheckCircle className="w-4 h-4" />, defaultDuration: 30 },
+  { value: 'event', label: 'Event', icon: <Calendar className="w-4 h-4" />, defaultDuration: 15 },
+  { value: 'task', label: 'Task', icon: <CheckCircle className="w-4 h-4" />, defaultDuration: 15 },
   { value: 'goal', label: 'Goal', icon: <Target className="w-4 h-4" />, defaultDuration: 0 },
   { value: 'milestone', label: 'Milestone', icon: <AlertTriangle className="w-4 h-4" />, defaultDuration: 0 }
 ]
@@ -98,6 +98,9 @@ interface EventCreationFormProps {
   onCancel: () => void
   initialDate?: Date
   initialTime?: string
+  initialDuration?: number // Initial duration in minutes (from placeholder drag)
+  initialEndDate?: string // End date for multi-day events (from placeholder drag)
+  initialEndHour?: number // End hour for multi-day events (from placeholder drag)
   editingEvent?: UnifiedEvent
   initialClientId?: string
   initialClientName?: string
@@ -109,19 +112,28 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
   onCancel,
   initialDate,
   initialTime,
+  initialDuration,
+  initialEndDate,
+  initialEndHour,
   editingEvent,
   initialClientId,
   initialClientName,
   onFormChange
 }) => {
+  // Calculate initial values
+  const effectiveStartTime = initialTime || '09:00'
+  const effectiveDuration = initialDuration || 15 // Default 15 minutes for compact events
+  const effectiveDate = initialDate ? format(initialDate, 'yyyy-MM-dd') : format((() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()) })(), 'yyyy-MM-dd')
+  const effectiveEndTime = format(addMinutes(new Date(`${effectiveDate}T${effectiveStartTime}`), effectiveDuration), 'HH:mm')
+
   const [formData, setFormData] = useState<FormData>({
     type: 'event',
     title: '',
     description: '',
-    date: initialDate ? format(initialDate, 'yyyy-MM-dd') : format((() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()) })(), 'yyyy-MM-dd'),
-    startTime: initialTime || '09:00',
-    endTime: '10:00',
-    duration: 60,
+    date: effectiveDate,
+    startTime: effectiveStartTime,
+    endTime: effectiveEndTime,
+    duration: effectiveDuration,
     priority: 'medium',
     clientId: '',
     clientName: '',
@@ -159,18 +171,67 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
     }
   }, [])
 
+  // Track whether we've done the initial sync from props
+  // Sync date/time/client on prop changes
   useEffect(() => {
     if (!editingEvent && (initialTime || initialDate || initialClientId)) {
-      setFormData(prev => ({
-        ...prev,
-        date: initialDate ? format(initialDate, 'yyyy-MM-dd') : prev.date,
-        startTime: initialTime || prev.startTime,
-        endDate: initialDate ? format(initialDate, 'yyyy-MM-dd') : prev.endDate,
-        clientId: initialClientId || prev.clientId,
-        clientName: initialClientName || prev.clientName,
-      }))
+      setFormData(prev => {
+        const newDate = initialDate ? format(initialDate, 'yyyy-MM-dd') : prev.date
+        const newStartTime = initialTime || prev.startTime
+        const newEndTime = format(addMinutes(new Date(`${newDate}T${newStartTime}`), prev.duration), 'HH:mm')
+
+        return {
+          ...prev,
+          date: newDate,
+          startTime: newStartTime,
+          endTime: newEndTime,
+          endDate: initialDate ? format(initialDate, 'yyyy-MM-dd') : prev.endDate,
+          clientId: initialClientId || prev.clientId,
+          clientName: initialClientName || prev.clientName,
+        }
+      })
     }
   }, [initialTime, initialDate, initialClientId, initialClientName, editingEvent])
+
+  // Sync duration from placeholder drag (separate effect to avoid complex dependencies)
+  // This allows the placeholder's duration to update the form during drag creation
+  useEffect(() => {
+    if (!editingEvent && initialDuration !== undefined && initialDuration !== formData.duration) {
+      setFormData(prev => {
+        const newEndTime = format(addMinutes(new Date(`${prev.date}T${prev.startTime}`), initialDuration), 'HH:mm')
+        return {
+          ...prev,
+          duration: initialDuration,
+          endTime: newEndTime
+        }
+      })
+    }
+  }, [initialDuration, editingEvent]) // Don't include formData.duration to avoid loops
+
+  // Sync multi-day state from placeholder drag
+  // When the placeholder spans multiple days, update the form's isMultiDay and endDate
+  useEffect(() => {
+    if (!editingEvent && initialEndDate) {
+      const startDateStr = initialDate ? format(initialDate, 'yyyy-MM-dd') : formData.date
+      const isMultiDay = initialEndDate !== startDateStr
+
+      if (isMultiDay) {
+        setFormData(prev => {
+          // Calculate end time from endHour if provided
+          const newEndTime = initialEndHour !== undefined
+            ? `${initialEndHour.toString().padStart(2, '0')}:00`
+            : prev.endTime
+
+          return {
+            ...prev,
+            isMultiDay: true,
+            endDate: initialEndDate,
+            endTime: newEndTime
+          }
+        })
+      }
+    }
+  }, [initialEndDate, initialEndHour, initialDate, editingEvent]) // Don't include formData to avoid loops
 
   useEffect(() => {
     if (editingEvent) {
@@ -208,21 +269,43 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
     }
   }, [editingEvent])
 
+  // Track last emitted values to prevent unnecessary parent updates
+  const lastEmittedRef = useRef<{ title?: string; date?: string; startTime?: string; duration?: number }>({})
+
   // Notify parent of form changes for placeholder updates
   useEffect(() => {
     if (onFormChange) {
-      onFormChange({
+      const newData = {
         title: formData.title,
         date: formData.date,
         startTime: formData.startTime,
         duration: formData.duration
-      })
+      }
+      // Only call if values actually changed
+      if (
+        newData.title !== lastEmittedRef.current.title ||
+        newData.date !== lastEmittedRef.current.date ||
+        newData.startTime !== lastEmittedRef.current.startTime ||
+        newData.duration !== lastEmittedRef.current.duration
+      ) {
+        lastEmittedRef.current = newData
+        onFormChange(newData)
+      }
     }
   }, [formData.title, formData.date, formData.startTime, formData.duration, onFormChange])
+
+  // Track if we should use the event type's default duration
+  // Skip if initialDuration was provided (from placeholder drag or double-click)
+  const hasInitialDurationRef = useRef(!!initialDuration)
 
   useEffect(() => {
     const selectedEventType = EVENT_TYPE_OPTIONS.find(option => option.value === formData.type)
     if (selectedEventType && !editingEvent) {
+      // Don't override if initialDuration was provided on mount
+      if (hasInitialDurationRef.current) {
+        hasInitialDurationRef.current = false // Only skip once
+        return
+      }
       const defaultDuration = selectedEventType.defaultDuration
       setFormData(prev => ({
         ...prev,
@@ -288,9 +371,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
       newErrors.startTime = 'Start time is required'
     }
 
-    if (!formData.clientName.trim()) {
-      newErrors.clientName = 'Client is required'
-    }
+    // Client is optional - events can be created without a client
 
     if (formData.type !== 'goal' && formData.type !== 'milestone' && formData.duration <= 0) {
       newErrors.duration = 'Duration must be greater than 0'
@@ -563,7 +644,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
       {/* Client Selection */}
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
-          Client (Who is this for?) *
+          Client (Optional)
         </label>
         <ClientSelector
           selectedClientId={formData.clientId}
@@ -599,9 +680,6 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
           placeholder="Search for a client or enter name"
           allowNonClient={true}
         />
-        {errors.clientName && (
-          <p className="text-sm text-red-500 font-primary">{errors.clientName}</p>
-        )}
       </div>
 
       {/* Location */}

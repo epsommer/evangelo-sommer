@@ -136,7 +136,6 @@ const WeekView: React.FC<WeekViewProps> = ({
       }
     },
     onDragEnd: (state: DragState) => {
-      console.log('🖱️ [WeekView] Drag ended, final state:', state)
       // Final update to placeholder with drag result
       if (onPlaceholderChange) {
         onPlaceholderChange({
@@ -153,11 +152,6 @@ const WeekView: React.FC<WeekViewProps> = ({
     }
   })
 
-  // Debug: log when events change
-  useEffect(() => {
-    console.log('🔄 [WeekView] unifiedEvents changed, count:', unifiedEvents.length)
-    console.log('🔄 [WeekView] Events:', unifiedEvents.map(e => ({ id: e.id, title: e.title, start: e.startDateTime, end: e.endDateTime, duration: e.duration })))
-  }, [unifiedEvents])
 
   // Load data from localStorage
   useEffect(() => {
@@ -199,48 +193,23 @@ const WeekView: React.FC<WeekViewProps> = ({
   
   // Event creation handlers
   const handleTimeSlotClick = (date: Date, hour: number) => {
-    console.group('🕐 WeekView: Time Slot Clicked')
-    console.log('Time slot clicked:', {
-      date: date.toISOString(),
-      hour: hour,
-      enableEventCreation: enableEventCreation
-    })
-
     if (onTimeSlotClick) {
       // Parent is managing event creation (e.g., via sidebar)
-      console.log('Calling onTimeSlotClick callback')
       onTimeSlotClick(date, hour)
     } else if (enableEventCreation) {
       // Fallback to local modal handling
-      console.log('Opening event creation modal...')
       setModalInitialDate(date)
       setModalInitialTime(`${hour.toString().padStart(2, '0')}:00`)
       setEditingEvent(null)
       setShowEventModal(true)
-    } else {
-      console.log('Event creation is disabled')
     }
-
-    console.groupEnd()
   }
 
   const handleTimeSlotDoubleClick = (date: Date, hour: number) => {
-    console.group('🕐 WeekView: Time Slot Double-Clicked')
-    console.log('Time slot double-clicked:', {
-      date: date.toISOString(),
-      hour: hour,
-      enableEventCreation: enableEventCreation
-    })
-
     if (onTimeSlotDoubleClick) {
       // Parent is managing double-click event creation (via sidebar)
-      console.log('Calling onTimeSlotDoubleClick callback')
       onTimeSlotDoubleClick(date, hour)
-    } else {
-      console.log('No double-click handler provided')
     }
-
-    console.groupEnd()
   }
   
   const handleSaveEvent = async (eventData: UnifiedEvent) => {
@@ -250,7 +219,6 @@ const WeekView: React.FC<WeekViewProps> = ({
 
       if (existingEvent) {
         // Update existing event
-        console.log('📝 [WeekView] Updating existing event:', eventData.title)
         await updateEvent(eventData.id, {
           title: eventData.title,
           description: eventData.description,
@@ -268,12 +236,9 @@ const WeekView: React.FC<WeekViewProps> = ({
           recurrence: eventData.recurrence,
           notifications: eventData.notifications
         })
-        console.log('✅ [WeekView] Event updated:', eventData.title)
       } else {
         // Create new event
-        console.log('➕ [WeekView] Creating new event:', eventData.title)
         await createEvent(eventData)
-        console.log('✅ [WeekView] Event created:', eventData.title)
       }
 
       setShowEventModal(false)
@@ -290,71 +255,36 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   // Handle showing event details modal or calling external handler
   const handleShowEventDetails = (event: UnifiedEvent) => {
-    console.group('🔍 WeekView: Show Event Details')
-    console.log('Event clicked:', {
-      id: event.id,
-      title: event.title,
-      type: event.type,
-      startDateTime: event.startDateTime,
-      endDateTime: event.endDateTime,
-      clientName: event.clientName,
-      location: event.location
-    })
-
     if (useExternalEventDetailsHandler && onTaskClick) {
       // Use external handler (e.g., show in sidebar)
-      console.log('Using external event details handler (sidebar)')
       onTaskClick(event as any)
     } else {
       // Use internal modal
-      console.log('Opening event details modal...')
       setEventDetailsModal({ isOpen: true, event })
 
       // Also call onTaskClick if provided for backward compatibility
       if (onTaskClick) {
-        console.log('Calling original onTaskClick callback for backward compatibility')
         onTaskClick(event as any)
       }
     }
-
-    console.groupEnd()
   }
 
   // Handle editing from event details modal
   const handleEditFromDetails = (event: UnifiedEvent) => {
-    console.group('✏️ WeekView: Edit Event from Details')
-    console.log('Editing event:', {
-      id: event.id,
-      title: event.title,
-      type: event.type
-    })
-    console.log('Closing details modal and opening edit modal...')
-    
     setEventDetailsModal({ isOpen: false, event: null })
     setEditingEvent(event)
     setShowEventModal(true)
-    
-    console.log('Edit modal should now be open with event data')
-    console.groupEnd()
   }
 
   // Handle deleting from event details modal
   const handleDeleteFromDetails = async (eventId: string) => {
-    console.group('🗑️ WeekView: Delete Event from Details')
-    console.log('Deleting event ID:', eventId)
-    console.log('Closing details modal...')
-    
     setEventDetailsModal({ isOpen: false, event: null })
-    
+
     try {
-      console.log('Calling deleteEvent...')
       await deleteEvent(eventId)
-      console.log('✅ Event deleted successfully')
     } catch (error) {
       console.error('❌ Error deleting event:', error)
     }
-    
-    console.groupEnd()
   }
 
   // Drag and drop handlers
@@ -383,10 +313,6 @@ const WeekView: React.FC<WeekViewProps> = ({
   }
 
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => {
-    console.log('🎯 [WeekView] handleEventResize CALLED')
-    console.log('🎯 [WeekView] Event:', event.title, event.id)
-    console.log('🎯 [WeekView] New times:', { newStartTime, newEndTime, isMultiDay })
-
     const updates: Record<string, any> = {
       startDateTime: newStartTime,
       endDateTime: newEndTime,
@@ -398,12 +324,8 @@ const WeekView: React.FC<WeekViewProps> = ({
       updates.isMultiDay = isMultiDay
     }
 
-    console.log('🎯 [WeekView] Calling updateEvent with:', updates)
-
     try {
-      const result = await updateEvent(event.id, updates)
-      console.log('🎯 [WeekView] updateEvent result:', result)
-      console.log('✅ [WeekView] Event resized successfully:', event.title)
+      await updateEvent(event.id, updates)
     } catch (error) {
       console.error('❌ [WeekView] Error resizing event:', error)
     }
@@ -411,16 +333,6 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   const handleRescheduleConfirm = async (data: RescheduleData, notifyParticipants: boolean) => {
     try {
-      console.group('🎯 [WeekView] handleRescheduleConfirm')
-      console.log('Reschedule data:', {
-        eventTitle: data.event.title,
-        eventId: data.event.id,
-        fromSlot: data.fromSlot,
-        toSlot: data.toSlot,
-        originalStartDateTime: data.event.startDateTime,
-        originalDuration: data.event.duration
-      })
-
       // Use the new drag calculation utility for accurate time mapping
       const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
         data.event,
@@ -440,16 +352,8 @@ const WeekView: React.FC<WeekViewProps> = ({
 Rescheduled: ${data.reason}`.trim() : 
           data.event.notes
       }
-      
-      console.log('Applying updates to event:', updates)
-      await updateEvent(data.event.id, updates)
 
-      console.log('✅ Event rescheduled successfully:', {
-        eventTitle: data.event.title,
-        newStartDateTime: newStart,
-        newEndDateTime: newEnd
-      })
-      console.groupEnd()
+      await updateEvent(data.event.id, updates)
       
       // Send notifications to participants if requested
       if (notifyParticipants) {
@@ -478,17 +382,12 @@ Rescheduled: ${data.reason}`.trim() :
               if (successful > 0) {
                 console.log(`📧 Reschedule notifications sent to ${successful} participant(s)`)
               }
-              if (failed > 0) {
-                console.warn(`⚠️ Failed to send reschedule notifications to ${failed} participant(s)`)
-                if (result.results.errors.length > 0) {
-                  console.warn('Notification errors:', result.results.errors)
-                }
+              if (failed > 0 && result.results.errors.length > 0) {
+                console.warn('Notification errors:', result.results.errors)
               }
             } else {
               console.error('❌ Failed to send reschedule notifications:', result.error)
             }
-          } else {
-            console.log('📧 No participants found to notify about reschedule')
           }
         } catch (error) {
           console.error('❌ Error sending reschedule notifications:', error)
@@ -877,13 +776,6 @@ Rescheduled: ${data.reason}`.trim() :
               {placeholderEvent && (() => {
                 const isMultiDay = placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date
 
-                console.log('🎯 [WeekView] Placeholder render:', {
-                  date: placeholderEvent.date,
-                  endDate: placeholderEvent.endDate,
-                  isMultiDay,
-                  duration: placeholderEvent.duration
-                })
-
                 if (isMultiDay) {
                   // Multi-day placeholder: span across columns like multi-day events
                   const startDate = new Date(placeholderEvent.date + 'T00:00:00')
@@ -901,14 +793,6 @@ Rescheduled: ${data.reason}`.trim() :
                       endDayIndex = i
                     }
                   }
-
-                  console.log('🎯 [WeekView] Multi-day placeholder indices:', {
-                    startDayIndex,
-                    endDayIndex,
-                    weekDays: weekDays.map(d => format(d, 'yyyy-MM-dd')),
-                    startDateStr: placeholderEvent.date,
-                    endDateStr: placeholderEvent.endDate
-                  })
 
                   // Clamp to week bounds if dates are outside
                   if (startDayIndex === -1) startDayIndex = startDate < weekDays[0] ? 0 : 6
@@ -954,16 +838,6 @@ Rescheduled: ${data.reason}`.trim() :
 
                   // Ensure minimum height for visibility
                   height = Math.max(height, 20)
-
-                  console.log('🎯 [WeekView] Multi-day placeholder positioning:', {
-                    leftPercent,
-                    widthPercent,
-                    top,
-                    height,
-                    endTime: `${endHourPos}:${endMinsPos.toString().padStart(2, '0')}`,
-                    startDayIndex,
-                    endDayIndex
-                  })
 
                   return (
                     <div

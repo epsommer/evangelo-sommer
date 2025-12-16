@@ -108,6 +108,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   const dayStart = date
 
   // Event creation drag hook
+  // For day view, we use dayColumnCount: 1 (single day column)
   const {
     dragState: creationDragState,
     isDragging: isCreationDragging,
@@ -129,7 +130,6 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
       }
     },
     onDragEnd: (state: DragState) => {
-      console.log('🖱️ [UnifiedDailyPlanner] Drag ended, final state:', state)
       // Final update to placeholder with drag result
       if (onPlaceholderChange) {
         onPlaceholderChange({
@@ -143,7 +143,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
         })
       }
     }
-  }, DAY_VIEW_PIXELS_PER_HOUR)
+  }, DAY_VIEW_PIXELS_PER_HOUR, 1) // dayColumnCount: 1 for day view
 
   // Unified events hook
   const {
@@ -157,10 +157,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
   // Get today's events - include events in deps to ensure re-render on any event change
   const todaysEvents = useMemo(() => {
-    console.log('🔄 [UnifiedDailyPlanner] Recalculating todaysEvents, events count:', events.length)
-    const filtered = getEventsForDate(date)
-    console.log('🔄 [UnifiedDailyPlanner] Today\'s events:', filtered.map(e => ({ id: e.id, title: e.title, start: e.startDateTime, end: e.endDateTime, duration: e.duration })))
-    return filtered
+    return getEventsForDate(date)
   }, [events, getEventsForDate, date])
 
   // Load objectives from localStorage
@@ -277,7 +274,6 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
       if (existingEvent) {
         // Update existing event
-        console.log('📝 [UnifiedDailyPlanner] Updating existing event:', eventData.title)
         await updateEvent(eventData.id, {
           title: eventData.title,
           description: eventData.description,
@@ -295,12 +291,9 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
           recurrence: eventData.recurrence,
           notifications: eventData.notifications
         })
-        console.log('✅ [UnifiedDailyPlanner] Event updated:', eventData.title)
       } else {
         // Create new event
-        console.log('➕ [UnifiedDailyPlanner] Creating new event:', eventData.title)
         await createEvent(eventData)
-        console.log('✅ [UnifiedDailyPlanner] Event created:', eventData.title)
       }
 
       onRefreshTrigger?.()
@@ -315,7 +308,6 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
       for (const event of events) {
         await createEvent(event)
       }
-      console.log(`Created ${events.length} events`)
       onRefreshTrigger?.()
     } catch (error) {
       console.error('Error creating events:', error)
@@ -349,21 +341,14 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
   // Handle event resize
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
-    console.log('🎯 [UnifiedDailyPlanner] handleEventResize CALLED')
-    console.log('🎯 [UnifiedDailyPlanner] Event:', event.title, event.id)
-    console.log('🎯 [UnifiedDailyPlanner] New times:', { newStartTime, newEndTime })
-
     const updates = {
       startDateTime: newStartTime,
       endDateTime: newEndTime,
       duration: Math.round((new Date(newEndTime).getTime() - new Date(newStartTime).getTime()) / (1000 * 60))
     }
 
-    console.log('🎯 [UnifiedDailyPlanner] Calling updateEvent with:', updates)
-
     try {
       await updateEvent(event.id, updates)
-      console.log('✅ [UnifiedDailyPlanner] Event resized successfully:', event.title)
       onRefreshTrigger?.()
     } catch (error) {
       console.error('❌ [UnifiedDailyPlanner] Error resizing event:', error)
@@ -372,16 +357,6 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
 
   // Handle event drop (drag and drop)
   const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
-    console.group('🎯 [UnifiedDailyPlanner] handleEventDrop')
-    console.log('Event:', event.title, event.id)
-    console.log('From slot:', fromSlot)
-    console.log('To slot:', toSlot)
-    console.log('Original times:', {
-      startDateTime: event.startDateTime,
-      endDateTime: event.endDateTime,
-      duration: event.duration
-    })
-
     try {
       // Use the new drag calculation utility for accurate time mapping
       const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
@@ -396,14 +371,10 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
         duration
       }
 
-      console.log('Applying updates:', updates)
       await updateEvent(event.id, updates)
-      console.log('✅ Event moved successfully:', event.title)
-      console.groupEnd()
       onRefreshTrigger?.()
     } catch (error) {
       console.error('❌ Error moving event:', error)
-      console.groupEnd()
     }
   }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Target, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { useDragDrop } from './DragDropContext'
 import { UnifiedEvent } from '@/components/EventCreationModal'
@@ -70,9 +70,7 @@ const DropZone: React.FC<DropZoneProps> = ({
   // Handle drag enter
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault()
-    console.log('🎯 DropZone.handleDragEnter called for:', date, hour, 'isDragging:', dragState.isDragging)
     if (dragState.isDragging) {
-      console.log('🎯 Setting dragged over and hovered drop zone')
       setIsDraggedOver(true)
       setHoveredDropZone({ date, hour })
     }
@@ -81,9 +79,7 @@ const DropZone: React.FC<DropZoneProps> = ({
   // Handle drag over
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    console.log('🎯 DropZone.handleDragOver called for:', date, hour, 'isDragging:', dragState.isDragging)
     if (dragState.isDragging) {
-      console.log('🎯 Setting active drop zone to:', date, hour)
       setActiveDropZone({ date, hour })
     }
   }
@@ -116,7 +112,6 @@ const DropZone: React.FC<DropZoneProps> = ({
   // Handle drop
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
-    console.log('🎯 DropZone.handleDrop called for:', date, hour)
     setIsDraggedOver(false)
     // The actual drop logic is handled in the DragDropContext
   }
@@ -128,24 +123,28 @@ const DropZone: React.FC<DropZoneProps> = ({
     const clickedOnEvent = target.closest('[data-event-block]') || target.closest('.group.cursor-pointer')
 
     if (!dragState.isDragging && !clickedOnEvent && onMouseDownOnSlot) {
-      console.log('🖱️ DROPZONE MOUSEDOWN:', { hour, date, dayIndex })
       onMouseDownOnSlot(e, date, hour, dayIndex)
     }
   }
 
+  // Calculate 15-minute precision time from click Y position
+  const calculatePreciseTime = (clientY: number): number => {
+    const dropZoneElement = dropZoneRef.current
+    if (!dropZoneElement) return hour
+
+    const rect = dropZoneElement.getBoundingClientRect()
+    const relativeY = clientY - rect.top
+    const slotHeight = rect.height
+
+    // Calculate which 15-minute segment was clicked (0, 15, 30, or 45)
+    const minuteSegment = Math.floor((relativeY / slotHeight) * 4)
+    const minutes = Math.min(45, minuteSegment * 15) // Clamp to 45 max
+
+    return hour + (minutes / 60) // Return fractional hour for precise positioning
+  }
+
   // Handle click to create new event (with double-click detection)
   const handleClick = (e: React.MouseEvent) => {
-    console.log('🖱️ DROPZONE CLICK:', {
-      hour,
-      date: formatTimeSlot(hour),
-      isOccupied,
-      hasChildren: !!children,
-      target: (e.target as HTMLElement).tagName,
-      currentTarget: (e.currentTarget as HTMLElement).tagName,
-      zIndex: (e.currentTarget as HTMLElement).style.zIndex,
-      pointerEvents: (e.currentTarget as HTMLElement).style.pointerEvents
-    })
-
     // Don't trigger time slot click if clicking on an event
     const target = e.target as HTMLElement
     const clickedOnEvent = target.closest('[data-event-block]') || target.closest('.group.cursor-pointer')
@@ -158,16 +157,21 @@ const DropZone: React.FC<DropZoneProps> = ({
         // This is a double-click - clear the single-click timeout and call double-click handler
         clearTimeout(clickTimeout)
         setClickTimeout(null)
-        console.log('🖱️ DROPZONE DOUBLE-CLICK detected')
         if (onTimeSlotDoubleClick) {
           onTimeSlotDoubleClick(clickDate, hour)
         }
       } else {
         // This might be a single-click - set a timeout to call single-click handler
         const timeout = setTimeout(() => {
-          console.log('🖱️ DROPZONE SINGLE-CLICK confirmed')
           if (onTimeSlotClick) {
-            onTimeSlotClick(clickDate, hour)
+            // Calculate precise 15-minute interval from click position
+            const preciseTime = calculatePreciseTime(e.clientY)
+            const preciseHour = Math.floor(preciseTime)
+            const preciseMinutes = Math.round((preciseTime - preciseHour) * 60)
+
+            // Create a new date with precise time
+            const preciseDate = new Date(date + `T${preciseHour.toString().padStart(2, '0')}:${preciseMinutes.toString().padStart(2, '0')}:00`)
+            onTimeSlotClick(preciseDate, preciseHour)
           }
           setClickTimeout(null)
         }, 300) // 300ms window for double-click detection
@@ -187,28 +191,12 @@ const DropZone: React.FC<DropZoneProps> = ({
 
   // Handle mouse events for hover feedback
   const handleMouseEnter = (e: React.MouseEvent) => {
-    console.log('🖱️ DROPZONE MOUSE - Enter:', {
-      hour,
-      date: formatTimeSlot(hour),
-      isOccupied,
-      hasChildren: !!children,
-      isDragging: dragState.isDragging,
-      target: (e.target as HTMLElement).tagName,
-      currentTarget: (e.currentTarget as HTMLElement).tagName,
-      zIndex: (e.currentTarget as HTMLElement).style.zIndex
-    })
     if (!dragState.isDragging) {
       setIsHovered(true)
     }
   }
 
   const handleMouseLeave = (e: React.MouseEvent) => {
-    console.log('🖱️ DROPZONE MOUSE - Leave:', {
-      hour,
-      date: formatTimeSlot(hour),
-      target: (e.target as HTMLElement).tagName,
-      currentTarget: (e.currentTarget as HTMLElement).tagName
-    })
     setIsHovered(false)
   }
 
@@ -263,14 +251,11 @@ const DropZone: React.FC<DropZoneProps> = ({
       className={`
         relative transition-all duration-200 ease-in-out h-full overflow-visible
         ${shouldShowContent ? 'opacity-100' : 'opacity-0'}
-        ${isActiveDropZone && isValidDropTarget ?
-          'bg-tactical-gold-light border-2 border-tactical-gold shadow-md scale-105' :
+        ${dragState.isDragging && (isActiveDropZone || isDraggedOver) && isValidDropTarget ?
+          'border-2 border-accent' :
           ''}
-        ${isDraggedOver && isValidDropTarget ?
-          'bg-green-50 border-2 border-green-400 shadow-lg' :
-          ''}
-        ${isDraggedOver && !isValidDropTarget ?
-          'bg-red-50 border-2 border-red-400' :
+        ${dragState.isDragging && (isActiveDropZone || isDraggedOver) && !isValidDropTarget ?
+          'border-2 border-red-400' :
           ''}
         ${effectiveHovered && !dragState.isDragging && !isOccupied ?
           'bg-tactical-grey-100 border-2 border-tactical-grey-400' :
@@ -301,59 +286,13 @@ const DropZone: React.FC<DropZoneProps> = ({
         }}
       >
         {children}
-        
-        {/* Drop zone indicator */}
-        {shouldShowDropZone && (!isOccupied || dragState.isDragging) && (
-          <div
-            className={`
-              absolute inset-0 flex items-center justify-center
-              ${isOccupied ? 'bg-hud-background-secondary bg-opacity-20' : ''}
-              ${compact ? 'text-xs' : 'text-sm'}
-            `}
-            style={{
-              pointerEvents: children ? 'none' : 'auto' // Don't block events when there are children
-            }}
-          >
-            {/* Valid drop target */}
-            {isValidDropTarget && dragState.isDragging && (
-              <div className="flex flex-col items-center gap-1 text-tactical-gold font-primary">
-                <Target className={compact ? 'w-4 h-4' : 'w-6 h-6'} />
-                <span className="font-semibold text-xs">Drop here</span>
-                {!compact && (
-                  <span className="text-xs opacity-75">
-                    {formatTimeSlot(hour)}
-                  </span>
-                )}
-              </div>
-            )}
-            
-            {/* Invalid drop target */}
-            {!isValidDropTarget && dragState.isDragging && (
-              <div className="flex flex-col items-center gap-1 text-red-600 font-primary">
-                <div className={`${compact ? 'w-4 h-4' : 'w-6 h-6'} rounded-full border-2 border-current flex items-center justify-center`}>
-                  <span className="text-xs">×</span>
-                </div>
-                <span className="font-semibold text-xs">Occupied</span>
-              </div>
-            )}
-            
-            
-            {/* Current time indicator */}
-            {isCurrentTime() && (
-              <div className="absolute top-0 left-0 w-full h-0.5 bg-tactical-gold shadow-sm">
-                <div className="absolute -left-1 -top-1 w-2 h-2 bg-tactical-gold rounded-full shadow-sm">
-                  <div className="absolute inset-0.5 bg-hud-text-primary rounded-full"></div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Time slot info overlay */}
-        {showDropZones && !compact && (
-          <div className="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded font-primary">
-            <Clock className="inline w-3 h-3 mr-1" />
-            {formatTimeSlot(hour)}
+
+        {/* Current time indicator - always show if current time */}
+        {isCurrentTime() && (
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-tactical-gold shadow-sm">
+            <div className="absolute -left-1 -top-1 w-2 h-2 bg-tactical-gold rounded-full shadow-sm">
+              <div className="absolute inset-0.5 bg-hud-text-primary rounded-full"></div>
+            </div>
           </div>
         )}
       </div>

@@ -61,14 +61,15 @@ function yToTime(y: number, gridTop: number, pixelsPerHour: number = DEFAULT_PIX
 }
 
 /**
- * Convert X position to day column index (0-6 for Sun-Sat)
+ * Convert X position to day column index
+ * @param maxDayIndex - Maximum valid day index (0 for day view, 6 for week view)
  */
-function xToDay(x: number, gridLeft: number, timeColumnWidth: number, columnWidth: number) {
+function xToDay(x: number, gridLeft: number, timeColumnWidth: number, columnWidth: number, maxDayIndex: number = 6) {
   const relativeX = x - gridLeft - timeColumnWidth
   const dayIndex = Math.floor(relativeX / columnWidth)
 
-  // Clamp to valid range (0-6)
-  return Math.max(0, Math.min(6, dayIndex))
+  // Clamp to valid range (0 to maxDayIndex)
+  return Math.max(0, Math.min(maxDayIndex, dayIndex))
 }
 
 /**
@@ -102,12 +103,18 @@ function calculateDuration(
 
 /**
  * Hook for managing click-and-drag event creation
+ * @param gridContainerRef - Reference to the grid container element
+ * @param weekStartDate - Start date (for week view) or current date (for day view)
+ * @param callbacks - Optional callbacks for drag events
+ * @param pixelsPerHour - Pixels per hour for time calculations
+ * @param dayColumnCount - Number of day columns (1 for day view, 7 for week view)
  */
 export function useEventCreationDrag(
   gridContainerRef: React.RefObject<HTMLElement | null>,
   weekStartDate: Date,
   callbacks: DragCallbacks = {},
-  pixelsPerHour: number = DEFAULT_PIXELS_PER_HOUR
+  pixelsPerHour: number = DEFAULT_PIXELS_PER_HOUR,
+  dayColumnCount: number = 7
 ): UseEventCreationDragResult {
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -124,6 +131,10 @@ export function useEventCreationDrag(
   // Use ref for pixelsPerHour to avoid dependency issues
   const pixelsPerHourRef = useRef(pixelsPerHour)
   pixelsPerHourRef.current = pixelsPerHour
+
+  // Use ref for dayColumnCount to avoid dependency issues
+  const dayColumnCountRef = useRef(dayColumnCount)
+  dayColumnCountRef.current = dayColumnCount
 
   const dragStartRef = useRef<{
     date: string
@@ -165,10 +176,12 @@ export function useEventCreationDrag(
       const container = gridContainerRef.current
       const rect = container.getBoundingClientRect()
 
-      // Calculate grid layout dimensions
+      // Calculate grid layout dimensions based on dayColumnCount
+      // For day view (1 column), we don't need X-based day calculations
       const totalWidth = rect.width
-      const timeColumnWidth = totalWidth / 8 // 1 time column + 7 day columns
-      const dayColumnWidth = (totalWidth - timeColumnWidth) / 7
+      const numColumns = dayColumnCountRef.current
+      const timeColumnWidth = totalWidth / (numColumns + 1) // 1 time column + N day columns
+      const dayColumnWidth = numColumns > 0 ? (totalWidth - timeColumnWidth) / numColumns : totalWidth
 
       // Calculate precise start time from mouse Y position (not just the integer hour)
       const initialTime = yToTime(e.clientY, rect.top, pixelsPerHourRef.current)
@@ -189,14 +202,6 @@ export function useEventCreationDrag(
 
       mouseMoveStartedRef.current = false
       setIsTrackingMouse(true) // Trigger useEffect to add global listeners
-
-      console.log('🖱️ [useEventCreationDrag] Mouse down on second click - ready to drag', {
-        date,
-        hour,
-        dayIndex,
-        mouseY: e.clientY,
-        mouseX: e.clientX
-      })
     }
   }, [gridContainerRef])
 
@@ -216,13 +221,14 @@ export function useEventCreationDrag(
     if (hasMoved && !mouseMoveStartedRef.current) {
       mouseMoveStartedRef.current = true
       setIsDragging(true)
-      console.log('🖱️ [useEventCreationDrag] Drag mode activated')
     }
 
     if (mouseMoveStartedRef.current) {
       // Calculate current time from mouse position
       const currentTime = yToTime(e.clientY, startData.gridTop, pixelsPerHourRef.current)
-      const currentDayIndex = xToDay(e.clientX, startData.gridLeft, startData.timeColumnWidth, startData.dayColumnWidth)
+      // For day view (1 column), maxDayIndex is 0; for week view (7 columns), it's 6
+      const maxDayIndex = Math.max(0, dayColumnCountRef.current - 1)
+      const currentDayIndex = xToDay(e.clientX, startData.gridLeft, startData.timeColumnWidth, startData.dayColumnWidth, maxDayIndex)
 
       // Calculate current date based on day index (use ref to avoid dependency)
       const currentDate = format(addDays(weekStartDateRef.current, currentDayIndex), 'yyyy-MM-dd')
@@ -281,7 +287,6 @@ export function useEventCreationDrag(
    */
   const handleMouseUp = useCallback(() => {
     if (mouseMoveStartedRef.current && dragStateRef.current) {
-      console.log('🖱️ [useEventCreationDrag] Drag ended', dragStateRef.current)
       callbacksRef.current.onDragEnd?.(dragStateRef.current)
     }
 
@@ -312,12 +317,10 @@ export function useEventCreationDrag(
    */
   useEffect(() => {
     if (isTrackingMouse) {
-      console.log('🖱️ [useEventCreationDrag] Adding global mouse listeners')
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
 
       return () => {
-        console.log('🖱️ [useEventCreationDrag] Removing global mouse listeners')
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
       }

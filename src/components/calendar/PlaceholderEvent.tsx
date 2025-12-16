@@ -94,12 +94,13 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
         height: `${displayHeight}px`,
         left: '2px',
         right: '2px',
-        zIndex: 5 // Below real events (z-index 10) but above grid
+        zIndex: 5, // Below real events (z-index 10) but above grid
+        willChange: 'top, height' // Optimize for smooth dragging
       }
 
   return (
     <div
-      className={`rounded-md transition-all pointer-events-none ${isMultiDay ? 'relative' : 'absolute left-0 right-0'}`}
+      className={`rounded-md pointer-events-none ${isMultiDay ? 'relative' : 'absolute left-0 right-0'}`}
       style={containerStyle}
     >
       <div
