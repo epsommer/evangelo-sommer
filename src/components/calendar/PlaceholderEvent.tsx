@@ -80,16 +80,27 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
     return `${hours}h ${mins}m`
   }
 
-  return (
-    <div
-      className="absolute left-0 right-0 rounded-md transition-all pointer-events-none"
-      style={{
+  // For multi-day events, the parent wrapper handles positioning
+  // For single-day events, this component positions itself
+  const containerStyle = isMultiDay
+    ? {
+        // Fill the parent container (parent handles positioning)
+        width: '100%',
+        height: '100%',
+        zIndex: 5
+      }
+    : {
         top: `${top}px`,
         height: `${displayHeight}px`,
         left: '2px',
         right: '2px',
         zIndex: 5 // Below real events (z-index 10) but above grid
-      }}
+      }
+
+  return (
+    <div
+      className={`rounded-md transition-all pointer-events-none ${isMultiDay ? 'relative' : 'absolute left-0 right-0'}`}
+      style={containerStyle}
     >
       <div
         className={`h-full rounded-r-md border-2 border-dashed bg-accent/30 border-accent flex shadow-sm ${

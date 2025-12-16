@@ -50,6 +50,7 @@ interface PlaceholderEventData {
   title?: string // optional, from form input
   endDate?: string // optional, for multi-day events
   endHour?: number // optional, for multi-day events
+  endMinutes?: number // optional, for 15-min precision on multi-day events
 }
 
 interface WeekViewProps {
@@ -129,7 +130,8 @@ const WeekView: React.FC<WeekViewProps> = ({
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
-          endHour: state.currentHour
+          endHour: state.currentHour,
+          endMinutes: state.currentMinutes
         })
       }
     },
@@ -144,7 +146,8 @@ const WeekView: React.FC<WeekViewProps> = ({
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
-          endHour: state.currentHour
+          endHour: state.currentHour,
+          endMinutes: state.currentMinutes
         })
       }
     }
@@ -874,6 +877,13 @@ Rescheduled: ${data.reason}`.trim() :
               {placeholderEvent && (() => {
                 const isMultiDay = placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date
 
+                console.log('🎯 [WeekView] Placeholder render:', {
+                  date: placeholderEvent.date,
+                  endDate: placeholderEvent.endDate,
+                  isMultiDay,
+                  duration: placeholderEvent.duration
+                })
+
                 if (isMultiDay) {
                   // Multi-day placeholder: span across columns like multi-day events
                   const startDate = new Date(placeholderEvent.date + 'T00:00:00')
@@ -891,6 +901,14 @@ Rescheduled: ${data.reason}`.trim() :
                       endDayIndex = i
                     }
                   }
+
+                  console.log('🎯 [WeekView] Multi-day placeholder indices:', {
+                    startDayIndex,
+                    endDayIndex,
+                    weekDays: weekDays.map(d => format(d, 'yyyy-MM-dd')),
+                    startDateStr: placeholderEvent.date,
+                    endDateStr: placeholderEvent.endDate
+                  })
 
                   // Clamp to week bounds if dates are outside
                   if (startDayIndex === -1) startDayIndex = startDate < weekDays[0] ? 0 : 6
@@ -912,9 +930,40 @@ Rescheduled: ${data.reason}`.trim() :
                   const numColumns = endDayIndex - startDayIndex + 1
                   const widthPercent = numColumns * dayColumnPercent
 
-                  // Calculate vertical position
-                  const top = (placeholderEvent.hour * PIXELS_PER_HOUR) + (((placeholderEvent.minutes || 0) / 60) * PIXELS_PER_HOUR)
-                  const height = (placeholderEvent.duration / 60) * PIXELS_PER_HOUR
+                  // Calculate vertical position based on start time (with 15-min precision)
+                  const startMins = (placeholderEvent.minutes || 0)
+                  const top = (placeholderEvent.hour * PIXELS_PER_HOUR) + ((startMins / 60) * PIXELS_PER_HOUR)
+
+                  // For multi-day events, calculate height based on endHour + endMinutes (mouse Y position)
+                  // This ensures the placeholder tracks the cursor position with 15-min precision
+                  const endHourPos = placeholderEvent.endHour !== undefined ? placeholderEvent.endHour : 24
+                  const endMinsPos = placeholderEvent.endMinutes !== undefined ? placeholderEvent.endMinutes : 0
+                  const endBottom = (endHourPos * PIXELS_PER_HOUR) + ((endMinsPos / 60) * PIXELS_PER_HOUR)
+
+                  // Height calculation:
+                  // If cursor is below start position, height = cursor position - start position
+                  // If cursor is above start (on a later day), extend to end of day (simpler UX)
+                  let height: number
+                  if (endBottom >= top) {
+                    // Cursor is below or at start: height is the vertical distance
+                    height = endBottom - top
+                  } else {
+                    // Cursor is above start (dragged to earlier time on later day): extend to midnight
+                    height = (24 * PIXELS_PER_HOUR) - top
+                  }
+
+                  // Ensure minimum height for visibility
+                  height = Math.max(height, 20)
+
+                  console.log('🎯 [WeekView] Multi-day placeholder positioning:', {
+                    leftPercent,
+                    widthPercent,
+                    top,
+                    height,
+                    endTime: `${endHourPos}:${endMinsPos.toString().padStart(2, '0')}`,
+                    startDayIndex,
+                    endDayIndex
+                  })
 
                   return (
                     <div
