@@ -17,6 +17,7 @@ interface PlaceholderEventProps {
   pixelsPerHour?: number // default 80
   endDate?: string // optional, for multi-day events
   endHour?: number // optional, for multi-day events
+  endMinutes?: number // optional, for multi-day events (0-59)
   isMultiDay?: boolean // flag for multi-day styling
 }
 
@@ -35,6 +36,7 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
   pixelsPerHour = 80,
   endDate,
   endHour,
+  endMinutes = 0,
   isMultiDay = false
 }) => {
   // Calculate position and height with precise minute positioning
@@ -53,7 +55,15 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
   // Calculate time range display
   const startDateTime = `${date}T${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`
   const start = parseISO(startDateTime)
-  const end = addMinutes(start, duration)
+
+  // For multi-day events, use actual end date/time; for single-day, calculate from duration
+  let end: Date
+  if (isMultiDay && endDate && endHour !== undefined) {
+    const endDateTime = `${endDate}T${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:00`
+    end = parseISO(endDateTime)
+  } else {
+    end = addMinutes(start, duration)
+  }
 
   // Use shorter time format for compact modes
   const formatTimeShort = (date: Date) => format(date, 'h:mma').toLowerCase()
@@ -79,6 +89,9 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
     if (mins === 0) return `${hours}h`
     return `${hours}h ${mins}m`
   }
+
+  // Calculate actual duration from start/end times for accurate display
+  const actualDurationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60))
 
   // For multi-day events, the parent wrapper handles positioning
   // For single-day events, this component positions itself
@@ -128,9 +141,9 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
             <div className="flex items-center gap-1 text-xs text-accent-foreground/70 font-primary font-medium">
               <Clock className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{timeRangeShort}</span>
-              {duration >= 30 && (
+              {actualDurationMinutes >= 30 && (
                 <span className="text-accent-foreground/50 ml-1">
-                  ({formatDuration(duration)})
+                  ({formatDuration(actualDurationMinutes)})
                 </span>
               )}
             </div>
@@ -147,9 +160,9 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
               <Clock className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{timeRange}</span>
             </div>
-            {duration > 60 && (
+            {actualDurationMinutes > 60 && (
               <div className="text-xs text-accent-foreground/50 font-primary font-medium">
-                {formatDuration(duration)}
+                {formatDuration(actualDurationMinutes)}
               </div>
             )}
             {isMultiDay && (

@@ -863,6 +863,7 @@ Rescheduled: ${data.reason}`.trim() :
                           pixelsPerHour={PIXELS_PER_HOUR}
                           endDate={placeholderEvent.endDate}
                           endHour={placeholderEvent.endHour}
+                          endMinutes={placeholderEvent.endMinutes}
                           isMultiDay={true}
                         />
                       </div>
@@ -898,6 +899,7 @@ Rescheduled: ${data.reason}`.trim() :
                                 pixelsPerHour={PIXELS_PER_HOUR}
                                 endDate={placeholderEvent.endDate}
                                 endHour={placeholderEvent.endHour}
+                                endMinutes={placeholderEvent.endMinutes}
                                 isMultiDay={false}
                               />
                             )}

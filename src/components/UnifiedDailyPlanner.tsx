@@ -557,6 +557,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
                 pixelsPerHour={PIXELS_PER_HOUR}
                 endDate={placeholderEvent.endDate}
                 endHour={placeholderEvent.endHour}
+                endMinutes={placeholderEvent.endMinutes}
                 isMultiDay={placeholderEvent.endDate !== undefined && placeholderEvent.endDate !== placeholderEvent.date}
               />
             </div>
