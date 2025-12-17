@@ -16,12 +16,18 @@ interface CalendarLayoutProps {
   isEventCreationMode?: boolean
   initialEventTime?: string
   initialEventDate?: Date
+  initialEventDuration?: number // Duration in minutes (from placeholder drag)
+  initialEventEndDate?: string // End date for multi-day events (from placeholder drag)
+  initialEventEndHour?: number // End hour for multi-day events (from placeholder drag)
+  initialEventEndMinutes?: number // End minutes for multi-day events (from placeholder drag, 0-59)
   onExitEventCreation?: () => void
   selectedEvent?: UnifiedEvent | null
   onEventEdit?: (event: UnifiedEvent) => void
   onEventDelete?: (eventId: string) => void
   onExitEventDetails?: () => void
   onFormChange?: (data: { title?: string; date?: string; startTime?: string; duration?: number }) => void
+  conflictCount?: number
+  onShowConflicts?: () => void
 }
 
 /**
@@ -49,12 +55,18 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   isEventCreationMode = false,
   initialEventTime,
   initialEventDate,
+  initialEventDuration,
+  initialEventEndDate,
+  initialEventEndHour,
+  initialEventEndMinutes,
   onExitEventCreation,
   selectedEvent = null,
   onEventEdit,
   onEventDelete,
   onExitEventDetails,
-  onFormChange
+  onFormChange,
+  conflictCount = 0,
+  onShowConflicts
 }) => {
   return (
     <div className="flex h-full">
@@ -75,12 +87,18 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
           isEventCreationMode={isEventCreationMode}
           initialEventTime={initialEventTime}
           initialEventDate={initialEventDate}
+          initialEventDuration={initialEventDuration}
+          initialEventEndDate={initialEventEndDate}
+          initialEventEndHour={initialEventEndHour}
+          initialEventEndMinutes={initialEventEndMinutes}
           onExitEventCreation={onExitEventCreation}
           selectedEvent={selectedEvent}
           onEventEdit={onEventEdit}
           onEventDelete={onEventDelete}
           onExitEventDetails={onExitEventDetails}
           onFormChange={onFormChange}
+          conflictCount={conflictCount}
+          onShowConflicts={onShowConflicts}
         />
       </aside>
     </div>

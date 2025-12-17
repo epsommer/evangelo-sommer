@@ -101,6 +101,7 @@ interface EventCreationFormProps {
   initialDuration?: number // Initial duration in minutes (from placeholder drag)
   initialEndDate?: string // End date for multi-day events (from placeholder drag)
   initialEndHour?: number // End hour for multi-day events (from placeholder drag)
+  initialEndMinutes?: number // End minutes for multi-day events (from placeholder drag, 0-59)
   editingEvent?: UnifiedEvent
   initialClientId?: string
   initialClientName?: string
@@ -115,6 +116,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
   initialDuration,
   initialEndDate,
   initialEndHour,
+  initialEndMinutes,
   editingEvent,
   initialClientId,
   initialClientName,
@@ -237,9 +239,10 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
       if (isMultiDay) {
         setFormData(prev => {
-          // Calculate end time from endHour if provided
+          // Calculate end time from endHour and endMinutes if provided
+          const endMins = initialEndMinutes ?? 0
           const newEndTime = initialEndHour !== undefined
-            ? `${initialEndHour.toString().padStart(2, '0')}:00`
+            ? `${initialEndHour.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`
             : prev.endTime
 
           return {
@@ -251,7 +254,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
         })
       }
     }
-  }, [initialEndDate, initialEndHour, initialDate, editingEvent]) // Don't include formData to avoid loops
+  }, [initialEndDate, initialEndHour, initialEndMinutes, initialDate, editingEvent]) // Don't include formData to avoid loops
 
   useEffect(() => {
     if (editingEvent) {

@@ -48,6 +48,7 @@ const TimeManagerContent = () => {
     title?: string
     endDate?: string
     endHour?: number
+    endMinutes?: number // For precise end time positioning
   } | null>(null)
 
   // Conflict resolution state
@@ -416,6 +417,7 @@ const TimeManagerContent = () => {
     title?: string
     endDate?: string
     endHour?: number
+    endMinutes?: number
   } | null) => {
     setPlaceholderEvent(placeholder)
     // Note: We intentionally don't update sidebar form state here to avoid circular updates.
@@ -687,6 +689,7 @@ const TimeManagerContent = () => {
         initialEventDuration={placeholderEvent?.duration}
         initialEventEndDate={placeholderEvent?.endDate}
         initialEventEndHour={placeholderEvent?.endHour}
+        initialEventEndMinutes={placeholderEvent?.endMinutes}
         onExitEventCreation={handleExitEventCreation}
         selectedEvent={sidebarSelectedEvent}
         onEventEdit={handleSidebarEventEdit}

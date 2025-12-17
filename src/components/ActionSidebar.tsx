@@ -31,7 +31,8 @@ import {
   GripVertical,
   Timer,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  AlertTriangle
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { UnifiedEvent } from '@/components/EventCreationModal'
@@ -49,12 +50,18 @@ interface ActionSidebarProps {
   isEventCreationMode?: boolean
   initialEventTime?: string
   initialEventDate?: Date
+  initialEventDuration?: number // Duration in minutes (from placeholder drag)
+  initialEventEndDate?: string // End date for multi-day events (from placeholder drag)
+  initialEventEndHour?: number // End hour for multi-day events (from placeholder drag)
+  initialEventEndMinutes?: number // End minutes for multi-day events (from placeholder drag, 0-59)
   onExitEventCreation?: () => void
   selectedEvent?: UnifiedEvent | null
   onEventEdit?: (event: UnifiedEvent) => void
   onEventDelete?: (eventId: string) => void
   onExitEventDetails?: () => void
   onFormChange?: (data: { title?: string; date?: string; startTime?: string; duration?: number }) => void
+  conflictCount?: number
+  onShowConflicts?: () => void
 }
 
 interface MissionObjective {
@@ -88,12 +95,18 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   isEventCreationMode = false,
   initialEventTime,
   initialEventDate,
+  initialEventDuration,
+  initialEventEndDate,
+  initialEventEndHour,
+  initialEventEndMinutes,
   onExitEventCreation,
   selectedEvent = null,
   onEventEdit,
   onEventDelete,
   onExitEventDetails,
-  onFormChange
+  onFormChange,
+  conflictCount = 0,
+  onShowConflicts
 }) => {
   const today = new Date()
   const [displayedMonth, setDisplayedMonth] = useState<Date>(selectedDate)
@@ -812,6 +825,10 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
             }}
             initialDate={initialEventDate || selectedDate}
             initialTime={initialEventTime}
+            initialDuration={initialEventDuration}
+            initialEndDate={initialEventEndDate}
+            initialEndHour={initialEventEndHour}
+            initialEndMinutes={initialEventEndMinutes}
             onFormChange={onFormChange}
           />
         </div>
@@ -823,30 +840,46 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   return (
     <div className="neo-card h-full overflow-y-auto">
       <div className="p-4 space-y-4">
-        {/* Tab Navigation */}
-        <div className="neo-inset flex rounded-lg p-1 mb-4">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-md transition-all font-primary uppercase tracking-wide ${
-              activeTab === 'overview'
-                ? 'neo-button-active font-bold'
-                : 'hover:bg-accent/10'
-            }`}
-          >
-            <Calendar className="h-4 w-4" />
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-md transition-all font-primary uppercase tracking-wide ${
-              activeTab === 'analytics'
-                ? 'neo-button-active font-bold'
-                : 'hover:bg-accent/10'
-            }`}
-          >
-            <TrendingUp className="h-4 w-4" />
-            Analytics
-          </button>
+        {/* Tab Navigation with Conflict Icon */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="neo-inset flex rounded-lg p-1 flex-1">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-md transition-all font-primary uppercase tracking-wide ${
+                activeTab === 'overview'
+                  ? 'neo-button-active font-bold'
+                  : 'hover:bg-accent/10'
+              }`}
+            >
+              <Calendar className="h-4 w-4" />
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-md transition-all font-primary uppercase tracking-wide ${
+                activeTab === 'analytics'
+                  ? 'neo-button-active font-bold'
+                  : 'hover:bg-accent/10'
+              }`}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Analytics
+            </button>
+          </div>
+
+          {/* Conflict Icon - Only shows when conflicts exist */}
+          {conflictCount > 0 && (
+            <button
+              onClick={onShowConflicts}
+              className="neo-button p-2 rounded-lg relative hover:neo-button-active transition-all"
+              title={`${conflictCount} scheduling conflict${conflictCount > 1 ? 's' : ''}`}
+            >
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-orange-500 text-white text-[10px] font-bold rounded-full">
+                {conflictCount > 9 ? '9+' : conflictCount}
+              </span>
+            </button>
+          )}
         </div>
         {/* Overview Tab Content */}
         {activeTab === 'overview' && (
