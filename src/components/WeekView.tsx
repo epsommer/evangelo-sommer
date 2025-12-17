@@ -63,6 +63,7 @@ interface WeekViewProps {
   onTaskStatusChange?: (taskId: string, status: string) => void
   onDayNavigation?: (date: Date) => void
   refreshTrigger?: number
+  onRefreshNeeded?: () => void // Callback to trigger parent refresh after resize
   useExternalEventDetailsHandler?: boolean
   placeholderEvent?: PlaceholderEventData | null
   onPlaceholderChange?: (placeholder: PlaceholderEventData | null) => void
@@ -78,6 +79,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   onTaskStatusChange,
   onDayNavigation,
   refreshTrigger,
+  onRefreshNeeded,
   useExternalEventDetailsHandler = false,
   placeholderEvent = null,
   onPlaceholderChange
@@ -326,6 +328,8 @@ const WeekView: React.FC<WeekViewProps> = ({
 
     try {
       await updateEvent(event.id, updates)
+      // Trigger parent refresh to ensure UI updates
+      onRefreshNeeded?.()
     } catch (error) {
       console.error('❌ [WeekView] Error resizing event:', error)
     }

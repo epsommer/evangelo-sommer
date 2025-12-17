@@ -635,6 +635,7 @@ const TimeManagerContent = () => {
               onTaskStatusChange={handleTaskStatusChange}
               onDayNavigation={handleDayClick}
               refreshTrigger={refreshTrigger}
+              onRefreshNeeded={() => setRefreshTrigger(prev => prev + 1)}
               useExternalEventDetailsHandler={true}
               placeholderEvent={placeholderEvent}
               onPlaceholderChange={handlePlaceholderChange}
