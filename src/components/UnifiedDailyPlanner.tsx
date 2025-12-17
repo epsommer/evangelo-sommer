@@ -431,12 +431,27 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
     const startDate = new Date(event.startDateTime)
     const startHour = startDate.getHours()
     const startMinutes = startDate.getMinutes()
-    const duration = event.duration || 60
 
     // Calculate top position: hours * pixelsPerHour + minutes offset
     const top = (startHour * PIXELS_PER_HOUR) + ((startMinutes / 60) * PIXELS_PER_HOUR)
-    // Calculate height based on duration
-    const height = (duration / 60) * PIXELS_PER_HOUR
+
+    // For multi-day events, calculate visual duration from start/end times (time-of-day span)
+    // instead of using stored duration (which is total elapsed time)
+    let visualDuration: number
+    if (event.isMultiDay && event.endDateTime) {
+      const endDate = new Date(event.endDateTime)
+      const endHour = endDate.getHours()
+      const endMinutes = endDate.getMinutes()
+      // Calculate visual duration as the time span within a day
+      const startMinutesOfDay = startHour * 60 + startMinutes
+      const endMinutesOfDay = endHour * 60 + endMinutes
+      visualDuration = Math.abs(endMinutesOfDay - startMinutesOfDay)
+      // Ensure minimum duration for visibility
+      if (visualDuration === 0) visualDuration = 15
+    } else {
+      visualDuration = event.duration || 60
+    }
+    const height = (visualDuration / 60) * PIXELS_PER_HOUR
 
     return {
       position: 'absolute',
