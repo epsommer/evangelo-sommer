@@ -37,8 +37,8 @@ interface ScheduledService {
 
 interface RescheduleData {
   event: UnifiedEvent
-  fromSlot: { date: string; hour: number }
-  toSlot: { date: string; hour: number }
+  fromSlot: { date: string; hour: number; minute?: number }
+  toSlot: { date: string; hour: number; minute?: number }
   reason?: string
 }
 
@@ -288,7 +288,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   }
 
   // Drag and drop handlers
-  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
+  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => {
     // Check if event has participants - only show confirmation if it does
     const hasParticipants = event.participants && event.participants.length > 0
 

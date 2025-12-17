@@ -22,6 +22,7 @@ export interface DragData {
   originalSlot: {
     date: string
     hour: number
+    minute?: number
   }
   dragOffset: { x: number; y: number }
 }
@@ -29,6 +30,7 @@ export interface DragData {
 export interface DropZoneData {
   date: string
   hour: number
+  minute?: number
   element: HTMLElement
 }
 
@@ -355,11 +357,13 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
 
     // Get the slot info
     const slotDate = currentDate || format(parseISO(event.startDateTime), 'yyyy-MM-dd')
-    const slotHour = currentHour ?? parseISO(event.startDateTime).getHours()
+    const startDate = parseISO(event.startDateTime)
+    const slotHour = currentHour ?? startDate.getHours()
+    const slotMinute = startDate.getMinutes()
 
     const dragData: DragData = {
       event,
-      originalSlot: { date: slotDate, hour: slotHour },
+      originalSlot: { date: slotDate, hour: slotHour, minute: slotMinute },
       dragOffset
     }
 
@@ -374,7 +378,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
 
     // Notify context
     if (dragDropContext) {
-      dragDropContext.startDrag(event, dragOffset, { date: slotDate, hour: slotHour })
+      dragDropContext.startDrag(event, dragOffset, { date: slotDate, hour: slotHour, minute: slotMinute })
     }
 
     // Notify parent
@@ -386,17 +390,19 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     const dropZone = dragDropContext?.dropZoneState.activeDropZone
 
     const slotDate = currentDate || format(parseISO(event.startDateTime), 'yyyy-MM-dd')
-    const slotHour = currentHour ?? parseISO(event.startDateTime).getHours()
+    const startDate = parseISO(event.startDateTime)
+    const slotHour = currentHour ?? startDate.getHours()
+    const slotMinute = startDate.getMinutes()
 
     const dragData: DragData = {
       event,
-      originalSlot: { date: slotDate, hour: slotHour },
+      originalSlot: { date: slotDate, hour: slotHour, minute: slotMinute },
       dragOffset: { x: 0, y: 0 }
     }
 
     // Construct DropZoneData if we have a drop zone
     const dropZoneData: DropZoneData | null = dropZone
-      ? { date: dropZone.date, hour: dropZone.hour, element: e.target as HTMLElement }
+      ? { date: dropZone.date, hour: dropZone.hour, minute: dropZone.minute, element: e.target as HTMLElement }
       : null
 
     // End drag in context

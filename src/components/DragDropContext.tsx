@@ -7,12 +7,12 @@ export interface DragState {
   isDragging: boolean
   draggedEvent: UnifiedEvent | null
   dragOffset: { x: number; y: number }
-  originalSlot: { date: string; hour: number } | null
+  originalSlot: { date: string; hour: number; minute?: number } | null
 }
 
 export interface DropZoneState {
-  activeDropZone: { date: string; hour: number } | null
-  hoveredDropZone: { date: string; hour: number } | null
+  activeDropZone: { date: string; hour: number; minute?: number } | null
+  hoveredDropZone: { date: string; hour: number; minute?: number } | null
 }
 
 export interface ResizeState {
@@ -28,15 +28,15 @@ interface DragDropContextType {
   resizeState: ResizeState
   
   // Actions
-  startDrag: (event: UnifiedEvent, offset: { x: number; y: number }, originalSlot: { date: string; hour: number }) => void
+  startDrag: (event: UnifiedEvent, offset: { x: number; y: number }, originalSlot: { date: string; hour: number; minute?: number }) => void
   endDrag: () => void
-  setHoveredDropZone: (zone: { date: string; hour: number } | null) => void
-  setActiveDropZone: (zone: { date: string; hour: number } | null) => void
+  setHoveredDropZone: (zone: { date: string; hour: number; minute?: number } | null) => void
+  setActiveDropZone: (zone: { date: string; hour: number; minute?: number } | null) => void
   startResize: (event: UnifiedEvent, handle: 'top' | 'bottom') => void
   endResize: () => void
-  
+
   // Callbacks
-  onEventDrop?: (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => void
+  onEventDrop?: (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => void
   onEventResize?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
   
   // Visual feedback
@@ -48,7 +48,7 @@ const DragDropContext = createContext<DragDropContextType | null>(null)
 
 interface DragDropProviderProps {
   children: React.ReactNode
-  onEventDrop?: (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => void
+  onEventDrop?: (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => void
   onEventResize?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
 }
 
@@ -93,7 +93,7 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
   const startDrag = useCallback((
     event: UnifiedEvent,
     offset: { x: number; y: number },
-    originalSlot: { date: string; hour: number }
+    originalSlot: { date: string; hour: number; minute?: number }
   ) => {
     console.log('🎯 DragDropContext.startDrag called for:', event.title, 'from slot:', originalSlot)
     setDragState({
@@ -119,7 +119,8 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
     if (currentDragState.originalSlot && currentDropZoneState.activeDropZone && currentDragState.draggedEvent) {
       const isSameSlot = (
         currentDragState.originalSlot.date === currentDropZoneState.activeDropZone.date &&
-        currentDragState.originalSlot.hour === currentDropZoneState.activeDropZone.hour
+        currentDragState.originalSlot.hour === currentDropZoneState.activeDropZone.hour &&
+        (currentDragState.originalSlot.minute || 0) === (currentDropZoneState.activeDropZone.minute || 0)
       )
 
       console.log('🎯 Drop zone conditions:', {
@@ -158,11 +159,11 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
     setShowDropZones(false)
   }, [onEventDrop])
 
-  const setHoveredDropZone = useCallback((zone: { date: string; hour: number } | null) => {
+  const setHoveredDropZone = useCallback((zone: { date: string; hour: number; minute?: number } | null) => {
     setDropZoneState(prev => ({ ...prev, hoveredDropZone: zone }))
   }, [])
 
-  const setActiveDropZone = useCallback((zone: { date: string; hour: number } | null) => {
+  const setActiveDropZone = useCallback((zone: { date: string; hour: number; minute?: number } | null) => {
     console.log('🎯 DragDropContext.setActiveDropZone called with:', zone)
     setDropZoneState(prev => ({ ...prev, activeDropZone: zone }))
   }, [])

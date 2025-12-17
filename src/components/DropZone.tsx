@@ -9,6 +9,7 @@ import { UnifiedEvent } from '@/components/EventCreationModal'
 interface DropZoneProps {
   date: string
   hour: number
+  minute?: number // Optional minute value (0, 15, 30, 45) for 15-min precision drop zones
   isOccupied?: boolean
   events?: UnifiedEvent[]
   onTimeSlotClick?: (date: Date, hour: number) => void
@@ -24,6 +25,7 @@ interface DropZoneProps {
 const DropZone: React.FC<DropZoneProps> = ({
   date,
   hour,
+  minute,
   isOccupied = false,
   events = [],
   onTimeSlotClick,
@@ -49,15 +51,19 @@ const DropZone: React.FC<DropZoneProps> = ({
   } = useDragDrop()
 
   // Check if this is the currently active drop zone
+  // Note: For hourly drop zones (minute prop not set), we match on hour only
+  // For 15-min precision zones (minute prop set), we also match on minute
   const isActiveDropZone = (
     dropZoneState.activeDropZone?.date === date &&
-    dropZoneState.activeDropZone?.hour === hour
+    dropZoneState.activeDropZone?.hour === hour &&
+    (minute === undefined || dropZoneState.activeDropZone?.minute === minute)
   )
 
   // Check if this is the currently hovered drop zone
   const isHoveredDropZone = (
     dropZoneState.hoveredDropZone?.date === date &&
-    dropZoneState.hoveredDropZone?.hour === hour
+    dropZoneState.hoveredDropZone?.hour === hour &&
+    (minute === undefined || dropZoneState.hoveredDropZone?.minute === minute)
   )
 
   // Format time for display
@@ -67,12 +73,32 @@ const DropZone: React.FC<DropZoneProps> = ({
     return `${displayHour}:00 ${period}`
   }
 
+  // Calculate the minute value based on mouse Y position within the drop zone (15-min precision)
+  const calculateMinuteFromPosition = (clientY: number): number => {
+    const dropZoneElement = dropZoneRef.current
+    if (!dropZoneElement || minute !== undefined) {
+      // If minute prop is explicitly provided, use it
+      return minute !== undefined ? minute : 0
+    }
+
+    const rect = dropZoneElement.getBoundingClientRect()
+    const relativeY = clientY - rect.top
+    const slotHeight = rect.height
+
+    // Calculate which 15-minute segment (0, 15, 30, or 45)
+    const minuteSegment = Math.floor((relativeY / slotHeight) * 4)
+    const calculatedMinute = Math.min(45, Math.max(0, minuteSegment * 15))
+
+    return calculatedMinute
+  }
+
   // Handle drag enter
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault()
     if (dragState.isDragging) {
       setIsDraggedOver(true)
-      setHoveredDropZone({ date, hour })
+      const calculatedMinute = calculateMinuteFromPosition(e.clientY)
+      setHoveredDropZone({ date, hour, minute: calculatedMinute })
     }
   }
 
@@ -80,7 +106,8 @@ const DropZone: React.FC<DropZoneProps> = ({
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
     if (dragState.isDragging) {
-      setActiveDropZone({ date, hour })
+      const calculatedMinute = calculateMinuteFromPosition(e.clientY)
+      setActiveDropZone({ date, hour, minute: calculatedMinute })
     }
   }
 

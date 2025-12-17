@@ -18,6 +18,7 @@ export interface DragData {
   originalSlot: {
     date: string
     hour: number
+    minute?: number
   }
   dragOffset: DragPosition
 }
@@ -25,6 +26,7 @@ export interface DragData {
 export interface DropZoneData {
   date: string
   hour: number
+  minute?: number
   element: HTMLElement
 }
 
@@ -413,10 +415,13 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
       longPressTimer: setTimeout(() => {
         // Start drag on long press
         const dragOffset = { x: 0, y: 0 }
-        startDrag(event, dragOffset, { date: currentDate, hour: currentHour })
+        // Extract minute from the event's start time
+        const startDate = parseISO(event.startDateTime)
+        const minute = startDate.getMinutes()
+        startDrag(event, dragOffset, { date: currentDate, hour: currentHour, minute })
         const dragData: DragData = {
           event,
-          originalSlot: { date: currentDate, hour: currentHour },
+          originalSlot: { date: currentDate, hour: currentHour, minute },
           dragOffset
         }
         onDragStart?.(dragData)
@@ -537,14 +542,18 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
           eventTitle: event.title
         }))
 
+        // Extract minute from the event's start time for precise drag tracking
+        const startDate = parseISO(event.startDateTime)
+        const minute = startDate.getMinutes()
+
         // Start drag in context
         const dragOffset = { x: 0, y: 0 } // HTML5 drag doesn't need precise offset
-        startDrag(event, dragOffset, { date: currentDate, hour: currentHour })
+        startDrag(event, dragOffset, { date: currentDate, hour: currentHour, minute })
 
         // Call legacy callback
         const dragData: DragData = {
           event,
-          originalSlot: { date: currentDate, hour: currentHour },
+          originalSlot: { date: currentDate, hour: currentHour, minute },
           dragOffset
         }
         onDragStart?.(dragData)
@@ -555,9 +564,13 @@ const DragAndDropEvent: React.FC<DragAndDropEventProps> = ({
         // End drag in context
         endDrag()
 
+        // Extract minute from the event's start time
+        const startDate = parseISO(event.startDateTime)
+        const minute = startDate.getMinutes()
+
         // Legacy callback with drop zone detection
         const dropZoneData: DropZoneData | null = null // HTML5 API handles this differently
-        onDragEnd?.({ event, originalSlot: { date: currentDate, hour: currentHour }, dragOffset: { x: 0, y: 0 } }, dropZoneData)
+        onDragEnd?.({ event, originalSlot: { date: currentDate, hour: currentHour, minute }, dragOffset: { x: 0, y: 0 } }, dropZoneData)
       }}
       onMouseDown={(e) => {
         // Check if clicking on resize handles - if so, don't allow drag

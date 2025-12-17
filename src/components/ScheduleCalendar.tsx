@@ -120,7 +120,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   };
 
   // Drag and drop handlers
-  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
+  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => {
     console.log('📅 Month view event drop:', { event, fromSlot, toSlot });
 
     // Check if event has participants - only show confirmation if it does

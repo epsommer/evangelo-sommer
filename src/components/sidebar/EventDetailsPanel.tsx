@@ -14,9 +14,18 @@ import {
   X,
   Edit,
   Trash2,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle
 } from 'lucide-react'
 import { UnifiedEvent, Priority, EventType } from '@/components/EventCreationModal'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface EventDetailsPanelProps {
   event: UnifiedEvent
@@ -34,6 +43,8 @@ const EventDetailsPanel: React.FC<EventDetailsPanelProps> = ({
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(
     new Set(['schedule', 'details'])
   )
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
+  const [isDeleting, setIsDeleting] = React.useState(false)
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -101,6 +112,29 @@ const EventDetailsPanel: React.FC<EventDetailsPanelProps> = ({
       return `${hours} hour${hours > 1 ? 's' : ''}`
     }
     return `${hours}h ${remainingMinutes}m`
+  }
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!onDelete) return
+
+    setIsDeleting(true)
+    try {
+      await onDelete(event.id)
+      // Modal will be closed by parent component after successful deletion
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
+      // Could add error toast here if needed
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false)
   }
 
   return (
@@ -386,14 +420,48 @@ const EventDetailsPanel: React.FC<EventDetailsPanelProps> = ({
         )}
         {onDelete && (
           <button
-            onClick={() => onDelete(event.id)}
+            onClick={handleDeleteClick}
             className="neo-button px-4 py-2 flex items-center gap-2 text-xs font-primary uppercase tracking-wide text-red-500 hover:text-red-600"
+            disabled={isDeleting}
           >
             <Trash2 className="h-4 w-4" />
-            Delete
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="neo-card border-[var(--neomorphic-dark-shadow)]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Delete Event
+            </DialogTitle>
+            <DialogDescription className="text-[var(--neomorphic-text)] opacity-70 font-primary">
+              Are you sure you want to delete <span className="font-semibold">"{event.title}"</span>?
+              <br />
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <button
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+              className="neo-button px-4 py-2 text-xs font-primary uppercase tracking-wide"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="neo-button px-4 py-2 text-xs font-primary uppercase tracking-wide bg-red-500/20 text-red-600 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

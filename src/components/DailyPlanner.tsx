@@ -51,8 +51,8 @@ interface DailyPlannerProps {
 
 interface RescheduleData {
   event: UnifiedEvent
-  fromSlot: { date: string; hour: number }
-  toSlot: { date: string; hour: number }
+  fromSlot: { date: string; hour: number; minute?: number }
+  toSlot: { date: string; hour: number; minute?: number }
   reason?: string
 }
 

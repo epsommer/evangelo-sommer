@@ -23,6 +23,7 @@ import { UnifiedEvent, Priority } from '@/components/EventCreationModal'
 interface TimeSlot {
   date: string
   hour: number
+  minute?: number
 }
 
 interface RescheduleData {
@@ -76,9 +77,9 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
   const { event, fromSlot, toSlot } = rescheduleData
 
   // Format date and time for display
-  const formatDateTime = (date: string, hour: number) => {
+  const formatDateTime = (date: string, hour: number, minute?: number) => {
     const dateObj = new Date(date + 'T00:00:00')
-    dateObj.setHours(hour)
+    dateObj.setHours(hour, minute || 0)
     return {
       date: format(dateObj, 'EEEE, MMMM do, yyyy'),
       time: format(dateObj, 'h:mm a'),
@@ -87,8 +88,8 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
     }
   }
 
-  const fromDateTime = formatDateTime(fromSlot.date, fromSlot.hour)
-  const toDateTime = formatDateTime(toSlot.date, toSlot.hour)
+  const fromDateTime = formatDateTime(fromSlot.date, fromSlot.hour, fromSlot.minute)
+  const toDateTime = formatDateTime(toSlot.date, toSlot.hour, toSlot.minute)
 
   const getPriorityColor = (priority: Priority): string => {
     switch (priority) {

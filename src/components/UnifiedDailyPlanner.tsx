@@ -45,6 +45,7 @@ interface PlaceholderEventData {
   title?: string // optional, from form input
   endDate?: string // optional, for multi-day events
   endHour?: number // optional, for multi-day events
+  endMinutes?: number // optional, for 15-min precision on multi-day events
 }
 
 interface UnifiedDailyPlannerProps {
@@ -125,7 +126,8 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
-          endHour: state.currentHour
+          endHour: state.currentHour,
+          endMinutes: state.currentMinutes
         })
       }
     },
@@ -139,7 +141,8 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
           duration: state.duration,
           title: placeholderEvent?.title,
           endDate: state.currentDate,
-          endHour: state.currentHour
+          endHour: state.currentHour,
+          endMinutes: state.currentMinutes
         })
       }
     }
@@ -357,7 +360,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
   }
 
   // Handle event drop (drag and drop)
-  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number }, toSlot: { date: string; hour: number }) => {
+  const handleEventDrop = async (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => {
     try {
       // Use the new drag calculation utility for accurate time mapping
       const { newStartDateTime, newEndDateTime, duration } = calculateDragDropTimes(
