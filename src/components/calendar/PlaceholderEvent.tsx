@@ -90,8 +90,21 @@ const PlaceholderEvent: React.FC<PlaceholderEventProps> = ({
     return `${hours}h ${mins}m`
   }
 
-  // Calculate actual duration from start/end times for accurate display
-  const actualDurationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60))
+  // Calculate duration for display
+  // For multi-day events, show the visual/daily duration (time span within a day)
+  // For single-day events, show the actual duration
+  let actualDurationMinutes: number
+  if (isMultiDay && endHour !== undefined) {
+    // Calculate daily time span: end time - start time (ignoring date)
+    const startMinutesOfDay = hour * 60 + minutes
+    const endMinutesOfDay = endHour * 60 + endMinutes
+    // Handle case where end time is earlier than start (e.g., 9am start, 12pm end = 3h visual)
+    actualDurationMinutes = Math.abs(endMinutesOfDay - startMinutesOfDay)
+    // Ensure minimum duration for display
+    if (actualDurationMinutes === 0) actualDurationMinutes = 15
+  } else {
+    actualDurationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60))
+  }
 
   // For multi-day events, the parent wrapper handles positioning
   // For single-day events, this component positions itself
