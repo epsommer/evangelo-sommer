@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { format, startOfWeek, addDays, isSameDay, isToday } from 'date-fns'
 import { Clock, Plus, MoreVertical, Edit, CheckCircle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
