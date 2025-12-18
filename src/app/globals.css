@@ -269,7 +269,7 @@
   --muted: 68 64 60; /* Muted background (stone-700) */
   --muted-foreground: 214 211 209; /* Muted text (stone-300) */
   --accent: 35 22% 66%; /* Warm stone grey accent #a8a29e */
-  --accent-foreground: 28 25 23; /* Accent text */
+  --accent-foreground: 250 250 249; /* Light text for better contrast on dark backgrounds */
   --destructive: 0 84% 60%; /* Destructive color */
   --destructive-foreground: 250 250 249; /* Text on destructive */
   --border: 68 64 60; /* Border color (stone-700) */
@@ -285,7 +285,7 @@
   --sidebar-primary: 68 64 60;
   --sidebar-primary-foreground: 250 250 249;
   --sidebar-accent: 35 22% 66%;
-  --sidebar-accent-foreground: 28 25 23;
+  --sidebar-accent-foreground: 250 250 249;
   --sidebar-border: 68 64 60;
   --sidebar-ring: 35 22% 66%;
 
@@ -450,7 +450,7 @@
   --muted: 0 0% 18%;
   --muted-foreground: 0 0% 65%; /* #a6a6a6 */
   --accent: 0 0% 65%; /* Neutral grey accent #a6a6a6 */
-  --accent-foreground: 0 0% 10%;
+  --accent-foreground: 0 0% 95%; /* Light gray for better contrast on dark backgrounds */
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 95%;
   --border: 0 0% 20%; /* #333333 */

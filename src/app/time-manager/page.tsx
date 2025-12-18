@@ -132,6 +132,35 @@ const TimeManagerContent = () => {
     calculateGlobalConflicts()
   }, [allEvents, refreshTrigger])
 
+  // Clear placeholder on outside clicks (clicks outside the calendar canvas)
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      // Only clear if there's a placeholder and the click is outside the calendar area
+      if (placeholderEvent) {
+        const target = event.target as HTMLElement
+
+        // Check if click is on calendar elements or sidebar form
+        const isCalendarClick = target.closest('.neo-card') ||
+                                target.closest('[data-calendar-view]') ||
+                                target.closest('[data-date]') ||
+                                target.closest('[data-week-row]')
+
+        const isSidebarClick = target.closest('[data-sidebar]') ||
+                               target.closest('[data-event-form]')
+
+        // Clear placeholder if clicking outside both calendar and sidebar
+        if (!isCalendarClick && !isSidebarClick) {
+          setPlaceholderEvent(null)
+        }
+      }
+    }
+
+    document.addEventListener('click', handleDocumentClick)
+    return () => {
+      document.removeEventListener('click', handleDocumentClick)
+    }
+  }, [placeholderEvent])
+
   // Handler for opening conflict modal from sidebar icon
   const handleShowConflicts = useCallback(() => {
     if (allConflicts && allConflicts.conflicts.length > 0) {
@@ -236,14 +265,17 @@ const TimeManagerContent = () => {
   }
 
   const handleEventView = (event: UnifiedEvent) => {
-    // Show event details in sidebar instead of modal for week view
-    if (state.currentView === 'week') {
+    // Clear any existing placeholder when viewing an event
+    setPlaceholderEvent(null)
+
+    // Show event details in sidebar for week and month views
+    if (state.currentView === 'week' || state.currentView === 'month') {
       setSidebarSelectedEvent(event)
       // Clear event creation mode if active
       setIsEventCreationMode(false)
       setEventCreationTime(null)
     } else {
-      // Use modal for other views
+      // Use modal for day view
       setSelectedEvent(event)
       setShowDetailsModal(true)
     }
@@ -351,15 +383,25 @@ const TimeManagerContent = () => {
     // Close event details if open
     setSidebarSelectedEvent(null)
 
-    // Set placeholder event (ghost box in calendar)
-    // Start with compact 15-minute placeholder, user can drag to expand
-    setPlaceholderEvent({
-      date: dateString,
-      hour: hour,
-      minutes: minutes,
-      duration: 15, // Compact initial display
-      title: undefined
-    })
+    // Check if there's already a multi-day placeholder from a drag operation
+    // Only preserve it if this double-click is on the SAME start date (i.e., completing a drag)
+    // If clicking on a different date, the user wants a NEW placeholder
+    const hasExistingMultiDayPlaceholder = placeholderEvent?.endDate &&
+      placeholderEvent.endDate !== placeholderEvent.date
+    const isCompletingDragFromSameDate = hasExistingMultiDayPlaceholder &&
+      placeholderEvent.date === dateString
+
+    if (!isCompletingDragFromSameDate) {
+      // Set placeholder event (ghost box in calendar)
+      // Start with compact 15-minute placeholder, user can drag to expand
+      setPlaceholderEvent({
+        date: dateString,
+        hour: hour,
+        minutes: minutes,
+        duration: 15, // Compact initial display
+        title: undefined
+      })
+    }
 
     // Set sidebar to event creation mode
     setEventCreationTime(timeString)
@@ -646,13 +688,15 @@ const TimeManagerContent = () => {
             <ScheduleCalendar
               selectedDate={state.selectedDate}
               enableEditing={true}
-              onDayClick={handleDayClick}
+              onDayClick={(date: Date) => setSelectedDate(date)} // Just select date, don't navigate
               onDayDoubleClick={(date: Date, hour?: number) => handleTimeSlotDoubleClick(date, hour ?? 9, 0)}
               onEventEdit={handleEventEdit}
               onEventView={handleEventView}
               onEventDelete={handleTaskDelete}
               onEventStatusChange={handleTaskStatusChange}
               refreshTrigger={refreshTrigger}
+              placeholderEvent={placeholderEvent}
+              onPlaceholderChange={handlePlaceholderChange}
             />
           )
         default:

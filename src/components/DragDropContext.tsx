@@ -26,7 +26,7 @@ interface DragDropContextType {
   dragState: DragState
   dropZoneState: DropZoneState
   resizeState: ResizeState
-  
+
   // Actions
   startDrag: (event: UnifiedEvent, offset: { x: number; y: number }, originalSlot: { date: string; hour: number; minute?: number }) => void
   endDrag: () => void
@@ -38,7 +38,9 @@ interface DragDropContextType {
   // Callbacks
   onEventDrop?: (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => void
   onEventResize?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
-  
+  onDragStart?: () => void
+  onResizeStart?: () => void
+
   // Visual feedback
   showDropZones: boolean
   setShowDropZones: (show: boolean) => void
@@ -50,12 +52,16 @@ interface DragDropProviderProps {
   children: React.ReactNode
   onEventDrop?: (event: UnifiedEvent, fromSlot: { date: string; hour: number; minute?: number }, toSlot: { date: string; hour: number; minute?: number }) => void
   onEventResize?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
+  onDragStart?: () => void
+  onResizeStart?: () => void
 }
 
 export const DragDropProvider: React.FC<DragDropProviderProps> = ({
   children,
   onEventDrop,
-  onEventResize
+  onEventResize,
+  onDragStart,
+  onResizeStart
 }) => {
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
@@ -96,6 +102,10 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
     originalSlot: { date: string; hour: number; minute?: number }
   ) => {
     console.log('🎯 DragDropContext.startDrag called for:', event.title, 'from slot:', originalSlot)
+
+    // Notify parent component (e.g., to clear placeholder)
+    onDragStart?.()
+
     setDragState({
       isDragging: true,
       draggedEvent: event,
@@ -104,7 +114,7 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
     })
     setShowDropZones(true)
     console.log('🎯 DragDropContext: Drag state updated, showDropZones set to true')
-  }, [])
+  }, [onDragStart])
 
   const endDrag = useCallback(() => {
     // Use refs to get the LATEST state (avoids stale closure issues)
@@ -169,12 +179,15 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
   }, [])
 
   const startResize = useCallback((event: UnifiedEvent, handle: 'top' | 'bottom') => {
+    // Notify parent component (e.g., to clear placeholder)
+    onResizeStart?.()
+
     setResizeState({
       isResizing: true,
       resizedEvent: event,
       resizeHandle: handle
     })
-  }, [])
+  }, [onResizeStart])
 
   const endResize = useCallback(() => {
     setResizeState({
@@ -196,6 +209,8 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
     endResize,
     onEventDrop,
     onEventResize,
+    onDragStart,
+    onResizeStart,
     showDropZones,
     setShowDropZones
   }

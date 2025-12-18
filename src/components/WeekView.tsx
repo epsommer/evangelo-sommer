@@ -12,7 +12,7 @@ import EventCreationModal, { UnifiedEvent } from '@/components/EventCreationModa
 import DropdownMenu from '@/components/ui/DropdownMenu'
 import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
 import { ClientNotificationService } from '@/lib/client-notification-service'
-import { DragDropProvider } from '@/components/DragDropContext'
+import { DragDropProvider, useDragDrop } from '@/components/DragDropContext'
 import DragAndDropEvent from '@/components/DragAndDropEvent'
 import CalendarEvent from '@/components/calendar/CalendarEvent'
 import DropZone from '@/components/DropZone'
@@ -69,6 +69,126 @@ interface WeekViewProps {
   onPlaceholderChange?: (placeholder: PlaceholderEventData | null) => void
 }
 
+/**
+ * DragGhostPreview - Shows a ghost preview of where the event will land during drag
+ */
+const DragGhostPreview: React.FC<{
+  weekDays: Date[]
+  pixelsPerHour: number
+}> = ({ weekDays, pixelsPerHour }) => {
+  const { dragState, dropZoneState } = useDragDrop()
+
+  // Only show when dragging and there's an active drop zone
+  if (!dragState.isDragging || !dragState.draggedEvent || !dropZoneState.activeDropZone) {
+    return null
+  }
+
+  const { draggedEvent } = dragState
+  const { activeDropZone } = dropZoneState
+
+  // Find the day index for the target drop zone
+  const targetDate = new Date(activeDropZone.date + 'T00:00:00')
+  let startDayIndex = -1
+
+  for (let i = 0; i < 7; i++) {
+    if (isSameDay(weekDays[i], targetDate)) {
+      startDayIndex = i
+      break
+    }
+  }
+
+  // If day not found in current week, don't show preview
+  if (startDayIndex === -1) return null
+
+  // Calculate the day span for multi-day events
+  let daySpan = 1
+  const isMultiDay = draggedEvent.isMultiDay || false
+
+  if (isMultiDay && draggedEvent.startDateTime && draggedEvent.endDateTime) {
+    const originalStart = new Date(draggedEvent.startDateTime)
+    const originalEnd = new Date(draggedEvent.endDateTime)
+
+    // Calculate original day span
+    const originalStartDay = new Date(originalStart.getFullYear(), originalStart.getMonth(), originalStart.getDate())
+    const originalEndDay = new Date(originalEnd.getFullYear(), originalEnd.getMonth(), originalEnd.getDate())
+    daySpan = Math.max(1, Math.round((originalEndDay.getTime() - originalStartDay.getTime()) / (24 * 60 * 60 * 1000)) + 1)
+  }
+
+  // Clamp end day index to week bounds
+  let endDayIndex = Math.min(startDayIndex + daySpan - 1, 6)
+  const actualDaySpan = endDayIndex - startDayIndex + 1
+
+  // Calculate position based on grid layout
+  // Grid has 8 columns: 1 time column (12.5%) + 7 day columns (12.5% each)
+  const timeColumnPercent = 12.5
+  const dayColumnPercent = 12.5
+
+  const leftPercent = timeColumnPercent + (startDayIndex * dayColumnPercent)
+  const widthPercent = actualDaySpan * dayColumnPercent
+
+  // Calculate vertical position from target hour and minute
+  const targetHour = activeDropZone.hour
+  const targetMinute = activeDropZone.minute || 0
+  const top = (targetHour * pixelsPerHour) + ((targetMinute / 60) * pixelsPerHour)
+
+  // Calculate height based on visual duration (time-of-day span for multi-day events)
+  let height: number
+  if (isMultiDay && draggedEvent.startDateTime && draggedEvent.endDateTime) {
+    // For multi-day events, use the visual duration (start time to end time within day)
+    const originalStart = new Date(draggedEvent.startDateTime)
+    const originalEnd = new Date(draggedEvent.endDateTime)
+    const startMinutesOfDay = originalStart.getHours() * 60 + originalStart.getMinutes()
+    const endMinutesOfDay = originalEnd.getHours() * 60 + originalEnd.getMinutes()
+    const visualDuration = Math.abs(endMinutesOfDay - startMinutesOfDay) || 60
+    height = Math.max((visualDuration / 60) * pixelsPerHour, 25)
+  } else {
+    // Single-day event: use total duration
+    const eventDuration = draggedEvent.duration || 60
+    height = Math.max((eventDuration / 60) * pixelsPerHour, 25)
+  }
+
+  // Format preview time
+  const previewStartTime = `${targetHour.toString().padStart(2, '0')}:${targetMinute.toString().padStart(2, '0')}`
+
+  // Calculate end time based on visual duration
+  let previewEndTime: string
+  if (isMultiDay && draggedEvent.endDateTime) {
+    const originalEnd = new Date(draggedEvent.endDateTime)
+    previewEndTime = `${originalEnd.getHours().toString().padStart(2, '0')}:${originalEnd.getMinutes().toString().padStart(2, '0')}`
+  } else {
+    const eventDuration = draggedEvent.duration || 60
+    const endMinutes = targetHour * 60 + targetMinute + eventDuration
+    const endHour = Math.floor(endMinutes / 60) % 24
+    const endMinute = endMinutes % 60
+    previewEndTime = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`
+  }
+
+  return (
+    <div
+      className="absolute top-0 left-0 right-0 pointer-events-none"
+      style={{ height: `${24 * pixelsPerHour}px`, zIndex: 25 }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: `${top}px`,
+          height: `${height}px`,
+          left: `calc(${leftPercent}% + 2px)`,
+          width: `calc(${widthPercent}% - 4px)`,
+        }}
+        className="bg-accent/20 border-2 border-accent border-dashed rounded-md flex flex-col items-center justify-center"
+      >
+        <div className="text-accent font-medium text-sm truncate px-2">
+          {draggedEvent.title}
+        </div>
+        <div className="text-accent/80 text-xs">
+          {isMultiDay ? `${actualDaySpan} days • ` : ''}{previewStartTime} - {previewEndTime}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const WeekView: React.FC<WeekViewProps> = ({
   onTaskClick,
   onTimeSlotClick,
@@ -98,6 +218,15 @@ const WeekView: React.FC<WeekViewProps> = ({
     isOpen: boolean
     event: UnifiedEvent | null
   }>({ isOpen: false, event: null })
+  // Resize preview state for multi-day corner resize visualization
+  const [resizePreviewState, setResizePreviewState] = useState<{
+    isResizing: boolean
+    eventId: string | null
+    previewStart: string | null
+    previewEnd: string | null
+    daySpan: number
+    isMultiDay: boolean
+  }>({ isResizing: false, eventId: null, previewStart: null, previewEnd: null, daySpan: 1, isMultiDay: false })
   const timeSlotRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
   const containerRef = useRef<HTMLDivElement>(null)
   const eventsGridRef = useRef<HTMLDivElement>(null)
@@ -315,6 +444,22 @@ const WeekView: React.FC<WeekViewProps> = ({
   }
 
   const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => {
+    // Always clear resize preview state when resize completes
+    setResizePreviewState({ isResizing: false, eventId: null, previewStart: null, previewEnd: null, daySpan: 1, isMultiDay: false })
+
+    // Only update database if times actually changed
+    const originalStart = event.startDateTime
+    const originalEnd = event.endDateTime || event.startDateTime
+
+    // Normalize for comparison (remove milliseconds differences)
+    const normalizeTime = (t: string) => t.slice(0, 19)
+    const timesChanged = normalizeTime(newStartTime) !== normalizeTime(originalStart) ||
+                         normalizeTime(newEndTime) !== normalizeTime(originalEnd)
+
+    if (!timesChanged) {
+      return // Resize cancelled - user returned to original position
+    }
+
     const updates: Record<string, any> = {
       startDateTime: newStartTime,
       endDateTime: newEndTime,
@@ -333,6 +478,27 @@ const WeekView: React.FC<WeekViewProps> = ({
     } catch (error) {
       console.error('❌ [WeekView] Error resizing event:', error)
     }
+  }
+
+  // Handle resize preview start - track which event is being resized
+  const handleResizePreviewStart = (event: UnifiedEvent) => {
+    setResizePreviewState(prev => ({
+      ...prev,
+      isResizing: true,
+      eventId: event.id
+    }))
+  }
+
+  // Handle resize preview update - update the multi-day preview during drag
+  const handleResizePreviewUpdate = (event: UnifiedEvent, previewStart: string, previewEnd: string, daySpan: number, isMultiDay: boolean) => {
+    setResizePreviewState({
+      isResizing: true,
+      eventId: event.id,
+      previewStart,
+      previewEnd,
+      daySpan,
+      isMultiDay
+    })
   }
 
   const handleRescheduleConfirm = async (data: RescheduleData, notifyParticipants: boolean) => {
@@ -614,8 +780,20 @@ Rescheduled: ${data.reason}`.trim() :
     }
   }
 
+  // Handler to clear placeholder when drag or resize starts
+  const handleClearPlaceholder = useCallback(() => {
+    if (onPlaceholderChange) {
+      onPlaceholderChange(null);
+    }
+  }, [onPlaceholderChange]);
+
   return (
-    <DragDropProvider onEventDrop={handleEventDrop} onEventResize={handleEventResize}>
+    <DragDropProvider
+      onEventDrop={handleEventDrop}
+      onEventResize={handleEventResize}
+      onDragStart={handleClearPlaceholder}
+      onResizeStart={handleClearPlaceholder}
+    >
     <div ref={containerRef} className="space-y-6">
       {/* Week Header */}
       <div className="neo-card">
@@ -718,45 +896,88 @@ Rescheduled: ${data.reason}`.trim() :
             {/* Events Overlay Layer - absolutely positioned over the grid */}
             <div
               ref={eventsGridRef}
-              className="absolute top-0 left-0 right-0 pointer-events-none"
+              className="absolute top-0 left-0 right-0 pointer-events-none overflow-visible"
               style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
             >
-              <div className="grid grid-cols-8 gap-0 h-full">
+              <div className="grid grid-cols-8 gap-0 h-full overflow-visible">
                 {/* Spacer for time column */}
                 <div className="border-r border-transparent" />
 
                 {/* Single-day events for each day column */}
                 {weekDays.map(day => {
                   const dayEvents = getEventsForDay(day)
-                  const dayUnifiedEvents = dayEvents.filter(event => unifiedEvents.find(e => e.id === event.id)) as UnifiedEvent[]
+
+                  // Convert ALL events to UnifiedEvent format to ensure consistent CalendarEvent rendering
+                  const dayUnifiedEvents = dayEvents.map(event => {
+                    // Try to find the event in unifiedEvents first
+                    const existingUnified = unifiedEvents.find(e => e.id === (event as any).id)
+                    if (existingUnified) return existingUnified
+
+                    // Convert legacy event to UnifiedEvent format
+                    const legacyEvent = event as any
+                    const startDateTime = legacyEvent.startDateTime || legacyEvent.scheduledDate || legacyEvent.startTime
+                    const endDateTime = legacyEvent.endDateTime || startDateTime
+                    return {
+                      id: legacyEvent.id,
+                      type: legacyEvent.type || 'event',
+                      title: legacyEvent.title || legacyEvent.service || 'Event',
+                      description: legacyEvent.description || legacyEvent.notes || '',
+                      startDateTime: startDateTime,
+                      endDateTime: endDateTime,
+                      duration: legacyEvent.duration || 60,
+                      priority: legacyEvent.priority || 'medium',
+                      clientId: legacyEvent.clientId,
+                      clientName: legacyEvent.clientName,
+                      location: legacyEvent.location,
+                      notes: legacyEvent.notes,
+                      status: legacyEvent.status || 'scheduled',
+                      isAllDay: legacyEvent.isAllDay || false,
+                      isMultiDay: legacyEvent.isMultiDay || false,
+                      isRecurring: legacyEvent.isRecurring || false,
+                      createdAt: legacyEvent.createdAt || new Date().toISOString(),
+                      updatedAt: legacyEvent.updatedAt || new Date().toISOString()
+                    } as UnifiedEvent
+                  })
 
                   return (
                     <div
                       key={`events-${day.toISOString()}`}
-                      className="relative border-r border-transparent"
+                      className="relative border-r border-transparent overflow-visible"
                     >
-                      {dayUnifiedEvents.map(event => (
-                        <div
-                          key={event.id}
-                          style={getEventStyle(event)}
-                          className="pointer-events-auto"
-                        >
-                          <CalendarEvent
-                            event={event}
-                            viewMode="week"
-                            currentDate={format(day, 'yyyy-MM-dd')}
-                            currentHour={new Date(event.startDateTime).getHours()}
-                            pixelsPerHour={PIXELS_PER_HOUR}
-                            onClick={(e) => handleShowEventDetails(e)}
-                            onResizeEnd={handleEventResize}
-                            showResizeHandles={true}
-                            isCompact={false}
-                            gridContainerRef={eventsGridRef}
-                            weekStartDate={weekStart}
-                            className="text-xs rounded border hover:shadow-sm transition-all"
-                          />
-                        </div>
-                      ))}
+                      {dayUnifiedEvents.map(event => {
+                        // Hide original event when it's being resized to multi-day
+                        const isBeingResizedToMultiDay = resizePreviewState.isResizing &&
+                          resizePreviewState.eventId === event.id &&
+                          resizePreviewState.isMultiDay
+
+                        return (
+                          <div
+                            key={event.id}
+                            style={{
+                              ...getEventStyle(event),
+                              // Make original event invisible during multi-day resize (preview overlay shows it)
+                              opacity: isBeingResizedToMultiDay ? 0 : 1
+                            }}
+                            className="pointer-events-auto overflow-visible"
+                          >
+                            <CalendarEvent
+                              event={event}
+                              viewMode="week"
+                              currentDate={format(day, 'yyyy-MM-dd')}
+                              currentHour={new Date(event.startDateTime).getHours()}
+                              pixelsPerHour={PIXELS_PER_HOUR}
+                              onClick={(e) => handleShowEventDetails(e)}
+                              onResizeEnd={handleEventResize}
+                              onResizePreview={handleResizePreviewUpdate}
+                              showResizeHandles={true}
+                              isCompact={false}
+                              gridContainerRef={eventsGridRef}
+                              weekStartDate={weekStart}
+                              className="text-xs rounded border hover:shadow-sm transition-all"
+                            />
+                          </div>
+                        )
+                      })}
                     </div>
                   )
                 })}
@@ -764,32 +985,122 @@ Rescheduled: ${data.reason}`.trim() :
 
               {/* Multi-day events overlay - spans across multiple columns */}
               <div
-                className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0"
+                className="absolute top-0 left-0 right-0 grid grid-cols-8 gap-0 overflow-visible"
                 style={{ height: `${24 * PIXELS_PER_HOUR}px` }}
               >
-                {getMultiDayEventsForWeek().map(event => (
-                  <div
-                    key={`multiday-${event.id}`}
-                    style={getMultiDayEventStyle(event)}
-                    className="pointer-events-auto"
-                  >
-                    <CalendarEvent
-                      event={event}
-                      viewMode="week"
-                      currentDate={format(new Date(event.startDateTime), 'yyyy-MM-dd')}
-                      currentHour={new Date(event.startDateTime).getHours()}
-                      pixelsPerHour={PIXELS_PER_HOUR}
-                      onClick={(e) => handleShowEventDetails(e)}
-                      onResizeEnd={handleEventResize}
-                      showResizeHandles={true}
-                      isCompact={false}
-                      gridContainerRef={eventsGridRef}
-                      weekStartDate={weekStart}
-                      className="text-xs rounded border hover:shadow-sm transition-all h-full"
-                    />
-                  </div>
-                ))}
+                {getMultiDayEventsForWeek().map(event => {
+                  // Only hide original event when doing a horizontal/corner resize that changes day span
+                  // For vertical-only resizes (top/bottom), keep the event visible
+                  const isBeingResizedToMultiDay = resizePreviewState.isResizing &&
+                    resizePreviewState.eventId === event.id &&
+                    resizePreviewState.isMultiDay
+
+                  return (
+                    <div
+                      key={`multiday-${event.id}`}
+                      style={{
+                        ...getMultiDayEventStyle(event),
+                        opacity: isBeingResizedToMultiDay ? 0 : 1
+                      }}
+                      className="pointer-events-auto overflow-visible"
+                    >
+                      <CalendarEvent
+                        event={event}
+                        viewMode="week"
+                        currentDate={format(new Date(event.startDateTime), 'yyyy-MM-dd')}
+                        currentHour={new Date(event.startDateTime).getHours()}
+                        pixelsPerHour={PIXELS_PER_HOUR}
+                        onClick={(e) => handleShowEventDetails(e)}
+                        onResizeEnd={handleEventResize}
+                        onResizePreview={handleResizePreviewUpdate}
+                        showResizeHandles={true}
+                        isCompact={false}
+                        gridContainerRef={eventsGridRef}
+                        weekStartDate={weekStart}
+                        className="text-xs rounded border hover:shadow-sm transition-all h-full"
+                      />
+                    </div>
+                  )
+                })}
               </div>
+
+              {/* Resize preview overlay - shows multi-column spanning during corner resize */}
+              {resizePreviewState.isResizing && resizePreviewState.isMultiDay && resizePreviewState.previewStart && resizePreviewState.previewEnd && (() => {
+                const event = unifiedEvents.find(e => e.id === resizePreviewState.eventId)
+                if (!event) return null
+
+                const previewStart = new Date(resizePreviewState.previewStart)
+                const previewEnd = new Date(resizePreviewState.previewEnd)
+
+                // Find start and end day indices in the week
+                let startDayIndex = -1
+                let endDayIndex = -1
+
+                for (let i = 0; i < 7; i++) {
+                  if (isSameDay(weekDays[i], previewStart)) {
+                    startDayIndex = i
+                  }
+                  if (isSameDay(weekDays[i], previewEnd)) {
+                    endDayIndex = i
+                  }
+                }
+
+                // Clamp to week bounds if dates are outside
+                if (startDayIndex === -1) startDayIndex = previewStart < weekDays[0] ? 0 : 6
+                if (endDayIndex === -1) endDayIndex = previewEnd > weekDays[6] ? 6 : 0
+
+                // Ensure start <= end
+                if (startDayIndex > endDayIndex) {
+                  [startDayIndex, endDayIndex] = [endDayIndex, startDayIndex]
+                }
+
+                // Calculate pixel positions based on column indices
+                // Grid has 8 columns: 1 time column (12.5%) + 7 day columns (12.5% each)
+                const timeColumnPercent = 12.5
+                const dayColumnPercent = 12.5
+
+                const leftPercent = timeColumnPercent + (startDayIndex * dayColumnPercent)
+                const numColumns = endDayIndex - startDayIndex + 1
+                const widthPercent = numColumns * dayColumnPercent
+
+                // Calculate vertical position from preview start time
+                const startHour = previewStart.getHours()
+                const startMinutes = previewStart.getMinutes()
+                const top = (startHour * PIXELS_PER_HOUR) + ((startMinutes / 60) * PIXELS_PER_HOUR)
+
+                // Calculate height from visual duration (time-of-day span)
+                const endHour = previewEnd.getHours()
+                const endMinutes = previewEnd.getMinutes()
+                const startMinutesOfDay = startHour * 60 + startMinutes
+                const endMinutesOfDay = endHour * 60 + endMinutes
+                const visualDuration = Math.abs(endMinutesOfDay - startMinutesOfDay) || 15
+                const height = Math.max((visualDuration / 60) * PIXELS_PER_HOUR, 25)
+
+                return (
+                  <div
+                    className="absolute top-0 left-0 right-0 pointer-events-none"
+                    style={{ height: `${24 * PIXELS_PER_HOUR}px`, zIndex: 30 }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: `${top}px`,
+                        height: `${height}px`,
+                        left: `calc(${leftPercent}% + 2px)`,
+                        width: `calc(${widthPercent}% - 4px)`,
+                      }}
+                      className="bg-accent/30 border-2 border-accent border-dashed rounded-md flex items-center justify-center"
+                    >
+                      <div className="text-accent font-medium text-sm truncate px-2">
+                        {event.title} ({format(previewStart, 'h:mm a')} - {format(previewEnd, 'h:mm a')})
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* Drag ghost preview - shows where event will land during drag */}
+              <DragGhostPreview weekDays={weekDays} pixelsPerHour={PIXELS_PER_HOUR} />
 
               {/* Placeholder event overlay - shows ghost event during creation */}
               {placeholderEvent && (() => {
