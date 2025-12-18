@@ -676,23 +676,24 @@ Duration changed: ${data.reason}`.trim() :
           : [endDate, startDate];
 
         const daySpan = differenceInDays(actualEnd, actualStart) + 1;
-        const totalDuration = daySpan * 8 * 60; // 8 hours per day in minutes
+        // For multi-day placeholders, use 15-minute duration (will be converted to recurring daily event)
+        const duration = 15; // 15 minutes default
 
-        console.log('📅 Multi-day placeholder update:', {
+        console.log('📅 Multi-day placeholder update (recurring):', {
           start: format(actualStart, 'yyyy-MM-dd'),
           end: format(actualEnd, 'yyyy-MM-dd'),
           daySpan,
-          totalDuration
+          duration
         });
 
         onPlaceholderChange({
           date: format(actualStart, 'yyyy-MM-dd'),
           hour: DEFAULT_HOUR,
           minutes: 0,
-          duration: totalDuration,
+          duration: duration,
           endDate: format(actualEnd, 'yyyy-MM-dd'),
-          endHour: 17, // 5pm default end
-          endMinutes: 0
+          endHour: DEFAULT_HOUR, // Same hour as start for recurring events
+          endMinutes: 15 // 15 minutes after start
         });
       }
     }
@@ -1028,8 +1029,8 @@ Duration changed: ${data.reason}`.trim() :
                           const isSelected = isSameDay(day, selectedDate);
                           const dayHour = 9; // Default hour for month view (9am)
 
-                          // Determine day cell styles based on state
-                          const getDayCellStyle = (): React.CSSProperties => {
+                          // Determine day cell styles based on state - applied to DropZone wrapper
+                          const getDropZoneStyle = (): React.CSSProperties => {
                             const baseStyle: React.CSSProperties = {
                               background: 'var(--neomorphic-bg)',
                               borderRight: '1px solid var(--neomorphic-dark-shadow)',
@@ -1069,12 +1070,12 @@ Duration changed: ${data.reason}`.trim() :
                               date={format(day, 'yyyy-MM-dd')}
                               hour={dayHour}
                               showAlways={true}
-                              className="min-h-[120px] p-2 cursor-pointer relative group"
+                              className="min-h-[120px] cursor-pointer relative group"
+                              style={getDropZoneStyle()}
                             >
                             <div
                               data-date={format(day, 'yyyy-MM-dd')}
-                              className="h-full"
-                              style={getDayCellStyle()}
+                              className="h-full p-2"
                               onMouseDown={(e) => handleDayMouseDown(e, day, isCurrentMonth)}
                               onDragStart={(e) => {
                                 // Prevent event dragging when creating a new placeholder

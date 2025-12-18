@@ -231,7 +231,8 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
   }, [initialDuration, editingEvent])
 
   // Sync multi-day state from placeholder drag
-  // When the placeholder spans multiple days, update the form's isMultiDay and endDate
+  // When the placeholder spans multiple days, update the form's isRecurring (not isMultiDay)
+  // to default to daily recurring events instead of all-day spanning events
   useEffect(() => {
     if (!editingEvent && initialEndDate) {
       const startDateStr = initialDate ? format(initialDate, 'yyyy-MM-dd') : formData.date
@@ -247,8 +248,14 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
           return {
             ...prev,
-            isMultiDay: true,
-            endDate: initialEndDate,
+            // Enable recurring mode for multi-day placeholders
+            isRecurring: true,
+            recurrenceFrequency: 'daily',
+            recurrenceEndDate: initialEndDate,
+            // Disable isMultiDay and isAllDay for recurring events
+            isMultiDay: false,
+            isAllDay: false,
+            endDate: initialEndDate, // Store for reference
             endTime: newEndTime
           }
         })
@@ -558,26 +565,54 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
         />
       </div>
 
-      {/* Date and Time Row */}
-      <div className="grid grid-cols-1 gap-4">
+      {/* Start Date */}
+      <div className="space-y-2">
+        <label htmlFor="date" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+          Start Date *
+        </label>
+        <input
+          id="date"
+          type="date"
+          value={formData.date}
+          onChange={(e) => handleInputChange('date', e.target.value)}
+          className={`neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] ${
+            errors.date ? 'ring-2 ring-red-500' : ''
+          }`}
+        />
+        {errors.date && (
+          <p className="text-sm text-red-500 font-primary">{errors.date}</p>
+        )}
+      </div>
+
+      {/* End Date (for multi-day or recurring events) */}
+      {(formData.isMultiDay || formData.isRecurring) && (
         <div className="space-y-2">
-          <label htmlFor="date" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
-            Date *
+          <label htmlFor="endDate" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+            {formData.isRecurring ? 'Recurrence End Date' : 'End Date'} *
           </label>
           <input
-            id="date"
+            id="endDate"
             type="date"
-            value={formData.date}
-            onChange={(e) => handleInputChange('date', e.target.value)}
-            className={`neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)] ${
-              errors.date ? 'ring-2 ring-red-500' : ''
-            }`}
+            value={formData.isRecurring ? formData.recurrenceEndDate : formData.endDate}
+            min={formData.date}
+            onChange={(e) => handleInputChange(formData.isRecurring ? 'recurrenceEndDate' : 'endDate', e.target.value)}
+            className="neo-input w-full p-3 rounded-lg font-primary text-[var(--neomorphic-text)]"
           />
-          {errors.date && (
-            <p className="text-sm text-red-500 font-primary">{errors.date}</p>
+          {formData.isMultiDay && !formData.isRecurring && (
+            <p className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary">
+              Event spans from {format(new Date(formData.date + 'T00:00'), 'MMM d')} to {format(new Date(formData.endDate + 'T00:00'), 'MMM d, yyyy')}
+            </p>
+          )}
+          {formData.isRecurring && (
+            <p className="text-xs text-[var(--neomorphic-text)] opacity-60 font-primary">
+              Event recurs until {format(new Date(formData.recurrenceEndDate + 'T00:00'), 'MMM d, yyyy')}
+            </p>
           )}
         </div>
+      )}
 
+      {/* Time Row */}
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <label htmlFor="startTime" className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
             {formData.type === 'goal' ? 'Target Date' : 'Start Time'} *
@@ -668,6 +703,196 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Event Scheduling Options */}
+      {(formData.type === 'event' || formData.type === 'task') && (
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+            Scheduling Options
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {/* Recurring Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                const newIsRecurring = !formData.isRecurring
+                setFormData(prev => ({
+                  ...prev,
+                  isRecurring: newIsRecurring,
+                  // If enabling recurring, disable multi-day (recurring events are single instances)
+                  isMultiDay: newIsRecurring ? false : prev.isMultiDay
+                }))
+              }}
+              className={`flex items-center justify-center gap-1.5 p-2 text-xs font-primary font-semibold uppercase tracking-wide rounded-lg transition-all border-2 ${
+                formData.isRecurring
+                  ? 'neo-button-active border-blue-500 !bg-blue-500/90 !text-white'
+                  : 'neo-button border-transparent hover:border-blue-500/50'
+              }`}
+            >
+              <Repeat className="w-3.5 h-3.5" />
+              <span>Recurring</span>
+            </button>
+
+            {/* All-Day Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                const newIsAllDay = !formData.isAllDay
+                setFormData(prev => ({
+                  ...prev,
+                  isAllDay: newIsAllDay,
+                  // When enabling all-day, also enable multi-day if there's an end date
+                  isMultiDay: newIsAllDay && prev.endDate && prev.endDate !== prev.date,
+                  // Disable recurring when all-day is enabled
+                  isRecurring: newIsAllDay ? false : prev.isRecurring,
+                  // Set appropriate times for all-day events
+                  startTime: newIsAllDay ? '00:00' : prev.startTime,
+                  endTime: newIsAllDay ? '23:59' : prev.endTime,
+                  duration: newIsAllDay ? 1440 : 15 // 24 hours or 15 min
+                }))
+              }}
+              className={`flex items-center justify-center gap-1.5 p-2 text-xs font-primary font-semibold uppercase tracking-wide rounded-lg transition-all border-2 ${
+                formData.isAllDay
+                  ? 'neo-button-active border-purple-500 !bg-purple-500/90 !text-white'
+                  : 'neo-button border-transparent hover:border-purple-500/50'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>All-Day</span>
+            </button>
+
+            {/* Multi-Day Toggle - only available when All-Day is enabled */}
+            {formData.isAllDay && (
+              <button
+                type="button"
+                onClick={() => {
+                  const newIsMultiDay = !formData.isMultiDay
+                  setFormData(prev => ({
+                    ...prev,
+                    isMultiDay: newIsMultiDay,
+                    // Set end date to next day if enabling multi-day
+                    endDate: newIsMultiDay && prev.endDate === prev.date
+                      ? format(addMinutes(new Date(prev.date + 'T00:00'), 1440), 'yyyy-MM-dd')
+                      : prev.endDate
+                  }))
+                }}
+                className={`flex items-center justify-center gap-1.5 p-2 text-xs font-primary font-semibold uppercase tracking-wide rounded-lg transition-all border-2 ${
+                  formData.isMultiDay
+                    ? 'neo-button-active border-orange-500 !bg-orange-500/90 !text-white'
+                    : 'neo-button border-transparent hover:border-orange-500/50'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Multi-Day</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Recurrence Settings (shown when recurring is enabled) */}
+      {formData.isRecurring && (
+        <div className="space-y-4 p-4 rounded-lg neo-inset">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+            <Repeat className="w-4 h-4" />
+            <span>Recurrence Pattern</span>
+          </div>
+
+          {/* Frequency Selection */}
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-[var(--neomorphic-text)] opacity-70 font-primary uppercase">
+              Repeat
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'daily', label: 'Daily' },
+                { value: 'weekly', label: 'Weekly' },
+                { value: 'biweekly', label: 'Bi-Weekly' },
+                { value: 'monthly', label: 'Monthly' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleInputChange('recurrenceFrequency', option.value as RecurrenceFrequency)}
+                  className={`p-2 text-xs font-primary font-medium rounded-lg transition-all ${
+                    formData.recurrenceFrequency === option.value
+                      ? 'neo-button-active'
+                      : 'neo-button'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Interval (shown for custom frequency) */}
+          {formData.recurrenceFrequency === 'custom' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-[var(--neomorphic-text)] opacity-70 font-primary uppercase">
+                  Every
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={formData.recurrenceInterval}
+                  onChange={(e) => handleInputChange('recurrenceInterval', parseInt(e.target.value) || 1)}
+                  className="neo-input w-full p-2 rounded-lg font-primary text-[var(--neomorphic-text)] text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-[var(--neomorphic-text)] opacity-70 font-primary uppercase">
+                  Interval
+                </label>
+                <select
+                  value={formData.recurrenceIntervalType}
+                  onChange={(e) => handleInputChange('recurrenceIntervalType', e.target.value as RecurrenceInterval)}
+                  className="neo-input w-full p-2 rounded-lg font-primary text-[var(--neomorphic-text)] text-sm"
+                >
+                  <option value="days">Days</option>
+                  <option value="weeks">Weeks</option>
+                  <option value="months">Months</option>
+                  <option value="years">Years</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* End Condition */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-[var(--neomorphic-text)] opacity-70 font-primary uppercase">
+                End Date
+              </label>
+              <input
+                type="date"
+                value={formData.recurrenceEndDate}
+                onChange={(e) => handleInputChange('recurrenceEndDate', e.target.value)}
+                className="neo-input w-full p-2 rounded-lg font-primary text-[var(--neomorphic-text)] text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-[var(--neomorphic-text)] opacity-70 font-primary uppercase">
+                Or After
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={formData.recurrenceOccurrences}
+                  onChange={(e) => handleInputChange('recurrenceOccurrences', parseInt(e.target.value) || 1)}
+                  className="neo-input flex-1 p-2 rounded-lg font-primary text-[var(--neomorphic-text)] text-sm"
+                />
+                <span className="text-xs text-[var(--neomorphic-text)] opacity-70">times</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Client Selection */}
       <div className="space-y-2">
