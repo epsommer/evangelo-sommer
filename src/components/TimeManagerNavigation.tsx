@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Clock, Grid3x3 } from 'lucide-react'
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Clock, Grid3x3, Plus } from 'lucide-react'
 import { useViewManager, TimeManagerView } from '@/contexts/ViewManagerContext'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
 
 interface TimeManagerNavigationProps {
   showTitle?: boolean
+  onAddEvent?: () => void
 }
 
 const VIEW_CONFIGS: Record<TimeManagerView, { label: string; icon: typeof Clock }> = {
@@ -17,8 +18,9 @@ const VIEW_CONFIGS: Record<TimeManagerView, { label: string; icon: typeof Clock 
 
 const CALENDAR_VIEWS: TimeManagerView[] = ['day', 'week', 'month']
 
-const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({ 
-  showTitle = true 
+const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
+  showTitle = true,
+  onAddEvent
 }) => {
   const { state, setCurrentView, navigateDate, setSelectedDate } = useViewManager()
   const { currentView, selectedDate } = state
@@ -244,17 +246,32 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
           </button>
         </div>
 
-        {/* Right: View Selector */}
-        <div className="relative" ref={viewDropdownRef}>
-          <button
-            onClick={() => setShowViewDropdown(!showViewDropdown)}
-            className="neo-button-active px-4 py-2 flex items-center space-x-2 font-primary uppercase tracking-wide text-sm"
-          >
-            {React.createElement(VIEW_CONFIGS[currentView].icon, { className: "h-4 w-4" })}
-            <span>{VIEW_CONFIGS[currentView].label}</span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${showViewDropdown ? 'rotate-180' : ''}`} />
-          </button>
-          {showViewDropdown && <ViewDropdown />}
+        {/* Right: Add Event and View Selector */}
+        <div className="flex items-center gap-2">
+          {/* Add Event Button */}
+          {onAddEvent && (
+            <button
+              onClick={onAddEvent}
+              className="neo-button px-3 py-2 flex items-center gap-2 font-primary uppercase tracking-wide text-sm hover:neo-button-active transition-all"
+              title="Add Event"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Event</span>
+            </button>
+          )}
+
+          {/* View Selector */}
+          <div className="relative" ref={viewDropdownRef}>
+            <button
+              onClick={() => setShowViewDropdown(!showViewDropdown)}
+              className="neo-button-active px-4 py-2 flex items-center space-x-2 font-primary uppercase tracking-wide text-sm"
+            >
+              {React.createElement(VIEW_CONFIGS[currentView].icon, { className: "h-4 w-4" })}
+              <span>{VIEW_CONFIGS[currentView].label}</span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showViewDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            {showViewDropdown && <ViewDropdown />}
+          </div>
         </div>
       </div>
     </div>

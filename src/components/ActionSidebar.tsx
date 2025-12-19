@@ -24,21 +24,21 @@ import {
   RotateCcw,
   Plus,
   Calendar,
-  Target,
   Clock,
   CheckCircle2,
   X,
-  GripVertical,
   Timer,
   TrendingUp,
   BarChart3,
-  AlertTriangle
+  AlertTriangle,
+  PlusCircle
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { UnifiedEvent } from '@/components/EventCreationModal'
 import YearDayIndicator from '@/components/calendar/YearDayIndicator'
 import EventDetailsPanel from '@/components/sidebar/EventDetailsPanel'
 import EventCreationForm from '@/components/sidebar/EventCreationForm'
+import MultiEventCreationModal from '@/components/MultiEventCreationModal'
 
 interface ActionSidebarProps {
   selectedDate: Date
@@ -46,6 +46,7 @@ interface ActionSidebarProps {
   onDateSelect: (date: Date) => void
   onViewChange?: (view: 'day' | 'week') => void
   onEventCreate?: (eventData: UnifiedEvent) => void
+  onBatchEventCreate?: (events: UnifiedEvent[]) => Promise<void>
   events: UnifiedEvent[]
   isEventCreationMode?: boolean
   initialEventTime?: string
@@ -64,25 +65,6 @@ interface ActionSidebarProps {
   onShowConflicts?: () => void
 }
 
-interface MissionObjective {
-  id: string
-  text: string
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  completed: boolean
-  timeEstimate?: number
-  dueDate?: string
-  dueTime?: string
-  category?: string
-  createdAt: string
-}
-
-const PRIORITY_COLORS = {
-  low: 'border-green-500',
-  medium: 'border-blue-500',
-  high: 'border-orange-500',
-  urgent: 'border-red-500'
-}
-
 type SidebarTab = 'overview' | 'analytics'
 
 const ActionSidebar: React.FC<ActionSidebarProps> = ({
@@ -91,6 +73,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   onDateSelect,
   onViewChange,
   onEventCreate,
+  onBatchEventCreate,
   events,
   isEventCreationMode = false,
   initialEventTime,
@@ -111,37 +94,8 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   const today = new Date()
   const [displayedMonth, setDisplayedMonth] = useState<Date>(selectedDate)
   const [expandedPanels, setExpandedPanels] = useState<Set<string>>(new Set(['calendar']))
-  const [objectives, setObjectives] = useState<MissionObjective[]>([])
-  const [quickEntryText, setQuickEntryText] = useState('')
+  const [showBatchAddModal, setShowBatchAddModal] = useState(false)
   const [activeTab, setActiveTab] = useState<SidebarTab>('overview')
-
-  // Load objectives for the selected date from localStorage
-  useEffect(() => {
-    const dateKey = format(selectedDate, 'yyyy-MM-dd')
-    const storageKey = `mission-objectives-${dateKey}`
-    try {
-      const stored = localStorage.getItem(storageKey)
-      if (stored) {
-        setObjectives(JSON.parse(stored))
-      } else {
-        setObjectives([])
-      }
-    } catch (error) {
-      console.error('Error loading objectives:', error)
-      setObjectives([])
-    }
-  }, [selectedDate])
-
-  // Save objectives to localStorage whenever they change
-  useEffect(() => {
-    const dateKey = format(selectedDate, 'yyyy-MM-dd')
-    const storageKey = `mission-objectives-${dateKey}`
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(objectives))
-    } catch (error) {
-      console.error('Error saving objectives:', error)
-    }
-  }, [objectives, selectedDate])
 
   // Sync displayed month with selected date
   useEffect(() => {
@@ -204,57 +158,11 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
       .slice(0, 5)
   }
 
-  const handleQuickAdd = () => {
-    if (!quickEntryText.trim()) return
-
-    const text = quickEntryText.trim()
-    const priorityMatch = text.match(/^(urgent|high|medium|low):/i)
-    const timeMatch = text.match(/(\d+)(min|m|h|hr)/i)
-    const categoryMatch = text.match(/#(\w+)/)
-
-    let priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium'
-    if (priorityMatch) {
-      priority = priorityMatch[1].toLowerCase() as typeof priority
+  const handleBatchEventSave = async (batchEvents: UnifiedEvent[]) => {
+    if (onBatchEventCreate) {
+      await onBatchEventCreate(batchEvents)
     }
-
-    let timeEstimate: number | undefined
-    if (timeMatch) {
-      const value = parseInt(timeMatch[1])
-      const unit = timeMatch[2].toLowerCase()
-      timeEstimate = unit.startsWith('h') ? value * 60 : value
-    }
-
-    const category = categoryMatch?.[1]
-
-    let cleanText = text
-    if (priorityMatch) cleanText = cleanText.replace(priorityMatch[0], '').trim()
-    if (timeMatch) cleanText = cleanText.replace(timeMatch[0], '').trim()
-    if (categoryMatch) cleanText = cleanText.replace(categoryMatch[0], '').trim()
-
-    const newObjective: MissionObjective = {
-      id: `obj-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      text: cleanText,
-      priority,
-      completed: false,
-      timeEstimate,
-      category,
-      createdAt: new Date().toISOString()
-    }
-
-    setObjectives(prev => [...prev, newObjective])
-    setQuickEntryText('')
-  }
-
-  const toggleObjective = (id: string) => {
-    setObjectives(prev =>
-      prev.map(obj =>
-        obj.id === id ? { ...obj, completed: !obj.completed } : obj
-      )
-    )
-  }
-
-  const deleteObjective = (id: string) => {
-    setObjectives(prev => prev.filter(obj => obj.id !== id))
+    setShowBatchAddModal(false)
   }
 
   // Calculate statistics for analytics tab
@@ -405,93 +313,19 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
     )
   }
 
-  // Render mission objectives panel
-  const renderObjectives = () => (
+  // Render batch add panel
+  const renderBatchAdd = () => (
     <div className="space-y-3">
-      {/* Quick Entry */}
-      <div className="flex gap-2">
-        <input
-          placeholder="Quick add: 'urgent: fix bug 30min #dev'"
-          value={quickEntryText}
-          onChange={(e) => setQuickEntryText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
-          className="neo-input flex-1 px-3 py-2 rounded-lg font-primary text-sm text-[var(--neomorphic-text)]"
-        />
-        <button
-          onClick={handleQuickAdd}
-          className="neo-button-active px-3 py-2 rounded-lg"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Pending Objectives */}
-      <div className="space-y-2">
-        {objectives
-          .filter(o => !o.completed)
-          .sort((a, b) => {
-            const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 }
-            return priorityOrder[a.priority] - priorityOrder[b.priority]
-          })
-          .map(objective => (
-            <div
-              key={objective.id}
-              className="flex items-center gap-2 p-2 neo-card rounded-lg group"
-            >
-              <button
-                onClick={() => toggleObjective(objective.id)}
-                className="p-1 hover:bg-accent/10 rounded"
-              >
-                <div className={`w-4 h-4 rounded border-2 ${PRIORITY_COLORS[objective.priority]}`} />
-              </button>
-              <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 cursor-grab" />
-              <span className="flex-1 text-sm">{objective.text}</span>
-              {objective.timeEstimate && (
-                <Badge variant="outline" className="text-[10px]">
-                  <Timer className="h-3 w-3 mr-1" />
-                  {objective.timeEstimate}m
-                </Badge>
-              )}
-              {objective.category && (
-                <Badge variant="secondary" className="text-[10px]">
-                  {objective.category}
-                </Badge>
-              )}
-              <button
-                onClick={() => deleteObjective(objective.id)}
-                className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
-              >
-                <X className="h-3 w-3 text-red-500" />
-              </button>
-            </div>
-          ))}
-      </div>
-
-      {/* Completed Objectives */}
-      {objectives.filter(o => o.completed).length > 0 && (
-        <div className="pt-2 border-t">
-          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" />
-            Completed ({objectives.filter(o => o.completed).length})
-          </div>
-          {objectives
-            .filter(o => o.completed)
-            .map(objective => (
-              <div
-                key={objective.id}
-                className="flex items-center gap-2 p-2 opacity-50"
-              >
-                <button
-                  onClick={() => toggleObjective(objective.id)}
-                  className="p-1"
-                >
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                </button>
-                <span className="flex-1 text-sm line-through">{objective.text}</span>
-              </div>
-            ))}
-        </div>
-      )}
+      <p className="text-sm text-muted-foreground font-primary">
+        Quickly create multiple events at once for the selected date.
+      </p>
+      <button
+        onClick={() => setShowBatchAddModal(true)}
+        className="w-full neo-button-active px-4 py-3 rounded-lg flex items-center justify-center gap-2 font-primary text-sm uppercase tracking-wide"
+      >
+        <PlusCircle className="h-5 w-5" />
+        Open Batch Add
+      </button>
     </div>
   )
 
@@ -780,7 +614,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   // Main render - show event details, event creation mode, or default panels
   if (selectedEvent) {
     return (
-      <div className="neo-card h-full overflow-hidden">
+      <div className="neo-card h-full overflow-hidden" data-sidebar="action">
         <EventDetailsPanel
           event={selectedEvent}
           onClose={onExitEventDetails || (() => {})}
@@ -793,7 +627,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
 
   if (isEventCreationMode) {
     return (
-      <div className="neo-card h-full overflow-y-auto">
+      <div className="neo-card h-full overflow-y-auto" data-sidebar="action">
         <div className="p-4 border-b border-[var(--neomorphic-dark-shadow)]">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
@@ -838,7 +672,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
 
   // Default view with tabs
   return (
-    <div className="neo-card h-full overflow-y-auto">
+    <div className="neo-card h-full overflow-y-auto" data-sidebar="action">
       <div className="p-4 space-y-4">
         {/* Tab Navigation with Conflict Icon */}
         <div className="flex items-center gap-2 mb-4">
@@ -910,33 +744,28 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
               )}
             </div>
 
-            {/* Mission Objectives Panel */}
+            {/* Batch Add Panel */}
             <div className="space-y-3">
               <button
-                onClick={() => togglePanel('objectives')}
+                onClick={() => togglePanel('batchadd')}
                 className="flex items-center justify-between w-full text-left group"
               >
                 <div className="flex items-center gap-2">
-                  <Target className="h-4 w-4 text-accent" />
+                  <PlusCircle className="h-4 w-4 text-accent" />
                   <h3 className="text-sm font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
-                    Mission Objectives
+                    Batch Add
                   </h3>
-                  {objectives.filter(o => !o.completed).length > 0 && (
-                    <Badge variant="outline" className="text-[10px]">
-                      {objectives.filter(o => !o.completed).length}
-                    </Badge>
-                  )}
                 </div>
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${
-                    expandedPanels.has('objectives') ? 'rotate-180' : ''
+                    expandedPanels.has('batchadd') ? 'rotate-180' : ''
                   }`}
                 />
               </button>
 
-              {expandedPanels.has('objectives') && (
+              {expandedPanels.has('batchadd') && (
                 <div className="neo-inset rounded-xl p-4">
-                  {renderObjectives()}
+                  {renderBatchAdd()}
                 </div>
               )}
             </div>
@@ -1000,6 +829,14 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
           </>
         )}
       </div>
+
+      {/* Batch Add Modal */}
+      <MultiEventCreationModal
+        isOpen={showBatchAddModal}
+        onClose={() => setShowBatchAddModal(false)}
+        onSave={handleBatchEventSave}
+        initialDate={selectedDate}
+      />
     </div>
   )
 }

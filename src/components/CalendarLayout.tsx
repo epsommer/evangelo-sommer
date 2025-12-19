@@ -12,6 +12,7 @@ interface CalendarLayoutProps {
   onDateSelect: (date: Date) => void
   onViewChange: (view: 'day' | 'week' | 'month') => void
   onEventCreate?: (eventData: UnifiedEvent) => void
+  onBatchEventCreate?: (events: UnifiedEvent[]) => Promise<void>
   onRefreshTrigger?: () => void
   isEventCreationMode?: boolean
   initialEventTime?: string
@@ -51,6 +52,7 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   onDateSelect,
   onViewChange,
   onEventCreate,
+  onBatchEventCreate,
   onRefreshTrigger,
   isEventCreationMode = false,
   initialEventTime,
@@ -83,6 +85,7 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
           onDateSelect={onDateSelect}
           onViewChange={onViewChange}
           onEventCreate={onEventCreate}
+          onBatchEventCreate={onBatchEventCreate}
           events={events}
           isEventCreationMode={isEventCreationMode}
           initialEventTime={initialEventTime}

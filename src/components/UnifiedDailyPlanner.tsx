@@ -527,12 +527,12 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
           <div className="col-span-2 lg:col-span-1" />
 
           {/* Events container */}
-          <div className="col-span-10 lg:col-span-11 relative">
+          <div className="col-span-10 lg:col-span-11 relative overflow-visible">
             {filteredEvents.map(event => (
               <div
                 key={event.id}
                 style={getEventStyle(event)}
-                className="pointer-events-auto"
+                className="pointer-events-auto overflow-visible"
               >
                 <CalendarEvent
                   event={event}
@@ -766,29 +766,7 @@ const UnifiedDailyPlanner: React.FC<UnifiedDailyPlannerProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Multi-event button */}
-              <button
-                onClick={() => setShowMultiEventModal(true)}
-                className="neo-button px-3 py-2 rounded-lg flex items-center gap-1 font-primary text-sm uppercase tracking-wide text-[var(--neomorphic-text)]"
-              >
-                <PlusCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Batch Add</span>
-              </button>
-
-              {/* Single event button */}
-              <button
-                onClick={() => {
-                  setEditingEvent(null)
-                  setShowEventModal(true)
-                }}
-                className="neo-button-active px-3 py-2 rounded-lg flex items-center gap-1 font-primary text-sm uppercase tracking-wide font-semibold"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Event</span>
-              </button>
             </div>
-          </div>
 
           {/* Controls */}
           <div className="flex flex-wrap items-center gap-2">

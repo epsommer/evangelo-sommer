@@ -259,6 +259,24 @@ const TimeManagerContent = () => {
     }
   }
 
+  // Handle batch event creation from sidebar
+  const handleBatchEventCreate = async (events: UnifiedEvent[]) => {
+    try {
+      for (const event of events) {
+        await createEvent(event)
+      }
+      setRefreshTrigger(prev => prev + 1)
+    } catch (error) {
+      console.error('❌ Error creating batch events:', error)
+    }
+  }
+
+  // Handle "Add Event" button click from navigation
+  const handleAddEventClick = () => {
+    setEditingEvent(null)
+    setShowEventModal(true)
+  }
+
   const handleEventEdit = (event: UnifiedEvent) => {
     setEditingEvent(event)
     setShowEventModal(true)
@@ -384,14 +402,16 @@ const TimeManagerContent = () => {
     setSidebarSelectedEvent(null)
 
     // Check if there's already a multi-day placeholder from a drag operation
-    // Only preserve it if this double-click is on the SAME start date (i.e., completing a drag)
-    // If clicking on a different date, the user wants a NEW placeholder
+    // Preserve it if the double-click date falls within the placeholder's date range
+    // This handles the case where mouse-up occurs on the END date of the drag
     const hasExistingMultiDayPlaceholder = placeholderEvent?.endDate &&
       placeholderEvent.endDate !== placeholderEvent.date
-    const isCompletingDragFromSameDate = hasExistingMultiDayPlaceholder &&
-      placeholderEvent.date === dateString
+    const isWithinExistingPlaceholder = hasExistingMultiDayPlaceholder &&
+      placeholderEvent.endDate &&
+      dateString >= placeholderEvent.date &&
+      dateString <= placeholderEvent.endDate
 
-    if (!isCompletingDragFromSameDate) {
+    if (!isWithinExistingPlaceholder) {
       // Set placeholder event (ghost box in calendar)
       // Start with compact 15-minute placeholder, user can drag to expand
       setPlaceholderEvent({
@@ -727,6 +747,7 @@ const TimeManagerContent = () => {
         onDateSelect={setSelectedDate}
         onViewChange={setCurrentView}
         onEventCreate={handleEventCreate}
+        onBatchEventCreate={handleBatchEventCreate}
         onRefreshTrigger={() => setRefreshTrigger(prev => prev + 1)}
         isEventCreationMode={isEventCreationMode}
         initialEventTime={eventCreationTime || undefined}
@@ -768,7 +789,10 @@ const TimeManagerContent = () => {
 
         {/* Navigation */}
         <div className="neo-card">
-          <TimeManagerNavigation showTitle={false} />
+          <TimeManagerNavigation
+            showTitle={false}
+            onAddEvent={handleAddEventClick}
+          />
         </div>
 
         {/* Main Content */}
