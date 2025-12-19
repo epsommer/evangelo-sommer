@@ -38,7 +38,7 @@ import { UnifiedEvent } from '@/components/EventCreationModal'
 import YearDayIndicator from '@/components/calendar/YearDayIndicator'
 import EventDetailsPanel from '@/components/sidebar/EventDetailsPanel'
 import EventCreationForm from '@/components/sidebar/EventCreationForm'
-import MultiEventCreationModal from '@/components/MultiEventCreationModal'
+import BatchAddPanel from '@/components/sidebar/BatchAddPanel'
 
 interface ActionSidebarProps {
   selectedDate: Date
@@ -94,7 +94,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   const today = new Date()
   const [displayedMonth, setDisplayedMonth] = useState<Date>(selectedDate)
   const [expandedPanels, setExpandedPanels] = useState<Set<string>>(new Set(['calendar']))
-  const [showBatchAddModal, setShowBatchAddModal] = useState(false)
+  const [isBatchAddMode, setIsBatchAddMode] = useState(false)
   const [activeTab, setActiveTab] = useState<SidebarTab>('overview')
 
   // Sync displayed month with selected date
@@ -162,7 +162,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
     if (onBatchEventCreate) {
       await onBatchEventCreate(batchEvents)
     }
-    setShowBatchAddModal(false)
+    setIsBatchAddMode(false)
   }
 
   // Calculate statistics for analytics tab
@@ -320,7 +320,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
         Quickly create multiple events at once for the selected date.
       </p>
       <button
-        onClick={() => setShowBatchAddModal(true)}
+        onClick={() => setIsBatchAddMode(true)}
         className="w-full neo-button-active px-4 py-3 rounded-lg flex items-center justify-center gap-2 font-primary text-sm uppercase tracking-wide"
       >
         <PlusCircle className="h-5 w-5" />
@@ -611,7 +611,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
     )
   }
 
-  // Main render - show event details, event creation mode, or default panels
+  // Main render - show event details, event creation mode, batch add mode, or default panels
   if (selectedEvent) {
     return (
       <div className="neo-card h-full overflow-hidden" data-sidebar="action">
@@ -620,6 +620,18 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
           onClose={onExitEventDetails || (() => {})}
           onEdit={onEventEdit}
           onDelete={onEventDelete}
+        />
+      </div>
+    )
+  }
+
+  if (isBatchAddMode) {
+    return (
+      <div className="neo-card h-full overflow-hidden" data-sidebar="action">
+        <BatchAddPanel
+          onClose={() => setIsBatchAddMode(false)}
+          onSave={handleBatchEventSave}
+          initialDate={selectedDate}
         />
       </div>
     )
@@ -829,14 +841,6 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
           </>
         )}
       </div>
-
-      {/* Batch Add Modal */}
-      <MultiEventCreationModal
-        isOpen={showBatchAddModal}
-        onClose={() => setShowBatchAddModal(false)}
-        onSave={handleBatchEventSave}
-        initialDate={selectedDate}
-      />
     </div>
   )
 }
