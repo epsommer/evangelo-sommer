@@ -21,6 +21,7 @@ import {
 import {
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   RotateCcw,
   Plus,
   Calendar,
@@ -312,22 +313,6 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
       </div>
     )
   }
-
-  // Render batch add panel
-  const renderBatchAdd = () => (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground font-primary">
-        Quickly create multiple events at once for the selected date.
-      </p>
-      <button
-        onClick={() => setIsBatchAddMode(true)}
-        className="w-full neo-button-active px-4 py-3 rounded-lg flex items-center justify-center gap-2 font-primary text-sm uppercase tracking-wide"
-      >
-        <PlusCircle className="h-5 w-5" />
-        Open Batch Add
-      </button>
-    </div>
-  )
 
   // Render upcoming events panel
   const renderUpcomingEvents = () => {
@@ -756,31 +741,19 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
               )}
             </div>
 
-            {/* Batch Add Panel */}
-            <div className="space-y-3">
-              <button
-                onClick={() => togglePanel('batchadd')}
-                className="flex items-center justify-between w-full text-left group"
-              >
-                <div className="flex items-center gap-2">
-                  <PlusCircle className="h-4 w-4 text-accent" />
-                  <h3 className="text-sm font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
-                    Batch Add
-                  </h3>
-                </div>
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    expandedPanels.has('batchadd') ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {expandedPanels.has('batchadd') && (
-                <div className="neo-inset rounded-xl p-4">
-                  {renderBatchAdd()}
-                </div>
-              )}
-            </div>
+            {/* Batch Add - Direct Action */}
+            <button
+              onClick={() => setIsBatchAddMode(true)}
+              className="flex items-center justify-between w-full text-left neo-button p-3 rounded-xl hover:neo-button-active transition-all group"
+            >
+              <div className="flex items-center gap-2">
+                <PlusCircle className="h-4 w-4 text-accent" />
+                <h3 className="text-sm font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+                  Batch Add
+                </h3>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-[var(--neomorphic-text)] transition-colors" />
+            </button>
 
             {/* Upcoming Events Panel */}
             <div className="space-y-3">
