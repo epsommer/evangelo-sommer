@@ -345,19 +345,22 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     }
   };
 
-  const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string) => {
-    console.log('📅 Month view event resize:', { event, newStartTime, newEndTime });
+  const handleEventResize = async (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => {
+    console.log('📅 Month view event resize:', { event, newStartTime, newEndTime, isMultiDay });
 
     // Determine if the resized event is now multi-day
     const newStart = startOfDay(new Date(newStartTime));
     const newEnd = startOfDay(new Date(newEndTime));
-    const isNowMultiDay = !isSameDay(newStart, newEnd);
+    const isNowMultiDay = isMultiDay ?? !isSameDay(newStart, newEnd);
+
+    // For recurring events in month view, vertical resize should extend the recurrence pattern
+    const isRecurringVerticalResize = event.isRecurring && !isNowMultiDay;
 
     // Check if event has participants - only show confirmation if it does
     const hasParticipants = event.participants && event.participants.length > 0;
 
-    if (hasParticipants) {
-      // Show confirmation modal for events with participants
+    if (hasParticipants || isRecurringVerticalResize) {
+      // Show confirmation modal for events with participants or recurring events being extended
       const resizeInfo = {
         event,
         originalStart: event.startDateTime,
@@ -365,7 +368,8 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         newStart: newStartTime,
         newEnd: newEndTime,
         handle: 'bottom' as const,
-        isMultiDay: isNowMultiDay
+        isMultiDay: isNowMultiDay,
+        isRecurringExtension: isRecurringVerticalResize
       };
       setResizeData(resizeInfo);
       setShowResizeModal(true);
@@ -505,8 +509,17 @@ Duration changed: ${data.reason}`.trim() :
           data.event.notes
       };
 
+      // For recurring events, update the recurrence end date when vertically resized
+      if (data.isRecurringExtension && data.event.recurrence) {
+        updates.recurrence = {
+          ...data.event.recurrence,
+          endDate: format(newEnd, 'yyyy-MM-dd')
+        };
+        console.log('📅 Extending recurring event pattern to:', format(newEnd, 'yyyy-MM-dd'));
+      }
+
       await updateEvent(data.event.id, updates);
-      console.log('✅ Event resized:', data.event.title, isNowMultiDay ? '(multi-day)' : '(single-day)');
+      console.log('✅ Event resized:', data.event.title, isNowMultiDay ? '(multi-day)' : data.isRecurringExtension ? '(recurrence extended)' : '(single-day)');
 
       // Send notifications if requested
       if (notifyParticipants) {

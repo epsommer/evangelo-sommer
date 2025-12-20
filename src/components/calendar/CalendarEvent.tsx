@@ -57,11 +57,14 @@ export interface CalendarEventProps {
   onDragEnd?: (data: DragData, dropZone: DropZoneData | null) => void
   onResizeStart?: (event: UnifiedEvent, handle: HandleType) => void
   onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => void
+  // Callback for real-time resize preview updates (for multi-day visual spanning)
+  onResizePreview?: (event: UnifiedEvent, previewStart: string, previewEnd: string, daySpan: number, isMultiDay: boolean) => void
   className?: string
   style?: React.CSSProperties
-  // Grid context for multi-day resize in week view
+  // Grid context for multi-day resize in week/month view
   gridContainerRef?: React.RefObject<HTMLElement | null>
   weekStartDate?: Date
+  monthStartDate?: Date
 }
 
 /**
@@ -91,10 +94,12 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   onDragEnd,
   onResizeStart,
   onResizeEnd,
+  onResizePreview,
   className = '',
   style = {},
   gridContainerRef,
-  weekStartDate
+  weekStartDate,
+  monthStartDate
 }) => {
   const eventRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
@@ -120,7 +125,6 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     handleResizeStart: startResize,
     previewStyles,
     mousePosition,
-    previewDaySpan,
     isPreviewMultiDay
   } = useEventResize({
     pixelsPerHour,
@@ -128,6 +132,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     enablePersistence: false, // Parent handles persistence via confirmation modal
     gridContainerRef,
     weekStartDate,
+    monthStartDate,
     viewMode: effectiveViewMode,
     onResizeStart: (evt, handle) => {
       onResizeStart?.(evt, handle)
@@ -140,6 +145,11 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         resizeJustEndedRef.current = false
       }, 100)
       onResizeEnd?.(evt, newStart, newEnd, isMultiDay)
+    },
+    onResize: (evt, previewStart, previewEnd, daySpan, isMultiDay) => {
+      // Synchronously report resize preview to parent for overlay rendering
+      // This is called during every resize move with the latest values
+      onResizePreview?.(evt, previewStart, previewEnd, daySpan, isMultiDay)
     }
   })
 
@@ -150,11 +160,13 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
 
   // Calculate dimensions based on view mode and overlap position
   // Height is controlled by parent container via absolute positioning
+  // Don't apply previewStyles for multi-day resize - the overlay in WeekView handles visualization
+  const shouldApplyPreviewStyles = isResizing && !isPreviewMultiDay
   const eventStyle: React.CSSProperties = {
     ...style,
-    ...(isResizing ? previewStyles : {}),
+    ...(shouldApplyPreviewStyles ? previewStyles : {}),
     // Fill parent container height (parent controls actual size)
-    ...(effectiveViewMode !== 'month' && !isResizing ? {
+    ...(effectiveViewMode !== 'month' && !shouldApplyPreviewStyles ? {
       height: '100%'
     } : {})
   }
@@ -371,10 +383,18 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     e.dataTransfer.setData('application/json', JSON.stringify(dragData))
     e.dataTransfer.effectAllowed = 'move'
 
-    // Set drag image (with slight offset)
-    if (eventRef.current) {
-      e.dataTransfer.setDragImage(eventRef.current, dragOffset.x, dragOffset.y)
-    }
+    // Create a minimal transparent drag image to hide browser's default ghost
+    // Our DragVisualFeedback component will show the custom styled ghost instead
+    const transparentImg = document.createElement('div')
+    transparentImg.style.width = '1px'
+    transparentImg.style.height = '1px'
+    transparentImg.style.opacity = '0.01'
+    document.body.appendChild(transparentImg)
+    e.dataTransfer.setDragImage(transparentImg, 0, 0)
+    // Clean up after drag starts
+    requestAnimationFrame(() => {
+      document.body.removeChild(transparentImg)
+    })
 
     // Notify context
     if (dragDropContext) {
@@ -434,11 +454,17 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   // Determine which resize handles to show based on view mode
   const getResizeHandles = (): HandleType[] => {
     if (effectiveViewMode === 'month') {
-      return [] // No resize in month view
+      // For recurring events in month view, show vertical handles to extend recurrence pattern
+      // For non-recurring events, show horizontal handles to extend across days
+      if (event.isRecurring) {
+        return ['top', 'bottom']
+      }
+      return ['left', 'right']
     } else if (effectiveViewMode === 'day') {
       return ['top', 'bottom'] // Only vertical resize in day view
     } else if (effectiveViewMode === 'week') {
-      return ['top', 'bottom', 'top-left', 'top-right', 'bottom-left', 'bottom-right'] // Full resize in week view
+      // Full resize in week view: vertical (top/bottom), horizontal (left/right), and corners
+      return ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right']
     }
     return []
   }
@@ -462,10 +488,11 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   const totalConflicts = (conflicts?.conflicts.length || 0) + conflictingEvents.length
 
   // Use a wrapper div for HTML5 drag, motion.div for animations
+  // Enable drag in all views including month view for event rescheduling
   return (
     <div
       className="group overflow-visible relative h-full"
-      draggable={effectiveViewMode !== 'month'}
+      draggable={true}
       onDragStart={handleDragStartHTML5}
       onDragEnd={handleDragEndHTML5}
     >
@@ -474,7 +501,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         data-event-block="true"
         data-event-id={event.id}
         className={`
-          relative cursor-pointer select-none h-full
+          relative cursor-pointer select-none h-full overflow-visible
           rounded-r-md shadow-sm transition-colors
           ${getEventTypeClass(event)}
           ${isEffectivelyCompact ? 'p-2' : 'p-3'}
@@ -531,8 +558,8 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         </div>
       )}
 
-      {/* Resize Handles - for day/week views */}
-      {showResizeHandles && !isEffectivelyCompact && getResizeHandles().map((handle) => (
+      {/* Resize Handles - for all views (compact mode uses smaller handles) */}
+      {showResizeHandles && (!isEffectivelyCompact || effectiveViewMode === 'month') && getResizeHandles().map((handle) => (
         <ResizeHandle
           key={handle}
           handle={handle}

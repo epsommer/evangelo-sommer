@@ -29,38 +29,41 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
   const getHandleClasses = (): string => {
     const baseClasses = `
       absolute transition-all duration-200 z-50
-      ${isCompact
-        ? 'opacity-40 hover:opacity-100 group-hover:opacity-70'
-        : 'opacity-60 hover:opacity-100 group-hover:opacity-80'}
-      bg-accent hover:bg-accent
+      opacity-0 group-hover:opacity-100
+      bg-accent/80 hover:bg-accent
       ${className}
     `
+
+    // Compact mode uses smaller handles for month view
+    const sizeClass = isCompact ? 'h-1.5' : 'h-2'
+    const widthClass = isCompact ? 'w-1.5' : 'w-2'
+    const cornerSize = isCompact ? 'w-2.5 h-2.5' : 'w-3 h-3'
 
     // Position and size based on handle type
     switch (handle) {
       case 'top':
-        return `${baseClasses} -top-1 left-2 right-2 ${isCompact ? 'h-1' : 'h-2'} cursor-n-resize rounded-full`
+        return `${baseClasses} -top-1 left-2 right-2 ${sizeClass} cursor-n-resize rounded-full`
 
       case 'bottom':
-        return `${baseClasses} -bottom-1 left-2 right-2 ${isCompact ? 'h-1' : 'h-2'} cursor-s-resize rounded-full`
+        return `${baseClasses} -bottom-1 left-2 right-2 ${sizeClass} cursor-s-resize rounded-full`
 
       case 'left':
-        return `${baseClasses} -left-1 top-2 bottom-2 ${isCompact ? 'w-1' : 'w-2'} cursor-w-resize rounded-full`
+        return `${baseClasses} -left-1 top-2 bottom-2 ${widthClass} cursor-w-resize rounded-full`
 
       case 'right':
-        return `${baseClasses} -right-1 top-2 bottom-2 ${isCompact ? 'w-1' : 'w-2'} cursor-e-resize rounded-full`
+        return `${baseClasses} -right-1 top-2 bottom-2 ${widthClass} cursor-e-resize rounded-full`
 
       case 'top-left':
-        return `${baseClasses} -top-1 -left-1 w-3 h-3 cursor-nw-resize rounded-full`
+        return `${baseClasses} -top-1 -left-1 ${cornerSize} cursor-nw-resize rounded-full`
 
       case 'top-right':
-        return `${baseClasses} -top-1 -right-1 w-3 h-3 cursor-ne-resize rounded-full`
+        return `${baseClasses} -top-1 -right-1 ${cornerSize} cursor-ne-resize rounded-full`
 
       case 'bottom-left':
-        return `${baseClasses} -bottom-1 -left-1 w-3 h-3 cursor-sw-resize rounded-full`
+        return `${baseClasses} -bottom-1 -left-1 ${cornerSize} cursor-sw-resize rounded-full`
 
       case 'bottom-right':
-        return `${baseClasses} -bottom-1 -right-1 w-3 h-3 cursor-se-resize rounded-full`
+        return `${baseClasses} -bottom-1 -right-1 ${cornerSize} cursor-se-resize rounded-full`
 
       default:
         return baseClasses
