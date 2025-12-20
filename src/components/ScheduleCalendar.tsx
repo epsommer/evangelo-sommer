@@ -689,10 +689,11 @@ Duration changed: ${data.reason}`.trim() :
           : [endDate, startDate];
 
         const daySpan = differenceInDays(actualEnd, actualStart) + 1;
-        // For multi-day placeholders, use 15-minute duration (will be converted to recurring daily event)
+        // For multi-day placeholders, use 15-minute duration
+        // This will create a multi-day spanning event (not recurring)
         const duration = 15; // 15 minutes default
 
-        console.log('📅 Multi-day placeholder update (recurring):', {
+        console.log('📅 Multi-day placeholder update:', {
           start: format(actualStart, 'yyyy-MM-dd'),
           end: format(actualEnd, 'yyyy-MM-dd'),
           daySpan,
@@ -705,8 +706,8 @@ Duration changed: ${data.reason}`.trim() :
           minutes: 0,
           duration: duration,
           endDate: format(actualEnd, 'yyyy-MM-dd'),
-          endHour: DEFAULT_HOUR, // Same hour as start for recurring events
-          endMinutes: 15 // 15 minutes after start
+          endHour: DEFAULT_HOUR, // End time hour
+          endMinutes: 15 // End time minutes
         });
       }
     }

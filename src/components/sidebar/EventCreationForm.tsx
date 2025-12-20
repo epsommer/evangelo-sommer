@@ -248,12 +248,10 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
           return {
             ...prev,
-            // Enable recurring mode for multi-day placeholders
-            isRecurring: true,
-            recurrenceFrequency: 'daily',
-            recurrenceEndDate: initialEndDate,
-            // Disable isMultiDay and isAllDay for recurring events
-            isMultiDay: false,
+            // For multi-day placeholders, create a multi-day spanning event (not recurring)
+            // This allows the event to visually span across the dragged days
+            isRecurring: false, // Changed from true - don't auto-convert to recurring
+            isMultiDay: true,   // Enable multi-day spanning
             isAllDay: false,
             endDate: initialEndDate, // Store for reference
             endTime: newEndTime

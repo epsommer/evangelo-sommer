@@ -22,6 +22,7 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   RotateCcw,
   Plus,
   Calendar,
@@ -97,6 +98,7 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   const [expandedPanels, setExpandedPanels] = useState<Set<string>>(new Set(['calendar']))
   const [isBatchAddMode, setIsBatchAddMode] = useState(false)
   const [activeTab, setActiveTab] = useState<SidebarTab>('overview')
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   // Sync displayed month with selected date
   useEffect(() => {
@@ -596,14 +598,98 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
     )
   }
 
-  // Main render - show event details, event creation mode, batch add mode, or default panels
+  // Edit mode state for when user clicks Edit button in event details
+  const [isEditMode, setIsEditMode] = React.useState(false)
+  const [eventToEdit, setEventToEdit] = React.useState<UnifiedEvent | null>(null)
+
+  // Handle edit button click - switch from details view to edit form in sidebar
+  const handleEditClick = (event: UnifiedEvent) => {
+    setEventToEdit(event)
+    setIsEditMode(true)
+  }
+
+  // Handle exiting edit mode - return to event details or close sidebar
+  const handleExitEdit = () => {
+    setIsEditMode(false)
+    setEventToEdit(null)
+  }
+
+  // Handle saving edited event
+  const handleSaveEdit = (eventData: UnifiedEvent) => {
+    if (onEventEdit) {
+      onEventEdit(eventData)
+    }
+    setIsEditMode(false)
+    setEventToEdit(null)
+    // Also close the event details panel after saving
+    if (onExitEventDetails) {
+      onExitEventDetails()
+    }
+  }
+
+  // Chevron toggle button component
+  const ChevronToggle = () => (
+    <button
+      onClick={() => {
+        if (onExitEventDetails) {
+          onExitEventDetails()
+        }
+        if (onExitEventCreation) {
+          onExitEventCreation()
+        }
+      }}
+      className="neo-button p-2 rounded-lg hover:neo-button-active transition-all"
+      aria-label="Close sidebar"
+      title="Close sidebar"
+    >
+      <ChevronLeft className="h-4 w-4" />
+    </button>
+  )
+
+  // Main render - show edit mode, event details, event creation mode, batch add mode, or default panels
+  if (isEditMode && eventToEdit) {
+    return (
+      <div className="neo-card h-full overflow-y-auto" data-sidebar="action">
+        <div className="p-4 border-b border-[var(--neomorphic-dark-shadow)]">
+          <div className="flex items-center justify-between mb-2">
+            <ChevronToggle />
+            <h2 className="text-lg font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide flex-1 text-center">
+              Edit Event
+            </h2>
+            <button
+              onClick={handleExitEdit}
+              className="neo-button p-2 rounded-lg"
+              aria-label="Back to event details"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        <div className="p-4">
+          <EventCreationForm
+            onSave={handleSaveEdit}
+            onCancel={handleExitEdit}
+            initialDate={parseISO(eventToEdit.startDateTime)}
+            initialTime={format(parseISO(eventToEdit.startDateTime), 'HH:mm')}
+            initialDuration={eventToEdit.duration}
+            editingEvent={eventToEdit}
+            onFormChange={onFormChange}
+          />
+        </div>
+      </div>
+    )
+  }
+
   if (selectedEvent) {
     return (
       <div className="neo-card h-full overflow-hidden" data-sidebar="action">
+        <div className="p-3 border-b border-[var(--neomorphic-dark-shadow)] flex items-center justify-end">
+          <ChevronToggle />
+        </div>
         <EventDetailsPanel
           event={selectedEvent}
           onClose={onExitEventDetails || (() => {})}
-          onEdit={onEventEdit}
+          onEdit={handleEditClick}
           onDelete={onEventDelete}
         />
       </div>
@@ -613,6 +699,9 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   if (isBatchAddMode) {
     return (
       <div className="neo-card h-full overflow-hidden" data-sidebar="action">
+        <div className="p-3 border-b border-[var(--neomorphic-dark-shadow)] flex items-center justify-end">
+          <ChevronToggle />
+        </div>
         <BatchAddPanel
           onClose={() => setIsBatchAddMode(false)}
           onSave={handleBatchEventSave}
@@ -626,8 +715,9 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
     return (
       <div className="neo-card h-full overflow-y-auto" data-sidebar="action">
         <div className="p-4 border-b border-[var(--neomorphic-dark-shadow)]">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide">
+          <div className="flex items-center justify-between mb-2">
+            <ChevronToggle />
+            <h2 className="text-lg font-bold text-[var(--neomorphic-text)] font-primary uppercase tracking-wide flex-1 text-center">
               Create Event
             </h2>
             <button
@@ -671,6 +761,11 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   return (
     <div className="neo-card h-full overflow-y-auto" data-sidebar="action">
       <div className="p-4 space-y-4">
+        {/* Chevron Toggle Button - Always visible at top */}
+        <div className="flex items-center justify-end mb-2">
+          <ChevronToggle />
+        </div>
+
         {/* Tab Navigation with Conflict Icon */}
         <div className="flex items-center gap-2 mb-4">
           <div className="neo-inset flex rounded-lg p-1 flex-1">
