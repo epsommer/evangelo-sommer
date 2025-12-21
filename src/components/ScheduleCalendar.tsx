@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMinutes, parseISO, startOfDay, differenceInDays, startOfWeek, endOfWeek, addDays } from 'date-fns';
-import { Calendar, Clock, MapPin, User, MoreVertical, Edit, CheckCircle, Trash2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, MoreVertical, Edit, CheckCircle, Trash2, Repeat } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useUnifiedEvents } from '@/hooks/useUnifiedEvents';
@@ -255,16 +255,75 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     return checkDate >= eventStart && checkDate <= eventEnd;
   };
 
-  // Get single-day events for a specific date (excludes multi-day events)
-  const getSingleDayEventsForDate = (date: Date) => {
+  // Check if a recurring event should appear on a specific date
+  const isRecurringEventOnDate = (event: UnifiedEvent, date: Date): boolean => {
+    if (!event.isRecurring || !event.recurrence) return false;
+
+    const eventStart = startOfDay(new Date(event.startDateTime));
+    const checkDate = startOfDay(date);
+
+    // Event must have started by this date
+    if (checkDate < eventStart) return false;
+
+    // Check if within recurrence end date
+    if (event.recurrence.endDate) {
+      const endDate = startOfDay(new Date(event.recurrence.endDate));
+      if (checkDate > endDate) return false;
+    }
+
+    // Check recurrence pattern
+    const daysDiff = differenceInDays(checkDate, eventStart);
+    const frequency = event.recurrence.frequency;
+    const interval = event.recurrence.interval || 1;
+
+    switch (frequency) {
+      case 'daily':
+        return daysDiff % interval === 0;
+      case 'weekly':
+        // Check if same day of week and within interval
+        const weeksDiff = Math.floor(daysDiff / 7);
+        return checkDate.getDay() === eventStart.getDay() && weeksDiff % interval === 0;
+      case 'monthly':
+        // Check if same day of month and within interval
+        const monthsDiff = (checkDate.getFullYear() - eventStart.getFullYear()) * 12 +
+                          (checkDate.getMonth() - eventStart.getMonth());
+        return checkDate.getDate() === eventStart.getDate() && monthsDiff % interval === 0;
+      case 'yearly':
+        // Check if same month and day
+        return checkDate.getMonth() === eventStart.getMonth() &&
+               checkDate.getDate() === eventStart.getDate();
+      default:
+        return false;
+    }
+  };
+
+  // Get single-day events for a specific date (excludes multi-day events, includes recurring)
+  const getSingleDayEventsForDate = (date: Date, weekStart?: Date, weekEnd?: Date) => {
     const servicesForDate = scheduledServices.filter(service => {
       const serviceDate = new Date(service.scheduledDate);
       return isSameDay(serviceDate, date);
     });
 
+    // Get the consecutive recurring groups for this week if provided
+    const recurringGroups = weekStart && weekEnd
+      ? getConsecutiveRecurringEventGroups(weekStart, weekEnd)
+      : new Map();
+
     const unifiedEventsForDate = unifiedEvents.filter(event => {
-      // Only include single-day events that start on this date
+      // Exclude multi-day spanning events (they're rendered separately)
       if (isEventMultiDay(event)) return false;
+
+      // Check if this is a recurring event that should appear on this date
+      if (event.isRecurring) {
+        // Check if this event is part of a merged group (consecutive daily recurring)
+        // If so, exclude it from single-day rendering
+        if (recurringGroups.has(event.id)) {
+          return false;
+        }
+        return isRecurringEventOnDate(event, date);
+      }
+
+      // For non-recurring events, check if it starts on this date
       const eventDate = new Date(event.startDateTime);
       return isSameDay(eventDate, date);
     });
@@ -272,10 +331,59 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     return [...servicesForDate, ...unifiedEventsForDate];
   };
 
+  // Group consecutive daily recurring events that should be merged visually
+  // Returns a map of event IDs to their consecutive date ranges within the week
+  const getConsecutiveRecurringEventGroups = (weekStart: Date, weekEnd: Date): Map<string, { start: Date; end: Date; event: UnifiedEvent }> => {
+    const groups = new Map<string, { start: Date; end: Date; event: UnifiedEvent }>();
+
+    // Find all daily recurring events that appear in this week
+    const dailyRecurringEvents = unifiedEvents.filter(event =>
+      event.isRecurring &&
+      event.recurrence?.frequency === 'daily' &&
+      event.recurrence?.interval === 1 // Only merge events that repeat every day
+    );
+
+    dailyRecurringEvents.forEach(event => {
+      // Find consecutive days this event appears within the week
+      let firstDay: Date | null = null;
+      let lastDay: Date | null = null;
+      let consecutiveCount = 0;
+
+      // Check each day in the week
+      for (let day = new Date(weekStart); day <= weekEnd; day = addDays(day, 1)) {
+        if (isRecurringEventOnDate(event, day)) {
+          if (!firstDay) {
+            firstDay = new Date(day);
+          }
+          lastDay = new Date(day);
+          consecutiveCount++;
+        } else if (firstDay && lastDay) {
+          // Non-consecutive gap found, break
+          break;
+        }
+      }
+
+      // Only create a group if there are at least 2 consecutive days
+      if (firstDay && lastDay && consecutiveCount >= 2) {
+        groups.set(event.id, {
+          start: firstDay,
+          end: lastDay,
+          event
+        });
+      }
+    });
+
+    return groups;
+  };
+
   // Get multi-day events for a week row (events that span across days in this week)
+  // This now includes both true multi-day events AND merged consecutive recurring events
   const getMultiDayEventsForWeekRow = (weekStart: Date, weekEnd: Date): UnifiedEvent[] => {
-    return unifiedEvents.filter(event => {
+    // Get true multi-day events (non-recurring events that span multiple days)
+    const multiDayEvents = unifiedEvents.filter(event => {
       if (!isEventMultiDay(event)) return false;
+      // Exclude recurring events from multi-day display - they're handled separately
+      if (event.isRecurring) return false;
 
       const eventStart = new Date(event.startDateTime);
       const eventEnd = event.endDateTime ? new Date(event.endDateTime) : eventStart;
@@ -283,6 +391,30 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       // Check if any part of this event overlaps with the week
       return eventStart <= weekEnd && eventEnd >= weekStart;
     });
+
+    // Get consecutive recurring event groups (these will be rendered like multi-day events)
+    const recurringGroups = getConsecutiveRecurringEventGroups(weekStart, weekEnd);
+
+    // Convert recurring groups to pseudo-multi-day events for rendering
+    // We create synthetic events with adjusted start/end times to represent the merged span
+    const mergedRecurringEvents: UnifiedEvent[] = [];
+    recurringGroups.forEach(({ start, end, event }) => {
+      // Create a synthetic event that represents the merged span
+      // This allows us to reuse the multi-day rendering logic
+      const syntheticEvent: UnifiedEvent = {
+        ...event,
+        // Mark as a merged recurring event for special handling
+        isMultiDay: true,
+        isMergedRecurring: true,
+        // Adjust startDateTime to the first day of the consecutive span
+        startDateTime: format(start, 'yyyy-MM-dd') + 'T' + format(parseISO(event.startDateTime), 'HH:mm:ss'),
+        // Adjust endDateTime to the last day of the consecutive span
+        endDateTime: format(end, 'yyyy-MM-dd') + 'T' + format(parseISO(event.endDateTime || event.startDateTime), 'HH:mm:ss')
+      };
+      mergedRecurringEvents.push(syntheticEvent);
+    });
+
+    return [...multiDayEvents, ...mergedRecurringEvents];
   };
 
   // Calculate multi-day event position within a week row
@@ -1037,7 +1169,8 @@ Duration changed: ${data.reason}`.trim() :
                       {/* Day cells row */}
                       <div className="grid grid-cols-7 gap-0">
                         {week.map(day => {
-                          const dayEvents = getEventsForDate(day);
+                          // Pass week boundaries to exclude merged recurring events from single-day display
+                          const dayEvents = getSingleDayEventsForDate(day, weekStart, weekEnd);
                           const isCurrentMonth = isSameMonth(day, selectedDate);
                           const isTodayDate = isToday(day);
                           const isSelected = isSameDay(day, selectedDate);
@@ -1345,11 +1478,12 @@ Duration changed: ${data.reason}`.trim() :
                         const eventStartDate = new Date(event.startDateTime);
                         const eventHour = eventStartDate.getHours();
                         const isBeingResized = resizePreview?.eventId === event.id;
+                        const isMergedRecurring = event.isMergedRecurring || false;
 
                         return (
                           <div
                             key={event.id}
-                            className={`absolute ${isBeingResized ? 'opacity-50' : ''}`}
+                            className={`absolute group ${isBeingResized ? 'opacity-50' : ''}`}
                             style={{
                               ...eventStyle,
                               top: '50%',
@@ -1376,6 +1510,26 @@ Duration changed: ${data.reason}`.trim() :
                               monthStartDate={monthStart}
                               className="h-full text-xs"
                             />
+
+                            {/* Weekly repeat handle overlay - only for merged recurring events */}
+                            {isMergedRecurring && (
+                              <div
+                                className="absolute inset-y-0 left-0 right-0 pointer-events-none flex items-center justify-between px-1"
+                                style={{ zIndex: 45 }}
+                              >
+                                {/* Left repeat indicator */}
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Repeat className="w-3 h-3 text-white drop-shadow-md" strokeWidth={2.5} />
+                                  <div className="h-full w-px bg-white/40" style={{ height: '20px' }} />
+                                </div>
+
+                                {/* Right repeat indicator */}
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="h-full w-px bg-white/40" style={{ height: '20px' }} />
+                                  <Repeat className="w-3 h-3 text-white drop-shadow-md" strokeWidth={2.5} />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

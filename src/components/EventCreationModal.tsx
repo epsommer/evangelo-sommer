@@ -68,6 +68,7 @@ export interface UnifiedEvent {
   notifications?: NotificationRule[]
   recurrence?: RecurrenceRule
   isRecurring?: boolean
+  isMergedRecurring?: boolean // Flag for consecutive daily recurring events rendered as merged spans
   parentEventId?: string
   status?: string
   service?: string
