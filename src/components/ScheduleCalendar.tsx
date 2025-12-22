@@ -17,6 +17,8 @@ import DragVisualFeedback from '@/components/DragVisualFeedback';
 import { ClientNotificationService } from '@/lib/client-notification-service';
 import { UnifiedEvent } from '@/components/EventCreationModal';
 import { calculateDragDropTimes } from '@/utils/calendar';
+import { VerticalWeekPreview } from '@/hooks/useEventResize';
+import { WeeklyInstanceDates, VerticalResizeWeekInfo, calculateContinuousWeekExtension } from '@/utils/calendar/resizeCalculations';
 
 // Safe date formatting utility
 const safeFormatDate = (dateValue: string | Date | undefined, formatStr: string, fallback: string = '--:--'): string => {
@@ -75,6 +77,9 @@ interface ScheduleCalendarProps {
   refreshTrigger?: number;
   placeholderEvent?: PlaceholderEventData | null;
   onPlaceholderChange?: (placeholder: PlaceholderEventData | null) => void;
+  // When true, vertical week resize creates a continuous multi-day event instead of recurring weekly events
+  // Default is false (creates recurring weekly events)
+  useMultiDayForWeekResize?: boolean;
 }
 
 /**
@@ -177,7 +182,8 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   enableEditing = false,
   refreshTrigger,
   placeholderEvent = null,
-  onPlaceholderChange
+  onPlaceholderChange,
+  useMultiDayForWeekResize = false
 }) => {
   const [scheduledServices, setScheduledServices] = useState<ScheduledService[]>([]);
   const [editingSchedule, setEditingSchedule] = useState<ScheduledService | null>(null);
@@ -202,10 +208,12 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   // Placeholder resize/drag state for interactive manipulation
   const [placeholderInteraction, setPlaceholderInteraction] = useState<{
     type: 'resize' | 'drag';
-    handle?: 'left' | 'right';
+    handle?: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
     startX: number;
+    startY: number;
     initialStart: string;
     initialEnd: string;
+    initialWeekRow?: number;
   } | null>(null);
 
   // Event resize preview state for showing visual feedback during horizontal resize
@@ -217,8 +225,18 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     isMultiDay: boolean;
   } | null>(null);
 
+  // Vertical week resize preview for showing duplicate events in target week rows
+  const [verticalWeekResizePreview, setVerticalWeekResizePreview] = useState<VerticalWeekPreview | null>(null);
+
+  // Placeholder vertical week resize preview for showing recurring event previews
+  const [placeholderVerticalPreview, setPlaceholderVerticalPreview] = useState<{
+    startWeekRow: number;
+    endWeekRow: number;
+    weekRowsSpanned: number;
+  } | null>(null);
+
   // Use unified events hook
-  const { events: unifiedEvents, updateEvent } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger });
+  const { events: unifiedEvents, updateEvent, refreshEvents } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger });
 
   // Load scheduled services from localStorage
   useEffect(() => {
@@ -320,6 +338,14 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         if (recurringGroups.has(event.id)) {
           return false;
         }
+
+        // For linked weekly instances (have recurrenceGroupId but no recurrence pattern),
+        // check if the event's startDateTime falls on this date
+        if (event.recurrenceGroupId && !event.recurrence) {
+          const eventDate = new Date(event.startDateTime);
+          return isSameDay(eventDate, date);
+        }
+
         return isRecurringEventOnDate(event, date);
       }
 
@@ -380,10 +406,16 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   // This now includes both true multi-day events AND merged consecutive recurring events
   const getMultiDayEventsForWeekRow = (weekStart: Date, weekEnd: Date): UnifiedEvent[] => {
     // Get true multi-day events (non-recurring events that span multiple days)
+    // Also include linked weekly instances (have recurrenceGroupId but no recurrence pattern)
     const multiDayEvents = unifiedEvents.filter(event => {
       if (!isEventMultiDay(event)) return false;
-      // Exclude recurring events from multi-day display - they're handled separately
-      if (event.isRecurring) return false;
+
+      // Allow linked weekly instances (have recurrenceGroupId but no recurrence pattern)
+      const isLinkedWeeklyInstance = event.isRecurring && event.recurrenceGroupId && !event.recurrence;
+
+      // Exclude true recurring events from multi-day display - they're handled separately
+      // But allow linked weekly instances to pass through
+      if (event.isRecurring && !isLinkedWeeklyInstance) return false;
 
       const eventStart = new Date(event.startDateTime);
       const eventEnd = event.endDateTime ? new Date(event.endDateTime) : eventStart;
@@ -534,10 +566,76 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     });
   };
 
+  // Handle vertical week resize preview for showing duplicate events in target week rows
+  const handleVerticalWeekResizePreview = useCallback((preview: VerticalWeekPreview | null) => {
+    setVerticalWeekResizePreview(preview);
+  }, []);
+
+  // Handle vertical week resize end - creates recurring weekly events by default
+  // or extends as continuous multi-day event if useMultiDayForWeekResize is true
+  const handleVerticalWeekResize = useCallback(async (
+    event: UnifiedEvent,
+    weekInfo: VerticalResizeWeekInfo,
+    instances: WeeklyInstanceDates[]
+  ) => {
+    // Clear both previews - resizePreview is also set during vertical resize
+    // and handleResizeEnd is not called for vertical week resize (returns early in useEventResize)
+    setVerticalWeekResizePreview(null);
+    setResizePreview(null);
+
+    if (!weekInfo.isVerticalWeekResize || instances.length <= 1) {
+      return; // No vertical resize occurred
+    }
+
+    try {
+      if (useMultiDayForWeekResize) {
+        // MULTI-DAY MODE: Extend as continuous multi-day event spanning weeks
+        const extension = calculateContinuousWeekExtension(event, weekInfo, monthStart);
+
+        await updateEvent(event.id, {
+          startDateTime: extension.newStartDateTime,
+          endDateTime: extension.newEndDateTime,
+          isMultiDay: extension.daySpan > 1,
+          duration: extension.daySpan * 24 * 60
+        });
+
+        console.log(`✅ Extended event "${event.title}" to span ${extension.weekRowsSpanned} weeks (${extension.daySpan} days)`);
+      } else {
+        // RECURRING MODE (DEFAULT): Create weekly recurring event instances via API
+        const response = await fetch('/api/events/weekly-recurrence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceEventId: event.id,
+            weeklyInstances: instances.map(inst => ({
+              startDateTime: inst.startDateTime,
+              endDateTime: inst.endDateTime,
+              weekRow: inst.weekRow
+            })),
+            direction: weekInfo.direction
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to create weekly recurring events:', errorData);
+          return;
+        }
+
+        // Refresh events to show the new instances
+        await refreshEvents();
+        console.log(`✅ Created ${instances.length} weekly recurring instances for "${event.title}"`);
+      }
+    } catch (error) {
+      console.error('Error handling vertical week resize:', error);
+    }
+  }, [monthStart, updateEvent, useMultiDayForWeekResize, refreshEvents]);
+
   // Clear resize preview when resize ends
   const handleResizeEnd = (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => {
-    // Always clear the preview first
+    // Always clear both previews first
     setResizePreview(null);
+    setVerticalWeekResizePreview(null);
 
     // Only call resize handler if times actually changed
     const originalStart = event.startDateTime;
@@ -884,18 +982,37 @@ Duration changed: ${data.reason}`.trim() :
   }, [placeholderEvent]);
 
   // Placeholder resize/drag handlers
-  const handlePlaceholderResizeStart = useCallback((e: React.MouseEvent, handle: 'left' | 'right') => {
+  const handlePlaceholderResizeStart = useCallback((e: React.MouseEvent, handle: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right') => {
     e.preventDefault();
     e.stopPropagation();
     const currentPlaceholder = placeholderRef.current;
     if (!currentPlaceholder?.endDate) return;
 
+    // Find which week row the placeholder is in
+    let initialWeekRow: number | undefined;
+    if (calendarGridRef.current && (handle === 'top' || handle === 'bottom' || handle.includes('top') || handle.includes('bottom'))) {
+      const weekRows = calendarGridRef.current.querySelectorAll('[data-week-row]');
+      weekRows.forEach((row) => {
+        const weekStartStr = row.getAttribute('data-week-start');
+        if (weekStartStr) {
+          const weekStart = new Date(weekStartStr + 'T00:00:00');
+          const weekEnd = addDays(weekStart, 6);
+          const placeholderStart = new Date(currentPlaceholder.date + 'T00:00:00');
+          if (placeholderStart >= weekStart && placeholderStart <= weekEnd) {
+            initialWeekRow = parseInt(row.getAttribute('data-week-row') || '0');
+          }
+        }
+      });
+    }
+
     setPlaceholderInteraction({
       type: 'resize',
       handle,
       startX: e.clientX,
+      startY: e.clientY,
       initialStart: currentPlaceholder.date,
-      initialEnd: currentPlaceholder.endDate
+      initialEnd: currentPlaceholder.endDate,
+      initialWeekRow
     });
 
     // Add global mouse listeners for resize
@@ -903,9 +1020,10 @@ Duration changed: ${data.reason}`.trim() :
       const placeholder = placeholderRef.current;
       if (!calendarGridRef.current || !placeholder?.endDate) return;
 
-      // Find which day the mouse is over
+      // Find which day cell and week row the mouse is over
       const weekRows = calendarGridRef.current.querySelectorAll('[data-week-row]');
       let foundDate: string | null = null;
+      let foundWeekRow: number | null = null;
 
       weekRows.forEach((row) => {
         const dayCells = row.querySelectorAll('[data-date]');
@@ -914,46 +1032,109 @@ Duration changed: ${data.reason}`.trim() :
           if (ev.clientX >= rect.left && ev.clientX <= rect.right &&
               ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
             foundDate = cell.getAttribute('data-date');
+            foundWeekRow = parseInt(row.getAttribute('data-week-row') || '0');
           }
         });
       });
 
-      if (foundDate && onPlaceholderChange) {
-        const targetDate: string = foundDate;
-        const endDateStr: string = placeholder.endDate;
-        const startDateStr: string = placeholder.date;
+      if (!foundDate || !onPlaceholderChange) return;
 
-        if (handle === 'left') {
-          // Resizing from the left - change start date
-          // Don't allow start to go past end
-          if (targetDate <= endDateStr) {
-            onPlaceholderChange({
-              ...placeholder,
-              date: targetDate
-            });
-          }
-        } else {
-          // Resizing from the right - change end date
-          // Don't allow end to go before start
-          if (targetDate >= startDateStr) {
-            onPlaceholderChange({
-              ...placeholder,
-              endDate: targetDate
-            });
+      const targetDate: string = foundDate;
+      const endDateStr: string = placeholder.endDate;
+      const startDateStr: string = placeholder.date;
+      const targetDateObj = new Date(targetDate + 'T00:00:00');
+      const startDateObj = new Date(startDateStr + 'T00:00:00');
+      const endDateObj = new Date(endDateStr + 'T00:00:00');
+
+      // Get week boundaries for the target cell's week row
+      let weekStart: Date | null = null;
+      let weekEnd: Date | null = null;
+      weekRows.forEach((row) => {
+        if (parseInt(row.getAttribute('data-week-row') || '0') === foundWeekRow) {
+          const weekStartStr = row.getAttribute('data-week-start');
+          if (weekStartStr) {
+            weekStart = new Date(weekStartStr + 'T00:00:00');
+            weekEnd = addDays(weekStart, 6);
           }
         }
+      });
+
+      // Horizontal resize handles (left, right, and corners with horizontal component)
+      if (handle === 'left' || handle === 'top-left' || handle === 'bottom-left') {
+        // Resizing from the left - change start date
+        // CONSTRAINT: Don't allow start to extend past the week row boundary (Sunday)
+        let constrainedTarget = targetDate;
+        if (weekStart && targetDateObj < weekStart) {
+          constrainedTarget = format(weekStart, 'yyyy-MM-dd');
+        }
+        // Don't allow start to go past end
+        if (constrainedTarget <= endDateStr) {
+          onPlaceholderChange({
+            ...placeholder,
+            date: constrainedTarget
+          });
+        }
+      } else if (handle === 'right' || handle === 'top-right' || handle === 'bottom-right') {
+        // Resizing from the right - change end date
+        // CONSTRAINT: Don't allow end to extend past the week row boundary (Saturday)
+        let constrainedTarget = targetDate;
+        if (weekEnd && targetDateObj > weekEnd) {
+          constrainedTarget = format(weekEnd, 'yyyy-MM-dd');
+        }
+        // Don't allow end to go before start
+        if (constrainedTarget >= startDateStr) {
+          onPlaceholderChange({
+            ...placeholder,
+            endDate: constrainedTarget
+          });
+        }
+      }
+
+      // Vertical resize handles (top, bottom) - create recurring weekly events preview
+      if ((handle === 'top' || handle === 'bottom') && foundWeekRow !== null && placeholderInteraction?.initialWeekRow !== undefined) {
+        const initialWeekRow = placeholderInteraction.initialWeekRow;
+        let startWeekRow = initialWeekRow;
+        let endWeekRow = initialWeekRow;
+
+        if (handle === 'top') {
+          startWeekRow = Math.min(foundWeekRow, initialWeekRow);
+          endWeekRow = initialWeekRow;
+        } else if (handle === 'bottom') {
+          startWeekRow = initialWeekRow;
+          endWeekRow = Math.max(foundWeekRow, initialWeekRow);
+        }
+
+        const weekRowsSpanned = endWeekRow - startWeekRow + 1;
+
+        if (weekRowsSpanned > 1) {
+          setPlaceholderVerticalPreview({
+            startWeekRow,
+            endWeekRow,
+            weekRowsSpanned
+          });
+        } else {
+          setPlaceholderVerticalPreview(null);
+        }
+      }
+
+      // Corner handles - dual-axis resize (both horizontal AND vertical)
+      if (handle?.includes('top') || handle?.includes('bottom')) {
+        // Vertical component is handled above
+        // The horizontal component is also handled above
+        // When both apply (corner handles), both date AND week row change
       }
     };
 
     const handleMouseUp = () => {
       setPlaceholderInteraction(null);
+      setPlaceholderVerticalPreview(null);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [onPlaceholderChange]);
+  }, [onPlaceholderChange, placeholderInteraction]);
 
   const handlePlaceholderDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -968,6 +1149,7 @@ Duration changed: ${data.reason}`.trim() :
     setPlaceholderInteraction({
       type: 'drag',
       startX: e.clientX,
+      startY: e.clientY,
       initialStart: currentPlaceholder.date,
       initialEnd: currentPlaceholder.endDate
     });
@@ -1056,6 +1238,37 @@ Duration changed: ${data.reason}`.trim() :
     };
   };
 
+  // Get placeholder vertical week resize preview for a specific week row
+  const getPlaceholderVerticalPreviewForRow = (weekIndex: number): { style: React.CSSProperties } | null => {
+    if (!placeholderVerticalPreview || !placeholderEvent?.endDate) return null;
+
+    const { startWeekRow, endWeekRow } = placeholderVerticalPreview;
+
+    // Check if this week row is within the extended range
+    if (weekIndex < startWeekRow || weekIndex > endWeekRow) return null;
+
+    // Use the same day-of-week span as the original placeholder
+    const placeholderStart = new Date(placeholderEvent.date + 'T00:00:00');
+    const placeholderEnd = new Date(placeholderEvent.endDate + 'T00:00:00');
+
+    const startDayOfWeek = placeholderStart.getDay();
+    const endDayOfWeek = placeholderEnd.getDay();
+
+    const daySpan = endDayOfWeek - startDayOfWeek + 1;
+
+    // Use percentage-based positioning
+    const colWidthPercent = 100 / 7;
+    const leftPercent = startDayOfWeek * colWidthPercent;
+    const widthPercent = daySpan * colWidthPercent;
+
+    return {
+      style: {
+        left: `calc(${leftPercent}% + 4px)`,
+        width: `calc(${widthPercent}% - 8px)`,
+      }
+    };
+  };
+
   // Calculate resize preview style for a week row
   const getResizePreviewStyle = (weekStart: Date, weekEnd: Date): React.CSSProperties | null => {
     if (!resizePreview) {
@@ -1092,6 +1305,70 @@ Duration changed: ${data.reason}`.trim() :
     return {
       left: `calc(${leftPercent}% + 4px)`,
       width: `calc(${widthPercent}% - 8px)`,
+    };
+  };
+
+  // Get vertical week resize preview for a specific week row
+  // For continuous event extension, shows the portion of the event that falls in this week
+  const getVerticalWeekResizePreviewForRow = (weekIndex: number): { style: React.CSSProperties; instance: WeeklyInstanceDates; isOriginalRow: boolean } | null => {
+    if (!verticalWeekResizePreview) return null;
+
+    const { startWeekRow, endWeekRow } = verticalWeekResizePreview.weekInfo;
+
+    // Check if this week row is within the extended range
+    if (weekIndex < startWeekRow || weekIndex > endWeekRow) return null;
+
+    // Find the instance for this week row
+    const instance = verticalWeekResizePreview.instances.find(
+      inst => inst.weekRow === weekIndex
+    );
+
+    if (!instance) return null;
+
+    // Determine if this is the original event row (where the event already exists)
+    const originalEventRow = verticalWeekResizePreview.weekInfo.direction === 'down'
+      ? startWeekRow
+      : endWeekRow;
+    const isOriginalRow = weekIndex === originalEventRow;
+
+    // For continuous extension, calculate how much of the week this event spans
+    const instanceStart = new Date(instance.startDateTime);
+    const instanceEnd = new Date(instance.endDateTime);
+
+    // Get day of week positions (0=Sun, 6=Sat)
+    const startDayOfWeek = instanceStart.getDay();
+    const endDayOfWeek = instanceEnd.getDay();
+
+    // For intermediate weeks (not first or last), the event spans the full week
+    let displayStartDay = startDayOfWeek;
+    let displayEndDay = endDayOfWeek;
+
+    if (weekIndex > startWeekRow && weekIndex < endWeekRow) {
+      // Intermediate week: spans from Sunday to Saturday
+      displayStartDay = 0;
+      displayEndDay = 6;
+    } else if (weekIndex === startWeekRow && weekIndex !== endWeekRow) {
+      // First week (but not the only week): spans from start day to Saturday
+      displayEndDay = 6;
+    } else if (weekIndex === endWeekRow && weekIndex !== startWeekRow) {
+      // Last week (but not the only week): spans from Sunday to end day
+      displayStartDay = 0;
+    }
+
+    const daySpan = displayEndDay - displayStartDay + 1;
+
+    // Use percentage-based positioning
+    const colWidthPercent = 100 / 7;
+    const leftPercent = displayStartDay * colWidthPercent;
+    const widthPercent = daySpan * colWidthPercent;
+
+    return {
+      style: {
+        left: `calc(${leftPercent}% + 4px)`,
+        width: `calc(${widthPercent}% - 8px)`,
+      },
+      instance,
+      isOriginalRow
     };
   };
 
@@ -1158,6 +1435,8 @@ Duration changed: ${data.reason}`.trim() :
                   const multiDayEvents = getMultiDayEventsForWeekRow(weekStart, weekEnd);
                   const multiDayPlaceholderStyle = getMultiDayPlaceholderStyle(weekStart, weekEnd);
                   const resizePreviewStyle = getResizePreviewStyle(weekStart, weekEnd);
+                  const verticalWeekPreviewData = getVerticalWeekResizePreviewForRow(weekIndex);
+                  const placeholderVerticalPreviewData = getPlaceholderVerticalPreviewForRow(weekIndex);
 
                   return (
                     <div
@@ -1337,6 +1616,8 @@ Duration changed: ${data.reason}`.trim() :
                             }}
                             onResizeEnd={handleResizeEnd}
                             onResizePreview={handleResizePreview}
+                            onVerticalWeekResizePreview={handleVerticalWeekResizePreview}
+                            onVerticalWeekResize={handleVerticalWeekResize}
                             showResizeHandles={true}
                             isCompact={true}
                             gridContainerRef={calendarGridRef}
@@ -1412,11 +1693,11 @@ Duration changed: ${data.reason}`.trim() :
                       </div>
 
                       {/* Multi-day placeholder overlay - vertically centered on top of day cells */}
-                      {/* Interactive: draggable + resizable with left/right handles */}
+                      {/* Interactive: draggable + resizable with all 8 handles (4 edges + 4 corners) */}
                       {multiDayPlaceholderStyle && (
                         <div
-                          className={`absolute group cursor-grab select-none ${
-                            placeholderInteraction?.type === 'drag' ? 'cursor-grabbing' : ''
+                          className={`absolute group select-none ${
+                            placeholderInteraction?.type === 'drag' ? 'cursor-grabbing' : 'cursor-grab'
                           }`}
                           style={{
                             ...multiDayPlaceholderStyle,
@@ -1443,13 +1724,60 @@ Duration changed: ${data.reason}`.trim() :
                           }}
                           onMouseDown={handlePlaceholderDragStart}
                         >
+                          {/* Top resize handle */}
+                          <div
+                            className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'top')}
+                          />
+
+                          {/* Bottom resize handle */}
+                          <div
+                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'bottom')}
+                          />
+
                           {/* Left resize handle */}
                           <div
                             className="absolute -left-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                            }}
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'left')}
+                          />
+
+                          {/* Right resize handle */}
+                          <div
+                            className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'right')}
+                          />
+
+                          {/* Top-left corner resize handle */}
+                          <div
+                            className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-accent cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'top-left')}
+                          />
+
+                          {/* Top-right corner resize handle */}
+                          <div
+                            className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-accent cursor-nesw-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'top-right')}
+                          />
+
+                          {/* Bottom-left corner resize handle */}
+                          <div
+                            className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-accent cursor-nesw-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'bottom-left')}
+                          />
+
+                          {/* Bottom-right corner resize handle */}
+                          <div
+                            className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-accent cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'bottom-right')}
                           />
 
                           {/* Placeholder content */}
@@ -1460,15 +1788,6 @@ Duration changed: ${data.reason}`.trim() :
                                 : `${Math.ceil((placeholderEvent?.duration || 60) / 60)}h`
                             }
                           </span>
-
-                          {/* Right resize handle */}
-                          <div
-                            className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                            }}
-                            onMouseDown={(e) => handlePlaceholderResizeStart(e, 'right')}
-                          />
                         </div>
                       )}
 
@@ -1504,6 +1823,8 @@ Duration changed: ${data.reason}`.trim() :
                               }}
                               onResizeEnd={handleResizeEnd}
                               onResizePreview={handleResizePreview}
+                              onVerticalWeekResizePreview={handleVerticalWeekResizePreview}
+                              onVerticalWeekResize={handleVerticalWeekResize}
                               showResizeHandles={true}
                               isCompact={true}
                               gridContainerRef={calendarGridRef}
@@ -1534,8 +1855,8 @@ Duration changed: ${data.reason}`.trim() :
                         );
                       })}
 
-                      {/* Resize preview overlay - shows during horizontal resize */}
-                      {resizePreviewStyle && resizePreview && (
+                      {/* Resize preview overlay - shows during horizontal resize (but not during vertical week resize) */}
+                      {resizePreviewStyle && resizePreview && !verticalWeekResizePreview && (
                         <div
                           className="absolute pointer-events-none"
                           style={{
@@ -1558,6 +1879,76 @@ Duration changed: ${data.reason}`.trim() :
                         >
                           <span className="truncate px-2">
                             {resizePreview.daySpan} day{resizePreview.daySpan > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Vertical week resize preview - shows continuous event extension across week rows */}
+                      {verticalWeekPreviewData && verticalWeekResizePreview && (
+                        <div
+                          className="absolute pointer-events-none"
+                          style={{
+                            ...verticalWeekPreviewData.style,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            height: '28px',
+                            borderRadius: '4px',
+                            background: verticalWeekPreviewData.isOriginalRow
+                              ? 'hsl(var(--accent) / 0.6)'
+                              : 'hsl(var(--accent) / 0.4)',
+                            border: '2px dashed hsl(var(--accent))',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            zIndex: 60,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            color: 'hsl(var(--accent-foreground))'
+                          }}
+                        >
+                          <span className="truncate px-2">
+                            {useMultiDayForWeekResize
+                              ? (verticalWeekPreviewData.isOriginalRow
+                                  ? `${verticalWeekResizePreview.weekInfo.weekRowsSpanned} weeks`
+                                  : `→ Week ${verticalWeekPreviewData.instance.weekRow + 1}`)
+                              : (verticalWeekPreviewData.isOriginalRow
+                                  ? `Repeat × ${verticalWeekResizePreview.weekInfo.weekRowsSpanned}`
+                                  : `Week ${verticalWeekPreviewData.instance.weekRow + 1}`)
+                            }
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Placeholder vertical week resize preview - shows recurring event preview */}
+                      {placeholderVerticalPreviewData && placeholderVerticalPreview && (
+                        <div
+                          className="absolute pointer-events-none"
+                          style={{
+                            ...placeholderVerticalPreviewData.style,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            height: '28px',
+                            borderRadius: '4px',
+                            background: weekIndex === placeholderInteraction?.initialWeekRow
+                              ? 'hsl(var(--accent) / 0.5)'
+                              : 'hsl(var(--accent) / 0.35)',
+                            border: '2px dashed hsl(var(--accent))',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            zIndex: 55,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            color: 'hsl(var(--accent-foreground))'
+                          }}
+                        >
+                          <span className="truncate px-2">
+                            {weekIndex === placeholderInteraction?.initialWeekRow
+                              ? `Repeat × ${placeholderVerticalPreview.weekRowsSpanned}`
+                              : `Week ${weekIndex + 1}`
+                            }
                           </span>
                         </div>
                       )}
