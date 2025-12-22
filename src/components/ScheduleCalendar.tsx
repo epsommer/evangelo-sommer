@@ -1415,7 +1415,8 @@ Duration changed: ${data.reason}`.trim() :
   };
 
   // Get vertical week resize preview for a specific week row
-  // For continuous event extension, shows the portion of the event that falls in this week
+  // For weekly recurrence mode (default): shows the SAME day span on each week
+  // For continuous extension mode (useMultiDayForWeekResize): shows portion of event spanning weeks
   const getVerticalWeekResizePreviewForRow = (weekIndex: number): { style: React.CSSProperties; instance: WeeklyInstanceDates; isOriginalRow: boolean } | null => {
     if (!verticalWeekResizePreview) return null;
 
@@ -1437,28 +1438,52 @@ Duration changed: ${data.reason}`.trim() :
       : endWeekRow;
     const isOriginalRow = weekIndex === originalEventRow;
 
-    // For continuous extension, calculate how much of the week this event spans
-    const instanceStart = new Date(instance.startDateTime);
-    const instanceEnd = new Date(instance.endDateTime);
+    let displayStartDay: number;
+    let displayEndDay: number;
 
-    // Get day of week positions (0=Sun, 6=Sat)
-    const startDayOfWeek = instanceStart.getDay();
-    const endDayOfWeek = instanceEnd.getDay();
+    if (useMultiDayForWeekResize) {
+      // CONTINUOUS EXTENSION MODE: Calculate how much of the week this event spans
+      const instanceStart = new Date(instance.startDateTime);
+      const instanceEnd = new Date(instance.endDateTime);
 
-    // For intermediate weeks (not first or last), the event spans the full week
-    let displayStartDay = startDayOfWeek;
-    let displayEndDay = endDayOfWeek;
+      // Get day of week positions (0=Sun, 6=Sat)
+      const startDayOfWeek = instanceStart.getDay();
+      const endDayOfWeek = instanceEnd.getDay();
 
-    if (weekIndex > startWeekRow && weekIndex < endWeekRow) {
-      // Intermediate week: spans from Sunday to Saturday
-      displayStartDay = 0;
-      displayEndDay = 6;
-    } else if (weekIndex === startWeekRow && weekIndex !== endWeekRow) {
-      // First week (but not the only week): spans from start day to Saturday
-      displayEndDay = 6;
-    } else if (weekIndex === endWeekRow && weekIndex !== startWeekRow) {
-      // Last week (but not the only week): spans from Sunday to end day
-      displayStartDay = 0;
+      // For intermediate weeks (not first or last), the event spans the full week
+      displayStartDay = startDayOfWeek;
+      displayEndDay = endDayOfWeek;
+
+      if (weekIndex > startWeekRow && weekIndex < endWeekRow) {
+        // Intermediate week: spans from Sunday to Saturday
+        displayStartDay = 0;
+        displayEndDay = 6;
+      } else if (weekIndex === startWeekRow && weekIndex !== endWeekRow) {
+        // First week (but not the only week): spans from start day to Saturday
+        displayEndDay = 6;
+      } else if (weekIndex === endWeekRow && weekIndex !== startWeekRow) {
+        // Last week (but not the only week): spans from Sunday to end day
+        displayStartDay = 0;
+      }
+    } else {
+      // WEEKLY RECURRENCE MODE (default): Use the SAME day span from the original event for ALL rows
+      // Find the original row's instance to get the consistent day span
+      const originalInstance = verticalWeekResizePreview.instances.find(
+        inst => inst.weekRow === originalEventRow
+      );
+
+      if (originalInstance) {
+        const originalStart = new Date(originalInstance.startDateTime);
+        const originalEnd = new Date(originalInstance.endDateTime);
+        displayStartDay = originalStart.getDay();
+        displayEndDay = originalEnd.getDay();
+      } else {
+        // Fallback to current instance
+        const instanceStart = new Date(instance.startDateTime);
+        const instanceEnd = new Date(instance.endDateTime);
+        displayStartDay = instanceStart.getDay();
+        displayEndDay = instanceEnd.getDay();
+      }
     }
 
     const daySpan = displayEndDay - displayStartDay + 1;
