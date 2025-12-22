@@ -49,6 +49,8 @@ const TimeManagerContent = () => {
     endDate?: string
     endHour?: number
     endMinutes?: number // For precise end time positioning
+    weeklyRecurrenceEnd?: string // For vertical resize: end date for weekly recurrence
+    weeklyRecurrenceCount?: number // For vertical resize: number of weeks to recur
   } | null>(null)
 
   // Conflict resolution state
@@ -398,6 +400,8 @@ const TimeManagerContent = () => {
     const timeString = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
     const dateString = format(date, 'yyyy-MM-dd')
 
+    console.log('🎯 handleTimeSlotDoubleClick - dateString:', dateString, 'placeholderEvent:', placeholderEvent);
+
     // Close event details if open
     setSidebarSelectedEvent(null)
 
@@ -480,6 +484,8 @@ const TimeManagerContent = () => {
     endDate?: string
     endHour?: number
     endMinutes?: number
+    weeklyRecurrenceEnd?: string // For vertical resize: end date for weekly recurrence
+    weeklyRecurrenceCount?: number // For vertical resize: number of weeks to recur
   } | null) => {
     setPlaceholderEvent(placeholder)
     // Note: We intentionally don't update sidebar form state here to avoid circular updates.
@@ -756,6 +762,8 @@ const TimeManagerContent = () => {
         initialEventEndDate={placeholderEvent?.endDate}
         initialEventEndHour={placeholderEvent?.endHour}
         initialEventEndMinutes={placeholderEvent?.endMinutes}
+        weeklyRecurrenceEnd={placeholderEvent?.weeklyRecurrenceEnd}
+        weeklyRecurrenceCount={placeholderEvent?.weeklyRecurrenceCount}
         onExitEventCreation={handleExitEventCreation}
         selectedEvent={sidebarSelectedEvent}
         onEventEdit={handleSidebarEventEdit}

@@ -62,6 +62,8 @@ interface PlaceholderEventData {
   endDate?: string;
   endHour?: number;
   endMinutes?: number;
+  weeklyRecurrenceEnd?: string; // For vertical resize: end date for weekly recurrence
+  weeklyRecurrenceCount?: number; // For vertical resize: number of weeks to recur
 }
 
 interface ScheduleCalendarProps {
@@ -986,10 +988,13 @@ Duration changed: ${data.reason}`.trim() :
     e.preventDefault();
     e.stopPropagation();
     const currentPlaceholder = placeholderRef.current;
-    if (!currentPlaceholder?.endDate) return;
+    if (!currentPlaceholder?.endDate) {
+      return;
+    }
 
     // Find which week row the placeholder is in
-    let initialWeekRow: number | undefined;
+    // This is computed BEFORE setting state so it can be used in the closure
+    let initialWeekRowValue: number | undefined;
     if (calendarGridRef.current && (handle === 'top' || handle === 'bottom' || handle.includes('top') || handle.includes('bottom'))) {
       const weekRows = calendarGridRef.current.querySelectorAll('[data-week-row]');
       weekRows.forEach((row) => {
@@ -999,7 +1004,7 @@ Duration changed: ${data.reason}`.trim() :
           const weekEnd = addDays(weekStart, 6);
           const placeholderStart = new Date(currentPlaceholder.date + 'T00:00:00');
           if (placeholderStart >= weekStart && placeholderStart <= weekEnd) {
-            initialWeekRow = parseInt(row.getAttribute('data-week-row') || '0');
+            initialWeekRowValue = parseInt(row.getAttribute('data-week-row') || '0');
           }
         }
       });
@@ -1012,10 +1017,16 @@ Duration changed: ${data.reason}`.trim() :
       startY: e.clientY,
       initialStart: currentPlaceholder.date,
       initialEnd: currentPlaceholder.endDate,
-      initialWeekRow
+      initialWeekRow: initialWeekRowValue
     });
 
+    // Track vertical preview state in a mutable variable accessible to both handlers
+    // This avoids stale React state issues since handleMouseUp can't access updated state
+    let verticalPreviewInfo: { startWeekRow: number; endWeekRow: number; weekRowsSpanned: number } | null = null;
+
     // Add global mouse listeners for resize
+    // Note: We use initialWeekRowValue from the closure, NOT placeholderInteraction.initialWeekRow
+    // because React state updates are async and won't be available in this closure immediately
     const handleMouseMove = (ev: MouseEvent) => {
       const placeholder = placeholderRef.current;
       if (!calendarGridRef.current || !placeholder?.endDate) return;
@@ -1043,8 +1054,6 @@ Duration changed: ${data.reason}`.trim() :
       const endDateStr: string = placeholder.endDate;
       const startDateStr: string = placeholder.date;
       const targetDateObj = new Date(targetDate + 'T00:00:00');
-      const startDateObj = new Date(startDateStr + 'T00:00:00');
-      const endDateObj = new Date(endDateStr + 'T00:00:00');
 
       // Get week boundaries for the target cell's week row
       let weekStart: Date | null = null;
@@ -1064,8 +1073,10 @@ Duration changed: ${data.reason}`.trim() :
         // Resizing from the left - change start date
         // CONSTRAINT: Don't allow start to extend past the week row boundary (Sunday)
         let constrainedTarget = targetDate;
-        if (weekStart && targetDateObj < weekStart) {
-          constrainedTarget = format(weekStart, 'yyyy-MM-dd');
+        // Note: weekStart may be set inside forEach - TypeScript doesn't track this correctly
+        const weekStartDate = weekStart as Date | null;
+        if (weekStartDate && targetDateObj < weekStartDate) {
+          constrainedTarget = format(weekStartDate, 'yyyy-MM-dd');
         }
         // Don't allow start to go past end
         if (constrainedTarget <= endDateStr) {
@@ -1078,8 +1089,10 @@ Duration changed: ${data.reason}`.trim() :
         // Resizing from the right - change end date
         // CONSTRAINT: Don't allow end to extend past the week row boundary (Saturday)
         let constrainedTarget = targetDate;
-        if (weekEnd && targetDateObj > weekEnd) {
-          constrainedTarget = format(weekEnd, 'yyyy-MM-dd');
+        // Note: weekEnd may be set inside forEach - TypeScript doesn't track this correctly
+        const weekEndDate = weekEnd as Date | null;
+        if (weekEndDate && targetDateObj > weekEndDate) {
+          constrainedTarget = format(weekEndDate, 'yyyy-MM-dd');
         }
         // Don't allow end to go before start
         if (constrainedTarget >= startDateStr) {
@@ -1091,41 +1104,76 @@ Duration changed: ${data.reason}`.trim() :
       }
 
       // Vertical resize handles (top, bottom) - create recurring weekly events preview
-      if ((handle === 'top' || handle === 'bottom') && foundWeekRow !== null && placeholderInteraction?.initialWeekRow !== undefined) {
-        const initialWeekRow = placeholderInteraction.initialWeekRow;
-        let startWeekRow = initialWeekRow;
-        let endWeekRow = initialWeekRow;
+      // Use initialWeekRowValue from closure, NOT state (which would be stale)
+      if ((handle === 'top' || handle === 'bottom' || handle.includes('top') || handle.includes('bottom')) &&
+          foundWeekRow !== null && initialWeekRowValue !== undefined) {
+        let startWeekRow = initialWeekRowValue;
+        let endWeekRow = initialWeekRowValue;
 
-        if (handle === 'top') {
-          startWeekRow = Math.min(foundWeekRow, initialWeekRow);
-          endWeekRow = initialWeekRow;
-        } else if (handle === 'bottom') {
-          startWeekRow = initialWeekRow;
-          endWeekRow = Math.max(foundWeekRow, initialWeekRow);
+        if (handle === 'top' || handle === 'top-left' || handle === 'top-right') {
+          startWeekRow = Math.min(foundWeekRow, initialWeekRowValue);
+          endWeekRow = initialWeekRowValue;
+        } else if (handle === 'bottom' || handle === 'bottom-left' || handle === 'bottom-right') {
+          startWeekRow = initialWeekRowValue;
+          endWeekRow = Math.max(foundWeekRow, initialWeekRowValue);
         }
 
         const weekRowsSpanned = endWeekRow - startWeekRow + 1;
 
         if (weekRowsSpanned > 1) {
+          // Store in local mutable variable for mouseUp handler
+          verticalPreviewInfo = { startWeekRow, endWeekRow, weekRowsSpanned };
           setPlaceholderVerticalPreview({
             startWeekRow,
             endWeekRow,
             weekRowsSpanned
           });
         } else {
+          verticalPreviewInfo = null;
           setPlaceholderVerticalPreview(null);
         }
-      }
-
-      // Corner handles - dual-axis resize (both horizontal AND vertical)
-      if (handle?.includes('top') || handle?.includes('bottom')) {
-        // Vertical component is handled above
-        // The horizontal component is also handled above
-        // When both apply (corner handles), both date AND week row change
       }
     };
 
     const handleMouseUp = () => {
+      const placeholder = placeholderRef.current;
+
+      // If we have a vertical resize spanning multiple weeks, update for weekly recurrence
+      // IMPORTANT: We keep the original date range (e.g., Mon-Wed) and add recurrence info
+      // We do NOT extend endDate to span all weeks continuously
+      if (verticalPreviewInfo && verticalPreviewInfo.weekRowsSpanned > 1 && placeholder && placeholder.endDate && onPlaceholderChange && calendarGridRef.current) {
+        // Find the week start date for the end row to calculate recurrence end
+        const weekRows = calendarGridRef.current.querySelectorAll('[data-week-row]');
+        let endWeekDate: Date | null = null;
+
+        weekRows.forEach((row) => {
+          const rowIndex = parseInt(row.getAttribute('data-week-row') || '0');
+          const weekStartStr = row.getAttribute('data-week-start');
+          if (weekStartStr && rowIndex === verticalPreviewInfo!.endWeekRow) {
+            endWeekDate = new Date(weekStartStr + 'T00:00:00');
+          }
+        });
+
+        if (endWeekDate) {
+          // Get the original day-of-week for the end date to calculate recurrence end
+          const originalEndDate = new Date(placeholder.endDate + 'T00:00:00');
+          const endDayOfWeek = originalEndDate.getDay();
+
+          // The recurrence should end on the last occurrence's end day
+          const recurrenceEndDate = addDays(endWeekDate, endDayOfWeek);
+
+          // Keep the original date range (Mon-Wed stays Mon-Wed)
+          // Add weeklyRecurrenceEnd to signal the form to use weekly recurrence
+          onPlaceholderChange({
+            ...placeholder,
+            // Keep original date and endDate (the Mon-Wed span)
+            // Add recurrence info for the form
+            weeklyRecurrenceEnd: format(recurrenceEndDate, 'yyyy-MM-dd'),
+            weeklyRecurrenceCount: verticalPreviewInfo.weekRowsSpanned
+          });
+        }
+      }
+
       setPlaceholderInteraction(null);
       setPlaceholderVerticalPreview(null);
       document.removeEventListener('mousemove', handleMouseMove);
@@ -1134,7 +1182,7 @@ Duration changed: ${data.reason}`.trim() :
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [onPlaceholderChange, placeholderInteraction]);
+  }, [onPlaceholderChange]);
 
   const handlePlaceholderDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -1207,6 +1255,11 @@ Duration changed: ${data.reason}`.trim() :
   // Uses percentage-based positioning since placeholder is absolutely positioned (gridColumn won't work)
   const getMultiDayPlaceholderStyle = (weekStart: Date, weekEnd: Date): React.CSSProperties | null => {
     if (!placeholderEvent?.endDate || placeholderEvent.date === placeholderEvent.endDate) {
+      console.log('🎯 getMultiDayPlaceholderStyle: returning null - not multi-day', {
+        hasEndDate: !!placeholderEvent?.endDate,
+        date: placeholderEvent?.date,
+        endDate: placeholderEvent?.endDate
+      });
       return null; // Not a multi-day placeholder
     }
 
@@ -1232,6 +1285,14 @@ Duration changed: ${data.reason}`.trim() :
     const leftPercent = startCol * colWidthPercent;
     const widthPercent = span * colWidthPercent;
 
+    console.log('✅ getMultiDayPlaceholderStyle: returning style for multi-day placeholder', {
+      weekStart: format(weekStart, 'yyyy-MM-dd'),
+      weekEnd: format(weekEnd, 'yyyy-MM-dd'),
+      startCol,
+      endCol,
+      span
+    });
+
     return {
       left: `calc(${leftPercent}% + 4px)`,
       width: `calc(${widthPercent}% - 8px)`,
@@ -1240,9 +1301,12 @@ Duration changed: ${data.reason}`.trim() :
 
   // Get placeholder vertical week resize preview for a specific week row
   const getPlaceholderVerticalPreviewForRow = (weekIndex: number): { style: React.CSSProperties } | null => {
-    if (!placeholderVerticalPreview || !placeholderEvent?.endDate) return null;
+    if (!placeholderVerticalPreview || !placeholderEvent?.endDate) {
+      return null;
+    }
 
     const { startWeekRow, endWeekRow } = placeholderVerticalPreview;
+    console.log('📊 getPlaceholderVerticalPreviewForRow:', { weekIndex, startWeekRow, endWeekRow, placeholderDate: placeholderEvent.date, placeholderEndDate: placeholderEvent.endDate });
 
     // Check if this week row is within the extended range
     if (weekIndex < startWeekRow || weekIndex > endWeekRow) return null;
@@ -1694,6 +1758,7 @@ Duration changed: ${data.reason}`.trim() :
 
                       {/* Multi-day placeholder overlay - vertically centered on top of day cells */}
                       {/* Interactive: draggable + resizable with all 8 handles (4 edges + 4 corners) */}
+                      {/* Note: Uses an invisible extended hitbox to ensure hover detection includes handle areas */}
                       {multiDayPlaceholderStyle && (
                         <div
                           className={`absolute group select-none ${
@@ -1704,90 +1769,108 @@ Duration changed: ${data.reason}`.trim() :
                             top: '50%',
                             transform: 'translateY(-50%)',
                             height: '28px',
-                            borderRadius: '4px',
-                            background: placeholderInteraction
-                              ? 'hsl(var(--accent) / 0.4)'
-                              : 'hsl(var(--accent) / 0.25)',
-                            border: '2px dashed hsl(var(--accent))',
-                            color: 'hsl(var(--accent-foreground))',
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            overflow: 'visible',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: placeholderInteraction
-                              ? '0 6px 16px rgba(0,0,0,0.2)'
-                              : '0 4px 12px rgba(0,0,0,0.15)',
                             zIndex: 50,
-                            transition: 'background 0.15s, box-shadow 0.15s'
                           }}
-                          onMouseDown={handlePlaceholderDragStart}
                         >
+                          {/* Invisible extended hitbox for hover detection - extends 8px beyond visible bounds */}
+                          {/* This ensures handles remain visible when mouse moves toward them */}
+                          <div
+                            className="absolute inset-0 pointer-events-auto"
+                            style={{
+                              top: '-8px',
+                              bottom: '-8px',
+                              left: '-8px',
+                              right: '-8px',
+                            }}
+                            onMouseDown={handlePlaceholderDragStart}
+                          />
+
+                          {/* Visual placeholder container */}
+                          <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              borderRadius: '4px',
+                              background: placeholderInteraction
+                                ? 'hsl(var(--accent) / 0.4)'
+                                : 'hsl(var(--accent) / 0.25)',
+                              border: '2px dashed hsl(var(--accent))',
+                              color: 'hsl(var(--accent-foreground))',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: placeholderInteraction
+                                ? '0 6px 16px rgba(0,0,0,0.2)'
+                                : '0 4px 12px rgba(0,0,0,0.15)',
+                              transition: 'background 0.15s, box-shadow 0.15s'
+                            }}
+                          >
+                            {/* Placeholder content */}
+                            <span className="truncate px-3">
+                              {placeholderEvent?.title || 'New Event'} • {
+                                placeholderEvent?.endDate && placeholderEvent.endDate !== placeholderEvent.date
+                                  ? `${differenceInDays(new Date(placeholderEvent.endDate + 'T00:00:00'), new Date(placeholderEvent.date + 'T00:00:00')) + 1} days`
+                                  : `${Math.ceil((placeholderEvent?.duration || 60) / 60)}h`
+                              }
+                            </span>
+                          </div>
+
                           {/* Top resize handle */}
                           <div
-                            className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'top')}
                           />
 
                           {/* Bottom resize handle */}
                           <div
-                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'bottom')}
                           />
 
                           {/* Left resize handle */}
                           <div
-                            className="absolute -left-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'left')}
                           />
 
                           {/* Right resize handle */}
                           <div
-                            className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'right')}
                           />
 
                           {/* Top-left corner resize handle */}
                           <div
-                            className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-accent cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full bg-accent cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'top-left')}
                           />
 
                           {/* Top-right corner resize handle */}
                           <div
-                            className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-accent cursor-nesw-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-accent cursor-nesw-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'top-right')}
                           />
 
                           {/* Bottom-left corner resize handle */}
                           <div
-                            className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-accent cursor-nesw-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full bg-accent cursor-nesw-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'bottom-left')}
                           />
 
                           {/* Bottom-right corner resize handle */}
                           <div
-                            className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-accent cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                            className="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full bg-accent cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity hover:scale-125 pointer-events-auto"
+                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.3)', zIndex: 1 }}
                             onMouseDown={(e) => handlePlaceholderResizeStart(e, 'bottom-right')}
                           />
-
-                          {/* Placeholder content */}
-                          <span className="truncate px-3 pointer-events-none">
-                            {placeholderEvent?.title || 'New Event'} • {
-                              placeholderEvent?.endDate && placeholderEvent.endDate !== placeholderEvent.date
-                                ? `${differenceInDays(new Date(placeholderEvent.endDate + 'T00:00:00'), new Date(placeholderEvent.date + 'T00:00:00')) + 1} days`
-                                : `${Math.ceil((placeholderEvent?.duration || 60) / 60)}h`
-                            }
-                          </span>
                         </div>
                       )}
 

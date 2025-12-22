@@ -102,6 +102,8 @@ interface EventCreationFormProps {
   initialEndDate?: string // End date for multi-day events (from placeholder drag)
   initialEndHour?: number // End hour for multi-day events (from placeholder drag)
   initialEndMinutes?: number // End minutes for multi-day events (from placeholder drag, 0-59)
+  weeklyRecurrenceEnd?: string // For vertical resize: end date for weekly recurring events
+  weeklyRecurrenceCount?: number // For vertical resize: number of weeks to recur
   editingEvent?: UnifiedEvent
   initialClientId?: string
   initialClientName?: string
@@ -117,6 +119,8 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
   initialEndDate,
   initialEndHour,
   initialEndMinutes,
+  weeklyRecurrenceEnd,
+  weeklyRecurrenceCount,
   editingEvent,
   initialClientId,
   initialClientName,
@@ -232,8 +236,36 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
   // Sync multi-day state from placeholder drag
   // When the placeholder spans multiple days, update the form's isRecurring (not isMultiDay)
-  // to default to daily recurring events instead of all-day spanning events
+  // Vertical resize (weeklyRecurrenceEnd) -> weekly recurring
+  // Horizontal drag (multi-day within row) -> daily recurring
   useEffect(() => {
+    // Check for weekly recurrence first (from vertical resize)
+    if (!editingEvent && weeklyRecurrenceEnd) {
+      setFormData(prev => {
+        // Calculate end time from endHour and endMinutes if provided
+        const endMins = initialEndMinutes ?? 0
+        const newEndTime = initialEndHour !== undefined
+          ? `${initialEndHour.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`
+          : prev.endTime
+
+        return {
+          ...prev,
+          // For vertical resize, create weekly recurring events
+          // This repeats the same date pattern each week
+          isRecurring: true,
+          recurrenceFrequency: 'weekly',
+          recurrenceInterval: 1,
+          recurrenceEndDate: weeklyRecurrenceEnd, // End recurrence on the last week row
+          isMultiDay: false,
+          isAllDay: false,
+          endDate: initialEndDate || prev.endDate, // Keep the horizontal span (Mon-Wed)
+          endTime: newEndTime
+        }
+      })
+      return
+    }
+
+    // Fall back to daily recurrence for horizontal multi-day drags
     if (!editingEvent && initialEndDate) {
       const startDateStr = initialDate ? format(initialDate, 'yyyy-MM-dd') : formData.date
       const isMultiDay = initialEndDate !== startDateStr
@@ -248,10 +280,13 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
           return {
             ...prev,
-            // For multi-day placeholders, create a multi-day spanning event (not recurring)
-            // This allows the event to visually span across the dragged days
-            isRecurring: false, // Changed from true - don't auto-convert to recurring
-            isMultiDay: true,   // Enable multi-day spanning
+            // For multi-day placeholders, create a daily recurring event
+            // This repeats the event on each day within the dragged range
+            isRecurring: true,
+            recurrenceFrequency: 'daily',
+            recurrenceInterval: 1,
+            recurrenceEndDate: initialEndDate, // End recurrence on the last day of the drag
+            isMultiDay: false,
             isAllDay: false,
             endDate: initialEndDate, // Store for reference
             endTime: newEndTime
@@ -259,7 +294,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
         })
       }
     }
-  }, [initialEndDate, initialEndHour, initialEndMinutes, initialDate, editingEvent]) // Don't include formData to avoid loops
+  }, [initialEndDate, initialEndHour, initialEndMinutes, initialDate, editingEvent, weeklyRecurrenceEnd, weeklyRecurrenceCount]) // Don't include formData to avoid loops
 
   useEffect(() => {
     if (editingEvent) {
@@ -449,6 +484,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
       const filteredParticipants = formData.participants.filter(p => p.trim() !== '')
 
+      console.log('📤 Form submit - formData.isRecurring:', formData.isRecurring, 'formData.recurrenceFrequency:', formData.recurrenceFrequency, 'formData.recurrenceEndDate:', formData.recurrenceEndDate, 'formData.isMultiDay:', formData.isMultiDay, 'formData.endDate:', formData.endDate, 'formData.date:', formData.date);
       const newEvent: UnifiedEvent = {
         id: editingEvent?.id || `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: formData.type,
@@ -740,7 +776,7 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
                   ...prev,
                   isAllDay: newIsAllDay,
                   // When enabling all-day, also enable multi-day if there's an end date
-                  isMultiDay: newIsAllDay && prev.endDate && prev.endDate !== prev.date,
+                  isMultiDay: newIsAllDay && !!prev.endDate && prev.endDate !== prev.date,
                   // Disable recurring when all-day is enabled
                   isRecurring: newIsAllDay ? false : prev.isRecurring,
                   // Set appropriate times for all-day events
