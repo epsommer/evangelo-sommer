@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { format, parseISO, addMinutes } from 'date-fns'
 import { Clock, MapPin, User, AlertTriangle, GripVertical } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -10,7 +10,7 @@ import { ConflictResult } from '@/lib/conflict-detector'
 import { EventPosition } from '@/utils/calendar/eventOverlap'
 import ResizeHandle from '@/components/calendar/ResizeHandle'
 import TimeTooltip from '@/components/calendar/TimeTooltip'
-import { useEventResize } from '@/hooks/useEventResize'
+import { useEventResize, VerticalWeekPreview } from '@/hooks/useEventResize'
 import { ResizeHandle as HandleType } from '@/utils/calendar/resizeCalculations'
 import { useDragDrop } from '@/components/DragDropContext'
 
@@ -59,6 +59,10 @@ export interface CalendarEventProps {
   onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => void
   // Callback for real-time resize preview updates (for multi-day visual spanning)
   onResizePreview?: (event: UnifiedEvent, previewStart: string, previewEnd: string, daySpan: number, isMultiDay: boolean) => void
+  // Callback for vertical week resize preview (shows duplicate events in target week rows)
+  onVerticalWeekResizePreview?: (preview: VerticalWeekPreview | null) => void
+  // Callback when vertical week resize ends (to create weekly recurring events)
+  onVerticalWeekResize?: (event: UnifiedEvent, weekInfo: import('@/utils/calendar/resizeCalculations').VerticalResizeWeekInfo, instances: import('@/utils/calendar/resizeCalculations').WeeklyInstanceDates[]) => void
   className?: string
   style?: React.CSSProperties
   // Grid context for multi-day resize in week/month view
@@ -95,6 +99,8 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   onResizeStart,
   onResizeEnd,
   onResizePreview,
+  onVerticalWeekResizePreview,
+  onVerticalWeekResize,
   className = '',
   style = {},
   gridContainerRef,
@@ -125,7 +131,8 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     handleResizeStart: startResize,
     previewStyles,
     mousePosition,
-    isPreviewMultiDay
+    isPreviewMultiDay,
+    verticalWeekPreview
   } = useEventResize({
     pixelsPerHour,
     snapMinutes: 15,
@@ -150,10 +157,19 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
       // Synchronously report resize preview to parent for overlay rendering
       // This is called during every resize move with the latest values
       onResizePreview?.(evt, previewStart, previewEnd, daySpan, isMultiDay)
+    },
+    onVerticalWeekResize: (evt, weekInfo, instances) => {
+      // Pass vertical week resize to parent for creating weekly recurring events
+      onVerticalWeekResize?.(evt, weekInfo, instances)
     }
   })
 
   const isResizing = hookIsResizing || externalIsResizing
+
+  // Propagate vertical week resize preview to parent for rendering duplicate events
+  useEffect(() => {
+    onVerticalWeekResizePreview?.(verticalWeekPreview)
+  }, [verticalWeekPreview, onVerticalWeekResizePreview])
 
   // Determine compact mode based on view
   const isEffectivelyCompact = isCompact || effectiveViewMode === 'month'
@@ -455,11 +471,13 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   const getResizeHandles = (): HandleType[] => {
     if (effectiveViewMode === 'month') {
       // For recurring events in month view, show vertical handles to extend recurrence pattern
-      // For non-recurring events, show horizontal handles to extend across days
+      // For non-recurring events, show ALL handles (edges + corners) for flexibility
       if (event.isRecurring) {
         return ['top', 'bottom']
       }
-      return ['left', 'right']
+      // Non-recurring events: all 8 handles (matches placeholder and week view behavior)
+      // Corner handles use continuous extension mode, edge handles use standard resize
+      return ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right']
     } else if (effectiveViewMode === 'day') {
       return ['top', 'bottom'] // Only vertical resize in day view
     } else if (effectiveViewMode === 'week') {
