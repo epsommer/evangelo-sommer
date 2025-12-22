@@ -2003,10 +2003,10 @@ Duration changed: ${data.reason}`.trim() :
                             {useMultiDayForWeekResize
                               ? (verticalWeekPreviewData.isOriginalRow
                                   ? `${verticalWeekResizePreview.weekInfo.weekRowsSpanned} weeks`
-                                  : `→ Week ${verticalWeekPreviewData.instance.weekRow + 1}`)
+                                  : `→ Week ${verticalWeekPreviewData.instance.weekRow - verticalWeekResizePreview.weekInfo.startWeekRow + 1}`)
                               : (verticalWeekPreviewData.isOriginalRow
                                   ? `Repeat × ${verticalWeekResizePreview.weekInfo.weekRowsSpanned}`
-                                  : `Week ${verticalWeekPreviewData.instance.weekRow + 1}`)
+                                  : `Week ${verticalWeekPreviewData.instance.weekRow - verticalWeekResizePreview.weekInfo.startWeekRow + 1}`)
                             }
                           </span>
                         </div>
@@ -2039,7 +2039,7 @@ Duration changed: ${data.reason}`.trim() :
                           <span className="truncate px-2">
                             {weekIndex === placeholderVerticalPreview.initialWeekRow
                               ? `Repeat × ${placeholderVerticalPreview.weekRowsSpanned}`
-                              : `Week ${weekIndex + 1}`
+                              : `Week ${weekIndex - placeholderVerticalPreview.startWeekRow + 1}`
                             }
                           </span>
                         </div>
