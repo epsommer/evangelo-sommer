@@ -248,16 +248,18 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     }
   }, [placeholderEvent]);
 
-  // Click outside handler - dismiss placeholder when clicking outside the calendar grid
+  // Click outside handler - dismiss placeholder when clicking anywhere except:
+  // 1. On the placeholder itself
+  // 2. On the sidebar/form area
   useEffect(() => {
     if (!placeholderEvent || !onPlaceholderChange) return;
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      // Check if click is inside the calendar grid
-      if (calendarGridRef.current?.contains(target)) {
-        return; // Click is inside calendar, don't dismiss
+      // Check if click is on the placeholder itself (has data-placeholder attribute)
+      if (target.closest('[data-placeholder]')) {
+        return; // Click is on placeholder, don't dismiss
       }
 
       // Check if click is inside the sidebar/action area (don't dismiss when interacting with form)
@@ -265,7 +267,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         return;
       }
 
-      // Click is outside - dismiss the placeholder
+      // Click is elsewhere (another day cell, outside calendar, etc.) - dismiss the placeholder
       onPlaceholderChange(null);
     };
 
@@ -1801,6 +1803,7 @@ Duration changed: ${data.reason}`.trim() :
                       {/* Note: Uses an invisible extended hitbox to ensure hover detection includes handle areas */}
                       {multiDayPlaceholderStyle && (
                         <div
+                          data-placeholder="true"
                           className={`absolute group select-none ${
                             placeholderInteraction?.type === 'drag' ? 'cursor-grabbing' : 'cursor-grab'
                           }`}
