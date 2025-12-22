@@ -248,6 +248,35 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     }
   }, [placeholderEvent]);
 
+  // Click outside handler - dismiss placeholder when clicking outside the calendar grid
+  useEffect(() => {
+    if (!placeholderEvent || !onPlaceholderChange) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Check if click is inside the calendar grid
+      if (calendarGridRef.current?.contains(target)) {
+        return; // Click is inside calendar, don't dismiss
+      }
+
+      // Check if click is inside the sidebar/action area (don't dismiss when interacting with form)
+      if (target.closest('[data-sidebar]') || target.closest('[data-action-sidebar]')) {
+        return;
+      }
+
+      // Click is outside - dismiss the placeholder
+      onPlaceholderChange(null);
+    };
+
+    // Use mousedown to catch clicks before they might be prevented
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [placeholderEvent, onPlaceholderChange]);
+
   // Load scheduled services from localStorage
   useEffect(() => {
     try {
@@ -854,6 +883,8 @@ Duration changed: ${data.reason}`.trim() :
       dragStartRef.current = { date: day, isDoubleClick: true };
       setDragStartDate(day);
       setDragCurrentDate(day);
+      // Clear any previous vertical preview state to prevent it from being applied to new placeholder
+      setPlaceholderVerticalPreview(null);
       console.log('🎯 Double-click detected - starting drag tracking for day:', format(day, 'yyyy-MM-dd'));
 
       // Add listeners IMMEDIATELY (not via useEffect) to catch the mouseup
@@ -1822,6 +1853,12 @@ Duration changed: ${data.reason}`.trim() :
                                   ? `${differenceInDays(new Date(placeholderEvent.endDate + 'T00:00:00'), new Date(placeholderEvent.date + 'T00:00:00')) + 1} days`
                                   : `${Math.ceil((placeholderEvent?.duration || 60) / 60)}h`
                               }
+                              {/* Show repeat count alongside original text when vertical preview is active */}
+                              {placeholderVerticalPreview && placeholderVerticalPreview.weekRowsSpanned > 1 && (
+                                <span className="ml-2 opacity-80">
+                                  | Repeat × {placeholderVerticalPreview.weekRowsSpanned}
+                                </span>
+                              )}
                             </span>
                           </div>
 
@@ -2012,8 +2049,9 @@ Duration changed: ${data.reason}`.trim() :
                         </div>
                       )}
 
-                      {/* Placeholder vertical week resize preview - shows recurring event preview */}
-                      {placeholderVerticalPreviewData && placeholderVerticalPreview && (
+                      {/* Placeholder vertical week resize preview - shows recurring event preview on secondary weeks */}
+                      {/* Skip the initialWeekRow since original placeholder now shows "Repeat × N" text */}
+                      {placeholderVerticalPreviewData && placeholderVerticalPreview && weekIndex !== placeholderVerticalPreview.initialWeekRow && (
                         <div
                           className="absolute pointer-events-none"
                           style={{
@@ -2022,9 +2060,7 @@ Duration changed: ${data.reason}`.trim() :
                             transform: 'translateY(-50%)',
                             height: '28px',
                             borderRadius: '4px',
-                            background: weekIndex === placeholderVerticalPreview.initialWeekRow
-                              ? 'hsl(var(--accent) / 0.5)'
-                              : 'hsl(var(--accent) / 0.35)',
+                            background: 'hsl(var(--accent) / 0.35)',
                             border: '2px dashed hsl(var(--accent))',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                             zIndex: 55,
@@ -2037,10 +2073,7 @@ Duration changed: ${data.reason}`.trim() :
                           }}
                         >
                           <span className="truncate px-2">
-                            {weekIndex === placeholderVerticalPreview.initialWeekRow
-                              ? `Repeat × ${placeholderVerticalPreview.weekRowsSpanned}`
-                              : `Week ${weekIndex - placeholderVerticalPreview.startWeekRow + 1}`
-                            }
+                            Week {weekIndex - placeholderVerticalPreview.startWeekRow + 1}
                           </span>
                         </div>
                       )}
