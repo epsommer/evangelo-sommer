@@ -6,10 +6,19 @@ import { UnifiedEvent } from '@/components/EventCreationModal'
 import {
   ResizeHandle,
   ResizeState,
+  GridInfo,
   calculateResizedTimes,
+  calculateCornerResizedTimes,
+  calculateMonthViewResizedDates,
+  calculateMonthViewResizedDatesFromTarget,
   calculateResizePreviewStyles,
+  isHorizontalHandle,
   DEFAULT_PIXELS_PER_HOUR,
-  DEFAULT_SNAP_MINUTES
+  DEFAULT_SNAP_MINUTES,
+  detectVerticalWeekResize,
+  calculateWeeklyInstanceDates,
+  VerticalResizeWeekInfo,
+  WeeklyInstanceDates
 } from '@/utils/calendar/resizeCalculations'
 import { useEventMutation } from './useEventMutation'
 
@@ -17,11 +26,18 @@ export interface UseEventResizeOptions {
   pixelsPerHour?: number
   snapMinutes?: number
   onResizeStart?: (event: UnifiedEvent, handle: ResizeHandle) => void
-  onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string) => void
-  onResize?: (event: UnifiedEvent, previewStart: string, previewEnd: string) => void
+  onResizeEnd?: (event: UnifiedEvent, newStartTime: string, newEndTime: string, isMultiDay?: boolean) => void
+  onResize?: (event: UnifiedEvent, previewStart: string, previewEnd: string, daySpan: number, isMultiDay: boolean) => void
   enablePersistence?: boolean
   onPersistSuccess?: (event: UnifiedEvent) => void
   onPersistError?: (error: Error, originalEvent: UnifiedEvent) => void
+  // Grid context for horizontal (multi-day) resize in week/month view
+  gridContainerRef?: React.RefObject<HTMLElement | null>
+  weekStartDate?: Date
+  monthStartDate?: Date
+  viewMode?: 'day' | 'week' | 'month'
+  // Vertical week resize callback for creating weekly recurring instances
+  onVerticalWeekResize?: (event: UnifiedEvent, weekInfo: VerticalResizeWeekInfo, instances: WeeklyInstanceDates[]) => void
 }
 
 export interface UseEventResizeResult {
@@ -37,6 +53,9 @@ export interface UseEventResizeResult {
   mousePosition: { x: number; y: number }
   isPersisting: boolean
   persistError: string | null
+  // Multi-day preview info
+  previewDaySpan: number
+  isPreviewMultiDay: boolean
 }
 
 /**
@@ -58,7 +77,12 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     onResize,
     enablePersistence = true,
     onPersistSuccess,
-    onPersistError
+    onPersistError,
+    gridContainerRef,
+    weekStartDate,
+    monthStartDate,
+    viewMode = 'day',
+    onVerticalWeekResize
   } = options
 
   // Event mutation hook for persistence
@@ -82,10 +106,41 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
   })
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [previewDaySpan, setPreviewDaySpan] = useState(1)
+  const [isPreviewMultiDay, setIsPreviewMultiDay] = useState(false)
   const currentEventRef = useRef<UnifiedEvent | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   const startYRef = useRef<number>(0)
+  const startXRef = useRef<number>(0)
   const currentHandleRef = useRef<ResizeHandle | null>(null)
+  const gridInfoRef = useRef<GridInfo | null>(null)
+  // Store last valid target date for when cursor goes outside bounds
+  const lastValidTargetDateRef = useRef<Date | null>(null)
+
+  /**
+   * Find the day cell under the cursor position
+   * Returns the date from the data-date attribute, or null if not over a day cell
+   */
+  const findDayUnderCursor = useCallback((clientX: number, clientY: number): Date | null => {
+    if (!gridContainerRef?.current) return null
+
+    // Query all day cells with data-date attribute
+    const dayCells = gridContainerRef.current.querySelectorAll('[data-date]')
+
+    for (const cell of dayCells) {
+      const rect = cell.getBoundingClientRect()
+      if (clientX >= rect.left && clientX <= rect.right &&
+          clientY >= rect.top && clientY <= rect.bottom) {
+        const dateStr = cell.getAttribute('data-date')
+        if (dateStr) {
+          // Parse as local date (append T00:00:00 to avoid UTC interpretation)
+          return new Date(dateStr + 'T00:00:00')
+        }
+      }
+    }
+
+    return null
+  }, [gridContainerRef])
 
   /**
    * Handle resize start
@@ -114,8 +169,71 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
 
       // Store in refs for reliable access in callbacks
       startYRef.current = clientY
+      startXRef.current = clientX
       currentHandleRef.current = handle
       currentEventRef.current = event
+
+      // Capture grid info for horizontal resize in week/month view (corners and left/right handles)
+      let gridInfo: GridInfo | undefined = undefined
+
+      if (viewMode === 'week' && gridContainerRef?.current && isHorizontalHandle(handle) && weekStartDate) {
+        const container = gridContainerRef.current
+        const containerRect = container.getBoundingClientRect()
+
+        // Grid has 8 columns: 1 time + 7 days
+        // Calculate column widths from grid layout
+        const totalWidth = containerRect.width
+        const timeColumnWidth = totalWidth / 8 // First column is time
+        const dayColumnWidth = (totalWidth - timeColumnWidth) / 7
+
+        // Get event's current day index relative to week start
+        const eventDate = parseISO(event.startDateTime)
+        const eventEndDate = event.endDateTime ? parseISO(event.endDateTime) : eventDate
+
+        // Calculate day index (0-6) within the week
+        const startDayIndex = eventDate.getDay()
+        const endDayIndex = eventEndDate.getDay()
+
+        gridInfo = {
+          dayColumnWidth,
+          timeColumnWidth,
+          containerLeft: containerRect.left,
+          weekStartDate,
+          startDayIndex,
+          endDayIndex
+        }
+
+        gridInfoRef.current = gridInfo
+      }
+
+      // Month view: 7 columns (days), multiple rows (weeks)
+      if (viewMode === 'month' && gridContainerRef?.current && isHorizontalHandle(handle) && monthStartDate) {
+        const container = gridContainerRef.current
+        const containerRect = container.getBoundingClientRect()
+
+        // Month grid has 7 equal columns (no time column)
+        const totalWidth = containerRect.width
+        const dayColumnWidth = totalWidth / 7
+
+        // Get event's current day index (0=Sun, 6=Sat)
+        const eventDate = parseISO(event.startDateTime)
+        const eventEndDate = event.endDateTime ? parseISO(event.endDateTime) : eventDate
+
+        const startDayIndex = eventDate.getDay()
+        const endDayIndex = eventEndDate.getDay()
+
+        gridInfo = {
+          dayColumnWidth,
+          timeColumnWidth: 0, // No time column in month view
+          containerLeft: containerRect.left,
+          weekStartDate: monthStartDate, // Use month start for reference
+          startDayIndex,
+          endDayIndex,
+          isMonthView: true
+        }
+
+        gridInfoRef.current = gridInfo
+      }
 
       setResizeState({
         isResizing: true,
@@ -127,14 +245,17 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
         initialTop,
         initialLeft,
         currentDeltaY: 0,
-        currentDeltaX: 0
+        currentDeltaX: 0,
+        gridInfo
       })
 
       setMousePosition({ x: clientX, y: clientY })
+      setPreviewDaySpan(1)
+      setIsPreviewMultiDay(false)
 
       onResizeStart?.(event, handle)
     },
-    [onResizeStart]
+    [onResizeStart, viewMode, gridContainerRef, weekStartDate]
   )
 
   /**
@@ -160,17 +281,98 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
         // Update mouse position for tooltip
         setMousePosition({ x: clientX, y: clientY })
 
-        // Calculate preview times
-        const timeCalc = calculateResizedTimes(
-          currentEventRef.current!,
-          deltaY,
-          resizeState.handle!,
-          pixelsPerHour,
-          snapMinutes
-        )
+        let previewStart: string
+        let previewEnd: string
+        let daySpan = 1
+        let multiDay = false
 
-        const previewStart = format(timeCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
-        const previewEnd = format(timeCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+        // Month view: use date-based resize calculation that works across week rows
+        if (resizeState.gridInfo?.isMonthView && isHorizontalHandle(resizeState.handle!)) {
+          // Find the actual day cell under the cursor
+          const targetDate = findDayUnderCursor(clientX, clientY)
+
+          if (targetDate) {
+            // Store as last valid target in case cursor goes outside bounds
+            lastValidTargetDateRef.current = targetDate
+
+            const monthCalc = calculateMonthViewResizedDatesFromTarget(
+              currentEventRef.current!,
+              targetDate,
+              resizeState.handle!
+            )
+
+            previewStart = format(monthCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+            previewEnd = format(monthCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+            daySpan = monthCalc.daySpan
+            multiDay = monthCalc.isMultiDay
+
+            // Update preview day span state
+            setPreviewDaySpan(daySpan)
+            setIsPreviewMultiDay(multiDay)
+          } else if (lastValidTargetDateRef.current) {
+            // Cursor is outside calendar bounds - use last valid target
+            const monthCalc = calculateMonthViewResizedDatesFromTarget(
+              currentEventRef.current!,
+              lastValidTargetDateRef.current,
+              resizeState.handle!
+            )
+
+            previewStart = format(monthCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+            previewEnd = format(monthCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+            daySpan = monthCalc.daySpan
+            multiDay = monthCalc.isMultiDay
+          } else {
+            // Fallback to deltaX-based calculation (shouldn't happen often)
+            const monthCalc = calculateMonthViewResizedDates(
+              currentEventRef.current!,
+              deltaX,
+              resizeState.handle!,
+              resizeState.gridInfo
+            )
+
+            previewStart = format(monthCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+            previewEnd = format(monthCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+            daySpan = monthCalc.daySpan
+            multiDay = monthCalc.isMultiDay
+          }
+
+          // Update preview day span state
+          setPreviewDaySpan(daySpan)
+          setIsPreviewMultiDay(multiDay)
+        }
+        // Week view: use multi-day resize calculation for handles that affect horizontal dimension
+        else if (isHorizontalHandle(resizeState.handle!) && resizeState.gridInfo) {
+          const cornerCalc = calculateCornerResizedTimes(
+            currentEventRef.current!,
+            deltaY,
+            clientX,
+            resizeState.handle!,
+            pixelsPerHour,
+            snapMinutes,
+            resizeState.gridInfo
+          )
+
+          previewStart = format(cornerCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+          previewEnd = format(cornerCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+          daySpan = cornerCalc.daySpan
+          multiDay = cornerCalc.isMultiDay
+
+          // Update preview day span state
+          setPreviewDaySpan(daySpan)
+          setIsPreviewMultiDay(multiDay)
+        } else {
+          // Standard vertical-only resize
+          const timeCalc = calculateResizedTimes(
+            currentEventRef.current!,
+            deltaY,
+            resizeState.handle!,
+            pixelsPerHour,
+            snapMinutes
+          )
+
+          previewStart = format(timeCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+          previewEnd = format(timeCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+        }
 
         // Update resize state with deltas and preview times
         setResizeState(prev => ({
@@ -181,53 +383,177 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
           previewEnd
         }))
 
-        // Notify parent of preview update
-        onResize?.(currentEventRef.current!, previewStart, previewEnd)
+        // Notify parent of preview update with multi-day info for synchronous overlay updates
+        onResize?.(currentEventRef.current!, previewStart, previewEnd, daySpan, multiDay)
       })
     },
-    [resizeState.isResizing, resizeState.startY, resizeState.startX, resizeState.handle, pixelsPerHour, snapMinutes, onResize]
+    [resizeState.isResizing, resizeState.startY, resizeState.startX, resizeState.handle, resizeState.gridInfo, pixelsPerHour, snapMinutes, onResize, findDayUnderCursor]
   )
 
   /**
    * Handle resize end with persistence
    * @param finalClientY - The final Y position from the mouse/touch event
+   * @param finalClientX - The final X position from the mouse/touch event
    */
-  const handleResizeEndCallback = useCallback(async (finalClientY?: number) => {
-    console.log('🎯 [useEventResize] handleResizeEndCallback CALLED')
-    console.log('🎯 [useEventResize] currentEventRef.current:', currentEventRef.current?.title)
-    console.log('🎯 [useEventResize] currentHandleRef.current:', currentHandleRef.current)
-    console.log('🎯 [useEventResize] finalClientY:', finalClientY)
-    console.log('🎯 [useEventResize] startYRef.current:', startYRef.current)
-
+  const handleResizeEndCallback = useCallback(async (finalClientY?: number, finalClientX?: number) => {
     if (!currentEventRef.current || !currentHandleRef.current) {
-      console.log('🔄 [useEventResize] Resize end - missing refs, aborting')
       return
     }
 
     const event = currentEventRef.current
     const handle = currentHandleRef.current
+    const gridInfo = gridInfoRef.current
 
     // Calculate deltaY from the final mouse position if provided, otherwise use state
     let deltaY: number
     if (finalClientY !== undefined) {
       deltaY = finalClientY - startYRef.current
-      console.log('🎯 [useEventResize] Using finalClientY - deltaY:', deltaY)
     } else {
       deltaY = resizeState.currentDeltaY
-      console.log('🎯 [useEventResize] Using state deltaY:', deltaY)
     }
 
-    // Calculate final times
-    const timeCalc = calculateResizedTimes(
-      event,
-      deltaY,
-      handle,
-      pixelsPerHour,
-      snapMinutes
-    )
+    let newStartString: string
+    let newEndString: string
+    let duration: number
+    let isMultiDay = false
 
-    const newStartString = format(timeCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
-    const newEndString = format(timeCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+    // Calculate deltaX from the final mouse position if provided
+    let deltaX: number = 0
+    if (finalClientX !== undefined) {
+      deltaX = finalClientX - startXRef.current
+    }
+
+    // VERTICAL WEEK RESIZE DETECTION (month view only, top/bottom handles)
+    // Detect if we're resizing vertically across week rows to create weekly recurrence
+    if (gridInfo?.isMonthView && (handle === 'top' || handle === 'bottom') &&
+        monthStartDate && finalClientX !== undefined && finalClientY !== undefined) {
+
+      const targetDate = findDayUnderCursor(finalClientX, finalClientY)
+
+      if (targetDate) {
+        const weekInfo = detectVerticalWeekResize(
+          event,
+          targetDate,
+          handle,
+          monthStartDate
+        )
+
+        // If we're crossing week boundaries, trigger weekly recurrence creation
+        if (weekInfo.isVerticalWeekResize && onVerticalWeekResize) {
+          const instances = calculateWeeklyInstanceDates(
+            event,
+            weekInfo.startWeekRow,
+            weekInfo.endWeekRow,
+            monthStartDate
+          )
+
+          console.log('🔄 Vertical week resize detected:', {
+            weekRowsSpanned: weekInfo.weekRowsSpanned,
+            direction: weekInfo.direction,
+            instanceCount: instances.length
+          })
+
+          // Call the vertical week resize callback - parent will handle instance creation
+          onVerticalWeekResize(event, weekInfo, instances)
+
+          // Reset state and return early - don't do normal resize
+          setResizeState({
+            isResizing: false,
+            handle: null,
+            startY: 0,
+            startX: 0,
+            originalHeight: 0,
+            originalWidth: 0,
+            initialTop: 0,
+            initialLeft: 0,
+            currentDeltaY: 0,
+            currentDeltaX: 0,
+            previewStart: undefined,
+            previewEnd: undefined,
+            gridInfo: undefined
+          })
+
+          setPreviewDaySpan(1)
+          setIsPreviewMultiDay(false)
+          gridInfoRef.current = null
+          lastValidTargetDateRef.current = null
+          currentEventRef.current = null
+          currentHandleRef.current = null
+          startYRef.current = 0
+
+          return
+        }
+      }
+    }
+
+    // Month view: use target-date-based resize calculation that works across week rows
+    if (gridInfo?.isMonthView && isHorizontalHandle(handle)) {
+      // Find the day cell under the final cursor position
+      let targetDate: Date | null = null
+      if (finalClientX !== undefined && finalClientY !== undefined) {
+        targetDate = findDayUnderCursor(finalClientX, finalClientY)
+      }
+
+      // Use target date if found, otherwise use last valid target
+      const effectiveTargetDate = targetDate || lastValidTargetDateRef.current
+
+      if (effectiveTargetDate) {
+        const monthCalc = calculateMonthViewResizedDatesFromTarget(
+          event,
+          effectiveTargetDate,
+          handle
+        )
+
+        newStartString = format(monthCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+        newEndString = format(monthCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+        duration = monthCalc.duration
+        isMultiDay = monthCalc.isMultiDay
+
+      } else {
+        // Fallback to deltaX-based calculation
+        const monthCalc = calculateMonthViewResizedDates(
+          event,
+          deltaX,
+          handle,
+          gridInfo
+        )
+
+        newStartString = format(monthCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+        newEndString = format(monthCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+        duration = monthCalc.duration
+        isMultiDay = monthCalc.isMultiDay
+      }
+    }
+    // Week view: use multi-day resize calculation for handles that affect horizontal dimension
+    else if (isHorizontalHandle(handle) && gridInfo && finalClientX !== undefined) {
+      const cornerCalc = calculateCornerResizedTimes(
+        event,
+        deltaY,
+        finalClientX,
+        handle,
+        pixelsPerHour,
+        snapMinutes,
+        gridInfo
+      )
+
+      newStartString = format(cornerCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+      newEndString = format(cornerCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+      duration = cornerCalc.duration
+      isMultiDay = cornerCalc.isMultiDay
+    } else {
+      // Standard vertical-only resize
+      const timeCalc = calculateResizedTimes(
+        event,
+        deltaY,
+        handle,
+        pixelsPerHour,
+        snapMinutes
+      )
+
+      newStartString = format(timeCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+      newEndString = format(timeCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
+      duration = timeCalc.duration
+    }
 
     // Original times for comparison
     const originalStart = parseISO(event.startDateTime)
@@ -238,37 +564,20 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     const originalStartString = format(originalStart, "yyyy-MM-dd'T'HH:mm:ss")
     const originalEndString = format(originalEnd, "yyyy-MM-dd'T'HH:mm:ss")
 
-    console.log('🎯 [useEventResize] Comparing times:', {
-      event: event.title,
-      handle,
-      deltaY,
-      originalStart: originalStartString,
-      originalEnd: originalEndString,
-      newStart: newStartString,
-      newEnd: newEndString,
-      changed: newStartString !== originalStartString || newEndString !== originalEndString
-    })
+    const timesChanged = newStartString !== originalStartString || newEndString !== originalEndString
 
-    // Only trigger resize end if times actually changed
-    if (newStartString !== originalStartString || newEndString !== originalEndString) {
-      console.log('🎯 [useEventResize] ✅ Times changed! Calling onResizeEnd callback...')
-      console.log('🎯 [useEventResize] onResizeEnd callback exists:', !!onResizeEnd)
-      // Notify parent component
-      onResizeEnd?.(event, newStartString, newEndString)
-      console.log('🎯 [useEventResize] onResizeEnd callback completed')
+    // Always notify parent that resize ended (so it can clear preview state)
+    // Parent will receive the new times (which may be same as original if user cancelled)
+    onResizeEnd?.(event, newStartString, newEndString, isMultiDay)
 
-      // Persist to database if enabled
-      if (enablePersistence) {
-        console.log('🔄 Persisting resized event to database...')
-
-        await updateEvent(event.id, {
-          startDateTime: newStartString,
-          endDateTime: newEndString,
-          duration: Math.round((timeCalc.newEnd.getTime() - timeCalc.newStart.getTime()) / 60000)
-        })
-      }
-    } else {
-      console.log('🔄 Resize end - no time change detected')
+    // Only persist to database if times actually changed
+    if (timesChanged && enablePersistence) {
+      await updateEvent(event.id, {
+        startDateTime: newStartString,
+        endDateTime: newEndString,
+        duration,
+        isMultiDay
+      })
     }
 
     // Reset state
@@ -284,13 +593,20 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
       currentDeltaY: 0,
       currentDeltaX: 0,
       previewStart: undefined,
-      previewEnd: undefined
+      previewEnd: undefined,
+      gridInfo: undefined
     })
+
+    // Reset multi-day preview state
+    setPreviewDaySpan(1)
+    setIsPreviewMultiDay(false)
+    gridInfoRef.current = null
+    lastValidTargetDateRef.current = null
 
     currentEventRef.current = null
     currentHandleRef.current = null
     startYRef.current = 0
-  }, [resizeState.currentDeltaY, pixelsPerHour, snapMinutes, onResizeEnd, enablePersistence, updateEvent])
+  }, [resizeState.currentDeltaY, pixelsPerHour, snapMinutes, onResizeEnd, enablePersistence, updateEvent, findDayUnderCursor, monthStartDate, onVerticalWeekResize])
 
   /**
    * Set up global mouse/touch event listeners during resize
@@ -305,10 +621,11 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
 
     const handleEnd = (e: MouseEvent | TouchEvent) => {
       e.preventDefault()
-      // Get the final Y position from the mouse/touch event
+      // Get the final X and Y positions from the mouse/touch event
       const isTouch = 'changedTouches' in e
       const finalClientY = isTouch ? e.changedTouches[0].clientY : e.clientY
-      handleResizeEndCallback(finalClientY)
+      const finalClientX = isTouch ? e.changedTouches[0].clientX : e.clientX
+      handleResizeEndCallback(finalClientY, finalClientX)
     }
 
     document.addEventListener('mousemove', handleMove)
@@ -341,6 +658,8 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     previewStyles,
     mousePosition,
     isPersisting: mutationState.isLoading,
-    persistError: mutationState.error
+    persistError: mutationState.error,
+    previewDaySpan,
+    isPreviewMultiDay
   }
 }

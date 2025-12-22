@@ -213,6 +213,7 @@ model Event {
   parentEventId String?
   parentEvent   Event? @relation("EventRecurrence", fields: [parentEventId], references: [id])
   childEvents   Event[] @relation("EventRecurrence")
+  recurrenceGroupId String? // Links weekly recurring event instances together
 
   // Legacy compatibility fields
   status        String?
@@ -245,6 +246,7 @@ model Event {
   @@index([clientId])
   @@index([isRecurring])
   @@index([parentEventId])
+  @@index([recurrenceGroupId])
 }
 
 // Household/Account model - Represents shared entity for families/households

@@ -26,7 +26,7 @@ function convertToUnifiedEvent(dbEvent: any): UnifiedEvent {
     startDateTime: dbEvent.startDateTime,
     endDateTime: dbEvent.endDateTime,
     duration: dbEvent.duration || 60,
-    priority: dbEvent.priority || 'medium',
+    priority: (dbEvent.priority || 'medium').toLowerCase(),
     clientId: dbEvent.clientId,
     clientName: dbEvent.clientName,
     location: dbEvent.location,
@@ -35,6 +35,7 @@ function convertToUnifiedEvent(dbEvent: any): UnifiedEvent {
     isMultiDay: dbEvent.isMultiDay || false,
     isRecurring: dbEvent.isRecurring || false,
     parentEventId: dbEvent.parentEventId,
+    recurrenceGroupId: dbEvent.recurrenceGroupId,
     status: dbEvent.status || 'scheduled',
     service: dbEvent.service || dbEvent.title,
     scheduledDate: dbEvent.scheduledDate || dbEvent.startDateTime,
@@ -108,6 +109,7 @@ function convertToPrismaEvent(event: UnifiedEvent): any {
     recurrence: event.recurrence ? JSON.stringify(event.recurrence) : null,
     isRecurring: event.isRecurring || false,
     parentEventId: event.parentEventId,
+    recurrenceGroupId: event.recurrenceGroupId,
     status: event.status,
     service: event.service,
     scheduledDate: event.scheduledDate,
@@ -149,6 +151,7 @@ function convertFromPrismaEvent(prismaEvent: any): UnifiedEvent {
     recurrence: prismaEvent.recurrence ? JSON.parse(prismaEvent.recurrence) : undefined,
     isRecurring: prismaEvent.isRecurring,
     parentEventId: prismaEvent.parentEventId,
+    recurrenceGroupId: prismaEvent.recurrenceGroupId,
     status: prismaEvent.status,
     service: prismaEvent.service,
     scheduledDate: prismaEvent.scheduledDate,
@@ -662,6 +665,8 @@ export async function PUT(request: NextRequest) {
           if (eventData.description !== undefined) prismaUpdateData.description = eventData.description
           if (eventData.location !== undefined) prismaUpdateData.location = eventData.location
           if (eventData.priority !== undefined) prismaUpdateData.priority = mapToValidPriority(eventData.priority)
+          if (eventData.isMultiDay !== undefined) prismaUpdateData.isMultiDay = eventData.isMultiDay
+          if (eventData.isAllDay !== undefined) prismaUpdateData.isAllDay = eventData.isAllDay
 
           // Update in database
           dbEvent = await prisma.event.update({

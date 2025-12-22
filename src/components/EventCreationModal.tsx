@@ -70,6 +70,7 @@ export interface UnifiedEvent {
   isRecurring?: boolean
   isMergedRecurring?: boolean // Flag for consecutive daily recurring events rendered as merged spans
   parentEventId?: string
+  recurrenceGroupId?: string // Links weekly recurring event instances together
   status?: string
   service?: string
   scheduledDate?: string
