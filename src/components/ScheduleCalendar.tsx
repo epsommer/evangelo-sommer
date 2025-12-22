@@ -235,10 +235,18 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     startWeekRow: number;
     endWeekRow: number;
     weekRowsSpanned: number;
+    initialWeekRow: number; // Track which row started the resize
   } | null>(null);
 
   // Use unified events hook
   const { events: unifiedEvents, updateEvent, refreshEvents } = useUnifiedEvents({ syncWithLegacy: true, refreshTrigger });
+
+  // Clear placeholder vertical preview when placeholder is dismissed
+  useEffect(() => {
+    if (!placeholderEvent) {
+      setPlaceholderVerticalPreview(null);
+    }
+  }, [placeholderEvent]);
 
   // Load scheduled services from localStorage
   useEffect(() => {
@@ -1126,7 +1134,8 @@ Duration changed: ${data.reason}`.trim() :
           setPlaceholderVerticalPreview({
             startWeekRow,
             endWeekRow,
-            weekRowsSpanned
+            weekRowsSpanned,
+            initialWeekRow: initialWeekRowValue
           });
         } else {
           verticalPreviewInfo = null;
@@ -1175,7 +1184,7 @@ Duration changed: ${data.reason}`.trim() :
       }
 
       setPlaceholderInteraction(null);
-      setPlaceholderVerticalPreview(null);
+      // Don't clear placeholderVerticalPreview here - let it persist until placeholder is dismissed
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -2013,7 +2022,7 @@ Duration changed: ${data.reason}`.trim() :
                             transform: 'translateY(-50%)',
                             height: '28px',
                             borderRadius: '4px',
-                            background: weekIndex === placeholderInteraction?.initialWeekRow
+                            background: weekIndex === placeholderVerticalPreview.initialWeekRow
                               ? 'hsl(var(--accent) / 0.5)'
                               : 'hsl(var(--accent) / 0.35)',
                             border: '2px dashed hsl(var(--accent))',
@@ -2028,7 +2037,7 @@ Duration changed: ${data.reason}`.trim() :
                           }}
                         >
                           <span className="truncate px-2">
-                            {weekIndex === placeholderInteraction?.initialWeekRow
+                            {weekIndex === placeholderVerticalPreview.initialWeekRow
                               ? `Repeat × ${placeholderVerticalPreview.weekRowsSpanned}`
                               : `Week ${weekIndex + 1}`
                             }
