@@ -664,6 +664,9 @@ export interface VerticalResizeWeekInfo {
   endWeekRow: number
   weekRowsSpanned: number
   direction: 'up' | 'down' | 'none'
+  // True when using a corner handle (top-left, top-right, bottom-left, bottom-right)
+  // Corner resizes should use continuous extension mode instead of weekly recurrence
+  isCornerResize: boolean
 }
 
 export function detectVerticalWeekResize(
@@ -688,15 +691,21 @@ export function detectVerticalWeekResize(
   let endWeekRow = originalEndWeek
   let direction: 'up' | 'down' | 'none' = 'none'
 
+  // Check if using a corner handle (affects both vertical and horizontal)
+  const cornerResize = isCornerHandle(handle)
+
   // Determine which week boundaries are being crossed
-  if (handle === 'top') {
+  // Top handles (edge or corner) affect start week row
+  if (handle === 'top' || handle === 'top-left' || handle === 'top-right') {
     startWeekRow = targetWeek
     if (targetWeek < originalStartWeek) {
       direction = 'up'
     } else if (targetWeek > originalStartWeek) {
       direction = 'down'
     }
-  } else if (handle === 'bottom') {
+  }
+  // Bottom handles (edge or corner) affect end week row
+  else if (handle === 'bottom' || handle === 'bottom-left' || handle === 'bottom-right') {
     endWeekRow = targetWeek
     if (targetWeek > originalEndWeek) {
       direction = 'down'
@@ -713,13 +722,71 @@ export function detectVerticalWeekResize(
     startWeekRow,
     endWeekRow,
     weekRowsSpanned,
-    direction
+    direction,
+    isCornerResize: cornerResize
+  }
+}
+
+/**
+ * Calculate the new start/end dates when extending an event continuously across weeks
+ * This extends the event as a single multi-day event spanning multiple weeks
+ */
+export interface ContinuousWeekExtension {
+  newStartDateTime: string
+  newEndDateTime: string
+  daySpan: number
+  weekRowsSpanned: number
+}
+
+export function calculateContinuousWeekExtension(
+  event: UnifiedEvent,
+  weekInfo: VerticalResizeWeekInfo,
+  monthStartDate: Date
+): ContinuousWeekExtension {
+  const currentStart = parseISO(event.startDateTime)
+  const currentEnd = event.endDateTime
+    ? parseISO(event.endDateTime)
+    : addMinutes(currentStart, event.duration || 60)
+
+  // Get the day-of-week for start and end
+  const startDayOfWeek = currentStart.getDay()
+  const endDayOfWeek = currentEnd.getDay()
+  const timeStart = { hours: currentStart.getHours(), minutes: currentStart.getMinutes() }
+  const timeEnd = { hours: currentEnd.getHours(), minutes: currentEnd.getMinutes() }
+
+  // Calculate first week's Sunday
+  const firstWeekStart = new Date(monthStartDate)
+  firstWeekStart.setDate(firstWeekStart.getDate() - firstWeekStart.getDay())
+
+  // Calculate the new start date (from startWeekRow)
+  const startWeekSunday = new Date(firstWeekStart)
+  startWeekSunday.setDate(startWeekSunday.getDate() + (weekInfo.startWeekRow * 7))
+  const newStart = new Date(startWeekSunday)
+  newStart.setDate(newStart.getDate() + startDayOfWeek)
+  newStart.setHours(timeStart.hours, timeStart.minutes, 0, 0)
+
+  // Calculate the new end date (from endWeekRow)
+  const endWeekSunday = new Date(firstWeekStart)
+  endWeekSunday.setDate(endWeekSunday.getDate() + (weekInfo.endWeekRow * 7))
+  const newEnd = new Date(endWeekSunday)
+  newEnd.setDate(newEnd.getDate() + endDayOfWeek)
+  newEnd.setHours(timeEnd.hours, timeEnd.minutes, 0, 0)
+
+  // Calculate day span
+  const daySpan = Math.round((newEnd.getTime() - newStart.getTime()) / (24 * 60 * 60 * 1000)) + 1
+
+  return {
+    newStartDateTime: format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
+    newEndDateTime: format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
+    daySpan,
+    weekRowsSpanned: weekInfo.weekRowsSpanned
   }
 }
 
 /**
  * Calculate the dates for weekly recurring instances when vertically resizing
  * Returns an array of {startDate, endDate} for each week the event should appear
+ * @deprecated Use calculateContinuousWeekExtension for continuous multi-week events
  */
 export interface WeeklyInstanceDates {
   startDateTime: string

@@ -613,7 +613,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   }, []);
 
   // Handle vertical week resize end - creates recurring weekly events by default
-  // or extends as continuous multi-day event if useMultiDayForWeekResize is true
+  // or extends as continuous multi-day event if corner handle or useMultiDayForWeekResize is true
   const handleVerticalWeekResize = useCallback(async (
     event: UnifiedEvent,
     weekInfo: VerticalResizeWeekInfo,
@@ -629,7 +629,12 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     }
 
     try {
-      if (useMultiDayForWeekResize) {
+      // Use continuous extension mode if:
+      // 1. useMultiDayForWeekResize prop is true, OR
+      // 2. User is using a corner handle (which always extends continuously)
+      const useContinuousExtension = useMultiDayForWeekResize || weekInfo.isCornerResize;
+
+      if (useContinuousExtension) {
         // MULTI-DAY MODE: Extend as continuous multi-day event spanning weeks
         const extension = calculateContinuousWeekExtension(event, weekInfo, monthStart);
 
@@ -1415,12 +1420,12 @@ Duration changed: ${data.reason}`.trim() :
   };
 
   // Get vertical week resize preview for a specific week row
-  // For weekly recurrence mode (default): shows the SAME day span on each week
-  // For continuous extension mode (useMultiDayForWeekResize): shows portion of event spanning weeks
+  // For weekly recurrence mode (default, edge handles): shows the SAME day span on each week
+  // For continuous extension mode (corner handles or useMultiDayForWeekResize): shows portion of event spanning weeks
   const getVerticalWeekResizePreviewForRow = (weekIndex: number): { style: React.CSSProperties; instance: WeeklyInstanceDates; isOriginalRow: boolean } | null => {
     if (!verticalWeekResizePreview) return null;
 
-    const { startWeekRow, endWeekRow } = verticalWeekResizePreview.weekInfo;
+    const { startWeekRow, endWeekRow, isCornerResize } = verticalWeekResizePreview.weekInfo;
 
     // Check if this week row is within the extended range
     if (weekIndex < startWeekRow || weekIndex > endWeekRow) return null;
@@ -1441,7 +1446,12 @@ Duration changed: ${data.reason}`.trim() :
     let displayStartDay: number;
     let displayEndDay: number;
 
-    if (useMultiDayForWeekResize) {
+    // Use continuous extension mode if:
+    // 1. useMultiDayForWeekResize prop is true, OR
+    // 2. User is using a corner handle (which always extends continuously)
+    const useContinuousExtension = useMultiDayForWeekResize || isCornerResize;
+
+    if (useContinuousExtension) {
       // CONTINUOUS EXTENSION MODE: Calculate how much of the week this event spans
       const instanceStart = new Date(instance.startDateTime);
       const instanceEnd = new Date(instance.endDateTime);
@@ -2065,7 +2075,7 @@ Duration changed: ${data.reason}`.trim() :
                           }}
                         >
                           <span className="truncate px-2">
-                            {useMultiDayForWeekResize
+                            {(useMultiDayForWeekResize || verticalWeekResizePreview.weekInfo.isCornerResize)
                               ? (verticalWeekPreviewData.isOriginalRow
                                   ? `${verticalWeekResizePreview.weekInfo.weekRowsSpanned} weeks`
                                   : `→ Week ${verticalWeekPreviewData.instance.weekRow - verticalWeekResizePreview.weekInfo.startWeekRow + 1}`)

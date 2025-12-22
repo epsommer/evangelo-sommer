@@ -13,6 +13,7 @@ import {
   calculateMonthViewResizedDatesFromTarget,
   calculateResizePreviewStyles,
   isHorizontalHandle,
+  isCornerHandle,
   DEFAULT_PIXELS_PER_HOUR,
   DEFAULT_SNAP_MINUTES,
   detectVerticalWeekResize,
@@ -56,6 +57,15 @@ export interface UseEventResizeResult {
   // Multi-day preview info
   previewDaySpan: number
   isPreviewMultiDay: boolean
+  // Vertical week resize preview (for showing duplicated events in other week rows)
+  verticalWeekPreview: VerticalWeekPreview | null
+}
+
+// Preview state for vertical week resize (shown during drag)
+export interface VerticalWeekPreview {
+  eventId: string
+  weekInfo: VerticalResizeWeekInfo
+  instances: WeeklyInstanceDates[]
 }
 
 /**
@@ -108,6 +118,7 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [previewDaySpan, setPreviewDaySpan] = useState(1)
   const [isPreviewMultiDay, setIsPreviewMultiDay] = useState(false)
+  const [verticalWeekPreview, setVerticalWeekPreview] = useState<VerticalWeekPreview | null>(null)
   const currentEventRef = useRef<UnifiedEvent | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   const startYRef = useRef<number>(0)
@@ -235,6 +246,33 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
         gridInfoRef.current = gridInfo
       }
 
+      // Month view: Capture gridInfo for VERTICAL handles too (for weekly recurrence creation)
+      if (viewMode === 'month' && gridContainerRef?.current && (handle === 'top' || handle === 'bottom') && monthStartDate) {
+        const container = gridContainerRef.current
+        const containerRect = container.getBoundingClientRect()
+
+        const totalWidth = containerRect.width
+        const dayColumnWidth = totalWidth / 7
+
+        const eventDate = parseISO(event.startDateTime)
+        const eventEndDate = event.endDateTime ? parseISO(event.endDateTime) : eventDate
+
+        const startDayIndex = eventDate.getDay()
+        const endDayIndex = eventEndDate.getDay()
+
+        gridInfo = {
+          dayColumnWidth,
+          timeColumnWidth: 0,
+          containerLeft: containerRect.left,
+          weekStartDate: monthStartDate,
+          startDayIndex,
+          endDayIndex,
+          isMonthView: true
+        }
+
+        gridInfoRef.current = gridInfo
+      }
+
       setResizeState({
         isResizing: true,
         handle,
@@ -339,6 +377,88 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
           // Update preview day span state
           setPreviewDaySpan(daySpan)
           setIsPreviewMultiDay(multiDay)
+
+          // For corner handles, also check for vertical week crossing (continuous extension)
+          if (isCornerHandle(resizeState.handle!) && monthStartDate) {
+            const targetDate = findDayUnderCursor(clientX, clientY)
+            if (targetDate) {
+              const weekInfo = detectVerticalWeekResize(
+                currentEventRef.current!,
+                targetDate,
+                resizeState.handle!,
+                monthStartDate
+              )
+
+              if (weekInfo.isVerticalWeekResize) {
+                // Calculate weekly instances for preview (corner uses continuous extension)
+                const instances = calculateWeeklyInstanceDates(
+                  currentEventRef.current!,
+                  weekInfo.startWeekRow,
+                  weekInfo.endWeekRow,
+                  monthStartDate
+                )
+
+                setVerticalWeekPreview({
+                  eventId: currentEventRef.current!.id,
+                  weekInfo, // Contains isCornerResize: true
+                  instances
+                })
+              } else {
+                setVerticalWeekPreview(null)
+              }
+            }
+          } else {
+            // Clear vertical week preview for non-corner horizontal resize
+            setVerticalWeekPreview(null)
+          }
+        }
+        // Month view: vertical resize (top/bottom edge handles only) - detect week row crossing for weekly recurrence
+        else if (resizeState.gridInfo?.isMonthView && (resizeState.handle === 'top' || resizeState.handle === 'bottom') && monthStartDate) {
+          const targetDate = findDayUnderCursor(clientX, clientY)
+
+          if (targetDate) {
+            lastValidTargetDateRef.current = targetDate
+
+            // Detect vertical week resize for preview
+            const weekInfo = detectVerticalWeekResize(
+              currentEventRef.current!,
+              targetDate,
+              resizeState.handle,
+              monthStartDate
+            )
+
+            if (weekInfo.isVerticalWeekResize) {
+              // Calculate weekly instances for preview
+              const instances = calculateWeeklyInstanceDates(
+                currentEventRef.current!,
+                weekInfo.startWeekRow,
+                weekInfo.endWeekRow,
+                monthStartDate
+              )
+
+              // Update vertical week preview state for visual feedback
+              setVerticalWeekPreview({
+                eventId: currentEventRef.current!.id,
+                weekInfo,
+                instances
+              })
+            } else {
+              // Not crossing week boundaries - clear preview
+              setVerticalWeekPreview(null)
+            }
+          }
+
+          // For vertical resize, use standard time calculation for previewStart/End
+          const timeCalc = calculateResizedTimes(
+            currentEventRef.current!,
+            deltaY,
+            resizeState.handle!,
+            pixelsPerHour,
+            snapMinutes
+          )
+
+          previewStart = format(timeCalc.newStart, "yyyy-MM-dd'T'HH:mm:ss")
+          previewEnd = format(timeCalc.newEnd, "yyyy-MM-dd'T'HH:mm:ss")
         }
         // Week view: use multi-day resize calculation for handles that affect horizontal dimension
         else if (isHorizontalHandle(resizeState.handle!) && resizeState.gridInfo) {
@@ -423,11 +543,15 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
       deltaX = finalClientX - startXRef.current
     }
 
-    // VERTICAL WEEK RESIZE DETECTION (month view only, top/bottom handles)
-    // Detect if we're resizing vertically across week rows to create weekly recurrence
-    if (gridInfo?.isMonthView && (handle === 'top' || handle === 'bottom') &&
-        monthStartDate && finalClientX !== undefined && finalClientY !== undefined) {
+    // VERTICAL WEEK RESIZE DETECTION (month view only)
+    // Handles: top/bottom (edge) for weekly recurrence, corners for continuous extension
+    // Detect if we're resizing vertically across week rows
+    const isVerticalHandle = handle === 'top' || handle === 'bottom'
+    const isCorner = isCornerHandle(handle)
+    const shouldCheckVerticalWeekResize = gridInfo?.isMonthView && (isVerticalHandle || isCorner) &&
+        monthStartDate && finalClientX !== undefined && finalClientY !== undefined
 
+    if (shouldCheckVerticalWeekResize) {
       const targetDate = findDayUnderCursor(finalClientX, finalClientY)
 
       if (targetDate) {
@@ -438,7 +562,8 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
           monthStartDate
         )
 
-        // If we're crossing week boundaries, trigger weekly recurrence creation
+        // If we're crossing week boundaries, trigger vertical week resize callback
+        // weekInfo.isCornerResize tells parent whether to use continuous extension mode
         if (weekInfo.isVerticalWeekResize && onVerticalWeekResize) {
           const instances = calculateWeeklyInstanceDates(
             event,
@@ -450,7 +575,8 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
           console.log('🔄 Vertical week resize detected:', {
             weekRowsSpanned: weekInfo.weekRowsSpanned,
             direction: weekInfo.direction,
-            instanceCount: instances.length
+            instanceCount: instances.length,
+            isCornerResize: weekInfo.isCornerResize
           })
 
           // Call the vertical week resize callback - parent will handle instance creation
@@ -475,6 +601,7 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
 
           setPreviewDaySpan(1)
           setIsPreviewMultiDay(false)
+          setVerticalWeekPreview(null)
           gridInfoRef.current = null
           lastValidTargetDateRef.current = null
           currentEventRef.current = null
@@ -600,6 +727,7 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     // Reset multi-day preview state
     setPreviewDaySpan(1)
     setIsPreviewMultiDay(false)
+    setVerticalWeekPreview(null)
     gridInfoRef.current = null
     lastValidTargetDateRef.current = null
 
@@ -660,6 +788,7 @@ export function useEventResize(options: UseEventResizeOptions = {}): UseEventRes
     isPersisting: mutationState.isLoading,
     persistError: mutationState.error,
     previewDaySpan,
-    isPreviewMultiDay
+    isPreviewMultiDay,
+    verticalWeekPreview
   }
 }
