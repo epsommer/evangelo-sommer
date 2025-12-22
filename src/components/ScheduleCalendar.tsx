@@ -1101,11 +1101,13 @@ Duration changed: ${data.reason}`.trim() :
       const startDateStr: string = placeholder.date;
       const targetDateObj = new Date(targetDate + 'T00:00:00');
 
-      // Get week boundaries for the target cell's week row
+      // Get week boundaries for the ORIGINAL placeholder's week row (not where cursor is now)
+      // This constrains horizontal resize to the Sun-Sat boundary of the placeholder's row
       let weekStart: Date | null = null;
       let weekEnd: Date | null = null;
+      const constraintWeekRow = initialWeekRowValue !== undefined ? initialWeekRowValue : foundWeekRow;
       weekRows.forEach((row) => {
-        if (parseInt(row.getAttribute('data-week-row') || '0') === foundWeekRow) {
+        if (parseInt(row.getAttribute('data-week-row') || '0') === constraintWeekRow) {
           const weekStartStr = row.getAttribute('data-week-start');
           if (weekStartStr) {
             weekStart = new Date(weekStartStr + 'T00:00:00');
