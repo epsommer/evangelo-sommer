@@ -159,7 +159,108 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
         throw new Error(validation.errors.join(', '))
       }
 
-      // Always use the integrated API for database persistence
+      // SPECIAL CASE: Weekly recurring events need different handling
+      // Check if this is a weekly recurring event (from vertical resize in month view)
+      const isWeeklyRecurring = eventData.isRecurring &&
+                                eventData.recurrence?.frequency === 'weekly' &&
+                                eventData.recurrence?.endDate
+
+      if (isWeeklyRecurring && eventData.recurrence?.endDate) {
+        // Calculate weekly instances based on start date and recurrence end date
+        const startDate = new Date(eventData.startDateTime)
+        const endDate = eventData.endDateTime ? new Date(eventData.endDateTime) : startDate
+        const recurrenceEndDate = new Date(eventData.recurrence.endDate + 'T23:59:59')
+
+        // Extract time components from original event
+        const startTimeStr = eventData.startDateTime.split('T')[1] || '00:00:00'
+        const endTimeStr = eventData.endDateTime?.split('T')[1] || startTimeStr
+
+        // Calculate the day span in days (e.g., Tue-Fri = 3 days difference)
+        const daySpan = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+        // Generate weekly instances
+        const weeklyInstances = []
+        let currentWeekStart = new Date(startDate)
+
+        while (currentWeekStart <= recurrenceEndDate) {
+          const instanceStart = new Date(currentWeekStart)
+          const instanceEnd = new Date(currentWeekStart)
+          instanceEnd.setDate(instanceEnd.getDate() + daySpan)
+
+          // Format dates with original times
+          const instanceStartStr = instanceStart.toISOString().split('T')[0] + 'T' + startTimeStr
+          const instanceEndStr = instanceEnd.toISOString().split('T')[0] + 'T' + endTimeStr
+
+          // Only include if the instance start is within the recurrence range
+          if (instanceStart <= recurrenceEndDate) {
+            weeklyInstances.push({
+              startDateTime: instanceStartStr,
+              endDateTime: instanceEndStr,
+              weekRow: weeklyInstances.length
+            })
+          }
+
+          // Move to next week (add 7 days)
+          currentWeekStart.setDate(currentWeekStart.getDate() + 7)
+        }
+
+        console.log('🔄 [useUnifiedEvents] Detected weekly recurrence:', {
+          startDate: eventData.startDateTime,
+          endDate: eventData.endDateTime,
+          recurrenceEndDate: eventData.recurrence.endDate,
+          daySpan,
+          instanceCount: weeklyInstances.length
+        })
+
+        // First, create the source event using regular API
+        const sourceResponse = await fetch('/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventData)
+        })
+
+        if (!sourceResponse.ok) {
+          const errorData = await sourceResponse.json().catch(() => ({ error: 'Failed to create source event' }))
+          throw new Error(errorData.error || 'Failed to create source event')
+        }
+
+        const sourceResult = await sourceResponse.json()
+        if (!sourceResult.success) {
+          throw new Error(sourceResult.error || 'Failed to create source event')
+        }
+
+        const sourceEvent = sourceResult.event
+
+        // Then, call weekly-recurrence API to create additional instances
+        const recurrenceResponse = await fetch('/api/events/weekly-recurrence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceEventId: sourceEvent.id,
+            weeklyInstances: weeklyInstances
+          })
+        })
+
+        if (!recurrenceResponse.ok) {
+          const errorData = await recurrenceResponse.json().catch(() => ({ error: 'Failed to create recurring instances' }))
+          throw new Error(errorData.error || 'Failed to create recurring instances')
+        }
+
+        const recurrenceResult = await recurrenceResponse.json()
+        if (!recurrenceResult.success) {
+          throw new Error(recurrenceResult.error || 'Failed to create recurring instances')
+        }
+
+        // Update events with ALL created events (source + instances)
+        const allCreatedEvents = recurrenceResult.events || [sourceEvent]
+        setEvents(prev => [...prev, ...allCreatedEvents])
+
+        console.log(`✅ [useUnifiedEvents] Created ${allCreatedEvents.length} weekly recurring events`)
+
+        return sourceEvent // Return the source event as the primary result
+      }
+
+      // Regular event creation (non-weekly-recurring)
       const response = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

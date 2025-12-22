@@ -484,14 +484,17 @@ const EventCreationForm: React.FC<EventCreationFormProps> = ({
 
       const filteredParticipants = formData.participants.filter(p => p.trim() !== '')
 
-      console.log('📤 Form submit - formData.isRecurring:', formData.isRecurring, 'formData.recurrenceFrequency:', formData.recurrenceFrequency, 'formData.recurrenceEndDate:', formData.recurrenceEndDate, 'formData.isMultiDay:', formData.isMultiDay, 'formData.endDate:', formData.endDate, 'formData.date:', formData.date);
+      // For weekly recurring events, check if endDate differs from date (multi-day span)
+      const hasMultiDaySpan = formData.endDate !== formData.date
+      const shouldUseEndDate = formData.isMultiDay || (formData.isRecurring && formData.recurrenceFrequency === 'weekly' && hasMultiDaySpan)
+
       const newEvent: UnifiedEvent = {
         id: editingEvent?.id || `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: formData.type,
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         startDateTime: `${formData.date}T${formData.startTime}:00`,
-        endDateTime: formData.type === 'goal' ? undefined : (formData.isMultiDay ? `${formData.endDate}T${formData.endTime}:00` : `${formData.date}T${formData.endTime}:00`),
+        endDateTime: formData.type === 'goal' ? undefined : (shouldUseEndDate ? `${formData.endDate}T${formData.endTime}:00` : `${formData.date}T${formData.endTime}:00`),
         duration: formData.duration,
         priority: formData.priority,
         clientId: formData.clientId || undefined,
