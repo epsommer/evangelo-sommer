@@ -251,11 +251,24 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
           throw new Error(recurrenceResult.error || 'Failed to create recurring instances')
         }
 
-        // Update events with ALL created events (source + instances)
-        const allCreatedEvents = recurrenceResult.events || [sourceEvent]
-        setEvents(prev => [...prev, ...allCreatedEvents])
+        // Update events: Add source event explicitly + additional instances from API
+        // The API may or may not include the source event depending on date format matching,
+        // so we explicitly add it and filter duplicates
+        const additionalEvents = (recurrenceResult.events || []).filter(
+          (e: UnifiedEvent) => e.id !== sourceEvent.id
+        )
 
-        console.log(`✅ [useUnifiedEvents] Created ${allCreatedEvents.length} weekly recurring events`)
+        // Update source event with recurrenceGroupId from the API response
+        const updatedSourceEvent = {
+          ...sourceEvent,
+          recurrenceGroupId: recurrenceResult.recurrenceGroupId,
+          isRecurring: true
+        }
+
+        setEvents(prev => [...prev, updatedSourceEvent, ...additionalEvents])
+
+        const totalCreated = 1 + additionalEvents.length
+        console.log(`✅ [useUnifiedEvents] Created ${totalCreated} weekly recurring events`)
 
         return sourceEvent // Return the source event as the primary result
       }
