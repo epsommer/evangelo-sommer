@@ -1602,8 +1602,18 @@ Duration changed: ${data.reason}`.trim() :
                           const getDropZoneStyle = (): React.CSSProperties => {
                             const baseStyle: React.CSSProperties = {
                               background: 'var(--neomorphic-bg)',
-                              borderRight: '1px solid var(--neomorphic-dark-shadow)',
-                              borderBottom: '1px solid var(--neomorphic-dark-shadow)',
+                              borderTopWidth: '1px',
+                              borderTopStyle: 'solid',
+                              borderTopColor: 'transparent',
+                              borderRightWidth: '1px',
+                              borderRightStyle: 'solid',
+                              borderRightColor: 'var(--neomorphic-dark-shadow)',
+                              borderBottomWidth: '1px',
+                              borderBottomStyle: 'solid',
+                              borderBottomColor: 'var(--neomorphic-dark-shadow)',
+                              borderLeftWidth: '1px',
+                              borderLeftStyle: 'solid',
+                              borderLeftColor: 'transparent',
                               color: 'var(--neomorphic-text)',
                               transition: 'all 200ms ease-in-out'
                             }
@@ -1625,7 +1635,14 @@ Duration changed: ${data.reason}`.trim() :
                             if (isTodayDate) {
                               return {
                                 ...baseStyle,
-                                border: '2px solid var(--neomorphic-accent)',
+                                borderTopWidth: '2px',
+                                borderRightWidth: '2px',
+                                borderBottomWidth: '2px',
+                                borderLeftWidth: '2px',
+                                borderTopColor: 'var(--neomorphic-accent)',
+                                borderRightColor: 'var(--neomorphic-accent)',
+                                borderBottomColor: 'var(--neomorphic-accent)',
+                                borderLeftColor: 'var(--neomorphic-accent)',
                                 boxShadow: 'inset 2px 2px 4px 0px var(--neomorphic-dark-shadow), inset -2px -2px 4px 0px var(--neomorphic-light-shadow)'
                               }
                             }
