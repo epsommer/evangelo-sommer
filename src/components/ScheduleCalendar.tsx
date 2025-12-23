@@ -447,16 +447,17 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   // This now includes both true multi-day events AND merged consecutive recurring events
   const getMultiDayEventsForWeekRow = (weekStart: Date, weekEnd: Date): UnifiedEvent[] => {
     // Get true multi-day events (non-recurring events that span multiple days)
-    // Also include linked weekly instances (have recurrenceGroupId but no recurrence pattern)
+    // Also include pre-generated weekly instances (have recurrenceGroupId)
     const multiDayEvents = unifiedEvents.filter(event => {
       if (!isEventMultiDay(event)) return false;
 
-      // Allow linked weekly instances (have recurrenceGroupId but no recurrence pattern)
-      const isLinkedWeeklyInstance = event.isRecurring && event.recurrenceGroupId && !event.recurrence;
+      // Allow pre-generated weekly instances (have recurrenceGroupId) - these are already
+      // materialized events that should be displayed directly, not expanded from recurrence pattern
+      const isPreGeneratedWeeklyInstance = event.recurrenceGroupId != null;
 
-      // Exclude true recurring events from multi-day display - they're handled separately
-      // But allow linked weekly instances to pass through
-      if (event.isRecurring && !isLinkedWeeklyInstance) return false;
+      // Exclude true recurring events that should be expanded from a recurrence pattern
+      // But allow pre-generated weekly instances to pass through (they have recurrenceGroupId)
+      if (event.isRecurring && !isPreGeneratedWeeklyInstance) return false;
 
       const eventStart = new Date(event.startDateTime);
       const eventEnd = event.endDateTime ? new Date(event.endDateTime) : eventStart;
