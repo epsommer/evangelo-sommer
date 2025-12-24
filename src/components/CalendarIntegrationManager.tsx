@@ -8,6 +8,7 @@ import {
 } from "../types/scheduling";
 import { calendarService } from "@/lib/calendar-service";
 import RecurringEventManager from "./RecurringEventManager";
+import { RefreshCw, Check, X } from "lucide-react";
 
 interface CalendarIntegrationManagerProps {
   onEventsSync?: (events: CalendarEvent[]) => void;
@@ -174,6 +175,18 @@ export default function CalendarIntegrationManager({
   };
 
   const handleDisconnect = async (integrationId: string) => {
+    const integration = integrations.find(i => i.id === integrationId);
+    const providerName = integration ? calendarService.getProviderInfo(integration.provider)?.name : 'calendar';
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to disconnect ${providerName}?\n\nThis will remove the integration and you'll need to reconnect to sync events again.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     try {
       // Delete from database
       const response = await fetch(`/api/calendar/integrations/${integrationId}`, {
@@ -429,7 +442,7 @@ export default function CalendarIntegrationManager({
                       <button
                         onClick={() => handleSync(integration.id)}
                         disabled={currentSyncStatus === "syncing"}
-                        className={`neo-button px-3 py-1.5 text-xs font-primary uppercase tracking-wide transition-all ${
+                        className={`neo-button p-2 transition-all ${
                           currentSyncStatus === "syncing"
                             ? "opacity-50 cursor-not-allowed"
                             : currentSyncStatus === "success"
@@ -438,11 +451,12 @@ export default function CalendarIntegrationManager({
                                 ? "!bg-red-100 !text-red-700"
                                 : ""
                         }`}
+                        title="Sync calendar"
                       >
-                        {currentSyncStatus === "syncing" && "Syncing..."}
-                        {currentSyncStatus === "success" && "Synced"}
-                        {currentSyncStatus === "error" && "Failed"}
-                        {currentSyncStatus === "idle" && "Sync Now"}
+                        {currentSyncStatus === "syncing" && <RefreshCw className="w-4 h-4 animate-spin" />}
+                        {currentSyncStatus === "success" && <Check className="w-4 h-4" />}
+                        {currentSyncStatus === "error" && <X className="w-4 h-4" />}
+                        {currentSyncStatus === "idle" && <RefreshCw className="w-4 h-4" />}
                       </button>
 
                       <button
@@ -475,22 +489,32 @@ export default function CalendarIntegrationManager({
 
                 {/* Integration Details - shown inline when connected */}
                 {integration && isConnected && (
-                  <div className="mt-3 ml-13 pl-13 grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Account</div>
-                      <div className="font-medium text-foreground truncate font-primary">
-                        {integration.accountId}
+                  <div className="mt-3 ml-13 pl-13 space-y-3">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Account</div>
+                        <div className="font-medium text-foreground truncate font-primary">
+                          {integration.accountId}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Sync Direction</div>
+                        <div className="font-medium text-foreground capitalize font-primary">
+                          {integration.syncSettings.syncDirection.replace(
+                            "-",
+                            " ",
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Sync Direction</div>
-                      <div className="font-medium text-foreground capitalize font-primary">
-                        {integration.syncSettings.syncDirection.replace(
-                          "-",
-                          " ",
-                        )}
+                    {integration.lastSyncAt && (
+                      <div className="text-sm">
+                        <div className="text-foreground/60 text-xs font-primary uppercase tracking-wide mb-1">Last Sync</div>
+                        <div className="font-medium text-foreground font-primary">
+                          {new Date(integration.lastSyncAt).toLocaleString()}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>

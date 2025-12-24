@@ -85,16 +85,16 @@ export class CalendarService {
       throw new Error('Integration not found')
     }
 
-    const response = await fetch(`/api/calendar/${integration.provider}/sync`, {
+    // Use the unified integration sync endpoint
+    const response = await fetch(`/api/calendar/integrations/${integrationId}/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        accessToken: integration.credentials?.accessToken,
-        refreshToken: integration.credentials?.refreshToken,
-        calendarId: integration.calendarId,
-        databaseId: (integration.provider as string) === 'notion' && integration.calendarId ? integration.calendarId : undefined
+        // Optional date range
+        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 days from now
       })
     })
 
@@ -107,7 +107,7 @@ export class CalendarService {
     }
 
     const data = await response.json()
-    return data.events
+    return data.data || data.events || []
   }
 
   // Sync recurring events to external calendar

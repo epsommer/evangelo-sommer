@@ -17,6 +17,7 @@ import DragVisualFeedback from '@/components/DragVisualFeedback';
 import { ClientNotificationService } from '@/lib/client-notification-service';
 import { UnifiedEvent } from '@/components/EventCreationModal';
 import { calculateDragDropTimes } from '@/utils/calendar';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { VerticalWeekPreview } from '@/hooks/useEventResize';
 import { WeeklyInstanceDates, VerticalResizeWeekInfo, calculateContinuousWeekExtension } from '@/utils/calendar/resizeCalculations';
 
@@ -2042,37 +2043,85 @@ Duration changed: ${data.reason}`.trim() :
                         );
                       })}
 
-                      {/* Multi-day events overflow indicator - positioned at bottom of week row */}
+                      {/* Multi-day events overflow indicator with popover */}
                       {multiDayEvents.length > 2 && (
-                        <div
-                          className="absolute cursor-pointer transition-all hover:scale-105 hover:brightness-110"
-                          style={{
-                            left: '4px',
-                            right: '4px',
-                            bottom: '4px',
-                            height: '22px',
-                            borderRadius: '4px',
-                            background: 'var(--neomorphic-accent)',
-                            color: 'white',
-                            boxShadow: '2px 2px 4px 0px var(--neomorphic-dark-shadow)',
-                            zIndex: 50,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '11px',
-                            fontWeight: 600
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Click on the first day of the week to show all events
-                            if (onDayClick) {
-                              onDayClick(weekStart);
-                            }
-                          }}
-                          title={`View all ${multiDayEvents.length} multi-day events`}
-                        >
-                          <span>+{multiDayEvents.length - 2} more multi-day events</span>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div
+                              className="absolute cursor-pointer transition-all hover:scale-105 hover:brightness-110"
+                              style={{
+                                left: '4px',
+                                right: '4px',
+                                bottom: '4px',
+                                height: '22px',
+                                borderRadius: '4px',
+                                background: 'var(--neomorphic-accent)',
+                                color: 'white',
+                                boxShadow: '2px 2px 4px 0px var(--neomorphic-dark-shadow)',
+                                zIndex: 50,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                fontWeight: 600
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              title={`View all ${multiDayEvents.length} multi-day events`}
+                            >
+                              <span>+{multiDayEvents.length - 2} more multi-day events</span>
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-80 max-h-96 overflow-y-auto p-3"
+                            style={{
+                              background: 'var(--neomorphic-bg)',
+                              border: '1px solid var(--neomorphic-border)',
+                              boxShadow: '8px 8px 16px var(--neomorphic-dark-shadow), -4px -4px 12px var(--neomorphic-light-shadow)'
+                            }}
+                            side="bottom"
+                            align="start"
+                          >
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-foreground mb-3">
+                                All multi-day events ({multiDayEvents.length})
+                              </p>
+                              {multiDayEvents.map((event) => {
+                                const eventStartDate = new Date(event.startDateTime);
+                                const eventEndDate = event.endDateTime ? new Date(event.endDateTime) : eventStartDate;
+                                const eventHour = eventStartDate.getHours();
+
+                                return (
+                                  <div
+                                    key={event.id}
+                                    className="rounded-md overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => {
+                                      if (onEventView) {
+                                        onEventView(event);
+                                      }
+                                    }}
+                                  >
+                                    <CalendarEvent
+                                      event={event}
+                                      viewMode="month"
+                                      currentDate={format(weekStart, 'yyyy-MM-dd')}
+                                      currentHour={eventHour}
+                                      onClick={(e) => {
+                                        if (onEventView) {
+                                          onEventView(e);
+                                        }
+                                      }}
+                                      isCompact={true}
+                                      className="h-8 text-xs"
+                                    />
+                                    <div className="px-2 py-1 text-xs text-muted-foreground bg-background/50">
+                                      {format(eventStartDate, 'MMM d')} - {format(eventEndDate, 'MMM d')}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       )}
 
                       {/* Resize preview overlay - shows during horizontal resize (but not during vertical week resize) */}

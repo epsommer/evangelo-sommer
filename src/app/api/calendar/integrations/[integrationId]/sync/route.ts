@@ -132,6 +132,8 @@ export async function POST(
     // Handle based on provider
     if (integration.provider === 'GOOGLE') {
       return await syncGoogleCalendar(integration, startDate, endDate, prisma);
+    } else if (integration.provider === 'NOTION') {
+      return await syncNotionCalendar(integration, startDate, endDate, prisma);
     } else {
       return NextResponse.json(
         { success: false, error: `Provider ${integration.provider} not supported` },
@@ -298,4 +300,227 @@ async function syncGoogleCalendar(
       { status: 500 }
     );
   }
+}
+
+async function syncNotionCalendar(
+  integration: any,
+  startDate: Date,
+  endDate: Date,
+  prisma: any
+) {
+  // Decrypt access token
+  let accessToken: string;
+
+  try {
+    accessToken = decrypt(integration.accessToken);
+  } catch (error) {
+    console.error('Failed to decrypt Notion token:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to decrypt credentials', requiresReauth: true },
+      { status: 401 }
+    );
+  }
+
+  try {
+    // Search for calendar databases in Notion
+    const searchResponse = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify({
+        filter: {
+          property: 'object',
+          value: 'database'
+        },
+        page_size: 100
+      })
+    });
+
+    if (!searchResponse.ok) {
+      const errorText = await searchResponse.text();
+      console.error('Notion search failed:', errorText);
+      throw new Error('Failed to search Notion databases');
+    }
+
+    const searchData = await searchResponse.json();
+
+    // Filter for databases that might be calendars (have date properties)
+    const databases = searchData.results.filter((db: any) => {
+      const properties = db.properties || {};
+      return Object.values(properties).some((prop: any) =>
+        prop.type === 'date' || prop.type === 'created_time' || prop.type === 'last_edited_time'
+      );
+    });
+
+    if (databases.length === 0) {
+      await prisma.calendarIntegration.update({
+        where: { id: integration.id },
+        data: {
+          lastSyncAt: new Date(),
+          lastSyncError: 'No calendar databases found'
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: [],
+        syncedAt: new Date().toISOString(),
+        count: 0,
+        message: 'No calendar databases found'
+      });
+    }
+
+    // Use the first database or the one specified in externalId
+    const targetDatabaseId = integration.externalId || databases[0]?.id;
+
+    // Query the database for calendar events
+    const eventsResponse = await fetch(`https://api.notion.com/v1/databases/${targetDatabaseId}/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify({
+        page_size: 100,
+        // Filter by date range if possible
+        filter: {
+          and: [
+            {
+              property: 'Date',
+              date: {
+                on_or_after: startDate.toISOString()
+              }
+            },
+            {
+              property: 'Date',
+              date: {
+                on_or_before: endDate.toISOString()
+              }
+            }
+          ]
+        }
+      })
+    });
+
+    if (!eventsResponse.ok) {
+      // Try without filter if the filter fails (database might not have a "Date" property)
+      const fallbackResponse = await fetch(`https://api.notion.com/v1/databases/${targetDatabaseId}/query`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28'
+        },
+        body: JSON.stringify({
+          page_size: 100
+        })
+      });
+
+      if (!fallbackResponse.ok) {
+        const errorText = await fallbackResponse.text();
+        console.error('Notion database query failed:', errorText);
+        throw new Error('Failed to query Notion database');
+      }
+
+      const eventsData = await fallbackResponse.json();
+      return processNotionEvents(eventsData, integration, prisma, targetDatabaseId);
+    }
+
+    const eventsData = await eventsResponse.json();
+    return processNotionEvents(eventsData, integration, prisma, targetDatabaseId);
+
+  } catch (error: any) {
+    console.error('Notion Calendar API error:', error);
+
+    // Update sync error
+    await prisma.calendarIntegration.update({
+      where: { id: integration.id },
+      data: {
+        lastSyncError: error.message || 'Unknown error'
+      }
+    });
+
+    // Handle token expiry
+    if (error?.status === 401 || error?.response?.status === 401) {
+      return NextResponse.json(
+        { success: false, error: 'Token expired', requiresReauth: true },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch Notion Calendar events' },
+      { status: 500 }
+    );
+  }
+}
+
+async function processNotionEvents(
+  eventsData: any,
+  integration: any,
+  prisma: any,
+  targetDatabaseId: string
+) {
+  // Convert Notion pages to calendar events
+  const events = eventsData.results.map((page: any) => {
+    const properties = page.properties || {};
+
+    // Find title property
+    const titleProp = Object.values(properties).find((prop: any) =>
+      prop.type === 'title'
+    ) as any;
+
+    // Find date property
+    const dateProp = Object.values(properties).find((prop: any) =>
+      prop.type === 'date'
+    ) as any;
+
+    // Extract title
+    const title = titleProp?.title?.[0]?.plain_text || 'Untitled Event';
+
+    // Extract dates
+    const startTime = dateProp?.date?.start || page.created_time;
+    const endTime = dateProp?.date?.end || startTime;
+
+    // Check if it's an all-day event
+    const isAllDay = dateProp?.date?.start && !dateProp.date.start.includes('T');
+
+    return {
+      id: `notion-${page.id}`,
+      notionPageId: page.id,
+      title,
+      description: `Notion page: ${page.url}`,
+      startTime,
+      endTime,
+      isAllDay,
+      type: 'event' as const,
+      status: 'scheduled' as const,
+      participants: [],
+      source: 'notion' as const,
+      createdAt: page.created_time,
+      updatedAt: page.last_edited_time
+    };
+  });
+
+  // Update last sync time
+  await prisma.calendarIntegration.update({
+    where: { id: integration.id },
+    data: {
+      lastSyncAt: new Date(),
+      lastSyncError: null,
+      // Store the database ID if not already stored
+      ...((!integration.externalId) && { externalId: targetDatabaseId })
+    }
+  });
+
+  return NextResponse.json({
+    success: true,
+    data: events,
+    syncedAt: new Date().toISOString(),
+    count: events.length
+  });
 }

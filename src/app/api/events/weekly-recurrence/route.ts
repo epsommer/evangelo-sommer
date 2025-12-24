@@ -2,7 +2,6 @@
 // Creates linked weekly recurring event instances from vertical resize
 import { NextRequest, NextResponse } from 'next/server'
 import { getPrismaClient } from '@/lib/prisma'
-import { UnifiedEventsManager } from '@/lib/unified-events'
 import type { UnifiedEvent } from '@/components/EventCreationModal'
 import type { EventType, Priority } from '@prisma/client'
 import { v4 as uuidv4 } from 'uuid'
@@ -57,44 +56,84 @@ export async function POST(request: NextRequest) {
     console.log('📅 [WeeklyRecurrence] Creating weekly instances for event:', sourceEventId)
     console.log('📅 [WeeklyRecurrence] Instance count:', weeklyInstances.length)
 
-    // Get the source event from localStorage
-    const sourceEvent = UnifiedEventsManager.getEventById(sourceEventId)
-    if (!sourceEvent) {
+    // Get the source event from database (localStorage doesn't exist on server)
+    const prisma = getPrismaClient()
+    if (!prisma) {
       return NextResponse.json(
-        { success: false, error: 'Source event not found' },
+        { success: false, error: 'Database not available' },
+        { status: 500 }
+      )
+    }
+
+    const dbEvent = await prisma.event.findUnique({
+      where: { id: sourceEventId }
+    })
+
+    if (!dbEvent) {
+      return NextResponse.json(
+        { success: false, error: 'Source event not found in database' },
         { status: 404 }
       )
+    }
+
+    // Convert database event to UnifiedEvent format
+    const sourceEvent: UnifiedEvent = {
+      id: dbEvent.id,
+      type: dbEvent.type.toLowerCase() as UnifiedEvent['type'],
+      title: dbEvent.title,
+      description: dbEvent.description || undefined,
+      startDateTime: dbEvent.startDateTime,
+      endDateTime: dbEvent.endDateTime || undefined,
+      duration: dbEvent.duration,
+      priority: dbEvent.priority.toLowerCase() as UnifiedEvent['priority'],
+      clientId: dbEvent.clientId || undefined,
+      clientName: dbEvent.clientName || undefined,
+      location: dbEvent.location || undefined,
+      notes: dbEvent.notes || undefined,
+      isAllDay: dbEvent.isAllDay,
+      isMultiDay: dbEvent.isMultiDay,
+      isRecurring: dbEvent.isRecurring,
+      recurrenceGroupId: dbEvent.recurrenceGroupId || undefined,
+      status: dbEvent.status || 'scheduled',
+      service: dbEvent.service || dbEvent.title,
+      scheduledDate: dbEvent.scheduledDate || dbEvent.startDateTime,
+      createdAt: dbEvent.createdAt.toISOString(),
+      updatedAt: dbEvent.updatedAt.toISOString()
     }
 
     // Generate or use provided recurrence group ID
     const recurrenceGroupId = providedGroupId || uuidv4()
 
-    // Update source event with recurrence group ID
-    UnifiedEventsManager.updateEvent(sourceEventId, {
-      recurrenceGroupId,
-      isRecurring: true
+    // Check if the source event spans multiple days
+    const eventStart = new Date(sourceEvent.startDateTime)
+    const eventEnd = sourceEvent.endDateTime ? new Date(sourceEvent.endDateTime) : eventStart
+    const isMultiDay = eventStart.toDateString() !== eventEnd.toDateString()
+
+    // Update source event with recurrence group ID and isMultiDay flag in database
+    await prisma.event.update({
+      where: { id: sourceEventId },
+      data: {
+        recurrenceGroupId,
+        isRecurring: true,
+        isMultiDay: isMultiDay
+      }
     })
+    console.log('✅ [WeeklyRecurrence] Updated source event with recurrence group ID and isMultiDay:', isMultiDay)
 
     const createdEvents: UnifiedEvent[] = []
-    const prisma = getPrismaClient()
 
     // Create each weekly instance
     for (const instance of weeklyInstances) {
       // Skip if this is the same as the source event (already exists)
       if (instance.startDateTime === sourceEvent.startDateTime &&
           instance.endDateTime === sourceEvent.endDateTime) {
-        // Update source event instead
-        if (prisma) {
-          try {
-            await prisma.event.update({
-              where: { id: sourceEventId },
-              data: { recurrenceGroupId }
-            })
-          } catch (dbError) {
-            console.warn('⚠️ Failed to update source event in database:', dbError)
-          }
-        }
-        createdEvents.push(sourceEvent)
+        // Include the source event with updated flags
+        createdEvents.push({
+          ...sourceEvent,
+          isMultiDay: isMultiDay,
+          recurrenceGroupId,
+          isRecurring: true
+        })
         continue
       }
 
@@ -103,55 +142,56 @@ export async function POST(request: NextRequest) {
         (new Date(instance.endDateTime).getTime() - new Date(instance.startDateTime).getTime()) / (1000 * 60)
       )
 
-      // Create new event in localStorage
-      const newEvent = UnifiedEventsManager.createEvent({
-        ...sourceEvent,
-        id: uuidv4(), // Generate new ID
-        startDateTime: instance.startDateTime,
-        endDateTime: instance.endDateTime,
-        duration,
-        recurrenceGroupId,
-        isRecurring: true,
-        parentEventId: sourceEventId, // Link to source event
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
+      // Check if this instance spans multiple days
+      const instanceStart = new Date(instance.startDateTime)
+      const instanceEnd = new Date(instance.endDateTime)
+      const instanceIsMultiDay = instanceStart.toDateString() !== instanceEnd.toDateString()
 
-      createdEvents.push(newEvent)
+      // Generate new event ID
+      const newEventId = uuidv4()
 
-      // Persist to database if available
-      if (prisma) {
-        try {
-          await prisma.event.create({
-            data: {
-              id: newEvent.id,
-              type: mapToValidEventType(newEvent.type),
-              title: newEvent.title,
-              description: newEvent.description,
-              startDateTime: newEvent.startDateTime,
-              endDateTime: newEvent.endDateTime,
-              duration: newEvent.duration,
-              priority: mapToValidPriority(newEvent.priority),
-              clientId: newEvent.clientId,
-              clientName: newEvent.clientName,
-              location: newEvent.location,
-              notes: newEvent.notes,
-              isAllDay: newEvent.isAllDay || false,
-              isMultiDay: newEvent.isMultiDay || false,
-              isRecurring: true,
-              parentEventId: sourceEventId,
-              recurrenceGroupId,
-              notifications: newEvent.notifications ? JSON.stringify(newEvent.notifications) : null,
-              recurrence: newEvent.recurrence ? JSON.stringify(newEvent.recurrence) : null,
-              status: newEvent.status,
-              service: newEvent.service,
-              scheduledDate: newEvent.scheduledDate,
-            }
-          })
-          console.log('✅ [WeeklyRecurrence] Database event created:', newEvent.id)
-        } catch (dbError) {
-          console.error('⚠️ [WeeklyRecurrence] Database persistence failed:', dbError)
-        }
+      // Create new event directly in database
+      try {
+        await prisma.event.create({
+          data: {
+            id: newEventId,
+            type: mapToValidEventType(sourceEvent.type),
+            title: sourceEvent.title,
+            description: sourceEvent.description,
+            startDateTime: instance.startDateTime,
+            endDateTime: instance.endDateTime,
+            duration,
+            priority: mapToValidPriority(sourceEvent.priority),
+            clientId: sourceEvent.clientId,
+            clientName: sourceEvent.clientName,
+            location: sourceEvent.location,
+            notes: sourceEvent.notes,
+            isAllDay: sourceEvent.isAllDay || false,
+            isMultiDay: instanceIsMultiDay,
+            isRecurring: true,
+            parentEventId: sourceEventId,
+            recurrenceGroupId,
+            status: sourceEvent.status,
+            service: sourceEvent.service,
+            scheduledDate: instance.startDateTime,
+          }
+        })
+        console.log('✅ [WeeklyRecurrence] Database event created:', newEventId)
+
+        // Add to created events list
+        createdEvents.push({
+          ...sourceEvent,
+          id: newEventId,
+          startDateTime: instance.startDateTime,
+          endDateTime: instance.endDateTime,
+          duration,
+          isMultiDay: instanceIsMultiDay,
+          recurrenceGroupId,
+          isRecurring: true,
+          parentEventId: sourceEventId
+        })
+      } catch (dbError) {
+        console.error('⚠️ [WeeklyRecurrence] Database persistence failed:', dbError)
       }
     }
 
@@ -177,14 +217,53 @@ export async function POST(request: NextRequest) {
   }
 }
 
+type RecurringDeleteOption = 'this_only' | 'all_previous' | 'this_and_following' | 'all'
+
+interface DeleteRequestBody {
+  eventId: string
+  option: RecurringDeleteOption
+  recurrenceGroupId: string
+}
+
 /**
- * DELETE /api/events/weekly-recurrence?recurrenceGroupId=xxx
- * Deletes all events in a recurrence group
+ * DELETE /api/events/weekly-recurrence
+ * Deletes events in a recurrence group based on the selected option
+ *
+ * Query params (legacy - deletes all):
+ *   ?recurrenceGroupId=xxx
+ *
+ * Body params (new - supports all options):
+ *   { eventId, option, recurrenceGroupId }
  */
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const recurrenceGroupId = searchParams.get('recurrenceGroupId')
+    const queryRecurrenceGroupId = searchParams.get('recurrenceGroupId')
+
+    const prisma = getPrismaClient()
+    if (!prisma) {
+      return NextResponse.json(
+        { success: false, error: 'Database not available' },
+        { status: 500 }
+      )
+    }
+
+    // Check if this is a body-based request (new) or query-based (legacy)
+    let eventId: string | null = null
+    let option: RecurringDeleteOption = 'all'
+    let recurrenceGroupId: string | null = queryRecurrenceGroupId
+
+    // Try to parse body for new-style requests
+    try {
+      const body: DeleteRequestBody = await request.json()
+      if (body.eventId && body.option && body.recurrenceGroupId) {
+        eventId = body.eventId
+        option = body.option
+        recurrenceGroupId = body.recurrenceGroupId
+      }
+    } catch {
+      // No body or invalid JSON - use query params (legacy mode)
+    }
 
     if (!recurrenceGroupId) {
       return NextResponse.json(
@@ -193,57 +272,84 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    console.log('🗑️ [WeeklyRecurrence] Deleting all events in group:', recurrenceGroupId)
+    console.log('🗑️ [WeeklyRecurrence] Delete request:', { eventId, option, recurrenceGroupId })
 
-    // Get all events in the recurrence group from localStorage
-    const allEvents = UnifiedEventsManager.getAllEvents()
-    const eventsToDelete = allEvents.filter(e => e.recurrenceGroupId === recurrenceGroupId)
+    // Find all events in the recurrence group, sorted by start date
+    const allEvents = await prisma.event.findMany({
+      where: { recurrenceGroupId },
+      orderBy: { startDateTime: 'asc' },
+      select: { id: true, startDateTime: true }
+    })
 
-    if (eventsToDelete.length === 0) {
+    if (allEvents.length === 0) {
       return NextResponse.json(
         { success: false, error: 'No events found with this recurrence group ID' },
         { status: 404 }
       )
     }
 
-    let deletedCount = 0
+    // Determine which event IDs to delete based on option
+    let eventIdsToDelete: string[] = []
 
-    // Delete each event from localStorage
-    for (const event of eventsToDelete) {
-      const deleted = UnifiedEventsManager.deleteEvent(event.id)
-      if (deleted) deletedCount++
-    }
+    if (option === 'all' || !eventId) {
+      // Delete all events in the group
+      eventIdsToDelete = allEvents.map(e => e.id)
+    } else {
+      // Find the current event's position
+      const currentEventIndex = allEvents.findIndex(e => e.id === eventId)
 
-    // Delete from database if available
-    const prisma = getPrismaClient()
-    let dbDeletedCount = 0
-    if (prisma) {
-      try {
-        // Delete EventSync records first
-        await prisma.eventSync.deleteMany({
-          where: {
-            eventId: { in: eventsToDelete.map(e => e.id) }
-          }
-        })
+      if (currentEventIndex === -1) {
+        return NextResponse.json(
+          { success: false, error: 'Event not found in recurrence group' },
+          { status: 404 }
+        )
+      }
 
-        // Delete events
-        const result = await prisma.event.deleteMany({
-          where: { recurrenceGroupId }
-        })
-        dbDeletedCount = result.count
-        console.log(`✅ [WeeklyRecurrence] Deleted ${dbDeletedCount} events from database`)
-      } catch (dbError) {
-        console.error('⚠️ [WeeklyRecurrence] Database deletion failed:', dbError)
+      switch (option) {
+        case 'this_only':
+          eventIdsToDelete = [eventId]
+          break
+        case 'all_previous':
+          // Delete all events before the current one (exclusive)
+          eventIdsToDelete = allEvents.slice(0, currentEventIndex).map(e => e.id)
+          break
+        case 'this_and_following':
+          // Delete this event and all following
+          eventIdsToDelete = allEvents.slice(currentEventIndex).map(e => e.id)
+          break
       }
     }
 
-    console.log(`✅ [WeeklyRecurrence] Deleted ${deletedCount} events from localStorage`)
+    if (eventIdsToDelete.length === 0) {
+      return NextResponse.json({
+        success: true,
+        deletedCount: 0,
+        deletedIds: [],
+        message: 'No events to delete'
+      })
+    }
+
+    console.log(`🗑️ [WeeklyRecurrence] Deleting ${eventIdsToDelete.length} events`)
+
+    // Delete EventSync records first
+    await prisma.eventSync.deleteMany({
+      where: {
+        eventId: { in: eventIdsToDelete }
+      }
+    })
+
+    // Delete the selected events
+    const result = await prisma.event.deleteMany({
+      where: { id: { in: eventIdsToDelete } }
+    })
+
+    console.log(`✅ [WeeklyRecurrence] Deleted ${result.count} events from database`)
 
     return NextResponse.json({
       success: true,
-      deletedCount,
-      dbDeletedCount,
-      message: `Deleted ${deletedCount} recurring events`
+      deletedCount: result.count,
+      deletedIds: eventIdsToDelete,
+      message: `Deleted ${result.count} recurring event${result.count !== 1 ? 's' : ''}`
     })
 
   } catch (error) {
