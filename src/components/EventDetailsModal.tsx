@@ -305,7 +305,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
           )}
           {onDelete && (
             <button
-              onClick={() => onDelete(event.id)}
+              onClick={() => {
+                // Close details modal first, then call onDelete
+                // onDelete will handle routing to appropriate delete modal
+                onClose()
+                onDelete(event.id)
+              }}
               className="neo-button px-4 py-2 flex items-center gap-2 text-sm font-primary uppercase tracking-wide text-red-500 hover:text-red-600"
             >
               <Trash2 className="h-4 w-4" />

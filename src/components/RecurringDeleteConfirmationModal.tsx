@@ -174,15 +174,15 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="window-container max-w-lg max-h-[90vh] overflow-y-auto bg-background border-border">
-        <DialogHeader className="border-b border-border pb-4">
+      <DialogContent className="window-container max-w-lg max-h-[80vh] overflow-hidden flex flex-col bg-background border-border">
+        <DialogHeader className="border-b border-border pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-foreground">
             <Trash2 className="w-6 h-6 text-[var(--status-danger-icon)]" />
             Delete Recurring Event
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto flex-1">
           {/* Event Info */}
           <Card className={`border-l-4 ${getPriorityColor(event.priority)}`}>
             <CardContent className="p-4">
@@ -315,7 +315,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border flex-shrink-0">
             <Button
               type="button"
               variant="outline"
