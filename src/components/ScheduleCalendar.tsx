@@ -2042,6 +2042,40 @@ Duration changed: ${data.reason}`.trim() :
                         );
                       })}
 
+                      {/* Multi-day events overflow indicator */}
+                      {multiDayEvents.length > 2 && (
+                        <div
+                          className="absolute cursor-pointer transition-all hover:scale-105"
+                          style={{
+                            right: '8px',
+                            top: '50%',
+                            transform: 'translateY(calc(-50% + 32px))',
+                            height: '24px',
+                            padding: '0 8px',
+                            borderRadius: '4px',
+                            background: 'var(--neomorphic-bg)',
+                            color: 'var(--neomorphic-text)',
+                            boxShadow: '2px 2px 4px 0px var(--neomorphic-dark-shadow), -2px -2px 4px 0px var(--neomorphic-light-shadow)',
+                            zIndex: 45,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            fontWeight: 500
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Click on the first day of the week to show all events
+                            if (onDayClick) {
+                              onDayClick(weekStart);
+                            }
+                          }}
+                          title={`View all ${multiDayEvents.length} multi-day events`}
+                        >
+                          <span>+{multiDayEvents.length - 2} more</span>
+                        </div>
+                      )}
+
                       {/* Resize preview overlay - shows during horizontal resize (but not during vertical week resize) */}
                       {resizePreviewStyle && resizePreview && !verticalWeekResizePreview && (
                         <div
