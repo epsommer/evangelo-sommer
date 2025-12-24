@@ -174,7 +174,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="window-container max-w-lg max-h-[80vh] overflow-hidden flex flex-col bg-background border-border">
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader className="border-b border-border pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-foreground">
             <Trash2 className="w-6 h-6 text-[var(--status-danger-icon)]" />

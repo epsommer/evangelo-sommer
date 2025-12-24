@@ -346,7 +346,7 @@ const ScheduleFollowUpForm: React.FC<ScheduleFollowUpFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white border-2 border-hud-border">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="bg-hud-background-secondary border-b border-hud-border p-6 -m-6 mb-6">
           <DialogTitle className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             SET UP SCHEDULE

@@ -162,7 +162,7 @@ const RescheduleConfirmationModal: React.FC<RescheduleConfirmationModalProps> = 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--hud-background-primary)] border-hud-border">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b border-hud-border pb-4">
           <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-foreground">
             <Calendar className="w-6 h-6 text-accent" />

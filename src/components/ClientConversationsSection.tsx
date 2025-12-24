@@ -514,7 +514,7 @@ const ConversationModal: React.FC<{
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[min(90vw,800px)] max-h-[90vh] overflow-y-auto bg-white border-2 border-hud-border">
+      <DialogContent className="max-w-[min(90vw,800px)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             {conversation ? 'EDIT CONVERSATION' : 'NEW CONVERSATION'}
@@ -718,7 +718,7 @@ const MessageModal: React.FC<{
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white border-2 border-hud-border">
+      <DialogContent className="max-w-2xl">
         <DialogHeader className="bg-hud-background-secondary border-b-2 border-hud-border-accent p-6">
           <DialogTitle className="text-xl font-bold text-hud-text-primary uppercase tracking-wide font-primary">
             ADD MESSAGE

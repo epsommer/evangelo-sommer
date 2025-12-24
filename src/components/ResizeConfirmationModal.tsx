@@ -52,7 +52,7 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
   const [adjustedStart, setAdjustedStart] = useState('')
   const [adjustedEnd, setAdjustedEnd] = useState('')
 
-  console.log('🎯 ResizeConfirmationModal render - isOpen:', isOpen, 'resizeData:', resizeData)
+  // Debug logging removed to reduce console noise
 
   // Initialize adjusted times when modal opens
   React.useEffect(() => {
@@ -168,7 +168,7 @@ const ResizeConfirmationModal: React.FC<ResizeConfirmationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--hud-background-primary)] border-hud-border">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b border-hud-border pb-4">
           <DialogTitle className="flex items-center gap-3 text-xl font-primary font-semibold uppercase tracking-wide text-hud-text-primary">
             <ArrowUpDown className="w-6 h-6 text-tactical-gold" />
