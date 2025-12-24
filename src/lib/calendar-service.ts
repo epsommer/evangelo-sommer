@@ -239,7 +239,7 @@ export class CalendarService {
       this.getProviderInfo('outlook'),
       this.getProviderInfo('apple'),
       this.getProviderInfo('custom')
-    ]
+    ].filter(Boolean) as NonNullable<ReturnType<typeof this.getProviderInfo>>[]
   }
 }
 

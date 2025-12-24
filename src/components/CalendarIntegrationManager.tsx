@@ -400,7 +400,10 @@ export default function CalendarIntegrationManager({
           Calendar Providers
         </h3>
         <div className="divide-y divide-border">
-          {providers.map((provider) => {
+          {providers.filter(Boolean).map((provider) => {
+            // Extra safety check for undefined provider
+            if (!provider) return null
+
             const integration = getIntegratedProvider(provider.id);
             const isConnected = integration?.isActive;
             const currentSyncStatus = integration

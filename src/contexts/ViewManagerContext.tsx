@@ -97,10 +97,16 @@ export const ViewManagerProvider: React.FC<ViewManagerProviderProps> = ({ childr
         }
       }
       
+      // Validate and set currentView - ensure it's always valid
+      if (!initialState.currentView || !['day', 'week', 'month'].includes(initialState.currentView)) {
+        console.log('Invalid currentView detected, resetting to day')
+        initialState.currentView = 'day'
+      }
+
       // Override with URL params if present
       const urlView = searchParams.get('view') as TimeManagerView
       const urlDate = searchParams.get('date')
-      
+
       if (urlView && ['day', 'week', 'month'].includes(urlView)) {
         initialState.currentView = urlView
       }

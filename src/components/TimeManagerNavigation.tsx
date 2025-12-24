@@ -182,6 +182,9 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
   const ViewDropdown = () => (
     <div className="absolute top-full right-0 mt-2 w-48 neo-card overflow-hidden z-50">
       {Object.entries(VIEW_CONFIGS).map(([viewKey, config]) => {
+        // Guard against undefined config
+        if (!config) return null
+
         const view = viewKey as TimeManagerView
         const Icon = config.icon
         const isActive = currentView === view
@@ -266,8 +269,8 @@ const TimeManagerNavigation: React.FC<TimeManagerNavigationProps> = ({
               onClick={() => setShowViewDropdown(!showViewDropdown)}
               className="neo-button-active px-4 py-2 flex items-center space-x-2 font-primary uppercase tracking-wide text-sm"
             >
-              {React.createElement(VIEW_CONFIGS[currentView].icon, { className: "h-4 w-4" })}
-              <span>{VIEW_CONFIGS[currentView].label}</span>
+              {React.createElement((VIEW_CONFIGS[currentView] || VIEW_CONFIGS.day).icon, { className: "h-4 w-4" })}
+              <span>{(VIEW_CONFIGS[currentView] || VIEW_CONFIGS.day).label}</span>
               <ChevronDown className={`h-4 w-4 transition-transform ${showViewDropdown ? 'rotate-180' : ''}`} />
             </button>
             {showViewDropdown && <ViewDropdown />}
