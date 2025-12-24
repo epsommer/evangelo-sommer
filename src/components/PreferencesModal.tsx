@@ -304,43 +304,52 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
           {/* Content */}
           <div className="flex-1 p-6 overflow-y-auto">
             {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
-                  Notification Settings
-                </h3>
-
-                <div className="neo-container p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide">
-                      Master Control
-                    </h4>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={preferences.notifications.enableAll ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
-                        {preferences.notifications.enableAll ? 'Enabled' : 'Disabled'}
-                      </Badge>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={preferences.notifications.enableAll}
-                          onChange={(e) => updateNotifications('enableAll', e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                      </label>
+              <div className="space-y-8">
+                {/* Master Control Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+                    Master Control
+                  </h3>
+                  <div className="divide-y divide-border">
+                    <div className="py-4 flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-foreground font-primary">All Notifications</div>
+                        <div className="text-sm text-foreground/60 font-primary">Enable or disable all notifications</div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge className={preferences.notifications.enableAll ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
+                          {preferences.notifications.enableAll ? 'Enabled' : 'Disabled'}
+                        </Badge>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={preferences.notifications.enableAll}
+                            onChange={(e) => updateNotifications('enableAll', e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                        </label>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="space-y-4">
+                </div>
+
+                {/* Notification Types Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+                    Notification Types
+                  </h3>
+                  <div className="divide-y divide-border">
                     {[
                       { key: 'clientUpdates', label: 'Client Updates', desc: 'When clients are added, updated, or status changes' },
                       { key: 'scheduleReminders', label: 'Schedule Reminders', desc: 'Upcoming appointments and service schedules' },
                       { key: 'systemAlerts', label: 'System Alerts', desc: 'Important system notifications and errors' },
                       { key: 'soundEnabled', label: 'Sound Notifications', desc: 'Play sound for incoming notifications' }
                     ].map(item => (
-                      <div key={item.key} className="flex items-center justify-between">
+                      <div key={item.key} className="py-4 flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-hud-text-primary font-primary">{item.label}</div>
-                          <div className="text-sm text-medium-grey font-primary">{item.desc}</div>
+                          <div className="font-medium text-foreground font-primary">{item.label}</div>
+                          <div className="text-sm text-foreground/60 font-primary">{item.desc}</div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -357,17 +366,16 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                   </div>
                 </div>
 
-                {/* Quiet Hours */}
-                <div className="neo-container p-4">
-                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
+                {/* Quiet Hours Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
                     Quiet Hours
-                  </h4>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                  </h3>
+                  <div className="divide-y divide-border">
+                    <div className="py-4 flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-hud-text-primary font-primary">Enable Quiet Hours</div>
-                        <div className="text-sm text-medium-grey font-primary">Disable notifications during specified hours</div>
+                        <div className="font-medium text-foreground font-primary">Enable Quiet Hours</div>
+                        <div className="text-sm text-foreground/60 font-primary">Disable notifications during specified hours</div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -384,9 +392,9 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     </div>
 
                     {preferences.notifications.quietHours.enabled && (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="py-4 grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-1 font-primary">
+                          <label className="block text-xs font-bold text-foreground/60 uppercase tracking-wider mb-1 font-primary">
                             Start Time
                           </label>
                           <input
@@ -400,7 +408,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-1 font-primary">
+                          <label className="block text-xs font-bold text-foreground/60 uppercase tracking-wider mb-1 font-primary">
                             End Time
                           </label>
                           <input
@@ -421,103 +429,97 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             )}
 
             {activeTab === 'workflow' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
-                  Workflow Settings
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      General Workflow
-                    </h4>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-hud-text-primary font-primary">Auto-Save</div>
-                          <div className="text-sm text-medium-grey font-primary">Automatically save changes</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferences.workflow.autoSave}
-                            onChange={(e) => updateWorkflow('autoSave', e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                        </label>
+              <div className="space-y-8">
+                {/* General Workflow Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+                    General Workflow
+                  </h3>
+                  <div className="divide-y divide-border">
+                    <div className="py-4 flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-foreground font-primary">Auto-Save</div>
+                        <div className="text-sm text-foreground/60 font-primary">Automatically save changes</div>
                       </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferences.workflow.autoSave}
+                          onChange={(e) => updateWorkflow('autoSave', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                      </label>
+                    </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-hud-text-primary font-primary">Confirm Deletions</div>
-                          <div className="text-sm text-medium-grey font-primary">Show confirmation before deleting</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferences.workflow.confirmDeletions}
-                            onChange={(e) => updateWorkflow('confirmDeletions', e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                        </label>
+                    <div className="py-4 flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-foreground font-primary">Confirm Deletions</div>
+                        <div className="text-sm text-foreground/60 font-primary">Show confirmation before deleting</div>
                       </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferences.workflow.confirmDeletions}
+                          onChange={(e) => updateWorkflow('confirmDeletions', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                      </label>
+                    </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-hud-text-primary font-primary">Keyboard Shortcuts</div>
-                          <div className="text-sm text-medium-grey font-primary">Enable keyboard shortcuts</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferences.workflow.keyboardShortcuts}
-                            onChange={(e) => updateWorkflow('keyboardShortcuts', e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                        </label>
+                    <div className="py-4 flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-foreground font-primary">Keyboard Shortcuts</div>
+                        <div className="text-sm text-foreground/60 font-primary">Enable keyboard shortcuts</div>
                       </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferences.workflow.keyboardShortcuts}
+                          onChange={(e) => updateWorkflow('keyboardShortcuts', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                      </label>
                     </div>
                   </div>
+                </div>
 
-                  <div className="neo-container p-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
-                      Defaults
-                    </h4>
-                    
-                    <div className="space-y-4">
+                {/* Defaults Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+                    Defaults
+                  </h3>
+                  <div className="divide-y divide-border">
+                    <div className="py-4">
+                      <label className="block text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 font-primary">
+                        Default Client Status
+                      </label>
+                      <select
+                        value={preferences.workflow.defaultClientStatus}
+                        onChange={(e) => updateWorkflow('defaultClientStatus', e.target.value)}
+                        className="neomorphic-input w-full"
+                      >
+                        <option value="prospect">Prospect</option>
+                        <option value="active">Active</option>
+                      </select>
+                    </div>
+
+                    <div className="py-4 flex items-center justify-between">
                       <div>
-                        <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
-                          Default Client Status
-                        </label>
-                        <select
-                          value={preferences.workflow.defaultClientStatus}
-                          onChange={(e) => updateWorkflow('defaultClientStatus', e.target.value)}
-                          className="neomorphic-input w-full"
-                        >
-                          <option value="prospect">Prospect</option>
-                          <option value="active">Active</option>
-                        </select>
+                        <div className="font-medium text-foreground font-primary">Advanced Features</div>
+                        <div className="text-sm text-foreground/60 font-primary">Show advanced functionality</div>
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-hud-text-primary font-primary">Advanced Features</div>
-                          <div className="text-sm text-medium-grey font-primary">Show advanced functionality</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferences.workflow.showAdvancedFeatures}
-                            onChange={(e) => updateWorkflow('showAdvancedFeatures', e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
-                        </label>
-                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferences.workflow.showAdvancedFeatures}
+                          onChange={(e) => updateWorkflow('showAdvancedFeatures', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold"></div>
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -525,27 +527,23 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
             )}
 
             {activeTab === 'performance' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
-                  Performance Settings
-                </h3>
-
-                <div className="neo-container p-4">
-                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
+              <div className="space-y-8">
+                {/* Performance Options Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
                     Performance Options
-                  </h4>
-                  
-                  <div className="space-y-4">
+                  </h3>
+                  <div className="divide-y divide-border">
                     {[
                       { key: 'animationsEnabled', label: 'Animations', desc: 'Enable smooth transitions and animations' },
                       { key: 'cacheData', label: 'Cache Data', desc: 'Cache frequently accessed data for faster loading' },
                       { key: 'preloadNextPage', label: 'Preload Pages', desc: 'Preload next pages in background (uses more data)' },
                       { key: 'backgroundSync', label: 'Background Sync', desc: 'Sync data in background for real-time updates' }
                     ].map(item => (
-                      <div key={item.key} className="flex items-center justify-between">
+                      <div key={item.key} className="py-4 flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-hud-text-primary font-primary">{item.label}</div>
-                          <div className="text-sm text-medium-grey font-primary">{item.desc}</div>
+                          <div className="font-medium text-foreground font-primary">{item.label}</div>
+                          <div className="text-sm text-foreground/60 font-primary">{item.desc}</div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -561,33 +559,31 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-light-grey p-4 border border-medium-grey">
-                  <div className="text-sm text-medium-grey font-primary">
-                    <strong>Performance Tips:</strong><br/>
-                    • Disable animations on slower devices for better performance<br/>
-                    • Enable caching for faster load times<br/>
-                    • Disable preloading to save data usage<br/>
-                    • Background sync keeps data up-to-date automatically
+                {/* Tips Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
+                    Tips
+                  </h3>
+                  <div className="text-sm text-foreground/60 font-primary space-y-2">
+                    <p>• Disable animations on slower devices for better performance</p>
+                    <p>• Enable caching for faster load times</p>
+                    <p>• Disable preloading to save data usage</p>
+                    <p>• Background sync keeps data up-to-date automatically</p>
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'conversations' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-foreground font-primary uppercase tracking-wide">
-                  Conversation Settings
-                </h3>
-
-                {/* Language & Parsing Settings */}
-                <div className="neo-container p-4">
-                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
+              <div className="space-y-8">
+                {/* Language & Parsing Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
                     Language & Parsing
-                  </h4>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                  </h3>
+                  <div className="divide-y divide-border">
+                    <div className="py-4">
+                      <label className="block text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 font-primary">
                         Parsing Language
                       </label>
                       <select
@@ -602,10 +598,10 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                       </select>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="py-4 flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-hud-text-primary font-primary">Enable Keyword Detection</div>
-                        <div className="text-sm text-medium-grey font-primary">Automatically detect keywords and phrases</div>
+                        <div className="font-medium text-foreground font-primary">Enable Keyword Detection</div>
+                        <div className="text-sm text-foreground/60 font-primary">Automatically detect keywords and phrases</div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -620,17 +616,16 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                   </div>
                 </div>
 
-                {/* Auto-Draft Settings */}
-                <div className="neo-container p-4">
-                  <h4 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4">
+                {/* Auto-Draft Settings Section */}
+                <div>
+                  <h3 className="font-bold text-foreground font-primary uppercase tracking-wide mb-4 pb-2 border-b border-border">
                     Auto-Draft Settings
-                  </h4>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                  </h3>
+                  <div className="divide-y divide-border">
+                    <div className="py-4 flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-hud-text-primary font-primary">Enable Auto-Draft</div>
-                        <div className="text-sm text-medium-grey font-primary">Automatically generate drafts from conversations</div>
+                        <div className="font-medium text-foreground font-primary">Enable Auto-Draft</div>
+                        <div className="text-sm text-foreground/60 font-primary">Automatically generate drafts from conversations</div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -643,8 +638,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                       </label>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-medium-grey uppercase tracking-wider mb-2 font-primary">
+                    <div className="py-4">
+                      <label className="block text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 font-primary">
                         Confidence Threshold
                       </label>
                       <select
@@ -660,43 +655,41 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     </div>
 
                     {/* Auto-Draft Types */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {[
-                        { key: 'generateReceipts', label: 'Auto-Draft Receipts', desc: 'Generate receipts automatically' },
-                        { key: 'generateInvoices', label: 'Auto-Draft Invoices', desc: 'Generate invoices automatically' },
-                        { key: 'generateReplies', label: 'Auto-Draft Replies', desc: 'Generate reply suggestions' },
-                        { key: 'requireApproval', label: 'Require Approval', desc: 'Always ask before auto-drafting' }
-                      ].map(item => (
-                        <div key={item.key} className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-hud-text-primary font-primary text-sm">{item.label}</div>
-                            <div className="text-xs text-medium-grey font-primary">{item.desc}</div>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={preferences.conversations.autoDraftSettings[item.key as keyof typeof preferences.conversations.autoDraftSettings] as boolean}
-                              onChange={(e) => updateConversations('autoDraftSettings', {
-                                ...preferences.conversations.autoDraftSettings,
-                                [item.key]: e.target.checked
-                              })}
-                              disabled={!preferences.conversations.enableAutoDraft}
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
-                          </label>
+                    {[
+                      { key: 'generateReceipts', label: 'Auto-Draft Receipts', desc: 'Generate receipts automatically' },
+                      { key: 'generateInvoices', label: 'Auto-Draft Invoices', desc: 'Generate invoices automatically' },
+                      { key: 'generateReplies', label: 'Auto-Draft Replies', desc: 'Generate reply suggestions' },
+                      { key: 'requireApproval', label: 'Require Approval', desc: 'Always ask before auto-drafting' }
+                    ].map(item => (
+                      <div key={item.key} className="py-4 flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-foreground font-primary">{item.label}</div>
+                          <div className="text-sm text-foreground/60 font-primary">{item.desc}</div>
                         </div>
-                      ))}
-                    </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={preferences.conversations.autoDraftSettings[item.key as keyof typeof preferences.conversations.autoDraftSettings] as boolean}
+                            onChange={(e) => updateConversations('autoDraftSettings', {
+                              ...preferences.conversations.autoDraftSettings,
+                              [item.key]: e.target.checked
+                            })}
+                            disabled={!preferences.conversations.enableAutoDraft}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-tactical-grey-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tactical-gold peer-disabled:opacity-50"></div>
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Keyword Triggers */}
-                <div className="neo-container p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-foreground font-primary uppercase tracking-wide">
+                {/* Keyword Triggers Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+                    <h3 className="font-bold text-foreground font-primary uppercase tracking-wide">
                       Keyword Triggers
-                    </h4>
+                    </h3>
                     <Button
                       onClick={addKeywordTrigger}
                       size="sm"
@@ -706,16 +699,16 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                       Add Trigger
                     </Button>
                   </div>
-                  
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+
+                  <div className="divide-y divide-border max-h-64 overflow-y-auto">
                     {preferences.conversations.keywordTriggers.map(trigger => (
-                      <div key={trigger.id} className="bg-white p-3 border border-medium-grey">
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={trigger.id} className="py-4">
+                        <div className="flex items-center justify-between mb-3">
                           <input
                             type="text"
                             value={trigger.name}
                             onChange={(e) => updateKeywordTrigger(trigger.id, { name: e.target.value })}
-                            className="font-medium text-hud-text-primary font-primary bg-transparent border-none outline-none flex-1"
+                            className="font-medium text-foreground font-primary bg-transparent border-none outline-none flex-1"
                             placeholder="Trigger name"
                           />
                           <div className="flex items-center space-x-2">
@@ -736,14 +729,14 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                             </button>
                           </div>
                         </div>
-                        
-                        <div className="grid grid-cols-2 gap-2 mb-2">
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
                           <div>
-                            <label className="block text-xs text-medium-grey font-primary mb-1">Action</label>
+                            <label className="block text-xs text-foreground/60 font-primary mb-1">Action</label>
                             <select
                               value={trigger.action}
                               onChange={(e) => updateKeywordTrigger(trigger.id, { action: e.target.value as any })}
-                              className="w-full px-2 py-1 text-xs border border-medium-grey bg-white text-hud-text-primary font-primary"
+                              className="w-full px-2 py-1 text-xs border border-border rounded bg-background text-foreground font-primary"
                             >
                               <option value="auto-draft-receipt">Draft Receipt</option>
                               <option value="auto-draft-invoice">Draft Invoice</option>
@@ -752,7 +745,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs text-medium-grey font-primary mb-1">Confidence</label>
+                            <label className="block text-xs text-foreground/60 font-primary mb-1">Confidence</label>
                             <input
                               type="range"
                               min="0"
@@ -762,19 +755,19 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                               onChange={(e) => updateKeywordTrigger(trigger.id, { confidence: parseFloat(e.target.value) })}
                               className="w-full"
                             />
-                            <span className="text-xs text-medium-grey">{Math.round(trigger.confidence * 100)}%</span>
+                            <span className="text-xs text-foreground/60">{Math.round(trigger.confidence * 100)}%</span>
                           </div>
                         </div>
-                        
+
                         <div>
-                          <label className="block text-xs text-medium-grey font-primary mb-1">Keywords (comma-separated)</label>
+                          <label className="block text-xs text-foreground/60 font-primary mb-1">Keywords (comma-separated)</label>
                           <input
                             type="text"
                             value={trigger.keywords.join(', ')}
-                            onChange={(e) => updateKeywordTrigger(trigger.id, { 
-                              keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0) 
+                            onChange={(e) => updateKeywordTrigger(trigger.id, {
+                              keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0)
                             })}
-                            className="w-full px-2 py-1 text-xs border border-medium-grey bg-white text-hud-text-primary font-primary"
+                            className="w-full px-2 py-1 text-xs border border-border rounded bg-background text-foreground font-primary"
                             placeholder="keyword1, keyword2, phrase example"
                           />
                         </div>

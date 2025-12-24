@@ -52,6 +52,13 @@ export function validateCSRFToken(token: string, sessionId?: string): boolean {
   const stored = tokenStore.get(token);
 
   if (!stored) {
+    // In development, the in-memory token store may be cleared by HMR/server restarts
+    // This can happen between OAuth initiation and callback
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('CSRF token not found in store - this may be due to server restart during OAuth flow');
+      console.warn('In development, proceeding without validation. This would fail in production.');
+      return true; // Allow in development to avoid frustrating OAuth reconnect issues
+    }
     console.warn('CSRF token not found in store');
     return false;
   }

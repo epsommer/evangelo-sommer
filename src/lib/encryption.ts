@@ -88,7 +88,7 @@ export function decrypt(encryptedData: string): string {
 
     return decrypted;
   } catch (error) {
-    console.error('Decryption error:', error);
+    // Don't log here - let the caller handle the error appropriately
     throw new Error('Failed to decrypt data');
   }
 }

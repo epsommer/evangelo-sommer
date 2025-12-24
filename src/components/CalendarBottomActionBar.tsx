@@ -31,6 +31,8 @@ interface CalendarBottomActionBarProps {
   initialEventEndDate?: string
   initialEventEndHour?: number
   initialEventEndMinutes?: number
+  weeklyRecurrenceEnd?: string
+  weeklyRecurrenceCount?: number
   onExitEventCreation?: () => void
   selectedEvent?: UnifiedEvent | null
   onEventEdit?: (event: UnifiedEvent) => void
@@ -53,6 +55,8 @@ const CalendarBottomActionBar: React.FC<CalendarBottomActionBarProps> = ({
   initialEventEndDate,
   initialEventEndHour,
   initialEventEndMinutes,
+  weeklyRecurrenceEnd,
+  weeklyRecurrenceCount,
   onExitEventCreation,
   selectedEvent = null,
   onEventEdit,
@@ -205,6 +209,8 @@ const CalendarBottomActionBar: React.FC<CalendarBottomActionBarProps> = ({
                 initialEndDate={initialEventEndDate}
                 initialEndHour={initialEventEndHour}
                 initialEndMinutes={initialEventEndMinutes}
+                weeklyRecurrenceEnd={weeklyRecurrenceEnd}
+                weeklyRecurrenceCount={weeklyRecurrenceCount}
                 onFormChange={onFormChange}
               />
             </div>

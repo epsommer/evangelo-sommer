@@ -22,6 +22,8 @@ interface CalendarLayoutProps {
   initialEventEndDate?: string // End date for multi-day events (from placeholder drag)
   initialEventEndHour?: number // End hour for multi-day events (from placeholder drag)
   initialEventEndMinutes?: number // End minutes for multi-day events (from placeholder drag, 0-59)
+  weeklyRecurrenceEnd?: string // For vertical resize: end date for weekly recurrence
+  weeklyRecurrenceCount?: number // For vertical resize: number of weeks to recur
   onExitEventCreation?: () => void
   selectedEvent?: UnifiedEvent | null
   onEventEdit?: (event: UnifiedEvent) => void
@@ -68,6 +70,8 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   initialEventEndDate,
   initialEventEndHour,
   initialEventEndMinutes,
+  weeklyRecurrenceEnd,
+  weeklyRecurrenceCount,
   onExitEventCreation,
   selectedEvent = null,
   onEventEdit,
@@ -102,6 +106,8 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
             initialEventEndDate={initialEventEndDate}
             initialEventEndHour={initialEventEndHour}
             initialEventEndMinutes={initialEventEndMinutes}
+            weeklyRecurrenceEnd={weeklyRecurrenceEnd}
+            weeklyRecurrenceCount={weeklyRecurrenceCount}
             onExitEventCreation={onExitEventCreation}
             selectedEvent={selectedEvent}
             onEventEdit={onEventEdit}
@@ -131,6 +137,8 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
           initialEventEndDate={initialEventEndDate}
           initialEventEndHour={initialEventEndHour}
           initialEventEndMinutes={initialEventEndMinutes}
+          weeklyRecurrenceEnd={weeklyRecurrenceEnd}
+          weeklyRecurrenceCount={weeklyRecurrenceCount}
           onExitEventCreation={onExitEventCreation}
           selectedEvent={selectedEvent}
           onEventEdit={onEventEdit}

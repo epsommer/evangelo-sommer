@@ -79,10 +79,21 @@ export function calculateDragDropTimes(
   // Calculate new end time by adding the duration
   const newEnd = new Date(newStart.getTime() + originalDuration * 60000)
 
-  // Format as ISO string WITHOUT timezone suffix (local time)
-  // Using slice(0, 19) removes the timezone part, keeping it as local time
-  const newStartDateTime = newStart.toISOString().slice(0, 19)
-  const newEndDateTime = newEnd.toISOString().slice(0, 19)
+  // Format as ISO string in LOCAL time (not UTC)
+  // toISOString() converts to UTC which shifts the time, so we manually construct
+  // the local time string using the local getters
+  const formatLocalDateTime = (d: Date): string => {
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    const seconds = String(d.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+  }
+
+  const newStartDateTime = formatLocalDateTime(newStart)
+  const newEndDateTime = formatLocalDateTime(newEnd)
 
   console.log('Calculated times:', {
     newStart: newStart.toISOString(),

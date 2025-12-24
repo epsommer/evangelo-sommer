@@ -16,6 +16,7 @@ interface DropZoneProps {
   onTimeSlotDoubleClick?: (date: Date, hour: number, minutes?: number) => void
   onMouseDownOnSlot?: (e: React.MouseEvent, date: string, hour: number, dayIndex: number) => void
   className?: string
+  style?: React.CSSProperties
   children?: React.ReactNode
   showAlways?: boolean
   compact?: boolean
@@ -32,6 +33,7 @@ const DropZone: React.FC<DropZoneProps> = ({
   onTimeSlotDoubleClick,
   onMouseDownOnSlot,
   className = '',
+  style,
   children,
   showAlways = false,
   compact = false,
@@ -279,21 +281,22 @@ const DropZone: React.FC<DropZoneProps> = ({
       data-drop-date={date}
       data-drop-hour={hour.toString()}
       className={`
-        relative transition-all duration-200 ease-in-out h-full overflow-visible
+        relative transition-all duration-150 ease-out h-full overflow-visible
         ${shouldShowContent ? 'opacity-100' : 'opacity-0'}
         ${dragState.isDragging && (isActiveDropZone || isDraggedOver) && isValidDropTarget ?
-          'border-2 border-accent' :
+          'bg-accent/15' :
           ''}
         ${dragState.isDragging && (isActiveDropZone || isDraggedOver) && !isValidDropTarget ?
-          'border-2 border-red-400' :
+          'bg-red-400/15' :
           ''}
         ${effectiveHovered && !dragState.isDragging && !isOccupied ?
-          'bg-tactical-grey-100 border-2 border-tactical-grey-400' :
-          isOccupied ? '' : 'border-2 border-transparent'}
+          'bg-accent/5' :
+          ''}
         ${isCurrentTime() ? 'bg-tactical-gold-light bg-opacity-30' : ''}
         ${className}
       `}
       style={{
+        ...style,
         zIndex: isOccupied ? 1 :                          // Occupied slots always stay below events
                dragState.isDragging ? 10 :                // During drag, but still below events (reduced from 15)
                shouldBeInteractive && !isOccupied ? 2 : 1, // Interactive but well below events (reduced from 5)

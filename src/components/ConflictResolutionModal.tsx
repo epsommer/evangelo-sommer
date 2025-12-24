@@ -2,17 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import { format, parseISO } from 'date-fns'
-import { 
-  AlertTriangle, 
-  Clock, 
-  User, 
-  MapPin, 
-  CheckCircle, 
-  XCircle, 
-  ArrowRight,
-  Calendar,
-  Bell,
-  MessageSquare
+import {
+  AlertTriangle,
+  Clock,
+  User,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  X,
+  Calendar
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -125,30 +123,30 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
   if (!isOpen) return null
 
-  // Get severity-based styling
+  // Get severity-based styling (neomorphic theme compatible)
   const getSeverityColor = (severity: ConflictSeverity): string => {
     switch (severity) {
       case 'critical':
-        return 'text-red-300 bg-red-900/20 border-red-800/30'
+        return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50'
       case 'error':
-        return 'text-orange-300 bg-orange-900/20 border-orange-800/30'
+        return 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/50'
       case 'warning':
-        return 'text-yellow-300 bg-yellow-900/20 border-yellow-800/30'
+        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800/50'
       default:
-        return 'text-tactical-grey-300 bg-tactical-grey-800/20 border-tactical-grey-600/30'
+        return 'text-muted-foreground bg-muted/50 border-border'
     }
   }
 
   const getSeverityIcon = (severity: ConflictSeverity) => {
     switch (severity) {
       case 'critical':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
       case 'error':
-        return <AlertTriangle className="w-4 h-4 text-orange-500" />
+        return <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        return <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
       default:
-        return <AlertTriangle className="w-4 h-4 text-tactical-grey-500" />
+        return <AlertTriangle className="w-4 h-4 text-muted-foreground" />
     }
   }
 
@@ -538,49 +536,29 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
   const hasCriticalConflicts = criticalConflicts.length > 0
 
   return (
-    <div
-      className="fixed inset-0 z-[99999] bg-black/70 dark:bg-black/50 flex items-center justify-center p-4"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh'
-      }}
-    >
-      <div
-        className="bg-white dark:bg-tactical-grey-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative z-[100000]"
-        style={{
-          marginLeft: 'max(16rem, 20%)', // Account for sidebar (256px) or minimum 20% for collapsed
-          marginTop: '5rem',              // 80px (pt-20) for header
-          marginRight: '1rem',
-          marginBottom: '1rem',
-          maxWidth: 'calc(100vw - 17rem)' // Ensure it doesn't overflow when sidebar is expanded
-        }}
-      >
+    <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="neo-container w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-900/30 rounded-full">
-                <AlertTriangle className="w-6 h-6 text-orange-400" />
+              <div className="neo-button p-2 rounded-lg">
+                <AlertTriangle className="w-6 h-6 text-orange-500" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-tactical-grey-100">
-                  Schedule Conflict Detected
+                <h2 className="text-xl font-bold text-foreground">
+                  Schedule Conflicts
                 </h2>
-                <p className="text-gray-600 dark:text-tactical-grey-300">
-                  {conflicts.conflicts.length} conflict{conflicts.conflicts.length > 1 ? 's' : ''} found with your proposed event
+                <p className="text-muted-foreground">
+                  {conflicts.conflicts.length} conflict{conflicts.conflicts.length > 1 ? 's' : ''} detected
                 </p>
               </div>
             </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-tactical-grey-500 transition-colors"
+              className="neo-button p-2 rounded-lg hover:neo-button-active transition-all"
             >
-              <XCircle className="w-6 h-6" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
 
@@ -603,7 +581,7 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                       ${Math.round(getRevenueImpact(proposedEvent))} Potential Revenue
                     </Badge>
                     {proposedEvent.clientName && getClientPriority(proposedEvent.clientName) >= 8 && (
-                      <Badge variant="outline" className="text-xs border-tactical-gold-500 text-tactical-brown-dark">
+                      <Badge variant="outline" className="text-xs border-accent text-accent">
                         VIP Client
                       </Badge>
                     )}
@@ -611,21 +589,21 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-tactical-grey-500" />
+                      <Clock className="w-4 h-4 text-muted-foreground" />
                       <span>{formatTime(proposedEvent.startDateTime)}</span>
                     </div>
                     {proposedEvent.clientName && (
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-tactical-grey-500" />
+                        <User className="w-4 h-4 text-muted-foreground" />
                         <span>{proposedEvent.clientName}</span>
                         {getClientPriority(proposedEvent.clientName) >= 7 && (
-                          <span className="text-tactical-gold text-xs">• Priority Client</span>
+                          <span className="text-accent text-xs">• Priority Client</span>
                         )}
                       </div>
                     )}
                     {proposedEvent.location && (
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-tactical-grey-500" />
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
                         <span>{proposedEvent.location}</span>
                       </div>
                     )}
@@ -668,7 +646,7 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                     </button>
                     <button
                       onClick={() => setSelectedConflicts(new Set())}
-                      className="px-3 py-1.5 text-xs font-medium rounded-md bg-tactical-grey-600 text-white hover:bg-tactical-grey-700 transition-colors"
+                      className="neo-button px-3 py-1.5 text-xs font-medium rounded-md hover:neo-button-active transition-all"
                     >
                       Clear Selection
                     </button>
@@ -689,14 +667,14 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                     onChange={(e) => handleSelectAll(e.target.checked)}
                     className="rounded"
                   />
-                  <label htmlFor="select-all" className="text-sm text-tactical-grey-300">
+                  <label htmlFor="select-all" className="text-sm text-muted-foreground">
                     Select all deletable conflicts
                   </label>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-tactical-grey-500 mr-2">Organize by:</span>
-                  <div className="flex bg-tactical-grey-200 rounded-lg p-1">
+                  <span className="text-sm text-muted-foreground mr-2">Organize by:</span>
+                  <div className="neo-inset flex rounded-lg p-1">
                     {[
                       { key: 'priority', label: 'Priority', icon: '🎯' },
                       { key: 'timeline', label: 'Time', icon: '⏰' },
@@ -705,10 +683,10 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                       <button
                         key={mode.key}
                         onClick={() => setViewMode(mode.key as any)}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
                           viewMode === mode.key
-                            ? 'bg-tactical-grey-700 text-tactical-gold shadow-sm'
-                            : 'text-tactical-grey-400 hover:text-tactical-grey-200'
+                            ? 'neo-button-active'
+                            : 'hover:bg-accent/10'
                         }`}
                       >
                         <span>{mode.icon}</span>
@@ -759,7 +737,7 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
                         {/* Smart Insights */}
                         {getConflictInsight(conflict) && (
-                          <div className="mb-2 text-xs text-tactical-gold font-medium">
+                          <div className="mb-2 text-xs text-accent font-medium">
                             💡 {getConflictInsight(conflict)}
                           </div>
                         )}
@@ -768,12 +746,12 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                         
                         {/* Enhanced Conflicting Event Details */}
                         {conflict.conflictingEvent.id !== proposedEvent.id && (
-                          <div className="bg-tactical-grey-800/50 p-3 rounded border border-tactical-grey-600/30">
+                          <div className="neo-inset p-3 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium">Conflicting Event:</h4>
+                              <h4 className="font-medium text-foreground">Conflicting Event:</h4>
                               <div className="flex items-center gap-2">
                                 {getClientPriority(conflict.conflictingEvent.clientName || '') >= 8 && (
-                                  <Badge variant="outline" className="text-xs border-gold text-gold">
+                                  <Badge variant="outline" className="text-xs border-accent text-accent">
                                     VIP Client
                                   </Badge>
                                 )}
@@ -783,17 +761,17 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                               </div>
                             </div>
                             <div className="text-sm space-y-1">
-                              <div className="font-medium">{conflict.conflictingEvent.title}</div>
-                              <div className="flex items-center gap-2 text-tactical-grey-500">
+                              <div className="font-medium text-foreground">{conflict.conflictingEvent.title}</div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
                                 <Clock className="w-3 h-3" />
                                 {formatTime(conflict.conflictingEvent.startDateTime)}
                               </div>
                               {conflict.conflictingEvent.clientName && (
-                                <div className="flex items-center gap-2 text-tactical-grey-500">
+                                <div className="flex items-center gap-2 text-muted-foreground">
                                   <User className="w-3 h-3" />
                                   <span>{conflict.conflictingEvent.clientName}</span>
                                   {getClientPriority(conflict.conflictingEvent.clientName) >= 7 && (
-                                    <span className="text-tactical-gold text-xs">• Priority Client</span>
+                                    <span className="text-accent text-xs">• Priority Client</span>
                                   )}
                                 </div>
                               )}
@@ -803,7 +781,7 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
                         {/* Time Overlap Details */}
                         {conflict.timeOverlap && (
-                          <div className="mt-2 text-xs text-tactical-grey-500">
+                          <div className="mt-2 text-xs text-muted-foreground">
                             Overlap: {conflict.timeOverlap.durationMinutes} minutes
                           </div>
                         )}
@@ -874,32 +852,31 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
           )}
 
           {/* Actions */}
-          <div className="flex justify-center gap-3 pt-4 border-t">
+          <div className="flex justify-center gap-3 pt-4 border-t border-border">
             {conflicts.conflicts.length === 0 ? (
               <div className="text-center">
-                <div className="mb-4 p-3 bg-green-900/20 border border-green-800/30 rounded-lg">
-                  <div className="flex items-center justify-center gap-2 text-green-300">
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg">
+                  <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
                     <CheckCircle className="w-5 h-5" />
                     <span className="font-medium">All conflicts resolved!</span>
                   </div>
-                  <p className="text-sm text-green-400 mt-1">
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                     Click "Save" to create the event, or "Cancel" to abort.
                   </p>
                 </div>
                 <div className="flex gap-3 justify-center">
-                  <Button
+                  <button
                     onClick={handleSaveWithStagedDeletions}
-                    className="bg-tactical-gold hover:bg-tactical-gold-dark text-hud-text-primary min-w-[120px]"
+                    className="neo-button-active px-6 py-2 rounded-lg font-medium min-w-[120px]"
                   >
                     Save
-                  </Button>
-                  <Button
-                    variant="outline"
+                  </button>
+                  <button
                     onClick={handleCancel}
-                    className="min-w-[120px]"
+                    className="neo-button px-6 py-2 rounded-lg font-medium min-w-[120px]"
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               </div>
             ) : (() => {
@@ -909,14 +886,14 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
               return (
                 <div className="text-center">
-                  <div className={`mb-4 p-3 border rounded-lg ${canProceedWithOverride ? 'bg-blue-900/20 border-blue-800/30' : 'bg-yellow-900/20 border-yellow-800/30'}`}>
-                    <div className={`flex items-center justify-center gap-2 ${canProceedWithOverride ? 'text-blue-300' : 'text-yellow-300'}`}>
+                  <div className={`mb-4 p-3 border rounded-lg ${canProceedWithOverride ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50' : 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800/50'}`}>
+                    <div className={`flex items-center justify-center gap-2 ${canProceedWithOverride ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                       {canProceedWithOverride ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
                       <span className="font-medium">
                         {canProceedWithOverride ? 'Ready to proceed with overrides' : 'Conflicts require resolution'}
                       </span>
                     </div>
-                    <p className={`text-sm mt-1 ${canProceedWithOverride ? 'text-blue-400' : 'text-yellow-400'}`}>
+                    <p className={`text-sm mt-1 ${canProceedWithOverride ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                       {canProceedWithOverride
                         ? 'Business rule warnings have been accepted. Click "Create Event" to proceed, or "Cancel" to abort.'
                         : 'Resolve conflicts above, then click "Accept" to save your resolution choices, or "Cancel" to abort.'
@@ -924,19 +901,18 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                     </p>
                   </div>
                   <div className="flex gap-3 justify-center">
-                    <Button
+                    <button
                       onClick={handleSaveWithStagedDeletions}
-                      className="bg-tactical-gold hover:bg-tactical-gold-dark text-hud-text-primary min-w-[120px]"
+                      className="neo-button-active px-6 py-2 rounded-lg font-medium min-w-[120px]"
                     >
                       {canProceedWithOverride ? 'Create Event' : 'Accept'}
-                    </Button>
-                    <Button
-                      variant="outline"
+                    </button>
+                    <button
                       onClick={handleCancel}
-                      className="min-w-[120px]"
+                      className="neo-button px-6 py-2 rounded-lg font-medium min-w-[120px]"
                     >
                       Cancel
-                    </Button>
+                    </button>
                   </div>
                 </div>
               )
@@ -947,62 +923,42 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && pendingDeleteAction && (
-        <div
-          className="fixed inset-0 z-[100001] bg-black/70 dark:bg-black/50 flex items-center justify-center p-4"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh'
-          }}
-        >
-          <div
-            className="bg-white dark:bg-tactical-grey-900 rounded-lg shadow-xl max-w-md w-full"
-            style={{
-              marginLeft: 'max(16rem, 20%)', // Account for sidebar or collapsed state
-              marginTop: '5rem',              // 80px (pt-20) for header
-              marginRight: '1rem',
-              marginBottom: '1rem',
-              maxWidth: 'calc(100vw - 17rem)' // Ensure it doesn't overflow
-            }}
-          >
+        <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="neo-container max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-red-900/30 rounded-full">
-                  <AlertTriangle className="w-6 h-6 text-red-400" />
+                <div className="neo-button p-2 rounded-lg">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-tactical-grey-100">
+                  <h3 className="text-lg font-bold text-foreground">
                     Delete Conflicting Event?
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-tactical-grey-300">
+                  <p className="text-sm text-muted-foreground">
                     This will remove the existing scheduled event to make room for your new event
                   </p>
                 </div>
               </div>
 
-              <div className="text-gray-600 dark:text-tactical-grey-300 mb-6">
+              <div className="text-muted-foreground mb-6">
                 <p className="mb-3">
                   Are you sure you want to delete {pendingDeleteAction.type === 'bulk'
                     ? `${pendingDeleteAction.eventIds.length} conflicting events`
                     : 'this conflicting event'}? This will clear the schedule conflict and allow your new event to be created.
                 </p>
                 {pendingDeleteAction.type === 'single' && pendingDeleteAction.conflictIds.length > 0 && (
-                  <div className="p-3 bg-gray-100 dark:bg-tactical-grey-800 rounded-md">
+                  <div className="neo-inset p-3 rounded-lg">
                     {(() => {
                       const conflictId = pendingDeleteAction.conflictIds[0]
                       const conflict = conflicts?.conflicts.find(c => c.id === conflictId)
                       return conflict ? (
                         <div>
-                          <p className="font-semibold text-sm">Conflicting event to be removed:</p>
+                          <p className="font-semibold text-sm text-foreground">Conflicting event to be removed:</p>
                           <p className="text-base font-bold text-red-600 dark:text-red-400">
                             {conflict.conflictingEvent?.title || 'Unknown Event'}
                           </p>
                           {conflict.conflictingEvent?.clientName && (
-                            <p className="text-sm opacity-75">
+                            <p className="text-sm text-muted-foreground">
                               Client: {conflict.conflictingEvent.clientName}
                             </p>
                           )}
@@ -1012,9 +968,9 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
                   </div>
                 )}
                 {pendingDeleteAction.type === 'bulk' && (
-                  <div className="p-3 bg-gray-100 dark:bg-tactical-grey-800 rounded-md max-h-32 overflow-y-auto">
-                    <p className="font-semibold text-sm mb-2">Conflicting events to be removed:</p>
-                    {pendingDeleteAction.conflictIds.map((conflictId, index) => {
+                  <div className="neo-inset p-3 rounded-lg max-h-32 overflow-y-auto">
+                    <p className="font-semibold text-sm text-foreground mb-2">Conflicting events to be removed:</p>
+                    {pendingDeleteAction.conflictIds.map((conflictId) => {
                       const conflict = conflicts?.conflicts.find(c => c.id === conflictId)
                       return conflict ? (
                         <p key={conflictId} className="text-sm font-medium text-red-600 dark:text-red-400">
@@ -1027,21 +983,21 @@ const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
               </div>
 
               <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
+                <button
                   onClick={() => {
                     setShowDeleteConfirm(false)
                     setPendingDeleteAction(null)
                   }}
+                  className="neo-button px-4 py-2 rounded-lg font-medium"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={confirmDelete}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="px-4 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
                 >
                   Remove {pendingDeleteAction.type === 'bulk' ? 'Conflicting Events' : 'Conflicting Event'}
-                </Button>
+                </button>
               </div>
             </div>
           </div>

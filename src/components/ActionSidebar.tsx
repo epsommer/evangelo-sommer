@@ -57,6 +57,8 @@ interface ActionSidebarProps {
   initialEventEndDate?: string // End date for multi-day events (from placeholder drag)
   initialEventEndHour?: number // End hour for multi-day events (from placeholder drag)
   initialEventEndMinutes?: number // End minutes for multi-day events (from placeholder drag, 0-59)
+  weeklyRecurrenceEnd?: string // For vertical resize: end date for weekly recurrence
+  weeklyRecurrenceCount?: number // For vertical resize: number of weeks to recur
   onExitEventCreation?: () => void
   selectedEvent?: UnifiedEvent | null
   onEventEdit?: (event: UnifiedEvent) => void
@@ -84,6 +86,8 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
   initialEventEndDate,
   initialEventEndHour,
   initialEventEndMinutes,
+  weeklyRecurrenceEnd,
+  weeklyRecurrenceCount,
   onExitEventCreation,
   selectedEvent = null,
   onEventEdit,
@@ -682,16 +686,18 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
 
   if (selectedEvent) {
     return (
-      <div className="neo-card h-full overflow-hidden" data-sidebar="action">
-        <div className="p-3 border-b border-[var(--neomorphic-dark-shadow)] flex items-center justify-end">
+      <div className="neo-card h-full overflow-hidden flex flex-col" data-sidebar="action">
+        <div className="p-3 border-b border-[var(--neomorphic-dark-shadow)] flex items-center justify-end flex-shrink-0">
           <ChevronToggle />
         </div>
-        <EventDetailsPanel
-          event={selectedEvent}
-          onClose={onExitEventDetails || (() => {})}
-          onEdit={handleEditClick}
-          onDelete={onEventDelete}
-        />
+        <div className="flex-1 overflow-hidden">
+          <EventDetailsPanel
+            event={selectedEvent}
+            onClose={onExitEventDetails || (() => {})}
+            onEdit={handleEditClick}
+            onDelete={onEventDelete}
+          />
+        </div>
       </div>
     )
   }
@@ -750,6 +756,8 @@ const ActionSidebar: React.FC<ActionSidebarProps> = ({
             initialEndDate={initialEventEndDate}
             initialEndHour={initialEventEndHour}
             initialEndMinutes={initialEventEndMinutes}
+            weeklyRecurrenceEnd={weeklyRecurrenceEnd}
+            weeklyRecurrenceCount={weeklyRecurrenceCount}
             onFormChange={onFormChange}
           />
         </div>
