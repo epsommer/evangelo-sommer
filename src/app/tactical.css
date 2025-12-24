@@ -1244,6 +1244,14 @@ body.modal-open .border-hud-border {
   border-radius: var(--window-border-radius) !important;
 }
 
+/* Neomorphic window container - dialogs, modals, panels */
+.neomorphic-window .window-container {
+  background: var(--neomorphic-bg) !important;
+  box-shadow: 8px 8px 16px 0px var(--neomorphic-dark-shadow),
+              -8px -8px 16px 0px var(--neomorphic-light-shadow) !important;
+  border: 1px solid var(--neomorphic-dark-shadow) !important;
+}
+
 /* Preserve toggle specific border-radius */
 .neomorphic-window .neomorphic-toggle {
   border-radius: 88px !important;
@@ -1284,6 +1292,12 @@ body.modal-open .border-hud-border {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Tactical window container - dialogs, modals, panels */
+.tactical-window .window-container {
+  background: var(--hud-background-primary, var(--neomorphic-bg)) !important;
+  border: 1px solid var(--hud-border, var(--neomorphic-dark-shadow)) !important;
+}
+
 /* Tactical Corners Window Theme - 45-degree clipped corners */
 .tactical-corners-window {
   --window-border-radius: 0px;
@@ -1308,6 +1322,12 @@ body.modal-open .border-hud-border {
     0 var(--corner-cut)
   );
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Tactical corners window container - dialogs, modals, panels */
+.tactical-corners-window .window-container {
+  background: var(--hud-background-primary, var(--neomorphic-bg)) !important;
+  border: 1px solid var(--hud-border, var(--neomorphic-dark-shadow)) !important;
 }
 
 /* Apply to buttons and inputs with smaller corner cuts */
