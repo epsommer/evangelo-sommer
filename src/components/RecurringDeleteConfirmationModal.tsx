@@ -12,7 +12,6 @@ import {
   Repeat,
   X
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -238,19 +237,19 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
                   disabled={option.disabled || isDeleting}
                   onClick={() => setSelectedOption(option.value)}
                   className={`
-                    w-full flex items-center gap-3 p-4 border-2 transition-all
+                    neo-card w-full flex items-center gap-3 p-4 transition-all
                     ${selectedOption === option.value
-                      ? 'border-[var(--status-danger-border)] bg-[var(--status-danger-bg)]'
-                      : 'border-border bg-muted hover:border-accent'
+                      ? 'border-2 border-[var(--status-danger-border)] bg-[var(--status-danger-bg)]'
+                      : 'border-0'
                     }
                     ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   `}
                 >
                   <div className={`
-                    flex-shrink-0 p-2
+                    neo-button-sm flex-shrink-0 p-2 !shadow-none
                     ${selectedOption === option.value
-                      ? 'bg-[var(--status-danger-border)] text-white'
-                      : 'bg-background text-muted-foreground'
+                      ? '!bg-[var(--status-danger-border)] text-white'
+                      : ''
                     }
                   `}>
                     {option.icon}
@@ -269,7 +268,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
             </div>
 
             {/* Description of selected option */}
-            <div className="bg-muted border border-border p-4">
+            <div className="neomorphic-input p-4">
               <p className="text-sm text-muted-foreground font-primary">
                 {getOptionDescription(selectedOption)}
               </p>
@@ -316,19 +315,19 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4 border-t border-border flex-shrink-0">
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={handleClose}
               disabled={isDeleting}
-              className="px-6"
+              className="neo-button px-6 py-2 font-primary font-semibold uppercase tracking-wide text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={handleConfirm}
               disabled={isDeleting}
-              className="px-6 bg-[var(--status-danger-bg)] hover:bg-[var(--status-danger-border)] text-[var(--status-danger-text)] border border-[var(--status-danger-border)]"
+              className="neo-button-active px-6 py-2 font-primary font-semibold uppercase tracking-wide text-sm !bg-[var(--status-danger-border)] !text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? (
                 <div className="flex items-center gap-2">
@@ -341,7 +340,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
                   Delete
                 </div>
               )}
-            </Button>
+            </button>
           </div>
 
           {/* Keyboard Shortcuts */}
