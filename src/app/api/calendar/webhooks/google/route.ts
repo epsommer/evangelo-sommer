@@ -183,7 +183,7 @@ export async function PUT(request: NextRequest) {
         type: 'web_hook',
         address: `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/webhooks/google`,
         token: integrationId, // Use integration ID as verification token
-        expiration: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+        expiration: String(Date.now() + (7 * 24 * 60 * 60 * 1000)) // 7 days
       }
     })
 

@@ -113,7 +113,7 @@ const UnifiedEvent: React.FC<UnifiedEventProps> = ({
     setIsDragging(true)
   }
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false)
 
     if (onDrag) {
@@ -173,7 +173,7 @@ const UnifiedEvent: React.FC<UnifiedEventProps> = ({
       drag={!isResizing}
       dragMomentum={false}
       dragElastic={0.1}
-      dragConstraints={containerRef.current?.parentElement || undefined}
+      dragConstraints={containerRef.current?.parentElement ? { current: containerRef.current.parentElement } : undefined}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       whileDrag={{
