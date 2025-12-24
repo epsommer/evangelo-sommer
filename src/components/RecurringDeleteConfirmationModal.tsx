@@ -238,7 +238,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
                   disabled={option.disabled || isDeleting}
                   onClick={() => setSelectedOption(option.value)}
                   className={`
-                    w-full flex items-center gap-3 p-4 rounded-lg border-2 transition-all
+                    w-full flex items-center gap-3 p-4 border-2 transition-all
                     ${selectedOption === option.value
                       ? 'border-[var(--status-danger-border)] bg-[var(--status-danger-bg)]'
                       : 'border-border bg-muted hover:border-accent'
@@ -247,7 +247,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
                   `}
                 >
                   <div className={`
-                    flex-shrink-0 p-2 rounded-lg
+                    flex-shrink-0 p-2
                     ${selectedOption === option.value
                       ? 'bg-[var(--status-danger-border)] text-white'
                       : 'bg-background text-muted-foreground'
@@ -269,7 +269,7 @@ const RecurringDeleteConfirmationModal: React.FC<RecurringDeleteConfirmationModa
             </div>
 
             {/* Description of selected option */}
-            <div className="bg-muted border border-border rounded-lg p-4">
+            <div className="bg-muted border border-border p-4">
               <p className="text-sm text-muted-foreground font-primary">
                 {getOptionDescription(selectedOption)}
               </p>
