@@ -11,21 +11,24 @@ interface UseUnifiedEventsOptions {
   refreshTrigger?: number
 }
 
+export type RecurringDeleteOption = 'this_only' | 'all_previous' | 'this_and_following' | 'all'
+
 interface UseUnifiedEventsReturn {
   // Data
   events: UnifiedEvent[]
   isLoading: boolean
   error: string | null
-  
+
   // Statistics
   statistics: ReturnType<typeof UnifiedEventsManager.getEventStatistics>
-  
+
   // Actions
   createEvent: (eventData: Omit<UnifiedEvent, 'id' | 'createdAt' | 'updatedAt'>) => Promise<UnifiedEvent>
   updateEvent: (id: string, updates: Partial<UnifiedEvent>) => Promise<UnifiedEvent | null>
   deleteEvent: (id: string) => Promise<boolean>
+  deleteRecurringEvents: (eventId: string, option: RecurringDeleteOption) => Promise<{ deletedCount: number; deletedIds: string[] }>
   refreshEvents: () => Promise<void>
-  
+
   // Filtered getters
   getEventsByType: (type: EventType) => UnifiedEvent[]
   getEventsByPriority: (priority: Priority) => UnifiedEvent[]
@@ -35,6 +38,7 @@ interface UseUnifiedEventsReturn {
   getOverdueEvents: () => UnifiedEvent[]
   getActiveGoals: () => UnifiedEvent[]
   searchEvents: (query: string) => UnifiedEvent[]
+  getRelatedEvents: (eventId: string) => UnifiedEvent[]
 }
 
 export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnifiedEventsReturn => {
@@ -437,6 +441,67 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
       throw new Error(errorMessage)
     }
   }, [])
+
+  // Delete recurring events with various options
+  const deleteRecurringEvents = useCallback(async (
+    eventId: string,
+    option: RecurringDeleteOption
+  ): Promise<{ deletedCount: number; deletedIds: string[] }> => {
+    setError(null)
+
+    // Find the event to get its recurrenceGroupId
+    const event = events.find(e => e.id === eventId)
+    if (!event) {
+      throw new Error('Event not found')
+    }
+
+    if (!event.recurrenceGroupId) {
+      // Not a recurring event - just delete this single event
+      const success = await deleteEvent(eventId)
+      return {
+        deletedCount: success ? 1 : 0,
+        deletedIds: success ? [eventId] : []
+      }
+    }
+
+    try {
+      const response = await fetch('/api/events/weekly-recurrence', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId,
+          option,
+          recurrenceGroupId: event.recurrenceGroupId
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to delete recurring events' }))
+        throw new Error(errorData.error || 'Failed to delete recurring events')
+      }
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete recurring events')
+      }
+
+      // Update local state - remove deleted events
+      const deletedIds = result.deletedIds || []
+      if (deletedIds.length > 0) {
+        setEvents(prev => prev.filter(e => !deletedIds.includes(e.id)))
+      }
+
+      return {
+        deletedCount: result.deletedCount || 0,
+        deletedIds
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete recurring events'
+      setError(errorMessage)
+      throw new Error(errorMessage)
+    }
+  }, [events, deleteEvent])
   
   // Refresh events from storage
   const refreshEvents = useCallback(async () => {
@@ -519,14 +584,26 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
   const searchEvents = useCallback((query: string): UnifiedEvent[] => {
     const searchTerm = query.toLowerCase().trim()
     if (!searchTerm) return events
-    
-    return events.filter(event => 
+
+    return events.filter(event =>
       event.title.toLowerCase().includes(searchTerm) ||
       (event.description && event.description.toLowerCase().includes(searchTerm)) ||
       (event.location && event.location.toLowerCase().includes(searchTerm)) ||
       (event.clientName && event.clientName.toLowerCase().includes(searchTerm)) ||
       (event.notes && event.notes.toLowerCase().includes(searchTerm))
     )
+  }, [events])
+
+  // Get all related events in the same recurrence group
+  const getRelatedEvents = useCallback((eventId: string): UnifiedEvent[] => {
+    const event = events.find(e => e.id === eventId)
+    if (!event || !event.recurrenceGroupId) {
+      return event ? [event] : []
+    }
+
+    return events
+      .filter(e => e.recurrenceGroupId === event.recurrenceGroupId)
+      .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
   }, [events])
   
   // Calculate statistics
@@ -567,6 +644,7 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
     createEvent,
     updateEvent,
     deleteEvent,
+    deleteRecurringEvents,
     refreshEvents,
     getEventsByType,
     getEventsByPriority,
@@ -575,7 +653,8 @@ export const useUnifiedEvents = (options: UseUnifiedEventsOptions = {}): UseUnif
     getUpcomingEvents,
     getOverdueEvents,
     getActiveGoals,
-    searchEvents
+    searchEvents,
+    getRelatedEvents
   }
 }
 
