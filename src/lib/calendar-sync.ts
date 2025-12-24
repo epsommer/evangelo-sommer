@@ -180,8 +180,21 @@ export class CalendarSyncService {
     }
 
     try {
-      const accessToken = decrypt(integration.accessToken)
-      const refreshToken = integration.refreshToken ? decrypt(integration.refreshToken) : null
+      // Decrypt tokens with graceful error handling
+      let accessToken: string
+      let refreshToken: string | null = null
+
+      try {
+        accessToken = decrypt(integration.accessToken)
+        refreshToken = integration.refreshToken ? decrypt(integration.refreshToken) : null
+      } catch (decryptError) {
+        console.warn('📅 [GoogleSync] Token decryption failed - integration may need to be reconnected')
+        return {
+          success: false,
+          provider: 'GOOGLE',
+          error: 'Calendar integration tokens are invalid or corrupted. Please reconnect your Google Calendar.'
+        }
+      }
 
       const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
@@ -259,16 +272,87 @@ export class CalendarSyncService {
         }
       } else if (operation === 'delete') {
         const eventSync = await this.getEventSync(event.id, integration.id)
-        if (eventSync?.externalId) {
+
+        // Handle case where no EventSync record exists
+        if (!eventSync?.externalId) {
+          console.warn(`📅 [GoogleSync] No EventSync record for event ${event.id}, cannot delete from Google Calendar`)
+          return {
+            success: false,
+            provider: 'GOOGLE',
+            error: 'Event not synced to Google Calendar (no sync record)',
+            operation: 'delete'
+          }
+        }
+
+        try {
+          // Delete from Google Calendar
           await calendar.events.delete({
             calendarId,
             eventId: eventSync.externalId,
           })
-        }
-        return {
-          success: true,
-          provider: 'GOOGLE',
-          operation: 'delete'
+
+          console.log(`✅ [GoogleSync] Deleted event from Google Calendar: ${eventSync.externalId}`)
+
+          // Clean up EventSync record after successful deletion
+          // Note: This may not be necessary if Event deletion cascades, but explicit is safer
+          if (prisma) {
+            try {
+              await prisma.eventSync.delete({
+                where: {
+                  eventId_integrationId: {
+                    eventId: event.id,
+                    integrationId: integration.id
+                  }
+                }
+              })
+            } catch (syncDeleteError) {
+              // EventSync may have already been deleted by cascade
+              console.log(`📅 [GoogleSync] EventSync record already deleted (cascade): ${event.id}`)
+            }
+          }
+
+          return {
+            success: true,
+            provider: 'GOOGLE',
+            operation: 'delete'
+          }
+        } catch (apiError: any) {
+          // Handle specific error: event already deleted in Google Calendar
+          if (apiError?.code === 410 || apiError?.code === 404 ||
+              apiError?.response?.status === 410 || apiError?.response?.status === 404) {
+            console.warn(`📅 [GoogleSync] Event ${eventSync.externalId} already deleted from Google Calendar (or not found)`)
+
+            // Clean up orphaned EventSync record
+            if (prisma) {
+              try {
+                await prisma.eventSync.delete({
+                  where: {
+                    eventId_integrationId: {
+                      eventId: event.id,
+                      integrationId: integration.id
+                    }
+                  }
+                })
+              } catch (syncDeleteError) {
+                // Already deleted, ignore
+              }
+            }
+
+            return {
+              success: true,
+              provider: 'GOOGLE',
+              operation: 'delete (already deleted externally)'
+            }
+          }
+
+          // For other errors, log and throw
+          console.error(`📅 [GoogleSync] Failed to delete event from Google Calendar:`, apiError)
+          return {
+            success: false,
+            provider: 'GOOGLE',
+            error: apiError.message || 'Failed to delete from Google Calendar',
+            operation: 'delete'
+          }
         }
       }
 
@@ -293,6 +377,7 @@ export class CalendarSyncService {
   ): Promise<{ events: UnifiedEvent[]; conflicts: ConflictInfo[] }> {
     const events: UnifiedEvent[] = []
     const conflicts: ConflictInfo[] = []
+    const prisma = getPrismaClient()
 
     try {
       const accessToken = decrypt(integration.accessToken)
@@ -333,7 +418,6 @@ export class CalendarSyncService {
       const response = await calendar.events.list(listParams)
 
       // Store new syncToken for next incremental sync
-      const prisma = getPrismaClient()
       if (response.data.nextSyncToken && prisma) {
         await prisma.calendarIntegration.update({
           where: { id: integration.id },
@@ -344,22 +428,115 @@ export class CalendarSyncService {
         })
       }
 
-      // Convert Google events to UnifiedEvents and detect conflicts
+      // Process and persist each Google event to database
       for (const googleEvent of response.data.items || []) {
-        const unifiedEvent = this.convertFromGoogleEvent(googleEvent)
-        events.push(unifiedEvent)
+        if (!googleEvent.id) continue // Skip events without ID
 
-        // Check for conflicts with existing local events
-        const conflict = await this.detectConflict(unifiedEvent, integration.id, googleEvent.updated)
-        if (conflict) {
-          conflicts.push(conflict)
+        try {
+          // Check if EventSync record exists for this Google event
+          const existingSync = prisma ? await prisma.eventSync.findFirst({
+            where: {
+              externalId: googleEvent.id,
+              integrationId: integration.id
+            },
+            include: { event: true }
+          }) : null
+
+          let localEvent: UnifiedEvent
+
+          if (existingSync && prisma) {
+            // Update existing event in database
+            const updatedEvent = await prisma.event.update({
+              where: { id: existingSync.eventId },
+              data: {
+                title: googleEvent.summary || 'Untitled Event',
+                description: googleEvent.description || '',
+                startDateTime: googleEvent.start?.dateTime || googleEvent.start?.date || '',
+                endDateTime: googleEvent.end?.dateTime || googleEvent.end?.date || googleEvent.start?.dateTime || googleEvent.start?.date || '',
+                location: googleEvent.location || '',
+                isAllDay: !googleEvent.start?.dateTime,
+                status: googleEvent.status === 'cancelled' ? 'cancelled' : 'scheduled',
+                participants: googleEvent.attendees?.map((a: any) => a.email).filter(Boolean) || [],
+                updatedAt: new Date()
+              }
+            })
+
+            // Update EventSync record
+            await prisma.eventSync.update({
+              where: { id: existingSync.id },
+              data: {
+                lastSyncAt: new Date(),
+                syncStatus: 'SYNCED',
+                remoteVersion: googleEvent.updated ? new Date(googleEvent.updated) : new Date()
+              }
+            })
+
+            // Convert database event to UnifiedEvent format
+            localEvent = this.convertDbEventToUnified(updatedEvent)
+            console.log('📅 [GoogleSync] Updated existing event:', updatedEvent.id)
+          } else if (prisma) {
+            // Create new event in database
+            const startDateTime = googleEvent.start?.dateTime || googleEvent.start?.date || ''
+            const endDateTime = googleEvent.end?.dateTime || googleEvent.end?.date || startDateTime
+            const duration = this.calculateDuration(startDateTime, endDateTime)
+
+            const newEvent = await prisma.event.create({
+              data: {
+                type: 'EVENT',
+                title: googleEvent.summary || 'Untitled Event',
+                description: googleEvent.description || '',
+                startDateTime,
+                endDateTime,
+                duration,
+                priority: 'MEDIUM',
+                location: googleEvent.location || '',
+                isAllDay: !googleEvent.start?.dateTime,
+                isMultiDay: false,
+                isRecurring: false,
+                status: googleEvent.status === 'cancelled' ? 'cancelled' : 'scheduled',
+                participants: googleEvent.attendees?.map((a: any) => a.email).filter(Boolean) || [],
+                googleCalendarEventId: googleEvent.id
+              }
+            })
+
+            // Create EventSync record to track this sync
+            await prisma.eventSync.create({
+              data: {
+                eventId: newEvent.id,
+                integrationId: integration.id,
+                provider: 'GOOGLE',
+                externalId: googleEvent.id,
+                syncStatus: 'SYNCED',
+                lastSyncAt: new Date(),
+                localVersion: new Date(),
+                remoteVersion: googleEvent.updated ? new Date(googleEvent.updated) : new Date()
+              }
+            })
+
+            // Convert database event to UnifiedEvent format
+            localEvent = this.convertDbEventToUnified(newEvent)
+            console.log('📅 [GoogleSync] Created new event:', newEvent.id)
+          } else {
+            // Fallback: No database, just convert to UnifiedEvent
+            localEvent = this.convertFromGoogleEvent(googleEvent)
+          }
+
+          events.push(localEvent)
+
+          // Check for conflicts with existing local events
+          const conflict = await this.detectConflict(localEvent, integration.id, googleEvent.updated || undefined)
+          if (conflict) {
+            conflicts.push(conflict)
+          }
+        } catch (eventError) {
+          console.error('📅 [GoogleSync] Error processing event:', googleEvent.id, eventError)
+          // Continue processing other events even if one fails
         }
       }
     } catch (error: any) {
       console.error('📅 [GoogleSync] Pull error:', error)
       // Handle invalid syncToken by clearing it and retrying
       if (error.code === 410 && integration.syncToken) {
-        const prisma = getPrismaClient()
         if (prisma) {
           await prisma.calendarIntegration.update({
             where: { id: integration.id },
@@ -375,6 +552,33 @@ export class CalendarSyncService {
   }
 
   /**
+   * Convert database Event to UnifiedEvent format
+   */
+  private static convertDbEventToUnified(dbEvent: any): UnifiedEvent {
+    return {
+      id: dbEvent.id,
+      type: dbEvent.type?.toLowerCase() || 'event',
+      title: dbEvent.title,
+      description: dbEvent.description || '',
+      startDateTime: dbEvent.startDateTime,
+      endDateTime: dbEvent.endDateTime || dbEvent.startDateTime,
+      duration: dbEvent.duration || 0,
+      priority: dbEvent.priority?.toLowerCase() || 'medium',
+      location: dbEvent.location || '',
+      isAllDay: dbEvent.isAllDay || false,
+      isMultiDay: dbEvent.isMultiDay || false,
+      isRecurring: dbEvent.isRecurring || false,
+      status: dbEvent.status || 'scheduled',
+      participants: Array.isArray(dbEvent.participants) ? dbEvent.participants : [],
+      clientId: dbEvent.clientId || undefined,
+      clientName: dbEvent.clientName || undefined,
+      notes: dbEvent.notes || undefined,
+      createdAt: dbEvent.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: dbEvent.updatedAt?.toISOString() || new Date().toISOString()
+    } as UnifiedEvent
+  }
+
+  /**
    * Sync to Notion
    */
   private static async syncToNotion(
@@ -382,12 +586,206 @@ export class CalendarSyncService {
     integration: any,
     operation: 'create' | 'update' | 'delete'
   ): Promise<SyncResult> {
-    // TODO: Implement Notion sync
-    // Notion doesn't have native calendar support, need to use a database
-    return {
-      success: false,
-      provider: 'NOTION',
-      error: 'Notion sync not yet implemented'
+    const { Client } = await import('@notionhq/client')
+    const {
+      notionApiCall,
+      detectNotionDatabaseSchema,
+      convertEventToNotionProperties
+    } = await import('@/lib/notion-helpers')
+
+    try {
+      // Decrypt access token
+      let accessToken: string
+      try {
+        accessToken = decrypt(integration.accessToken)
+      } catch (decryptError) {
+        console.warn('📅 [NotionSync] Token decryption failed - integration may need to be reconnected')
+        return {
+          success: false,
+          provider: 'NOTION',
+          error: 'Notion integration tokens are invalid or corrupted. Please reconnect your Notion.'
+        }
+      }
+
+      const notion = new Client({ auth: accessToken })
+
+      // Get database ID from integration
+      const databaseId = integration.externalId
+      if (!databaseId) {
+        return {
+          success: false,
+          provider: 'NOTION',
+          error: 'No Notion database configured. Please select a database in integration settings.'
+        }
+      }
+
+      // Detect database schema
+      const schema = await detectNotionDatabaseSchema(notion, databaseId)
+
+      if (!schema.titleProperty || !schema.dateProperty) {
+        return {
+          success: false,
+          provider: 'NOTION',
+          error: 'Notion database must have Title and Date properties'
+        }
+      }
+
+      if (operation === 'create') {
+        // Create new page in Notion database
+        const properties = convertEventToNotionProperties(event, schema)
+
+        const response = await notionApiCall(() =>
+          notion.pages.create({
+            parent: { database_id: databaseId },
+            properties
+          })
+        )
+
+        return {
+          success: true,
+          provider: 'NOTION',
+          externalId: response.id,
+          operation: 'create'
+        }
+      } else if (operation === 'update') {
+        // Get existing Notion page ID from EventSync
+        const eventSync = await this.getEventSync(event.id, integration.id)
+
+        if (!eventSync?.externalId) {
+          // Fall back to create if no sync record exists
+          const properties = convertEventToNotionProperties(event, schema)
+
+          const response = await notionApiCall(() =>
+            notion.pages.create({
+              parent: { database_id: databaseId },
+              properties
+            })
+          )
+
+          return {
+            success: true,
+            provider: 'NOTION',
+            externalId: response.id,
+            operation: 'create (fallback)'
+          }
+        }
+
+        // Update existing Notion page
+        const properties = convertEventToNotionProperties(event, schema)
+
+        // Remove 'notion-' prefix if present
+        const pageId = eventSync.externalId.replace(/^notion-/, '')
+
+        const response = await notionApiCall(() =>
+          notion.pages.update({
+            page_id: pageId,
+            properties
+          })
+        )
+
+        return {
+          success: true,
+          provider: 'NOTION',
+          externalId: response.id,
+          operation: 'update'
+        }
+      } else if (operation === 'delete') {
+        const eventSync = await this.getEventSync(event.id, integration.id)
+        const prisma = getPrismaClient()
+
+        // Handle case where no EventSync record exists
+        if (!eventSync?.externalId) {
+          console.warn(`📅 [NotionSync] No EventSync record for event ${event.id}, cannot delete from Notion`)
+          return {
+            success: false,
+            provider: 'NOTION',
+            error: 'Event not synced to Notion (no sync record)',
+            operation: 'delete'
+          }
+        }
+
+        try {
+          // Remove 'notion-' prefix if present
+          const pageId = eventSync.externalId.replace(/^notion-/, '')
+
+          // Archive the page (Notion doesn't support hard delete via API)
+          await notionApiCall(() =>
+            notion.pages.update({
+              page_id: pageId,
+              archived: true
+            })
+          )
+
+          console.log(`✅ [NotionSync] Archived page in Notion: ${pageId}`)
+
+          // Clean up EventSync record after successful deletion
+          if (prisma) {
+            try {
+              await prisma.eventSync.delete({
+                where: {
+                  eventId_integrationId: {
+                    eventId: event.id,
+                    integrationId: integration.id
+                  }
+                }
+              })
+            } catch (syncDeleteError) {
+              console.log(`📅 [NotionSync] EventSync record already deleted (cascade): ${event.id}`)
+            }
+          }
+
+          return {
+            success: true,
+            provider: 'NOTION',
+            operation: 'delete'
+          }
+        } catch (apiError: any) {
+          // Handle specific error: page already deleted/archived
+          if (apiError?.code === 'object_not_found' || apiError?.status === 404) {
+            console.warn(`📅 [NotionSync] Page ${eventSync.externalId} already deleted from Notion (or not found)`)
+
+            // Clean up orphaned EventSync record
+            if (prisma) {
+              try {
+                await prisma.eventSync.delete({
+                  where: {
+                    eventId_integrationId: {
+                      eventId: event.id,
+                      integrationId: integration.id
+                    }
+                  }
+                })
+              } catch (syncDeleteError) {
+                // Already deleted, ignore
+              }
+            }
+
+            return {
+              success: true,
+              provider: 'NOTION',
+              operation: 'delete (already deleted externally)'
+            }
+          }
+
+          // For other errors, log and throw
+          console.error(`📅 [NotionSync] Failed to delete page from Notion:`, apiError)
+          return {
+            success: false,
+            provider: 'NOTION',
+            error: apiError.message || 'Failed to delete from Notion',
+            operation: 'delete'
+          }
+        }
+      }
+
+      return { success: false, provider: 'NOTION', error: 'Unknown operation' }
+    } catch (error: any) {
+      console.error('📅 [NotionSync] Error:', error)
+      return {
+        success: false,
+        provider: 'NOTION',
+        error: error.message || 'Notion API error'
+      }
     }
   }
 
@@ -399,8 +797,220 @@ export class CalendarSyncService {
     startDate?: Date,
     endDate?: Date
   ): Promise<{ events: UnifiedEvent[]; conflicts: ConflictInfo[] }> {
-    // TODO: Implement Notion pull
-    return { events: [], conflicts: [] }
+    const events: UnifiedEvent[] = []
+    const conflicts: ConflictInfo[] = []
+    const prisma = getPrismaClient()
+
+    const { Client } = await import('@notionhq/client')
+    const {
+      notionApiCall,
+      detectNotionDatabaseSchema,
+      convertNotionPageToEvent
+    } = await import('@/lib/notion-helpers')
+
+    try {
+      // Decrypt access token
+      let accessToken: string
+      try {
+        accessToken = decrypt(integration.accessToken)
+      } catch (decryptError) {
+        console.error('Failed to decrypt Notion token:', decryptError)
+        return { events: [], conflicts: [] }
+      }
+
+      const notion = new Client({ auth: accessToken })
+
+      // Get database ID from integration
+      const databaseId = integration.externalId
+      if (!databaseId) {
+        console.warn('📅 [NotionSync] No database ID configured for integration')
+        return { events: [], conflicts: [] }
+      }
+
+      // Detect database schema
+      const schema = await detectNotionDatabaseSchema(notion, databaseId)
+
+      if (!schema.titleProperty || !schema.dateProperty) {
+        console.warn('📅 [NotionSync] Database missing required properties (Title or Date)')
+        return { events: [], conflicts: [] }
+      }
+
+      // Build query filters for date range
+      const filters: any[] = []
+
+      if (startDate && schema.dateProperty) {
+        filters.push({
+          property: schema.dateProperty,
+          date: {
+            on_or_after: startDate.toISOString()
+          }
+        })
+      }
+
+      if (endDate && schema.dateProperty) {
+        filters.push({
+          property: schema.dateProperty,
+          date: {
+            on_or_before: endDate.toISOString()
+          }
+        })
+      }
+
+      // Query database for pages
+      const queryParams: any = {
+        database_id: databaseId,
+        page_size: 100
+      }
+
+      // Add filters if we have any
+      if (filters.length > 0) {
+        queryParams.filter = filters.length === 1 ? filters[0] : { and: filters }
+      }
+
+      let response: any
+      try {
+        response = await notionApiCall(() => (notion.databases as any).query(queryParams))
+      } catch (filterError) {
+        // If filter fails, try without it
+        console.warn('📅 [NotionSync] Query with filters failed, retrying without filters')
+        response = await notionApiCall(() =>
+          (notion.databases as any).query({
+            database_id: databaseId,
+            page_size: 100
+          })
+        )
+      }
+
+      // Process and persist each Notion page to database
+      for (const page of response.results) {
+        if (!page.id) continue
+
+        try {
+          // Convert Notion page to UnifiedEvent
+          const unifiedEvent = convertNotionPageToEvent(page, schema)
+
+          if (prisma) {
+            // Check if EventSync record exists for this Notion page
+            const existingSync = await prisma.eventSync.findFirst({
+              where: {
+                externalId: page.id,
+                integrationId: integration.id
+              },
+              include: { event: true }
+            })
+
+            let localEvent: UnifiedEvent
+
+            if (existingSync) {
+              // Update existing event in database
+              const updatedEvent = await prisma.event.update({
+                where: { id: existingSync.eventId },
+                data: {
+                  title: unifiedEvent.title,
+                  description: unifiedEvent.description,
+                  startDateTime: unifiedEvent.startDateTime,
+                  endDateTime: unifiedEvent.endDateTime,
+                  duration: unifiedEvent.duration,
+                  isAllDay: unifiedEvent.isAllDay,
+                  updatedAt: new Date()
+                }
+              })
+
+              // Update EventSync record
+              await prisma.eventSync.update({
+                where: { id: existingSync.id },
+                data: {
+                  lastSyncAt: new Date(),
+                  syncStatus: 'SYNCED',
+                  remoteVersion: new Date(page.last_edited_time)
+                }
+              })
+
+              localEvent = this.convertDbEventToUnified(updatedEvent)
+              console.log('📅 [NotionSync] Updated existing event:', updatedEvent.id)
+            } else {
+              // Create new event in database
+              const newEvent = await prisma.event.create({
+                data: {
+                  type: 'EVENT',
+                  title: unifiedEvent.title,
+                  description: unifiedEvent.description || '',
+                  startDateTime: unifiedEvent.startDateTime,
+                  endDateTime: unifiedEvent.endDateTime,
+                  duration: unifiedEvent.duration,
+                  priority: 'MEDIUM',
+                  location: '',
+                  isAllDay: unifiedEvent.isAllDay,
+                  isMultiDay: false,
+                  isRecurring: false,
+                  status: 'scheduled',
+                  participants: []
+                }
+              })
+
+              // Create EventSync record to track this sync
+              await prisma.eventSync.create({
+                data: {
+                  eventId: newEvent.id,
+                  integrationId: integration.id,
+                  provider: 'NOTION',
+                  externalId: page.id,
+                  syncStatus: 'SYNCED',
+                  lastSyncAt: new Date(),
+                  localVersion: new Date(),
+                  remoteVersion: new Date(page.last_edited_time)
+                }
+              })
+
+              localEvent = this.convertDbEventToUnified(newEvent)
+              console.log('📅 [NotionSync] Created new event:', newEvent.id)
+            }
+
+            events.push(localEvent)
+
+            // Check for conflicts with existing local events
+            const conflict = await this.detectConflict(
+              localEvent,
+              integration.id,
+              page.last_edited_time
+            )
+            if (conflict) {
+              conflicts.push(conflict)
+            }
+          } else {
+            // No database available, just return the event
+            events.push(unifiedEvent)
+          }
+        } catch (eventError) {
+          console.error('📅 [NotionSync] Error processing page:', page.id, eventError)
+          // Continue processing other pages even if one fails
+        }
+      }
+
+      // Update last sync time
+      if (prisma) {
+        await prisma.calendarIntegration.update({
+          where: { id: integration.id },
+          data: {
+            lastSyncAt: new Date(),
+            lastSyncError: null
+          }
+        })
+      }
+    } catch (error: any) {
+      console.error('📅 [NotionSync] Pull error:', error)
+
+      if (prisma) {
+        await prisma.calendarIntegration.update({
+          where: { id: integration.id },
+          data: {
+            lastSyncError: error.message || 'Unknown error'
+          }
+        })
+      }
+    }
+
+    return { events, conflicts }
   }
 
   /**
@@ -627,8 +1237,7 @@ export class CalendarSyncService {
       const queueItems = await prisma.syncQueue.findMany({
         where: {
           status: 'PENDING',
-          scheduledFor: { lte: new Date() },
-          retryCount: { lt: prisma.$queryRaw`"maxRetries"` }
+          scheduledFor: { lte: new Date() }
         },
         orderBy: [
           { priority: 'desc' },
@@ -637,7 +1246,10 @@ export class CalendarSyncService {
         take: 10
       })
 
-      for (const item of queueItems) {
+      // Filter items where retryCount < maxRetries
+      const validItems = queueItems.filter(item => item.retryCount < item.maxRetries)
+
+      for (const item of validItems) {
         try {
           // Mark as processing
           await prisma.syncQueue.update({

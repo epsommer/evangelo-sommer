@@ -12,6 +12,7 @@ import WeekView from '@/components/WeekView'
 import EventCreationModal, { UnifiedEvent } from '@/components/EventCreationModal'
 import EventDetailsModal from '@/components/EventDetailsModal'
 import ConflictResolutionModal from '@/components/ConflictResolutionModal'
+import RecurringDeleteConfirmationModal, { RecurringDeleteOption } from '@/components/RecurringDeleteConfirmationModal'
 import { useUnifiedEvents } from '@/hooks/useUnifiedEvents'
 import { ViewManagerProvider, useViewManager } from '@/contexts/ViewManagerContext'
 import { CalendarEvent } from '@/types/scheduling'
@@ -63,10 +64,19 @@ const TimeManagerContent = () => {
   const [globalConflictCount, setGlobalConflictCount] = useState(0)
   const [allConflicts, setAllConflicts] = useState<ConflictResult | null>(null)
 
+  // Recurring event delete modal state
+  const [showRecurringDeleteModal, setShowRecurringDeleteModal] = useState(false)
+  const [eventToDelete, setEventToDelete] = useState<UnifiedEvent | null>(null)
+  const [relatedEventsForDelete, setRelatedEventsForDelete] = useState<UnifiedEvent[]>([])
+
   // Use unified events hook for global event management
-  const { events: allEvents, createEvent, updateEvent, deleteEvent } = useUnifiedEvents({
+  const { events: allEvents, createEvent, updateEvent, deleteEvent, deleteRecurringEvents, getRelatedEvents, refreshEvents } = useUnifiedEvents({
     refreshTrigger
   })
+
+  // Auto-sync state
+  const [isSyncing, setIsSyncing] = useState(false)
+  const hasSynced = useRef(false)
 
   // Handle URL parameters for scheduling from client page
   useEffect(() => {
@@ -89,6 +99,65 @@ const TimeManagerContent = () => {
       }
     }
   }, [searchParams])
+
+  // Auto-sync calendar on page load
+  useEffect(() => {
+    const syncOnLoad = async () => {
+      // Prevent multiple syncs
+      if (hasSynced.current || isSyncing) {
+        return
+      }
+
+      hasSynced.current = true
+
+      try {
+        // Check if user has any connected integrations first
+        const integrationsRes = await fetch('/api/calendar/integrations')
+
+        if (!integrationsRes.ok) {
+          // No integrations or auth failed - silently skip sync
+          return
+        }
+
+        const integrationsData = await integrationsRes.json()
+
+        if (!integrationsData.success || !integrationsData.data || integrationsData.data.length === 0) {
+          // No active integrations - skip sync
+          return
+        }
+
+        // User has integrations - trigger sync in background
+        setIsSyncing(true)
+        console.log('📅 [TimeManager] Starting background sync on page load...')
+
+        // Trigger sync for each integration
+        for (const integration of integrationsData.data) {
+          try {
+            await fetch('/api/calendar/google/sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ integrationId: integration.id })
+            })
+          } catch (syncError) {
+            // Log but don't fail - continue with other integrations
+            console.warn('📅 [TimeManager] Sync failed for integration:', integration.id, syncError)
+          }
+        }
+
+        // Refresh events after sync completes
+        await refreshEvents()
+        console.log('📅 [TimeManager] Background sync completed')
+
+      } catch (error) {
+        // Log error but don't show to user - this is a background operation
+        console.error('📅 [TimeManager] Background sync failed:', error)
+      } finally {
+        setIsSyncing(false)
+      }
+    }
+
+    syncOnLoad()
+  }, [refreshEvents])
 
   // Calculate global conflicts whenever events change
   // Only counts temporal overlaps (real conflicts), not business rules
@@ -302,6 +371,25 @@ const TimeManagerContent = () => {
   }
 
   const handleEventDelete = async (eventId: string) => {
+    // Find the event to check if it's recurring
+    const event = allEvents.find(e => e.id === eventId)
+    if (!event) {
+      console.error('Event not found:', eventId)
+      return
+    }
+
+    // Check if this is a recurring event (has recurrenceGroupId)
+    if (event.recurrenceGroupId) {
+      // Get related events and show the recurring delete modal
+      const related = getRelatedEvents(eventId)
+      setEventToDelete(event)
+      setRelatedEventsForDelete(related)
+      setShowRecurringDeleteModal(true)
+      setShowDetailsModal(false)
+      return
+    }
+
+    // Non-recurring event - delete directly
     try {
       await deleteEvent(eventId)
       setShowDetailsModal(false)
@@ -309,6 +397,23 @@ const TimeManagerContent = () => {
     } catch (error) {
       console.error('Error deleting event:', error)
     }
+  }
+
+  // Handle recurring event deletion confirmation
+  const handleRecurringDeleteConfirm = async (option: RecurringDeleteOption) => {
+    if (!eventToDelete) return
+
+    await deleteRecurringEvents(eventToDelete.id, option)
+    setShowRecurringDeleteModal(false)
+    setEventToDelete(null)
+    setRelatedEventsForDelete([])
+    setRefreshTrigger(prev => prev + 1) // Force UI refresh after deletion
+  }
+
+  const handleRecurringDeleteClose = () => {
+    setShowRecurringDeleteModal(false)
+    setEventToDelete(null)
+    setRelatedEventsForDelete([])
   }
 
   const handleEditFromDetails = (event: UnifiedEvent) => {
@@ -501,6 +606,25 @@ const TimeManagerContent = () => {
   }
 
   const handleSidebarEventDelete = async (eventId: string) => {
+    // Find the event to check if it's recurring
+    const event = allEvents.find(e => e.id === eventId)
+    if (!event) {
+      console.error('Event not found:', eventId)
+      return
+    }
+
+    // Check if this is a recurring event (has recurrenceGroupId)
+    if (event.recurrenceGroupId) {
+      // Get related events and show the recurring delete modal
+      const related = getRelatedEvents(eventId)
+      setEventToDelete(event)
+      setRelatedEventsForDelete(related)
+      setShowRecurringDeleteModal(true)
+      setSidebarSelectedEvent(null)
+      return
+    }
+
+    // Non-recurring event - delete directly
     try {
       await deleteEvent(eventId)
       setSidebarSelectedEvent(null)
@@ -792,6 +916,12 @@ const TimeManagerContent = () => {
                 ORGANIZE YOUR SCHEDULE AND MANAGE YOUR TIME EFFECTIVELY
               </p>
             </div>
+            {isSyncing && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="animate-spin rounded-full h-3 w-3 border-2 border-accent border-t-transparent"></div>
+                <span className="font-primary uppercase tracking-wide">Syncing calendar...</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -851,6 +981,15 @@ const TimeManagerContent = () => {
             onClose={handleConflictCancel}
           />
         )}
+
+        {/* Recurring Delete Confirmation Modal */}
+        <RecurringDeleteConfirmationModal
+          isOpen={showRecurringDeleteModal}
+          onClose={handleRecurringDeleteClose}
+          onConfirm={handleRecurringDeleteConfirm}
+          event={eventToDelete}
+          relatedEvents={relatedEventsForDelete}
+        />
       </div>
     </CRMLayout>
   )

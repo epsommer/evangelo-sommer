@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Only fetch pages modified since last sync
     const lastSync = integration.lastSyncAt || new Date(0)
 
-    const response = await notion.databases.query({
+    const response = await (notion.databases as any).query({
       database_id: targetDatabaseId,
       filter: {
         and: [
@@ -347,8 +347,8 @@ export async function GET(request: NextRequest) {
 
     // Search for databases
     const response = await notion.search({
-      filter: { property: 'object', value: 'database' }
-    })
+      filter: { property: 'object', value: 'database' as any }
+    }) as any
 
     const databases = response.results.map((db: any) => ({
       id: db.id,

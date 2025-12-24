@@ -759,39 +759,49 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
+    // Track external deletion results
+    const externalDeletions: { provider: string; success: boolean; error?: string }[] = []
+
+    // Sync deletion to external calendars BEFORE deleting locally
+    // This allows us to find EventSync records while they still exist
+    if (eventToDelete && prisma) {
+      const { CalendarSyncService } = await import('@/lib/calendar-sync')
+      const unifiedEvent = convertToUnifiedEvent(eventToDelete)
+      const syncResults = await CalendarSyncService.pushEventToExternalCalendars(unifiedEvent, 'delete')
+
+      // Process sync results
+      for (const result of syncResults) {
+        externalDeletions.push({
+          provider: result.provider,
+          success: result.success,
+          error: result.error
+        })
+
+        if (result.success) {
+          console.log(`✅ [ExternalSync] Event deleted from ${result.provider}: ${result.operation || 'delete'}`)
+        } else {
+          console.error(`❌ [ExternalSync] Failed to delete from ${result.provider}: ${result.error}`)
+        }
+      }
+    }
+
     // Delete from localStorage (attempt even if not found)
     const localStorageDeleted = UnifiedEventsManager.deleteEvent(eventId)
     console.log(`🔄 LocalStorage deletion result: ${localStorageDeleted}`)
 
     // Delete from database if available
+    // EventSync records will be automatically deleted via CASCADE
     let dbDeleted = false
     if (prisma) {
       try {
-        // Delete EventSync records first (cascade should handle this, but being explicit)
-        await prisma.eventSync.deleteMany({
-          where: { eventId }
-        })
-
         await prisma.event.delete({
           where: { id: eventId }
         })
         dbDeleted = true
-        console.log('✅ Database event deleted:', eventId)
+        console.log('✅ Database event deleted (with cascade to EventSync):', eventId)
       } catch (dbError) {
         console.error('⚠️ Database deletion failed:', dbError)
         // Continue - maybe event only existed in localStorage
-      }
-    }
-
-    // Sync deletion to external calendars if event existed
-    if (eventToDelete && prisma) {
-      const { CalendarSyncService } = await import('@/lib/calendar-sync')
-      const unifiedEvent = convertToUnifiedEvent(eventToDelete)
-      const syncResults = await CalendarSyncService.pushEventToExternalCalendars(unifiedEvent, 'delete')
-      const syncedProviders = syncResults.filter(r => r.success).map(r => r.provider)
-
-      if (syncedProviders.length > 0) {
-        console.log(`📅 Event deletion synced to external calendars: ${syncedProviders.join(', ')}`)
       }
     }
 
@@ -803,19 +813,42 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    // Build response with detailed sync status
+    const successfulExternalDeletions = externalDeletions.filter(d => d.success)
+    const failedExternalDeletions = externalDeletions.filter(d => !d.success)
+
+    let message = `Event deleted successfully`
+    if (localStorageDeleted && dbDeleted) {
+      message += ' from both localStorage and database'
+    } else if (localStorageDeleted) {
+      message += ' from localStorage only'
+    } else if (dbDeleted) {
+      message += ' from database only'
+    }
+
+    if (successfulExternalDeletions.length > 0) {
+      message += ` and ${successfulExternalDeletions.map(d => d.provider).join(', ')}`
+    }
+
+    if (failedExternalDeletions.length > 0) {
+      message += `. Warning: Failed to delete from ${failedExternalDeletions.map(d => d.provider).join(', ')}`
+    }
+
     return NextResponse.json({
       success: true,
+      deletedLocally: localStorageDeleted || dbDeleted,
       localStorage: {
         deleted: localStorageDeleted
       },
       database: {
         deleted: dbDeleted
       },
-      message: `Event deleted successfully${
-        localStorageDeleted && dbDeleted ? ' from both localStorage and database' :
-        localStorageDeleted ? ' from localStorage only' :
-        dbDeleted ? ' from database only' : ''
-      }`
+      externalDeletions: externalDeletions.map(d => ({
+        provider: d.provider,
+        success: d.success,
+        error: d.error
+      })),
+      message: message
     })
 
   } catch (error) {
