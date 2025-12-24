@@ -35,7 +35,7 @@ export function ThemeToggle() {
     }
 
     // Apply window theme
-    document.documentElement.classList.remove('neomorphic-window', 'tactical-window');
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window', 'tactical-corners-window');
     document.documentElement.classList.add(`${savedWindowTheme}-window`);
 
     document.documentElement.setAttribute('data-color-theme', colorTheme);
@@ -114,7 +114,7 @@ export function TacticalThemeToggle() {
       document.documentElement.removeAttribute('data-theme');
     }
 
-    document.documentElement.classList.remove('neomorphic-window', 'tactical-window');
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window', 'tactical-corners-window');
     document.documentElement.classList.add(`${savedWindowTheme}-window`);
 
     document.documentElement.setAttribute('data-color-theme', colorTheme);

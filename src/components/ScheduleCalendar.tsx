@@ -2042,26 +2042,25 @@ Duration changed: ${data.reason}`.trim() :
                         );
                       })}
 
-                      {/* Multi-day events overflow indicator */}
+                      {/* Multi-day events overflow indicator - positioned at bottom of week row */}
                       {multiDayEvents.length > 2 && (
                         <div
-                          className="absolute cursor-pointer transition-all hover:scale-105"
+                          className="absolute cursor-pointer transition-all hover:scale-105 hover:brightness-110"
                           style={{
-                            right: '8px',
-                            top: '50%',
-                            transform: 'translateY(calc(-50% + 32px))',
-                            height: '24px',
-                            padding: '0 8px',
+                            left: '4px',
+                            right: '4px',
+                            bottom: '4px',
+                            height: '22px',
                             borderRadius: '4px',
-                            background: 'var(--neomorphic-bg)',
-                            color: 'var(--neomorphic-text)',
-                            boxShadow: '2px 2px 4px 0px var(--neomorphic-dark-shadow), -2px -2px 4px 0px var(--neomorphic-light-shadow)',
-                            zIndex: 45,
+                            background: 'var(--neomorphic-accent)',
+                            color: 'white',
+                            boxShadow: '2px 2px 4px 0px var(--neomorphic-dark-shadow)',
+                            zIndex: 50,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '11px',
-                            fontWeight: 500
+                            fontWeight: 600
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -2072,7 +2071,7 @@ Duration changed: ${data.reason}`.trim() :
                           }}
                           title={`View all ${multiDayEvents.length} multi-day events`}
                         >
-                          <span>+{multiDayEvents.length - 2} more</span>
+                          <span>+{multiDayEvents.length - 2} more multi-day events</span>
                         </div>
                       )}
 

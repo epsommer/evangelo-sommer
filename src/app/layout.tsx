@@ -65,7 +65,7 @@ export default function RootLayout({
                   }
 
                   // Apply window theme
-                  root.classList.remove('neomorphic-window', 'tactical-window');
+                  root.classList.remove('neomorphic-window', 'tactical-window', 'tactical-corners-window');
                   root.classList.add(windowTheme + '-window');
 
                   root.setAttribute('data-color-theme', colorTheme);

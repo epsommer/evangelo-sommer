@@ -1282,6 +1282,81 @@ body.modal-open .border-hud-border {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Tactical Corners Window Theme - 45-degree clipped corners */
+.tactical-corners-window {
+  --window-border-radius: 0px;
+  --window-shadow-depth: flat;
+  --corner-cut: 12px; /* Size of the 45-degree corner clip */
+}
+
+/* Apply tactical corners styling with clip-path to window containers */
+.tactical-corners-window .neo-container,
+.tactical-corners-window .neo-card,
+.tactical-corners-window .window-container,
+.tactical-corners-window [role="dialog"] {
+  border-radius: 0 !important;
+  clip-path: polygon(
+    var(--corner-cut) 0,
+    calc(100% - var(--corner-cut)) 0,
+    100% var(--corner-cut),
+    100% calc(100% - var(--corner-cut)),
+    calc(100% - var(--corner-cut)) 100%,
+    var(--corner-cut) 100%,
+    0 calc(100% - var(--corner-cut)),
+    0 var(--corner-cut)
+  );
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Apply to buttons and inputs with smaller corner cuts */
+.tactical-corners-window .neo-button,
+.tactical-corners-window .neo-button-active,
+.tactical-corners-window .neomorphic-input,
+.tactical-corners-window button:not(.neomorphic-toggle),
+.tactical-corners-window input,
+.tactical-corners-window select,
+.tactical-corners-window textarea {
+  --corner-cut: 6px;
+  border-radius: 0 !important;
+  clip-path: polygon(
+    var(--corner-cut) 0,
+    calc(100% - var(--corner-cut)) 0,
+    100% var(--corner-cut),
+    100% calc(100% - var(--corner-cut)),
+    calc(100% - var(--corner-cut)) 100%,
+    var(--corner-cut) 100%,
+    0 calc(100% - var(--corner-cut)),
+    0 var(--corner-cut)
+  );
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Smaller corners for neo-button-circle */
+.tactical-corners-window .neo-button-circle {
+  --corner-cut: 4px;
+  clip-path: polygon(
+    var(--corner-cut) 0,
+    calc(100% - var(--corner-cut)) 0,
+    100% var(--corner-cut),
+    100% calc(100% - var(--corner-cut)),
+    calc(100% - var(--corner-cut)) 100%,
+    var(--corner-cut) 100%,
+    0 calc(100% - var(--corner-cut)),
+    0 var(--corner-cut)
+  );
+}
+
+.tactical-corners-window .neo-button:hover,
+.tactical-corners-window .neo-button-active:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Preserve toggle specific styling */
+.tactical-corners-window .neomorphic-toggle {
+  clip-path: none !important;
+  border-radius: 88px !important;
+}
+
 /* ========================================
    NEOMORPHIC INPUT & SELECT STYLES
    Recessed appearance for form elements

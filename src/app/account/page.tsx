@@ -6,7 +6,7 @@ import { GrainyTexture, setGrainIntensity, getGrainIntensity } from '@/component
 
 type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night' | 'gilded-meadow';
 type GrainIntensity = 'off' | 'low' | 'medium' | 'high';
-type WindowTheme = 'neomorphic' | 'tactical';
+type WindowTheme = 'neomorphic' | 'tactical' | 'tactical-corners';
 
 export default function AccountSettingsPage() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function AccountSettingsPage() {
   };
 
   const applyWindowTheme = (theme: WindowTheme) => {
-    document.documentElement.classList.remove('neomorphic-window', 'tactical-window');
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window', 'tactical-corners-window');
     document.documentElement.classList.add(`${theme}-window`);
   };
 

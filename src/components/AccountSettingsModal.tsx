@@ -42,7 +42,7 @@ export interface AccountSettings {
 
 type ColorTheme = 'light' | 'mocha' | 'overkast' | 'true-night' | 'gilded-meadow'
 type GrainIntensity = 'off' | 'low' | 'medium' | 'high'
-type WindowTheme = 'neomorphic' | 'tactical'
+type WindowTheme = 'neomorphic' | 'tactical' | 'tactical-corners'
 
 const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   isOpen,
@@ -188,7 +188,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   }
 
   const applyWindowTheme = (theme: WindowTheme) => {
-    document.documentElement.classList.remove('neomorphic-window', 'tactical-window')
+    document.documentElement.classList.remove('neomorphic-window', 'tactical-window', 'tactical-corners-window')
     document.documentElement.classList.add(`${theme}-window`)
   }
 
@@ -634,7 +634,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                     Choose your interface style
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* Neomorphic Style */}
                     <button
                       onClick={() => handleWindowThemeChange('neomorphic')}
@@ -646,7 +646,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         <div className="w-12 h-12 rounded-full bg-[var(--hud-background-primary)] shadow-[4px_4px_8px_var(--neomorphic-dark-shadow),-4px_-4px_8px_var(--neomorphic-light-shadow)]" />
                       </div>
                       <div className="text-center">
-                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Neomorphic</div>
+                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Rounded</div>
                         <div className="text-xs text-medium-grey font-primary">Soft, rounded corners</div>
                       </div>
                     </button>
@@ -662,8 +662,34 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                         <div className="w-12 h-12 bg-[var(--hud-background-primary)] shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
                       </div>
                       <div className="text-center">
-                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Tactical</div>
-                        <div className="text-xs text-medium-grey font-primary">Sharp, angular corners</div>
+                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Sharp</div>
+                        <div className="text-xs text-medium-grey font-primary">Angular, square corners</div>
+                      </div>
+                    </button>
+
+                    {/* Tactical Corners Style */}
+                    <button
+                      onClick={() => handleWindowThemeChange('tactical-corners')}
+                      className={`neo-button p-6 flex flex-col items-center gap-4 ${
+                        windowTheme === 'tactical-corners' ? 'neo-button-active' : ''
+                      }`}
+                    >
+                      <div
+                        className="w-full h-24 bg-[var(--hud-background-secondary)] shadow-[0_2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center"
+                        style={{
+                          clipPath: 'polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px)'
+                        }}
+                      >
+                        <div
+                          className="w-12 h-12 bg-[var(--hud-background-primary)] shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
+                          style={{
+                            clipPath: 'polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px)'
+                          }}
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div className="font-primary text-sm uppercase tracking-wide mb-1">Tactical Corners</div>
+                        <div className="text-xs text-medium-grey font-primary">45-degree clipped corners</div>
                       </div>
                     </button>
                   </div>
